@@ -1,0 +1,19 @@
+# Conda environment for score-bundle.
+#   conda env create -f environment.yml
+#   conda activate score-bundle
+#
+# Core science stack via conda-forge; torch + MIDI/training tools via pip (the `train`
+# extra). On a CUDA GPU, install the matching torch build from
+# https://pytorch.org/get-started/locally/ instead of the default pip wheel.
+name: score-bundle
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy>=1.21
+  - scipy>=1.7
+  - scikit-learn>=1.0
+  - pytest>=7
+  - pip
+  - pip:
+      - -e .[train]   # installs score-bundle + torch, pretty_midi, tqdm

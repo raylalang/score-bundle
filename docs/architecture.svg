@@ -1,0 +1,107 @@
+<svg viewBox="0 0 1280 660" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t d">
+  <title id="t">Score-Bundle architecture</title>
+  <desc id="d">One generative model run in two directions (forward synthesis, inverse transcription) with components colour-coded by Phase 1, 2 and 3.</desc>
+  <style>
+    :root{
+      --ink:#1e1e1e; --muted:#566; --p1:#1971c2; --p1bg:#e7f5ff; --p1fill:#a5d8ff;
+      --p2:#e8590c; --p2bg:#fff4e6; --p2fill:#ffd8a8; --p3:#2f9e44; --p3bg:#ebfbee; --p3fill:#b2f2bb;
+      --neutral:#343a40; --neutralbg:#f1f3f5; --teal:#0c8599;
+    }
+    text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;fill:var(--ink)}
+    .title{font-size:24px;font-weight:700}
+    .sub{font-size:14px;fill:var(--muted)}
+    .flow{font-size:13.5px;font-weight:600}
+    .box{font-size:14px}
+    .chip{font-size:12px}
+    .ptitle{font-size:16px;font-weight:700}
+    .pbody{font-size:12.5px}
+    .leg{font-size:13px}
+    .r{rx:10;ry:10}
+  </style>
+  <defs>
+    <marker id="aDark" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="var(--neutral)"/></marker>
+    <marker id="aGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="var(--p3)"/></marker>
+    <marker id="aTeal" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="var(--teal)"/></marker>
+  </defs>
+
+  <text class="title" x="40" y="38">Score-Bundle — one generative model, two directions, three phases</text>
+  <text class="sub" x="40" y="62">Forward = expressive synthesis · Inverse = score-informed performance transcription (probabilistic inverse synthesis)</text>
+  <text class="flow" x="430" y="104" fill="var(--p3)">▶ FORWARD (synthesis): sample expression y ~ prior → Φ(z) → audio</text>
+
+  <!-- pipeline -->
+  <ellipse cx="120" cy="196" rx="100" ry="54" fill="var(--neutralbg)" stroke="var(--neutral)" stroke-width="2"/>
+  <text class="box" x="120" y="190" text-anchor="middle">Known score (given)</text>
+  <text class="box" x="120" y="210" text-anchor="middle">S = {(pᵢ, bᵢ, dᵢ)}</text>
+
+  <line x1="221" y1="196" x2="247" y2="196" stroke="var(--neutral)" stroke-width="2" marker-end="url(#aDark)"/>
+
+  <rect class="r" x="250" y="150" width="220" height="92" fill="var(--p1fill)" stroke="var(--p1)" stroke-width="2"/>
+  <text class="box" x="360" y="184" text-anchor="middle">Score graph G + graph prior</text>
+  <text class="box" x="360" y="206" text-anchor="middle">Q_G = λI + ηL_G</text>
+
+  <line x1="471" y1="196" x2="497" y2="196" stroke="var(--neutral)" stroke-width="2" marker-end="url(#aDark)"/>
+
+  <rect class="r" x="500" y="120" width="280" height="138" fill="#ffffff" stroke="var(--neutral)" stroke-width="2"/>
+  <text class="box" x="512" y="140" font-weight="600">Performance variables y (per note)</text>
+  <rect class="r" x="512" y="150" width="256" height="26" fill="var(--p1fill)" stroke="var(--p1)" stroke-width="1"/>
+  <text class="chip" x="640" y="167" text-anchor="middle">P1: τ onset · log r artic. · v dynamics</text>
+  <rect class="r" x="512" y="182" width="256" height="26" fill="var(--p2fill)" stroke="var(--p2)" stroke-width="1"/>
+  <text class="chip" x="640" y="199" text-anchor="middle">+ P2: c cents · u(t) vibrato · f₀</text>
+  <rect class="r" x="512" y="214" width="256" height="26" fill="var(--p3fill)" stroke="var(--p3)" stroke-width="1"/>
+  <text class="chip" x="640" y="231" text-anchor="middle">+ P3: harmonic amplitudes a (timbre)</text>
+
+  <line x1="781" y1="196" x2="809" y2="196" stroke="var(--p3)" stroke-width="2" marker-end="url(#aGreen)"/>
+
+  <rect class="r" x="812" y="150" width="210" height="92" fill="var(--p3fill)" stroke="var(--p3)" stroke-width="2"/>
+  <text class="box" x="917" y="184" text-anchor="middle">Differentiable synth Φ(z)</text>
+  <text class="box" x="917" y="206" text-anchor="middle">x = Φ(z) a + ε</text>
+
+  <line x1="1023" y1="196" x2="1055" y2="196" stroke="var(--p3)" stroke-width="2" marker-end="url(#aGreen)"/>
+
+  <ellipse cx="1150" cy="196" rx="92" ry="50" fill="#d3f9d8" stroke="var(--p3)" stroke-width="2"/>
+  <text class="box" x="1150" y="190" text-anchor="middle">Audio /</text>
+  <text class="box" x="1150" y="210" text-anchor="middle">performance x</text>
+
+  <!-- inverse -->
+  <path d="M1150,246 V300 H560 V262" fill="none" stroke="var(--teal)" stroke-width="3" marker-end="url(#aTeal)"/>
+  <text class="flow" x="300" y="324" fill="var(--teal)">◀ INVERSE (transcription): audio x + score → posterior over y (per-note mean ± σ)</text>
+  <text class="pbody" x="300" y="344" fill="var(--p3)">Phase 3 inference: marginalize amplitudes a exactly, then Laplace / VI over nonlinear z.</text>
+
+  <!-- legend -->
+  <text class="leg" x="40" y="384" fill="var(--muted)">Components by phase:</text>
+  <rect x="190" y="372" width="16" height="16" fill="var(--p1fill)" stroke="var(--p1)"/><text class="leg" x="212" y="385" fill="var(--p1)">Phase 1</text>
+  <rect x="296" y="372" width="16" height="16" fill="var(--p2fill)" stroke="var(--p2)"/><text class="leg" x="318" y="385" fill="var(--p2)">Phase 2</text>
+  <rect x="402" y="372" width="16" height="16" fill="var(--p3fill)" stroke="var(--p3)"/><text class="leg" x="424" y="385" fill="var(--p3)">Phase 3</text>
+  <rect x="508" y="372" width="16" height="16" fill="var(--neutralbg)" stroke="var(--neutral)"/><text class="leg" x="530" y="385" fill="var(--neutral)">Shared / given</text>
+
+  <!-- phase panels -->
+  <rect class="r" x="40" y="404" width="396" height="234" fill="var(--p1bg)" stroke="var(--p1)" stroke-width="2"/>
+  <text class="ptitle" x="58" y="432" fill="var(--p1)">PHASE 1 — core (piano)</text>
+  <text class="pbody" x="58" y="458">
+    <tspan x="58" dy="0">Variables: y = [τ, log r, v]</tspan>
+    <tspan x="58" dy="22">Model: score graph → Gaussian graph prior Q_G</tspan>
+    <tspan x="58" dy="22">Inference: closed-form posterior N(m, Σ_y)</tspan>
+    <tspan x="58" dy="22">Eval: held-out imputation, calibration (PIT, coverage)</tspan>
+    <tspan x="58" dy="22">Data: ASAP, MAESTRO · no audio required</tspan>
+  </text>
+
+  <rect class="r" x="448" y="404" width="396" height="234" fill="var(--p2bg)" stroke="var(--p2)" stroke-width="2"/>
+  <text class="ptitle" x="466" y="432" fill="var(--p2)">PHASE 2 — extension (monophonic)</text>
+  <text class="pbody" x="466" y="458">
+    <tspan x="466" dy="0">Add: intonation c, vibrato u(t), f₀ curve</tspan>
+    <tspan x="466" dy="22">For: voice / strings / winds (NOT piano)</tspan>
+    <tspan x="466" dy="22">Labels: f0-derived, not clean ground truth</tspan>
+    <tspan x="466" dy="22">Reuses: same score-graph prior, new channels</tspan>
+    <tspan x="466" dy="22">Data: URMP, Vocadito / Opencpop</tspan>
+  </text>
+
+  <rect class="r" x="856" y="404" width="384" height="234" fill="var(--p3bg)" stroke="var(--p3)" stroke-width="2"/>
+  <text class="ptitle" x="874" y="432" fill="var(--p3)">PHASE 3 — extension (waveform)</text>
+  <text class="pbody" x="874" y="458">
+    <tspan x="874" dy="0">Add: differentiable synthesizer Φ(z)</tspan>
+    <tspan x="874" dy="22">Likelihood: x = Φ(z) a + ε (a linear-Gaussian)</tspan>
+    <tspan x="874" dy="22">Inference: marginalize a exactly; Laplace/VI over z</tspan>
+    <tspan x="874" dy="22">Init: nominal f₀ from score (multimodality)</tspan>
+    <tspan x="874" dy="22">Output: audio ↔ score, full performance posterior</tspan>
+  </text>
+</svg>
