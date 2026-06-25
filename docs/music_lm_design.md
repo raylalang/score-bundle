@@ -71,12 +71,12 @@ Reference defaults (tiny): `d_model=256`, `n_layer=4`, `n_head=4`, `block_size=5
 dropout 0.1. This is deliberately nanoGPT-scale (Karpathy) so it trains on one GPU and
 stays legible.
 
-Two implementations ship in the repo:
-
-- `lm/model_numpy.py` — a pure-NumPy **forward pass + sampling** for understanding,
-  inference, and tests (causal masking, shapes, deterministic forward). Not trained.
-- `lm/model_torch.py` — the **trainable** PyTorch version with the same architecture, plus
-  a training loop. This is what we pretrain.
+The model lives in `lm/model_torch.py`, implemented from the ground up in PyTorch:
+hand-written causal self-attention (`nn.Linear` q/k/v + masked softmax — no
+`nn.MultiheadAttention`, no `transformers`), a GELU MLP, pre-LayerNorm blocks, and a
+weight-tied head. `forward` / `embed` / `generate` and a `train_lm` loop ship with it. The
+tokenizer and batching (`lm/tokenizer.py`, `lm/data.py`) stay framework-agnostic NumPy, so
+the representation is decoupled from the training framework.
 
 ## 5. Pretraining objective
 
@@ -155,8 +155,8 @@ either model implementation.
 ## 8. Deliverables and milestones
 
 - `lm/tokenizer.py`, `lm/data.py` — tokenizer + batching (runnable, tested).
-- `lm/model_numpy.py` — from-scratch forward/sampling (runnable, tested).
-- `lm/model_torch.py` — trainable GPT + training loop (real pretraining).
+- `lm/model_torch.py` — from-scratch PyTorch GPT: hand-written attention, forward / embed /
+  generate + training loop (this is what we pretrain).
 - `lm/features.py` — per-note embeddings → prior mean (connects to Phase 1).
 - `examples/phase0_pretrain_lm.py`, `examples/phase0_lm_features_to_prior.py`.
 

@@ -1,32 +1,38 @@
 """Phase 0 -> Phase 1 bridge: LM embeddings as a learned prior mean.
 
-Extract per-note embeddings from the (here untrained) NumPy LM, fit a ridge head
+Extract per-note embeddings from the (here untrained) PyTorch LM, fit a ridge head
 h_i -> mu_i, and plug mu into the Phase-1 graph prior so the GMRF models the residual
-y - mu.  With an untrained model this is a plumbing demo (mu is uninformative); after
-real pretraining, mu carries the expressive signal and the graph prior adds calibrated
-structured uncertainty on top.
+y - mu. With an untrained model this is a plumbing demo; after real pretraining, mu
+carries the expressive signal and the graph prior adds calibrated structured uncertainty.
 
-Run:  python examples/phase0_lm_features_to_prior.py
+Run:  python examples/phase0_lm_features_to_prior.py   (needs torch: pip install -e '.[train]')
 """
 import numpy as np
 
 from score_bundle import Score, build_adjacency, laplacian, laplacian_precision, GraphGaussianField
 from score_bundle import metrics
-from score_bundle.lm import data, features, model_numpy as mnp
+from score_bundle.lm import data, features
 from score_bundle.lm.tokenizer import MidiTokenizer
 
 
 def main() -> None:
+    try:
+        import torch  # noqa: F401
+    except ImportError:
+        print("This example needs PyTorch. Install with:  pip install -e '.[train]'")
+        return
+
+    from score_bundle.lm.model_torch import GPTConfig, build_model
+
     rng = np.random.default_rng(1)
     tok = MidiTokenizer()
     notes = data.random_sequence(rng, n_notes=50)
     tokens = tok.encode(notes)
 
-    cfg = mnp.GPTConfig(vocab_size=tok.vocab_size, d_model=64, n_layer=2, n_head=4, block_size=256)
-    params = mnp.init_params(cfg, rng)
-    emb = features.note_embeddings(params, cfg, tok, tokens)   # (N, d)
+    cfg = GPTConfig(vocab_size=tok.vocab_size, d_model=64, n_layer=2, n_head=4, block_size=256)
+    model = build_model(cfg)
+    emb = features.note_embeddings(model, tok, tokens)   # (N, d)
 
-    # a stand-in expressive target: normalized velocity per note
     y = (np.array([n.velocity for n in notes], dtype=float) - 70.0) / 30.0
     mu, _ = features.fit_prior_mean(emb, y, l2=1.0)
 

@@ -34,9 +34,11 @@ The editable diagram is `docs/architecture.excalidraw`.
 | **2 — extension (mono)** | intonation, vibrato | `c` (cents), `u(t)`, `f₀` | same prior, f0-derived targets | URMP, Vocadito/Opencpop |
 | **3 — extension (waveform)** | timbre | harmonic amplitudes `a` | marginalize `a` exactly, Laplace/VI over nonlinear `z` | + audio |
 
-Phase 0 (the music LM) and Phase 1 are implemented and runnable: a from-scratch tokenizer,
-a NumPy Transformer (forward + sampling, no deps), a trainable PyTorch twin, and the
-embedding→prior-mean bridge. Phases 2 and 3 are clean interfaces with some working helpers
+Phase 0 (the music LM) and Phase 1 are implemented: a from-scratch tokenizer, a from-scratch
+**PyTorch** Transformer (hand-written attention, `forward`/`embed`/`generate` + training
+loop), and the embedding→prior-mean bridge. The Phase-1 core runs on numpy alone; the LM
+needs torch (`pip install -e ".[train]"`). Phases 2 and 3 are clean interfaces with some
+working helpers
 (intonation/vibrato features; harmonic synthesizer; closed-form amplitude posterior) and
 documented stubs for the open research steps (f0 extraction, position inference over `z`).
 
@@ -47,7 +49,7 @@ the Phase-1 graph prior models the residual `y − μ_LM` with calibrated struct
 uncertainty. Design + rationale in [`docs/music_lm_design.md`](docs/music_lm_design.md).
 
 ```bash
-python examples/phase0_pretrain_lm.py          # pretrain (torch) or forward+sample (numpy)
+python examples/phase0_pretrain_lm.py          # pretrain the LM (needs torch)
 python examples/phase0_lm_features_to_prior.py # LM embeddings → prior mean → graph posterior
 ```
 
@@ -118,8 +120,7 @@ src/score_bundle/
   lm/             Phase 0: from-scratch music language model
     tokenizer.py    note-structured MIDI tokenizer (NoteEvent <-> tokens)
     data.py         synthetic corpus + next-token batching
-    model_numpy.py  from-scratch Transformer: forward + sampling (no deps)
-    model_torch.py  trainable PyTorch twin + training loop (optional)
+    model_torch.py  from-scratch PyTorch Transformer (attention by hand) + training
     features.py     per-note embeddings -> learned prior mean (Phase-1 bridge)
   phase2/         intonation & vibrato (extension)
   phase3/         differentiable synthesizer Φ(z) + amplitude marginalization (extension)

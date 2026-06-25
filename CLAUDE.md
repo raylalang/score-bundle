@@ -15,10 +15,10 @@ note conceptually in sync.
 
 ## Phases (and what's implemented)
 
-- **Phase 0 — music LM (implemented).** From-scratch decoder-only Transformer over
-  note-structured MIDI tokens (`src/score_bundle/lm/`). NumPy forward+sampling (no deps,
-  tested) + a trainable PyTorch twin. Provides a learned prior mean `μ_LM` and per-note
-  embeddings that feed Phase 1.
+- **Phase 0 — music LM (implemented).** From-scratch **PyTorch** decoder-only Transformer
+  over note-structured MIDI tokens (`src/score_bundle/lm/`, hand-written causal attention).
+  Provides a learned prior mean `μ_LM` and per-note embeddings that feed Phase 1. Tokenizer
+  and batching are framework-agnostic NumPy; the model is PyTorch.
 - **Phase 1 — core, piano (implemented).** Score graph → Gaussian graph prior → closed-form
   posterior with per-note uncertainty; baselines; calibration metrics.
 - **Phase 2 — intonation/vibrato (stubs + helpers).** `src/score_bundle/phase2/`.
@@ -45,9 +45,11 @@ or `a_i(t)` for the amplitude envelope. (These were deliberately disambiguated.)
 
 ## Conventions
 
-- **NumPy-first core.** The package must import and the tests must pass with **numpy only**.
-  `scipy`, `scikit-learn`, and `torch` are *optional* and must be import-guarded (see
-  `lm/model_torch.py`, `baselines.gbm_impute`). Never add a hard dependency to the core.
+- **NumPy-first statistical core.** The Phase-1 package (graph / prior / model / metrics /
+  tokenizer / data) must import and test with **numpy only**; `scipy` and `scikit-learn` are
+  optional and import-guarded. The **Phase-0 LM is PyTorch** (`lm/model_torch.py`) —
+  import-guarded so the package still imports without torch, but training and the LM tests
+  require it (`pip install -e '.[train]'`). Never add a hard dependency to the Phase-1 core.
 - **src layout.** Run things with `PYTHONPATH=src` or `pip install -e .`.
 - Dataclasses for structured data; clear docstrings that tie modules back to the concept
   note / `docs/music_lm_design.md` sections.
@@ -79,8 +81,8 @@ python examples/phase1_imputation.py
 ```
 
 The conda env's `train` extra installs torch + pretty_midi + tqdm, so the PyTorch LM
-trains for real. Without torch, `examples/phase0_pretrain_lm.py` falls back to a NumPy
-forward+sample demo.
+trains for real. Without torch, `examples/phase0_pretrain_lm.py` prints an install hint and
+the LM tests no-op; the Phase-1 examples and the numpy core run regardless.
 
 ## Design decisions worth respecting
 

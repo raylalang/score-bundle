@@ -7,8 +7,9 @@ Run Claude Code from the repo root and paste the prompt below.
 You are working in the `score-bundle` repo. Before coding, read `CLAUDE.md`, `README.md`,
 and `docs/music_lm_design.md` (especially §3 tokenization, §4 architecture, §6 the Phase-1
 integration, and §6.1 "why not aria"). Respect the canonical notation table and the
-**NumPy-first** rule in `CLAUDE.md` (the core package and `pytest` must work with numpy
-only; torch / pretty_midi / aria are optional and import-guarded).
+dependency rule in `CLAUDE.md`: the **Phase-1 statistical core** imports and tests with
+**numpy only**, while the **Phase-0 LM is PyTorch** (built from scratch, import-guarded).
+`pretty_midi` and `aria` are optional too.
 
 **Step 0 — environment (conda).** Create and activate the environment, install editable,
 and confirm the suite is green. Show me the test summary before continuing.
@@ -16,7 +17,7 @@ and confirm the suite is green. Show me the test summary before continuing.
 ```bash
 conda env create -f environment.yml
 conda activate score-bundle
-pip install -e ".[dev]"
+pip install -e ".[dev,train]"   # dev = pytest/scipy/sklearn; train = torch/pretty_midi/tqdm
 pytest -q
 ```
 
@@ -50,7 +51,8 @@ Phase-1 prior. Work in small, tested increments.
    with a TODO.
 
 **Constraints**
-- NumPy-first core: `pytest` must pass with numpy only.
+- NumPy-first statistical core: the Phase-1 tests pass with numpy only; the Phase-0 LM is
+  torch-based (its tests need torch).
 - Don't break the `MidiTokenizer` / `GraphGaussianField` / `GPTConfig` interfaces.
 - Hold out eval pieces; never evaluate on anything the LM trained on.
 - Keep notation consistent with `CLAUDE.md` (`μ_LM`, `Σ_y`, `η`, `σ_g`, …).

@@ -1,46 +1,45 @@
 """Bridge Phase 0 -> Phase 1: per-note LM embeddings as a learned prior mean.
 
-After pretraining, the hidden state at each note's VELOCITY token is a per-note
-embedding ``h_i`` aligned with the score graph's nodes.  A small ridge head maps
-``h_i -> mu_i`` (a prediction of the expressive variables); the Phase-1 graph prior
-then models the residual ``y - mu`` with calibrated structured uncertainty:
+The hidden state at each note's VELOCITY token is a per-note embedding ``h_i`` aligned
+with the score graph's nodes.  A small ridge head maps ``h_i -> mu_i`` (a prediction of
+the expressive variables); the Phase-1 graph prior then models the residual ``y - mu``
+with calibrated structured uncertainty:
 
     y = mu_LM(h) + xi,     xi ~ N(0, Q_G^{-1}).
 
-This turns the Phase-1 comparison into the stronger question: does a score-graph
-residual prior on top of a learned LM mean beat the LM mean (and the hand-built
-baselines) on recovery *and* calibration?
+This turns the Phase-1 comparison into the stronger question: does a score-graph residual
+prior on top of a learned LM mean beat the LM mean (and the hand-built baselines) on
+recovery *and* calibration?
+
+``note_embeddings`` needs the PyTorch model; ``fit_prior_mean`` is pure NumPy.
 """
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 import numpy as np
 
-from . import model_numpy as mnp
-from .tokenizer import MidiTokenizer, BOS
+from .tokenizer import MidiTokenizer
 
 
 def note_velocity_positions(tokenizer: MidiTokenizer, tokens: List[int]) -> List[int]:
     """Indices of each note's VELOCITY token (the per-note read-out position)."""
-    positions = []
-    for i, tok in enumerate(tokens):
-        name, _ = tokenizer.token_type(tok)
-        if name == "velocity":
-            positions.append(i)
-    return positions
+    return [i for i, tok in enumerate(tokens) if tokenizer.token_type(tok)[0] == "velocity"]
 
 
-def note_embeddings(
-    params: Dict[str, np.ndarray],
-    cfg: "mnp.GPTConfig",
-    tokenizer: MidiTokenizer,
-    tokens: List[int],
-) -> np.ndarray:
-    """Run the NumPy model and return per-note embeddings, shape (n_notes, d_model)."""
-    _, hidden = mnp.forward(params, np.asarray(tokens, dtype=int), cfg)
+def note_embeddings(model, tokenizer: MidiTokenizer, tokens: List[int]) -> np.ndarray:
+    """Run the (PyTorch) model and return per-note embeddings, shape (n_notes, d_model).
+
+    ``model`` is a ``score_bundle.lm.model_torch.MusicGPT``.
+    """
+    import torch  # local import keeps this module importable without torch
+
+    model.eval()
+    device = next(model.parameters()).device
+    idx = torch.as_tensor(tokens, dtype=torch.long, device=device)[None]  # (1, T)
+    hidden = model.embed(idx)[0]                                          # (T, d)
     pos = note_velocity_positions(tokenizer, tokens)
-    return hidden[pos]
+    return hidden[pos].detach().cpu().numpy()
 
 
 def fit_prior_mean(
