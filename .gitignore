@@ -20,5 +20,13 @@ data/
 *.mid
 *.midi
 
+# Run artifacts (regenerable; do not commit)
+checkpoints/
+.cache/
+logs/
+figures/
+*.pt
+*.pkl
+
 # OS
 .DS_Store

@@ -53,6 +53,14 @@ python examples/phase0_pretrain_lm.py          # pretrain the LM (needs torch)
 python examples/phase0_lm_features_to_prior.py # LM embeddings → prior mean → graph posterior
 ```
 
+**Phase-1 result (held-out ASAP).** With a MAESTRO-pretrained LM (val ppl 10.85), the
+`LM mean + graph residual` is the best cell on both recovery and calibration — RMSE 0.373,
+NLL −0.604, coverage 0.926 (target 0.90) — beating zero- and ridge-mean baselines. Full
+table, per-channel breakdown, and the predictive-variance-floor fix are in
+[`docs/phase1_calibration_results.md`](docs/phase1_calibration_results.md). Reproduce with
+`scripts/eval_asap_calibration.py`. The aria frozen-feature upper-bound baseline
+(`lm/aria_baseline.py`) is an import-guarded stub (aria not installed here).
+
 ## Install
 
 ```bash
@@ -112,7 +120,7 @@ src/score_bundle/
   graph.py        score graph: adjacency, Laplacian, kNN, chain
   prior.py        Q_G = λI + ηL_G  and  Matérn/SPDE  σ_g⁻²(κ²I + L)^α
   variables.py    phased channel registry (τ, log r, v, c, ...)
-  features.py     Phase-1 target extraction from aligned data (+ loader stubs)
+  features.py     Phase-1 target extraction from aligned data (+ ASAP loader)
   model.py        GraphGaussianField: posterior, marginal likelihood, EB fit
   baselines.py    independent / temporal AR(1) / ridge / GBM
   metrics.py      RMSE, NLL, coverage, PIT, calibration error

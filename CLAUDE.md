@@ -19,12 +19,21 @@ note conceptually in sync.
   over note-structured MIDI tokens (`src/score_bundle/lm/`, hand-written causal attention).
   Provides a learned prior mean `μ_LM` and per-note embeddings that feed Phase 1. Tokenizer
   and batching are framework-agnostic NumPy; the model is PyTorch.
-- **Phase 1 — core, piano (implemented).** Score graph → Gaussian graph prior → closed-form
-  posterior with per-note uncertainty; baselines; calibration metrics.
+- **Phase 1 — core, piano (implemented + evaluated).** Score graph → Gaussian graph prior →
+  closed-form posterior with per-note uncertainty; baselines; calibration metrics. Held-out
+  ASAP eval (`scripts/eval_asap_calibration.py`, `src/score_bundle/imputation_eval.py`) shows
+  `LM mean + graph residual` best on RMSE *and* calibration — see
+  `docs/phase1_calibration_results.md`. NB the graph posterior needs a **predictive-variance
+  floor** (held-out `y=f+ε` has variance `diag(Σ_y)+noise_var`) or NLL/coverage blow up.
+  Aria frozen-feature upper-bound baseline is an import-guarded stub (`lm/aria_baseline.py`).
 - **Phase 2 — intonation/vibrato (stubs + helpers).** `src/score_bundle/phase2/`.
 - **Phase 3 — waveform likelihood (stubs + helpers).** `src/score_bundle/phase3/`.
-- Real dataset loaders (ASAP/MAESTRO/Aria-MIDI) are **stubs** in `features.py` /
-  `lm/data.py` — the main open work.
+- Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
+  **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
+  `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,
+  `load_asap`, `asap_performance_variables`, `asap_clean_performances`). Aria-MIDI / ATEPP /
+  GiantMIDI loaders remain open. Datasets live under `../data/`
+  (`/home/ray/Research/data/{maestro-v3.0.0,asap-dataset}`); pass the root explicitly.
 
 ## Canonical notation (keep consistent everywhere — code, docs, Notion)
 
@@ -64,8 +73,12 @@ or `a_i(t)` for the amplitude envelope. (These were deliberately disambiguated.)
 - **Phase 1 (thesis task):** **ASAP** — the only corpus with aligned score↔performance;
   MAESTRO supplies audio for the overlapping subset (Phase 3).
 - **aria model:** frozen-feature **baseline / upper bound**, never the backbone.
-- Loaders are stubs — wiring them is the first real task. Always hold out eval pieces;
-  transcribed corpora may overlap ASAP/MAESTRO (contamination).
+- MAESTRO + ASAP loaders are wired (see Phases list). Always hold out eval pieces;
+  transcribed corpora may overlap ASAP/MAESTRO (contamination). ASAP's `metadata.csv`
+  carries a `maestro_midi_performance` cross-reference; `asap_clean_performances` drops any
+  ASAP eval performance whose MAESTRO twin was in Phase-0 pretraining. MAESTRO's own split
+  is composition-safe; `maestro_split(strict_dedup=True)` additionally drops 5 title-colliding
+  eval pieces.
 
 ## Run
 
@@ -78,11 +91,21 @@ pip install -e ".[dev]"     # editable install (or just: export PYTHONPATH=src)
 pytest                      # full suite (numpy-only paths must stay green)
 python examples/phase0_pretrain_lm.py
 python examples/phase1_imputation.py
+
+# real Phase-0 pretraining on MAESTRO (single-GPU; tokenizes + trains MusicGPT)
+python scripts/train_lm.py --maestro-root ../data/maestro-v3.0.0 \
+    --d-model 256 --n-layer 4 --epochs 10 --cache-dir .cache/lm
 ```
 
 The conda env's `train` extra installs torch + pretty_midi + tqdm, so the PyTorch LM
 trains for real. Without torch, `examples/phase0_pretrain_lm.py` prints an install hint and
 the LM tests no-op; the Phase-1 examples and the numpy core run regardless.
+
+**Env gotchas (this machine):** activating `score-bundle` sets
+`LD_LIBRARY_PATH=$CONDA_PREFIX/lib` (a conda env var) so numpy/torch find the conda
+`libstdc++` (GLIBCXX_3.4.29). The NVIDIA driver is CUDA 12.8, so torch must be the **cu128**
+build (`pip install torch==2.11.0+cu128 --index-url https://download.pytorch.org/whl/cu128`);
+the default PyPI cu130 wheel disables CUDA. Datasets live in `../data/`.
 
 ## Design decisions worth respecting
 

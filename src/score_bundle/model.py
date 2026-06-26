@@ -141,3 +141,64 @@ def fit_laplacian_field(
     Q = laplacian_precision(L, lam=lam, eta=eta)
     field = GraphGaussianField(Q, mean=mean)
     return field, {"lam": float(lam), "eta": float(eta), "noise_var": float(noise_var)}
+
+
+def fit_laplacian_field_calib(
+    L: np.ndarray,
+    y_obs: np.ndarray,
+    mask: Optional[np.ndarray] = None,
+    mean=0.0,
+    calib_frac: float = 0.3,
+    rng: Optional[np.random.Generator] = None,
+    x0=(0.0, 0.0, -2.0),
+) -> Tuple[GraphGaussianField, dict]:
+    """Pick (lam, eta, noise_var) by held-out predictive NLL on a *calibration split*.
+
+    Unlike :func:`fit_laplacian_field` (which maximizes the in-sample marginal likelihood of
+    all observed nodes), this splits the observed nodes into a fit subset and a calibration
+    subset, then chooses the hyperparameters that minimize the predictive NLL of the
+    calibration nodes given the fit nodes -- using the same observation-noise-floored
+    predictive std (``diag(Sigma_y) + noise_var``) the eval scores against.  This optimizes
+    *calibration* directly rather than in-sample fit, so coverage lands closer to nominal.
+
+    Falls back to the marginal-likelihood fit if there are too few observed nodes to split.
+    """
+    L = np.asarray(L, dtype=float)
+    y_obs = np.asarray(y_obs, dtype=float)
+    n = L.shape[0]
+    if mask is None:
+        mask = np.ones(n, dtype=bool)
+    mask = np.asarray(mask, dtype=bool)
+    if rng is None:
+        rng = np.random.default_rng(0)
+
+    obs_idx = np.where(mask)[0]
+    n_calib = int(round(calib_frac * obs_idx.size))
+    if obs_idx.size < 4 or n_calib < 1 or obs_idx.size - n_calib < 1:
+        return fit_laplacian_field(L, y_obs, mask=mask, mean=mean, x0=x0)
+
+    perm = rng.permutation(obs_idx)
+    calib_idx = perm[:n_calib]
+    fit_idx = perm[n_calib:]
+    fit_mask = np.zeros(n, dtype=bool)
+    fit_mask[fit_idx] = True
+
+    def neg_calib_nll(logp: np.ndarray) -> float:
+        lam, eta, nv = np.exp(logp)
+        try:
+            Q = laplacian_precision(L, lam=lam, eta=eta)
+            field = GraphGaussianField(Q, mean=mean)
+            m, std = field.posterior(y_obs, nv, mask=fit_mask)
+        except (np.linalg.LinAlgError, ValueError):
+            return 1e12
+        pred_var = std[calib_idx] ** 2 + nv  # observation-noise-floored predictive variance
+        r = y_obs[calib_idx] - m[calib_idx]
+        nll = 0.5 * (_LOG2PI + np.log(pred_var) + r ** 2 / pred_var)
+        return float(np.mean(nll))
+
+    best = nelder_mead(neg_calib_nll, np.asarray(x0, dtype=float))
+    lam, eta, noise_var = np.exp(best)
+    # refit the field on ALL observed nodes with the chosen hyperparameters
+    Q = laplacian_precision(L, lam=lam, eta=eta)
+    field = GraphGaussianField(Q, mean=mean)
+    return field, {"lam": float(lam), "eta": float(eta), "noise_var": float(noise_var)}
