@@ -107,6 +107,21 @@ def main() -> None:
         print(f"{level:6.2f} {mname:5s} {method:13s} "
               f"{m['rmse']:7.4f} [{r_lo:.3f},{r_hi:.3f}]  "
               f"{m['nll']:7.3f} [{n_lo:.2f},{n_hi:.2f}]  {m['coverage@0.90']:7.3f}")
+    # --- paired bootstrap: graph-oracle vs independent (same mean & level) ----
+    print("\nPaired bootstrap, per-piece diff graph-oracle - independent "
+          "(negative = graph better):")
+    for level in args.levels:
+        for mname in args.means:
+            ka, kb = (level, mname, "graph-oracle"), (level, mname, "independent")
+            if ka not in per_piece or kb not in per_piece:
+                continue
+            for field in ("rmse", "nll"):
+                d = np.asarray(per_piece[ka][field]) - np.asarray(per_piece[kb][field])
+                m, lo, hi = bootstrap_ci(d, rng=boot_rng)
+                sig = "*" if (lo > 0) or (hi < 0) else " "
+                print(f"  level={level:.2f} mean={mname:5s} {field.upper():4s} "
+                      f"{m:+8.4f} [{lo:+.4f}, {hi:+.4f}] {sig}")
+
     print("\nReading: identity is calibrated by construction (oracle noise std) but has "
           "the worst RMSE;\na good structured denoiser must beat it on RMSE while keeping "
           "coverage near 0.90.\n'graph' is fully blind (noise level estimated); "

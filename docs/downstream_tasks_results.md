@@ -74,4 +74,44 @@ for error detection the structured residual, not the learned mean, does the work
 
 ## Task 3 — transcription denoising
 
-<!-- pending: logs/denoise.log -->
+Every note observed through i.i.d. Gaussian noise (std = `level` × per-channel std,
+simulating a noisy AMT transcription); recover the clean values. Metrics vs the clean
+targets, latent posterior std as the calibration object; `identity` (the noisy data
+itself, oracle noise std) is calibrated by construction and is the RMSE floor to beat.
+`independent` (scalar Wiener shrinkage) and `graph-oracle` are told the true noise;
+`graph` is fully blind (EB noise estimate, 5% floor). 30 pieces, pooled over channels,
+bootstrap 95% CIs over pieces. Reproduce: `scripts/eval_asap_denoise.py`
+(log `logs/denoise.log`).
+
+```
+ level mean  method                RMSE [95% CI]                NLL              cov@.9
+  0.50 -     identity       0.2200                       -0.945 [-1.16,-0.74]    0.902
+  0.50 LM    graph          0.2759                       2.5e6  (collapse)       0.638
+  0.50 LM    graph-oracle   0.1894                       -1.091 [-1.30,-0.87]    0.901
+  0.50 LM    independent    0.1983                       -1.039 [-1.25,-0.83]    0.897
+  0.50 zero  graph          0.2908                       1.7e4  (collapse)       0.636
+  0.50 zero  graph-oracle   0.1915                       -1.099 [-1.31,-0.87]    0.903
+  0.50 zero  independent    0.2106                       -1.020 [-1.26,-0.79]    0.891
+  1.00 -     identity       0.4432                       -0.250 [-0.47,-0.03]    0.901
+  1.00 LM    graph          0.3559                       7.5e10 (collapse)       0.564
+  1.00 LM    graph-oracle   0.2927                       -0.642 [-0.85,-0.42]    0.902
+  1.00 LM    independent    0.3153                       -0.550 [-0.76,-0.34]    0.897
+  1.00 zero  graph          0.3685                       4.0e11 (collapse)       0.536
+  1.00 zero  graph-oracle   0.2991                       -0.653 [-0.88,-0.43]    0.903
+  1.00 zero  independent    0.3601                       -0.502 [-0.74,-0.27]    0.886
+```
+
+**Verdict: with a known noise level the graph helped on BOTH axes** — `graph-oracle`
+beats the independent-shrinkage oracle baseline on RMSE at every level and mean (e.g.
+0.293 vs 0.315 at level 1.0 with the LM mean; 0.299 vs 0.360 with the zero mean) *and*
+on NLL, at matched ~0.90 coverage. The structured prior extracts more signal from the
+same noisy observations than per-note shrinkage, exactly as the thesis argues.
+
+**Honest negative: fully-blind denoising does not work yet.** Estimating the noise level
+per piece by EB (even with the 5% noise floor) systematically underestimates it on real
+performance data: intervals collapse (coverage 0.54–0.64, NLL explodes) and at low noise
+the over-trusting posterior is even worse than identity on RMSE (0.276–0.291 vs 0.220).
+The `graph-calib` calibration-split variant collapses the same way. Denoising
+applications should treat the transcription noise scale as (approximately) known — e.g.
+calibrated once per AMT system, or estimated jointly across many pieces (future work) —
+rather than per piece.
