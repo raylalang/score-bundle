@@ -199,6 +199,81 @@ implementing (clip the fitted prior mean to a multiple of the observed residual 
 fall back to zero-mean when the EB objective lands in the collapsed regime) — open
 follow-up, protocol-changing, so not retrofitted into published numbers.
 
+### Stage 2: masked, score-conditioned pretraining vs the Stage-1 read-out (2026-07-03)
+
+Stage 2 replaces the causal next-token objective with the task we actually pose at
+inference: a **bidirectional** transformer (`GPTConfig(causal=False)`, one extra `[MASK]`
+embedding) trained to predict each hidden note's velocity bin from all notes' score
+tokens plus the *observed* notes' velocities, with a per-window observed fraction
+`ρ ~ U(0.1, 0.9)` and CE at masked positions only (`src/score_bundle/lm/masked.py`,
+`scripts/train_lm_masked.py`). Two budgets, both `d=512/L=6` (= `maestro_scaled`
+geometry): **15×500 steps** (budget-matched to Stage 1; best val masked-CE@0.6 **2.532**)
+and **45×500** (3×; **2.484**); chance = log 32 = 3.466. A/B:
+`scripts/eval_asap_stage2.py`, logs `logs/eval_stage2.log` / `logs/eval_stage2_3x.log`.
+
+**Read-out lesson (a leak we caught by its signature).** The first A/B run read observed
+notes at their real velocity token; bidirectionally that state *contains the note's own
+velocity*, so the ridge head part-decoded its target on observed rows and the EB noise
+fit (which uses observed residuals) collapsed — v coverage 0.55, and the direct-velocity
+variant (which returned the observation itself at observed notes → residuals exactly
+zero → `noise_floor_frac × 0 = 0`) hit NLL ~10⁹ (`logs/eval_stage2_naive_readout.log`).
+Fix: **leave-one-out read-out** (`masked_note_embeddings_loo`) — every note, observed or
+hidden, is read at a `[MASK]`ed own-velocity position, conditioning on the *other*
+observed notes; `direct_velocity_mean` now returns the model expectation for all notes.
+Structural test pins the observed-note invariance. Moral: *any* readout fit on observed
+rows needs the Stage-1 guarantee (own target never in the readout), and the EB fit is
+the canary.
+
+**Budget-matched result (corrected, 30 pieces × 4 seeds, identical masks):**
+
+```
+pooled                     graph      RMSE       NLL   cov@.9
+LM-s1 (leak-free, pub.)    on       0.3928   -0.3371    0.919
+LM-s2 (LOO, strict)        on       0.4028   -0.3245    0.923
+LM-s2d (direct v)          on       0.4028   -0.3282    0.923
+
+paired per-piece diff                        RMSE                       NLL
+LM-s2 vs LM-s1   (graph on)    +0.0108 [+0.0048,+0.0171]*   +0.0126 [-0.0045,+0.0281]
+LM-s2 vs LM-s1   (mean only)   +0.0260 [+0.0144,+0.0379]*   +0.0385 [+0.0083,+0.0684]*
+LM-s2d vs LM-s2  (graph on)    -0.0001 [-0.0001,-0.0000]*   -0.0037 [-0.0058,-0.0013]*
+graph on vs off  (LM-s2)       -0.0673 [-0.0877,-0.0491]*   -0.1797 [-0.2140,-0.1485]*
+```
+
+**Verdict — the aligned objective does not beat the Stage-1 read-out at matched
+budget.** Pooled RMSE is slightly but significantly worse (+0.011*), NLL a wash — and
+note the comparison is strict-vs-non-strict: LM-s2 is mask-aware *by construction*,
+so its fair Stage-1 reference is the strict headline (0.3930 / −0.322), against which
+Stage-2's NLL −0.3245 is a tie. Per-channel: Stage-2 is *better on τ* (0.1569 vs
+0.1585 graph-on, mean-only −0.754 vs −0.693 NLL), worse on `log r` (0.675 vs 0.657) and
+`v` RMSE (0.0788 vs 0.0776) though with better v coverage (0.916 vs 0.903). The direct
+velocity prediction edges out the ridge head (NLL −0.0037*) — the amortized model is at
+least as good as a head on its own embeddings, with no head to fit. The 3× budget run
+improves every channel's *mean-only* cell over the 15-epoch run (pooled 0.4653 vs
+0.4715; v 0.0990 vs 0.1004; τ 0.1618) but stays behind Stage-1 pooled (+0.0202*
+mean-only), and its graph-on rows are contaminated by the EB τ collapse below.
+
+Interpretation, honestly: the training/read-out mismatch we set out to fix was real,
+but fixing it bought *cleanliness*, not accuracy — the causal pre-velocity state was
+already a strong summary of expressive context, and bidirectional conditioning on ~60%
+observed velocities adds little the graph does not already recover (the graph's own
+margin on Stage-2 means, −0.067*/−0.180*, matches its margin on Stage-1 means).
+`emb_leakfree` (Stage 1) **stays the published default**; Stage 2 stands as (a) the only
+read-out that satisfies the strict protocol by construction, (b) a direct amortized
+conditional `p(v_hidden | score, v_obs)` needing no ridge head, and (c) the negative
+result: objective alignment ≠ better prior mean at matched compute.
+
+**The EB τ collapse recurs — under the published `l2=10` head this time.** The 45-epoch
+model's graph-on τ cell exploded (0.4185 / +0.398 pooled) while its mean-only τ was fine
+(0.1618, *better* than Stage-1). A per-cell screen (`logs/diag_tau_s2x3.log`) confirms
+the mechanism: **one catastrophic cell (seed 3, piece 28, τ RMSE 4.51) accounts for the
+entire pooled excess** — the other 119 cells pool to ~0.157 with only the chronic piece 7
+mildly elevated (0.57–0.62, all seeds). And it is the **same piece 28** that collapsed
+under the l2=100 head (there: seed 2, RMSE 17.0). So the collapse is not specific to the
+head's ridge strength or the embedding family: piece 28's EB τ fit sits on a knife edge,
+and which mask seed tips it depends on small changes in the prior mean. The EB guard
+(previous subsection) is now supported by evidence at two heads and two embedding
+families, always localized to the same piece.
+
 ### Finding B — the EB noise floor fixes the collapse
 
 `fit_laplacian_field(..., noise_floor=...)` clamps `noise_var` inside the EB objective
