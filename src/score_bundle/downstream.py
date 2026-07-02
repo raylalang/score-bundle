@@ -429,3 +429,51 @@ def loo_nearest_centroid(X: np.ndarray, labels: Sequence[str]) -> Tuple[float, D
     acc = correct / n
     recall = {c: (h / s if s else float("nan")) for c, (h, s) in per_class.items()}
     return acc, recall
+
+
+def grouped_nearest_centroid(
+    X: np.ndarray,
+    labels: Sequence[str],
+    groups: Sequence,
+    center_by_group: bool = True,
+) -> Tuple[float, int]:
+    """Leave-one-*group*-out nearest-centroid accuracy (standardized features).
+
+    For each held-out group value, train the class centroids on all *other* groups and
+    classify the held-out rows.  Used for performer identification on Vienna 4x22, where
+    ``labels`` are performer ids and ``groups`` are pieces: holding out a whole piece
+    forces the classifier to generalize a performer's style across repertoire rather than
+    memorize one rendition (a within-piece split would leak).
+
+    ``center_by_group`` (default) subtracts each group's own mean feature vector before
+    classifying — an *unsupervised* per-piece normalization (it uses group membership, never
+    the performer labels) that removes piece-level offsets so only a performer's deviation
+    from the field remains.  Without it, absolute expression differences between pieces
+    swamp the performer signal.  Returns ``(accuracy, n_scored)``.
+    """
+    X = np.asarray(X, dtype=float).copy()
+    labels = np.asarray(list(labels))
+    groups = np.asarray(list(groups))
+    if center_by_group:
+        for g in set(groups):
+            sel = groups == g
+            X[sel] = X[sel] - X[sel].mean(axis=0)
+    classes = sorted(set(labels))
+    correct = 0
+    scored = 0
+    for g in sorted(set(groups)):
+        te = groups == g
+        tr = ~te
+        if not tr.any() or not te.any():
+            continue
+        sd = X[tr].std(axis=0) + 1e-9
+        Xtr = X[tr] / sd
+        ytr = labels[tr]
+        cents = {c: Xtr[ytr == c].mean(axis=0) for c in classes if np.any(ytr == c)}
+        for i in np.where(te)[0]:
+            xi = X[i] / sd
+            pred = min(cents, key=lambda c: float(np.sum((xi - cents[c]) ** 2)))
+            scored += 1
+            if pred == labels[i]:
+                correct += 1
+    return (correct / scored if scored else float("nan")), scored

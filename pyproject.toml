@@ -21,6 +21,8 @@ baselines = ["scikit-learn>=1.0"]
 torch = ["torch>=2.0"]
 # `train` adds everything needed to pretrain the Phase-0 LM on real MIDI.
 train = ["torch>=2.0", "pretty_midi>=0.2.10", "tqdm>=4.65"]
+# `vienna` adds the .match parser for the Vienna 4x22 performer-ID downstream task.
+vienna = ["partitura>=1.2.0"]
 dev = ["pytest>=7", "scipy>=1.7", "scikit-learn>=1.0"]
 
 [tool.hatch.build.targets.wheel]
