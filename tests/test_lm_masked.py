@@ -110,6 +110,28 @@ def test_stage2_readout_is_leakfree_by_construction():
 
 
 @needs_torch
+def test_loo_readout_is_leakfree_for_observed_notes_too():
+    """LOO: even an OBSERVED note's embedding is invariant to its own velocity,
+    while its velocity still conditions the OTHER notes' embeddings."""
+    tok = MidiTokenizer()
+    rng = np.random.default_rng(5)
+    notes = random_sequence(rng, n_notes=24)
+    model = _model(tok, causal=False)
+    observed = np.ones(len(notes), dtype=bool)
+    observed[[5, 11, 17]] = False
+    H1 = mk.masked_note_embeddings_loo(model, tok, notes, observed)
+    # bump observed note 0's velocity
+    bumped = [NoteEvent(n.pitch, n.onset, n.duration, 30 if i == 0 else n.velocity)
+              for i, n in enumerate(notes)]
+    H2 = mk.masked_note_embeddings_loo(model, tok, bumped, observed)
+    np.testing.assert_allclose(H1[0], H2[0], atol=1e-6)     # own row: invariant
+    assert np.abs(H1[1:] - H2[1:]).max() > 1e-6             # others: conditioned on it
+    # and the naive readout agrees with LOO at hidden positions (same construction)
+    Hn = mk.masked_note_embeddings_long(model, tok, notes, observed)
+    np.testing.assert_allclose(H1[~observed], Hn[~observed], atol=1e-5)
+
+
+@needs_torch
 def test_masked_training_learns_pitch_velocity_rule():
     """End-to-end: velocity deterministically tied to pitch must become predictable."""
     from score_bundle.lm.train import TrainConfig
@@ -145,6 +167,8 @@ def test_direct_velocity_mean_units():
     logits[np.arange(n), bins] = 30.0
     v = mk.direct_velocity_mean(tok, logits, vel, observed)
     offset = np.mean(vel[observed] / 127.0)
-    np.testing.assert_allclose(v[observed], vel[observed] / 127.0 - offset, atol=1e-9)
+    # EVERY note (observed included) gets the model expectation, never its true value:
+    # a prior mean equal to the observation makes observed residuals exactly zero and
+    # collapses the EB noise fit.
     centers = (bins + 0.5) * 128.0 / tok.n_vel_bins
-    np.testing.assert_allclose(v[~observed], centers[~observed] / 127.0 - offset, atol=0.02)
+    np.testing.assert_allclose(v, centers / 127.0 - offset, atol=0.02)

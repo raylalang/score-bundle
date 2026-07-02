@@ -13,10 +13,17 @@ spirit, the mask-aware strict protocol (which Stage 2 satisfies automatically).
 Variants (identical masks per piece x seed; graph off/on each):
 
     LM-s1   cached Stage-1 emb_leakfree + its ridge head       — published reference
-    LM-s2   Stage-2 embeddings at the [MASK]ed velocity token + ridge head fit on
-            Stage-2 head-piece embeddings (one random mask per head piece)
+    LM-s2   Stage-2 LEAVE-ONE-OUT embeddings (every note read at a [MASK]ed
+            own-velocity token; conditioning = the other observed notes) + ridge head
+            fit on Stage-2 LOO head-piece embeddings (one random mask per head piece)
     LM-s2d  LM-s2 for tau / log r; the model's OWN velocity-bin expectation for v
             (no ridge head on the v channel — the direct amortized prediction)
+
+The first run of this A/B used the naive read-out (observed notes read at their real
+velocity token, which — bidirectionally — contains their own velocity). That poisons
+the ridge head and collapses the EB noise fit on v (coverage 0.55, NLL blowup: the
+classic leak signature, resurfacing inside Stage 2). The LOO read-out restores the
+Stage-1 pre-velocity guarantee for observed and hidden notes alike.
 
     python scripts/eval_asap_stage2.py --checkpoint checkpoints/maestro_masked/best.pt
 """
@@ -88,8 +95,8 @@ def main() -> None:
                                          p["velocity"])]
 
     def s2_emb(p, mask, want_logits=False):
-        return mk.masked_note_embeddings_long(model, tok, notes_of(p), mask,
-                                              return_vel_logits=want_logits)
+        return mk.masked_note_embeddings_loo(model, tok, notes_of(p), mask,
+                                             return_vel_logits=want_logits)
 
     # --- heads ----------------------------------------------------------------
     Yh = np.concatenate([p["y"] for p in head])
