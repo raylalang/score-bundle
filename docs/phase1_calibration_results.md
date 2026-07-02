@@ -68,6 +68,26 @@ The large LM-vs-zero dynamics gap in the original table was mostly the leak. The
 `ridge + graph` τ blow-up (finding #2 below) is tamed but not cured by the floor —
 it is a bad-mean artefact, not a fit artefact.
 
+### The LM-size ablation does not survive the leak fix
+
+Re-running the identical corrected eval with the big model's score-only embeddings
+(`logs/robust_scoreonly_floor_big.log`):
+
+```
+                 LM+graph pooled (corrected)
+LM (val ppl)     RMSE                  NLL                  cov@.9
+small (10.85)    0.3939 [0.356,0.417]  -0.314 [-0.41,-0.22]  0.922
+big   (9.66)     0.3945 [0.357,0.417]  -0.313 [-0.40,-0.23]  0.921
+```
+
+Identical within noise. The gain reported in the original ablation below ("concentrates
+in velocity/dynamics") was the leak: a lower-perplexity model reconstructs its own
+(quantized) velocity input token more faithfully, which looked like a better prior mean.
+**With an honest score-conditioned mean, scaling the LM 1.3× did not improve the
+downstream prior at this scale** — a real finding for the thesis (the structured residual,
+not LM capacity, is what carries the result), and a caution for the "scale with
+transcribed corpora" plan: measure downstream, not perplexity.
+
 ## Setup
 
 - **Prior mean source `μ`** ∈ {`zero`, `ridge` (hand-built score-feature ridge), `LM`
