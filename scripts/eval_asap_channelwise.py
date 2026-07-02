@@ -51,7 +51,7 @@ def main() -> None:
     ap.add_argument("--observed-frac", type=float, default=0.6)
     ap.add_argument("--l2", type=float, default=10.0)
     ap.add_argument("--embeddings", default="emb_scoreonly", choices=["emb", "emb_scoreonly"])
-    ap.add_argument("--noise-floor-frac", type=float, default=0.0)
+    ap.add_argument("--noise-floor-frac", type=float, default=0.05)
     ap.add_argument("--var-rescale", action="store_true",
                     help="fit per-(cell,channel) std scales on head pieces, apply to eval")
     args = ap.parse_args()

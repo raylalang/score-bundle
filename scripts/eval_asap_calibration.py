@@ -39,6 +39,12 @@ def main() -> None:
     ap.add_argument("--fixed-hyper", action="store_true", help="skip per-piece EB graph fit")
     ap.add_argument("--lam", type=float, default=0.5)
     ap.add_argument("--eta", type=float, default=2.0)
+    ap.add_argument("--embeddings", default="scoreonly", choices=["scoreonly", "perf"],
+                    help="'scoreonly' (default) tokenizes with a constant placeholder "
+                         "velocity so mu_LM cannot read the note's own v target; 'perf' "
+                         "reproduces the original (leaky) 2026-06 tables")
+    ap.add_argument("--noise-floor-frac", type=float, default=0.05,
+                    help="EB noise_var floor (fraction of observed residual variance)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default=None)
     args = ap.parse_args()
@@ -107,7 +113,8 @@ def main() -> None:
             from score_bundle.score import Score
             score_m = Score(score_m.notes[keep]); y = y[keep]; vel = vel[keep]
         notes = [
-            NoteEvent(int(n.pitch), float(n.onset), float(n.duration), int(np.clip(vel[i], 1, 127)))
+            NoteEvent(int(n.pitch), float(n.onset), float(n.duration),
+                      64 if args.embeddings == "scoreonly" else int(np.clip(vel[i], 1, 127)))
             for i, n in enumerate(score_m.notes)
         ]
         emb = lmfeat.note_embeddings_long(model, tok, notes)
@@ -149,6 +156,7 @@ def main() -> None:
         cells = ie.impute_methods(
             score_m, y, means, mask,
             fit_hyper=not args.fixed_hyper, lam=args.lam, eta=args.eta,
+            noise_floor_frac=args.noise_floor_frac,
         )
         acc.add(cells)
         n_used += 1

@@ -35,7 +35,9 @@ def main() -> None:
     ap.add_argument("--kinds", nargs="+", default=["prefix", "block", "random"])
     ap.add_argument("--l2", type=float, default=10.0)
     ap.add_argument("--embeddings", default="emb_scoreonly", choices=["emb", "emb_scoreonly"])
-    ap.add_argument("--noise-floor-frac", type=float, default=0.0)
+    ap.add_argument("--noise-floor-frac", type=float, default=0.05,
+                    help="EB noise_var floor (fraction of observed residual variance); "
+                         "0 disables — expect degenerate overconfident fits on some cells")
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 
