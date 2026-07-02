@@ -53,13 +53,19 @@ python examples/phase0_pretrain_lm.py          # pretrain the LM (needs torch)
 python examples/phase0_lm_features_to_prior.py # LM embeddings → prior mean → graph posterior
 ```
 
-**Phase-1 result (held-out ASAP).** With a MAESTRO-pretrained LM (val ppl 10.85), the
-`LM mean + graph residual` is the best cell on both recovery and calibration — RMSE 0.373,
-NLL −0.604, coverage 0.926 (target 0.90) — beating zero- and ridge-mean baselines. Full
-table, per-channel breakdown, and the predictive-variance-floor fix are in
+**Phase-1 result (held-out ASAP, corrected 2026-07-02).** With a MAESTRO-pretrained LM
+(val ppl 10.85), **score-only embeddings** (a velocity-target leak in the original LM
+mean was found and fixed) and an **EB noise floor**, `LM mean + graph residual` is the
+best cell on both recovery and calibration — RMSE 0.394 [0.356, 0.417], NLL −0.314
+[−0.41, −0.22], coverage 0.922 (target 0.90) over 30 pieces × 4 seeds — and the paired
+bootstrap against LM-mean-only and ridge-mean-only is significant on both RMSE and NLL.
+Full tables, the leakage correction, and the noise-floor fix are in
 [`docs/phase1_calibration_results.md`](docs/phase1_calibration_results.md). Reproduce with
-`scripts/eval_asap_calibration.py`. The aria frozen-feature upper-bound baseline
-(`lm/aria_baseline.py`) is an import-guarded stub (aria not installed here).
+`scripts/eval_asap_robust.py --embeddings emb_scoreonly --noise-floor-frac 0.05`.
+Downstream demonstrations (completion / anomaly detection / denoising) are in
+[`docs/downstream_tasks_results.md`](docs/downstream_tasks_results.md). The aria
+frozen-feature upper-bound baseline (`lm/aria_baseline.py`) is an import-guarded stub
+(aria not installed here).
 
 ## Install
 

@@ -21,10 +21,16 @@ note conceptually in sync.
   and batching are framework-agnostic NumPy; the model is PyTorch.
 - **Phase 1 — core, piano (implemented + evaluated).** Score graph → Gaussian graph prior →
   closed-form posterior with per-note uncertainty; baselines; calibration metrics. Held-out
-  ASAP eval (`scripts/eval_asap_calibration.py`, `src/score_bundle/imputation_eval.py`) shows
+  ASAP eval (`scripts/eval_asap_robust.py`, `src/score_bundle/imputation_eval.py`) shows
   `LM mean + graph residual` best on RMSE *and* calibration — see
-  `docs/phase1_calibration_results.md`. NB the graph posterior needs a **predictive-variance
-  floor** (held-out `y=f+ε` has variance `diag(Σ_y)+noise_var`) or NLL/coverage blow up.
+  `docs/phase1_calibration_results.md` (**read the 2026-07-02 correction first**: the LM
+  mean must use *score-only embeddings* — the `h_i` readout sits at the VELOCITY token and
+  otherwise leaks each note's own velocity into `μ_LM` — and the EB fit needs
+  `noise_floor` / `noise_floor_frac=0.05`). NB the graph posterior needs a
+  **predictive-variance floor** (held-out `y=f+ε` has variance `diag(Σ_y)+noise_var`) or
+  NLL/coverage blow up; the EB fit needs the matching **noise_var floor** or a minority of
+  fits collapse. Downstream tasks (completion / anomaly / denoising):
+  `src/score_bundle/downstream.py`, `docs/downstream_tasks_results.md`.
   Aria frozen-feature upper-bound baseline is an import-guarded stub (`lm/aria_baseline.py`).
 - **Phase 2 — intonation/vibrato (stubs + helpers).** `src/score_bundle/phase2/`.
 - **Phase 3 — waveform likelihood (stubs + helpers).** `src/score_bundle/phase3/`.

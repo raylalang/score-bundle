@@ -4,6 +4,70 @@ First end-to-end evidence for the core thesis claim: a **score-graph residual pr
 of a learned LM mean** improves both recovery *and* calibration over hand-built baselines on
 real, held-out, contamination-filtered performances.
 
+> **⚠ Correction (2026-07-02): read the [corrected results](#corrected-results-2026-07-02)
+> first.** The original tables below have two problems that were found and fixed:
+> (1) a **velocity-target leak** into the LM mean, which inflated the `v`-channel LM
+> numbers, and (2) the known **EB noise-variance collapse**, now fixed by a noise floor.
+> The corrected headline still supports the thesis claim — and with tighter significance —
+> but with smaller (honest) margins for the LM mean. Details in the new section.
+
+## Corrected results (2026-07-02)
+
+### Finding A — the LM mean leaked the velocity target
+
+The per-note embedding `h_i` is read off the hidden state at each note's **VELOCITY
+token**; a causal transformer's hidden state at position *t* includes the input token at
+*t* itself, so `h_i` contains the note's own (bin-quantized) performed velocity and the
+ridge head could partially *decode* the `v` target rather than predict it. Masking was
+applied in y-space only, never in the LM's input, so this affected held-out notes too.
+The tell: LM `v` RMSE 0.039 ≈ the 32-bin quantization width (≈0.031).
+
+Fix: **score-only embeddings** — every note is tokenized with a constant placeholder
+velocity (64), so `mu_LM` is a purely score-conditioned prior mean
+(`scripts/extract_asap_arrays.py` caches both variants). On the same 50 eval pieces the
+LM-mean `v` RMSE moves 0.057 → 0.112 (score-only), while `tau` (0.143 vs 0.144) and
+`log r` (0.724 vs 0.723) are unchanged — exactly the leak signature. All corrected
+numbers below use score-only embeddings. (Conditioning on *observed* notes' velocities
+would be legitimate; mask-aware embeddings are future work — score-only is conservative.)
+
+### Finding B — the EB noise floor fixes the collapse
+
+`fit_laplacian_field(..., noise_floor=...)` clamps `noise_var` inside the EB objective
+(evals use `noise_floor_frac=0.05`, i.e. 5% of the observed residual variance). This is
+the fit-side counterpart of the predictive-variance floor of finding #1 below.
+
+### Corrected headline (30 eval pieces × 4 mask seeds, score-only embeddings)
+
+`scripts/eval_asap_robust.py --embeddings emb_scoreonly [--noise-floor-frac 0.05]`,
+logs in `logs/robust_scoreonly{,_floor}.log`:
+
+```
+                             no floor                        noise_floor_frac = 0.05
+mean   graph      RMSE [95% CI]        NLL [95% CI]       RMSE [95% CI]        NLL [95% CI]      cov@.9
+zero   off      0.5664 [0.508,0.598]  -0.007 [-0.12,0.12]   0.5664 [0.508,0.598]  -0.007 [-0.12,0.12]  0.869
+zero   graph    0.4038 [0.364,0.424]  -0.307 [-0.41,-0.20]  0.4041 [0.364,0.424]  -0.308 [-0.41,-0.21]  0.923
+ridge  off      0.4233 [0.377,0.448]  -0.219 [-0.32,-0.12]  0.4233 [0.377,0.448]  -0.219 [-0.32,-0.12]  0.917
+ridge  graph    2.6450 [0.370,2.017]  130.41 [-0.38,388.3]  0.9566 [0.360,0.847]   4.614 [-0.40,14.89]  0.918
+LM     off      0.4505 [0.407,0.474]  -0.105 [-0.20,-0.00]  0.4505 [0.407,0.474]  -0.105 [-0.20,-0.00]  0.894
+LM     graph    0.4065 [0.360,0.433]   0.076 [-0.40, 0.91]  0.3939 [0.356,0.417]  -0.314 [-0.41,-0.22]  0.922
+```
+
+With the floor, **`LM + graph` is the best cell on both axes and the paired bootstrap is
+now significant on both**:
+
+```
+paired per-piece diff (negative = LM+graph better)      RMSE                NLL
+LM+graph vs LM mean-only     -0.0551 [-0.0736,-0.0377]*   -0.2083 [-0.2483,-0.1714]*
+LM+graph vs ridge mean-only  -0.0267 [-0.0443,-0.0113]*   -0.0943 [-0.1378,-0.0544]*
+LM+graph vs zero+graph       -0.0098 [-0.0164,-0.0034]*   -0.0055 [-0.0437,+0.0271]
+```
+
+Honest reading: the graph residual is doing most of the calibration work (zero+graph is
+nearly as good on NLL); the (score-only) LM mean adds a small but significant RMSE gain.
+The large LM-vs-zero dynamics gap in the original table was mostly the leak. The
+`ridge + graph` τ blow-up (finding #2 below) is tamed but not cured by the floor —
+it is a bad-mean artefact, not a fit artefact.
+
 ## Setup
 
 - **Prior mean source `μ`** ∈ {`zero`, `ridge` (hand-built score-feature ridge), `LM`
