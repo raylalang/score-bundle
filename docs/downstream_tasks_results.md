@@ -42,10 +42,14 @@ Phase 1); non-synthetic error detection (no labeled real errors in any available
 **Common setup.** 30 held-out ASAP eval pieces (≤400 notes each), piece-disjoint from
 the 40-piece head split (used only to fit the LM head / calibration scales),
 contamination-filtered against MAESTRO Phase-0 pretraining, provenance recorded in the
-array cache (`scripts/extract_asap_arrays.py`). All LM means use **score-only
-embeddings** (constant placeholder velocity — see the leakage correction in
-`phase1_calibration_results.md`). Targets `y = [tau, log r, v]`. Chance/na "off" rows are
-the same baselines as Phase 1 (zero / ridge / LM mean without the graph).
+array cache (`scripts/extract_asap_arrays.py`). All LM means in the tables below use
+**score-only embeddings** (constant placeholder velocity — see the leakage correction in
+`phase1_calibration_results.md`); since 2026-07-03 the scripts default to the better
+**leak-free read-out** (`emb_leakfree`), so pass `--embeddings emb_scoreonly` to
+reproduce these tables exactly. The choice is conservative for the LM rows and
+irrelevant for the zero/ridge rows that carry most verdicts. Targets
+`y = [tau, log r, v]`. "off" rows are the same baselines as Phase 1 (zero / ridge / LM
+mean without the graph).
 
 ---
 

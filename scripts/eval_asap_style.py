@@ -43,7 +43,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--arrays-cache", default=".cache/asap_arrays_named.pkl")
     ap.add_argument("--l2", type=float, default=10.0)
-    ap.add_argument("--embeddings", default="emb_scoreonly", choices=["emb", "emb_scoreonly"])
+    ap.add_argument("--embeddings", default="emb_leakfree",
+                    choices=["emb", "emb_scoreonly", "emb_leakfree"])
     args = ap.parse_args()
 
     head, ev, meta = load_piece_arrays(args.arrays_cache)

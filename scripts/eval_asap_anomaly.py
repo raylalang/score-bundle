@@ -12,8 +12,10 @@ Methods per channel:
     zero / LM mean,  graph on   — EB-fit GMRF + leave-one-out predictive NLL.
 
 Caveat recorded in the output: with ``--embeddings emb`` the LM saw the *clean* performed
-velocities, so LM rows on the ``v`` channel are oracle-ish; the default score-only
-embeddings avoid that.  Runs from the named array cache (numpy-only):
+velocities at the leaky read-out, so LM rows on the ``v`` channel are oracle-ish; the
+default leak-free embeddings avoid that (published tables used the ``emb_scoreonly``
+band-aid — conservative for LM rows, irrelevant for the zero-mean rows that carry the
+verdict).  Runs from the named array cache (numpy-only):
 
     python scripts/eval_asap_anomaly.py --arrays-cache .cache/asap_arrays_named.pkl
 """
@@ -53,7 +55,8 @@ def main() -> None:
     ap.add_argument("--scale", type=float, default=3.0, help="error size in channel stds")
     ap.add_argument("--seeds", type=int, default=2)
     ap.add_argument("--l2", type=float, default=10.0)
-    ap.add_argument("--embeddings", default="emb_scoreonly", choices=["emb", "emb_scoreonly"])
+    ap.add_argument("--embeddings", default="emb_leakfree",
+                    choices=["emb", "emb_scoreonly", "emb_leakfree"])
     args = ap.parse_args()
 
     head, ev, meta = load_piece_arrays(args.arrays_cache)

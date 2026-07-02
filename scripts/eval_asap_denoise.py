@@ -52,7 +52,8 @@ def main() -> None:
                     default=["identity", "independent", "graph", "graph-oracle"])
     ap.add_argument("--means", nargs="+", default=["zero", "LM"])
     ap.add_argument("--l2", type=float, default=10.0)
-    ap.add_argument("--embeddings", default="emb_scoreonly", choices=["emb", "emb_scoreonly"])
+    ap.add_argument("--embeddings", default="emb_leakfree",
+                    choices=["emb", "emb_scoreonly", "emb_leakfree"])
     ap.add_argument("--seed", type=int, default=0)
     args = ap.parse_args()
 

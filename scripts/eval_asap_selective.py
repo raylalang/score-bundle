@@ -47,7 +47,8 @@ def main() -> None:
     ap.add_argument("--seeds", type=int, default=4)
     ap.add_argument("--observed-frac", type=float, default=0.6)
     ap.add_argument("--l2", type=float, default=10.0)
-    ap.add_argument("--embeddings", default="emb_scoreonly", choices=["emb", "emb_scoreonly"])
+    ap.add_argument("--embeddings", default="emb_leakfree",
+                    choices=["emb", "emb_scoreonly", "emb_leakfree"])
     ap.add_argument("--noise-floor-frac", type=float, default=0.05)
     args = ap.parse_args()
 
