@@ -85,6 +85,50 @@ LM+graph vs zero+graph       -0.0112 [-0.0172,-0.0051]*   -0.0233 [-0.0642,+0.01
 score-conditioned pretraining objective that aligns the LM's training with this read-out and
 adds bidirectional score context — is the next step on the restart branch.)
 
+### Mask-aware check (Stage 1.5): does `emb_leakfree` still cheat via held-out neighbours?
+
+Residual concern: the pre-velocity read-out is blind to the note's *own* velocity, but the
+input stream still contains the **held-out neighbours'** true velocities, and their
+information could reach a held-out note's mean directly (LM context) or indirectly (graph
+coupling between held-out notes). The strict protocol recomputes embeddings **per mask**
+with held-out notes' velocities replaced by the placeholder (64) — only *observed* notes'
+velocities enter the input. `scripts/eval_asap_maskaware.py` runs the exact robust-eval
+protocol (30 pieces × 4 seeds, identical masks, `noise_floor_frac=0.05`) three ways:
+`LM-lf` = leak-free as published; `LM-ma` = mask-aware embeddings under the published head;
+`LM-ma-mh` = mask-aware with a matched head (fit on mask-aware head-split embeddings).
+Full log: `logs/maskaware.log`.
+
+```
+pooled (identical masks)   graph      RMSE      NLL   cov@.9  cal-err
+LM-lf (published)          on       0.3928  -0.3357    0.918    0.066
+LM-ma (strict)             on       0.3930  -0.3223    0.921    0.067
+LM-ma-mh (strict+head)     on       0.3924  -0.3264    0.921    0.066
+
+paired per-piece diff                              RMSE                       NLL
+mask-aware vs leak-free   (graph on)   +0.0003 [-0.0003,+0.0008]   +0.0135 [+0.0075,+0.0195]*
+mask-aware+mh vs leak-free (graph on)  -0.0003 [-0.0010,+0.0004]   +0.0093 [+0.0033,+0.0149]*
+mask-aware vs leak-free   (mean only)  +0.0006 [-0.0006,+0.0018]   +0.0190 [+0.0054,+0.0341]*
+graph on vs off           (mask-aware) -0.0523 [-0.0688,-0.0372]*  -0.1581 [-0.1937,-0.1259]*
+```
+
+**Verdict: the leak-free read-out is confirmed (essentially) clean.** Pooled RMSE is
+statistically indistinguishable (+0.0003, CI spans 0); NLL shows a **tiny but significant**
+gap (+0.013 pooled, ≈8% of the graph's own NLL margin of −0.158), i.e. a trace of
+neighbour-velocity information does survive. Per-channel it is confined to `v`, as the leak
+mechanics predict (mean-only `v` RMSE 0.0899 → 0.0989; graph-on 0.0779 → 0.0810; `tau` /
+`log r` unchanged to 3 decimals). The matched head does not close the NLL gap, so it is
+context information, not head mismatch. **Every qualitative conclusion survives the strict
+protocol** — the graph's paired advantage under mask-aware embeddings is RMSE −0.0523* /
+NLL −0.1581*, indistinguishable from the published leak-free contrasts.
+
+**Honest headline going forward (strict, mask-aware): `LM + graph` pooled RMSE 0.3930,
+NLL −0.322, cov 0.921** — quote these instead of the leak-free numbers when strictness
+matters; they cost ~nothing. Note the deployment nuance: at *rendering* time (completion
+from an excerpt) the mask-aware protocol is also the only feasible one, since unheard notes
+have no velocities to feed; the published leak-free numbers correspond to the *transcription*
+setting where the full performance is available as input and only the readout is masked —
+both are legitimate, they answer different questions.
+
 ### Finding B — the EB noise floor fixes the collapse
 
 `fit_laplacian_field(..., noise_floor=...)` clamps `noise_var` inside the EB objective
