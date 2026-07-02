@@ -129,6 +129,76 @@ have no velocities to feed; the published leak-free numbers correspond to the *t
 setting where the full performance is available as input and only the readout is masked —
 both are legitimate, they answer different questions.
 
+### The score-feature rival: does the LM mean earn its place? (2026-07-03)
+
+The published baselines never included a *strong cheap* rival to `μ_LM`: the per-piece
+ridge baseline is fit per piece on ~60% observed notes, while the LM head is fit
+**cross-piece** on the 40 head pieces. A hand-built score-feature representation fit under
+the *identical* head protocol answers the honest question: is a pretrained LM needed at
+all, or would 25 score-derived features do? `rich_score_features()`
+(`src/score_bundle/baselines.py`) builds per-note features (pitch level/z-score/local
+deviation, contour, intervals, log-duration and local duration context, metrical phase
+sin/cos at periods 1/2/4, IOIs, local note density, chord size/rank, piece position, edge
+proximity, voice count), optionally lifted with 256 random Fourier features;
+`scripts/eval_asap_feature_baseline.py` fits ridge heads on the head split (5-fold grouped
+CV for each representation's l2), then runs the exact robust protocol (30 pieces × 4
+seeds, identical masks, `noise_floor_frac=0.05`). Full log: `logs/feature_baseline.log`.
+
+Head-split CV was a dead heat — LM 0.4344, feat-lin 0.4353, feat-rff 0.4346 — and CV
+picked `l2=100` for the grid heads (this matters below).
+
+```
+pooled (identical masks)   graph      RMSE       NLL   cov@.9
+zero                       on       0.4041   -0.3083    0.923
+feat (rff)                 on       0.7473   11.3660    0.918   <- tau-contaminated, see below
+LM                         on       0.9739    4.5583    0.916   <- tau-contaminated, see below
+feat+LM (concat)           on       0.3872   -0.3478    0.917
+feat (rff)                 off      0.4504   -0.1466    0.901
+LM                         off      0.4473   -0.1953    0.894
+feat+LM                    off      0.4394   -0.2077    0.895
+
+paired per-piece diff                             RMSE                        NLL
+LM vs feat        (mean only)   -0.0037 [-0.0100,+0.0023]    -0.0489 [-0.0782,-0.0185]*
+feat+LM vs feat   (graph on)    -0.1153 [-0.3330,-0.0052]*  -11.9157 [-35.7150,-0.0053]*
+feat+LM vs LM     (graph on)    -0.1588 [-0.4709,-0.0014]*   -5.0226 [-15.0747,+0.0163]
+```
+
+**Verdict — the honest reading.**
+
+1. **On average error the LM mean does *not* beat hand-built score features.** Mean-only
+   pooled RMSE is statistically indistinguishable (−0.0037, CI spans 0). The claim "a
+   pretrained LM is required for a good prior mean" is not supported and must not be made.
+2. **The LM's real, significant edge is calibration and dynamics.** Mean-only NLL is
+   −0.049* in the LM's favour, and per-channel the gap is concentrated in `v` (mean-only
+   RMSE 0.0890 vs 0.1098; graph-on 0.0771 vs 0.0802). `tau`/`log r` are feature-reachable;
+   learned dynamics are where pretraining pays.
+3. **They stack.** `feat+LM` graph-on is the best cell we have measured on this protocol —
+   pooled 0.3872 / −0.348, beating the published `LM+graph` 0.3928 / −0.336 and
+   significantly beating either input alone on RMSE. The two representations carry
+   complementary information. (Candidate headline upgrade, but adopt only after a rerun
+   under the published `l2=10` head and the strict mask-aware protocol.)
+4. **The `feat`-on and `LM`-on pooled/tau rows above are contaminated by an EB failure
+   mode, not a real regression** — see the caveat below. Uncontaminated comparisons:
+   all mean-only rows, the `log r` / `v` per-channel rows, and `feat+LM` (whose fits did
+   not collapse: `tau` graph-on 0.1570).
+
+**New caveat — the EB `tau` fragility is head-l2-sensitive (single-cell catastrophe).**
+The graph-on `tau` cells for `feat` (1.11 / 34.3) and `LM` (1.55 / 13.9) blew up in this
+run while every published `l2=10` run had the same cell stable (~0.158).
+`scripts/diag_tau_head_l2.py` isolates the cause on identical masks: with the published
+`l2=10` head, pooled `tau` graph-on is 0.1585 / −0.814 with 4/120 mildly-elevated cells
+(all the same hard piece, RMSE 0.57–0.63, all seeds); with the CV-selected `l2=100` head
+the *same* 4 cells persist unchanged **plus one single catastrophic EB fit collapse
+(seed 2, piece 28, `tau` RMSE 17.0)** that alone drives the pooled cell to 1.58 / +14.5.
+So the mechanism is the documented bad-mean-on-`tau` EB fragility; the head's ridge
+strength changes *exposure* to the catastrophic regime (a slightly different prior mean on
+one piece tips one fit past what `noise_floor_frac=0.05` can catch, and the graph
+propagates it). Consequences: (a) pooled graph-on numbers are not robust to a single
+collapsed fit — report medians or per-cell screens alongside; (b) a guard is worth
+implementing (clip the fitted prior mean to a multiple of the observed residual scale, or
+fall back to zero-mean when the EB objective lands in the collapsed regime) — open
+follow-up, protocol-changing, so not retrofitted into published numbers.
+
 ### Finding B — the EB noise floor fixes the collapse
 
 `fit_laplacian_field(..., noise_floor=...)` clamps `noise_var` inside the EB objective
