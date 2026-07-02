@@ -34,6 +34,7 @@ class GPTConfig:
     block_size: int = 512
     mlp_ratio: int = 4
     dropout: float = 0.1
+    causal: bool = True  # False = bidirectional encoder (Stage-2 masked objective)
 
 
 def _require_torch() -> None:
@@ -47,7 +48,12 @@ def _require_torch() -> None:
 if _HAS_TORCH:
 
     class CausalSelfAttention(nn.Module):
-        """Multi-head causal self-attention, written by hand."""
+        """Multi-head self-attention, written by hand.
+
+        Causal (autoregressive mask) by default; with ``cfg.causal=False`` it is fully
+        bidirectional — the Stage-2 masked-objective encoder.  ``getattr`` keeps old
+        pickled ``GPTConfig`` checkpoints (which predate the flag) loading as causal.
+        """
 
         def __init__(self, cfg: GPTConfig):
             super().__init__()
@@ -58,6 +64,7 @@ if _HAS_TORCH:
             self.resid_drop = nn.Dropout(cfg.dropout)
             self.n_head = cfg.n_head
             self.d_head = cfg.d_model // cfg.n_head
+            self.causal = bool(getattr(cfg, "causal", True))
 
         def forward(self, x):
             B, T, C = x.shape
@@ -66,8 +73,9 @@ if _HAS_TORCH:
             k = k.view(B, T, self.n_head, self.d_head).transpose(1, 2)
             v = v.view(B, T, self.n_head, self.d_head).transpose(1, 2)
             att = (q @ k.transpose(-2, -1)) / math.sqrt(self.d_head)     # (B, h, T, T)
-            mask = torch.triu(torch.ones(T, T, device=x.device, dtype=torch.bool), 1)
-            att = att.masked_fill(mask, float("-inf"))
+            if self.causal:
+                mask = torch.triu(torch.ones(T, T, device=x.device, dtype=torch.bool), 1)
+                att = att.masked_fill(mask, float("-inf"))
             att = self.attn_drop(F.softmax(att, dim=-1))
             y = att @ v                                                  # (B, h, T, dh)
             y = y.transpose(1, 2).contiguous().view(B, T, C)
@@ -124,7 +132,10 @@ if _HAS_TORCH:
             logits = self.head(hidden)
             if targets is None:
                 return logits
-            loss = F.cross_entropy(logits.reshape(-1, logits.size(-1)), targets.reshape(-1))
+            loss = F.cross_entropy(
+                logits.reshape(-1, logits.size(-1)), targets.reshape(-1),
+                ignore_index=-100,  # masked-objective targets mark unused positions -100
+            )
             return logits, loss
 
         @torch.no_grad()
