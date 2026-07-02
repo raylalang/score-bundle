@@ -75,10 +75,34 @@ python scripts/eval_vienna_performer.py --root ../data/vienna4x22
 
 ## Result
 
-See the results block appended below once the eval has run (kept separate so the scoping
-rationale stands on its own).
+`python scripts/eval_vienna_performer.py --root ../data/vienna4x22 --max-notes 250`
+(log `logs/vienna_performer.log`; notes capped at 250/performance so the per-piece graph
+EB fit stays tractable — the prefix is a fixed score excerpt shared across performers, so
+the comparison is fair):
 
-<!-- RESULTS: appended by the eval run -->
+```
+Performer ID (leave-one-piece-out, chance = 1/22 = 0.045)
+features           accuracy    n
+raw (per-perf)       0.136     88
+graph (per-perf)     0.080     88
+raw (per-seg)        0.179    352
+```
+
+**Two findings, both honest:**
+
+1. **Performer identity is recoverable from inferred expression alone** — raw expression
+   features reach 3–4× chance (0.136 per performance, 0.179 per segment) under
+   leave-one-piece-out, where piece identity cannot be exploited. So the Phase-1 variables
+   `[tau, log r, v]` we extract *do* carry performer-discriminative style, on a corpus with
+   real labels and no score confound. (Absolute accuracy is modest — 22 classes, 4 examples
+   each, a deliberately simple nearest-centroid; a stronger classifier would do better. The
+   point is the signal is well above chance and the extraction is validated.)
+2. **Graph-denoising does not help — it hurts** (0.136 → 0.080). Shrinking the expression
+   toward a smooth graph field removes exactly the fine per-note detail that distinguishes
+   performers. This is the *same direction* as the ASAP composer-era negative
+   (`downstream_tasks_results.md`, Task 5): the graph prior earns its keep on **per-note
+   recovery and calibration**, not as a **feature cleaner for piece-level classification** —
+   a consistent, useful boundary on where structure helps.
 
 ## Definition of done
 
@@ -86,9 +110,10 @@ rationale stands on its own).
       `Chopin_op10_no3_p01`, finite `y`, sensible scales).
 - [x] Numpy variable maths + meta parsing + grouped classifier tested on synthetic fixtures.
 - [x] Eval runs end-to-end on the real corpus, leave-one-piece-out, raw vs graph features,
-      against the chance baseline.
-- [ ] (Optional next) stronger classifier / per-segment model / `rematched` files if the
-      raw-vs-graph signal warrants a deeper look.
+      against the chance baseline (raw 0.14–0.18 vs chance 0.045; graph does not help).
+- [ ] (Optional next) stronger classifier (linear model on per-segment features), the
+      `rematched` files, and per-piece velocity normalization if a deeper performer-ID
+      result is wanted — not needed for the boundary finding above.
 
 ## Note on `../data/` and contamination
 

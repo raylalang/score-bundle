@@ -1,6 +1,6 @@
 # Downstream tasks — does the score-graph prior earn its keep beyond imputation?
 
-Five downstream demonstrations, chosen for having an objective metric, an honest
+Six downstream demonstrations, chosen for having an objective metric, an honest
 baseline, and direct reuse of the Phase-1 machinery:
 
 1. **Performance completion / expressive rendering** — predict unheard notes from a
@@ -16,12 +16,15 @@ baseline, and direct reuse of the Phase-1 machinery:
 5. **Style/era classification from inferred expression** — classify composer era from
    expression aggregates alone; probes whether graph-denoised expression is a cleaner
    downstream *feature*. (Reported as an honest negative.)
+6. **Performer identification (Vienna 4x22)** — classify which of 22 pianists is playing
+   from expression alone, on a corpus where all play the same 4 excerpts (real labels, no
+   score confound). Raw vs graph-denoised features. Details in `vienna_4x22_scoping.md`.
 
-All five need **no data beyond ASAP** — the only aligned score↔performance corpus. Tasks
-that would need more/other data are blocked by *labels*, not corpus size: real
-(non-synthetic) performance errors and performer identity are not annotated in
-ASAP/MAESTRO. Rejected here: performer identification (no labels); masked-note completion
-(that *is* Phase 1).
+Tasks 1–5 need **no data beyond ASAP** — the only aligned score↔performance corpus. A sixth
+task, **performer identification**, cannot be done on ASAP/MAESTRO (no performer labels) and
+is run on the **Vienna 4x22** corpus instead (22 pianists × the same 4 excerpts); see Task 6
+below and `docs/vienna_4x22_scoping.md`. Still rejected: masked-note completion (that *is*
+Phase 1); non-synthetic error detection (no labeled real errors in any available corpus).
 
 ### One-line verdicts (did the graph prior help on BOTH accuracy and calibration?)
 
@@ -34,6 +37,7 @@ ASAP/MAESTRO. Rejected here: performer identification (no labels); masked-note c
 | **Completion — sparse extrapolation** | LM mean essential; graph ≈ neutral or slightly hurts | — | **Partial** — graph needs nearby observed notes |
 | **Selective prediction** | abstaining by graph std cuts log r RMSE@50% 0.83→0.54; flags the LM+graph τ blowup (full 0.61 → confident-half 0.07) | graph gives per-note std → triages within a piece; no-graph only piece-level | **Yes** (qualified) — per-note uncertainty is informative on log r + catches instabilities |
 | **Style/era classification** | 0.37–0.38 vs 0.489 majority; graph ≈ raw | — | **No** (honest negative) — expression-only style features don't beat majority; graph doesn't help feature quality |
+| **Performer ID (Vienna 4x22)** | raw 0.136–0.179 vs chance 0.045 (3–4×); graph 0.080 | — | **Mixed** — expression *does* identify performers above chance (extraction validated); graph-denoising *hurts* the features |
 
 **Common setup.** 30 held-out ASAP eval pieces (≤400 notes each), piece-disjoint from
 the 40-piece head split (used only to fit the LM head / calibration scales),
@@ -278,3 +282,53 @@ consistent with the thesis scope (structure + calibration on the note field), an
 boundary on where the prior does and does not add value. A fairer test would need performer
 labels and a stronger classifier; neither changes the conclusion that graph-denoising is
 not a style-feature enhancer.
+
+---
+
+## Task 6 — performer identification (Vienna 4x22)
+
+The style-classification negative (Task 5) was *necessarily* confounded: on ASAP, expression
+is entangled with the score. The **Vienna 4x22** corpus removes the confound — 22 pianists
+each play the **same four** excerpts, so the notes are constant and the only signal is how
+they play. It is also the one downstream task with **real labels** (performer id, consistent
+across pieces). This is the cleanest possible test of whether our inferred expression carries
+performer style. Classify 1-of-22 (chance 0.045) from the 8 style descriptors, **leave-one-
+piece-out** (train on 3 pieces, test on the 4th → piece identity is useless, only style
+transfers), raw vs graph-denoised features, notes capped at 250/performance. Full rationale,
+loader, and how-to-obtain in `docs/vienna_4x22_scoping.md`; reproduce with
+`scripts/eval_vienna_performer.py` (log `logs/vienna_performer.log`).
+
+```
+Performer ID (leave-one-piece-out, chance = 1/22 = 0.045)
+features           accuracy    n
+raw (per-perf)       0.136     88
+graph (per-perf)     0.080     88
+raw (per-seg)        0.179    352
+```
+
+**Verdict: mixed — a positive for the *expression*, a negative for the *graph as a feature
+cleaner*.**
+
+- **Expression identifies performers above chance.** Raw features reach 3–4× chance (0.136
+  per performance, 0.179 per segment) under leave-one-piece-out — so the Phase-1 variables we
+  extract genuinely carry performer-discriminative style, on real labels with no score
+  confound. That validates the expression extraction on a corpus ASAP could never test.
+- **Graph-denoising hurts (0.136 → 0.080).** Exactly as in Task 5: smoothing the expression
+  toward the graph field removes the fine per-note detail that distinguishes performers. Two
+  independent classification tasks now agree — the graph prior's value is in **per-note
+  recovery and calibration**, not in producing better piece-level classification features.
+- Absolute accuracy is modest (22 classes × 4 examples, a deliberately simple nearest-
+  centroid); a stronger model would raise it, but not the raw-vs-graph conclusion.
+
+## Summary — where the graph prior does and does not help
+
+| The graph prior **helps** (per-note recovery + calibration) | The graph prior **does not help** (piece-level aggregates / classification) |
+|---|---|
+| Random-mask imputation (Phase 1), completion-by-interpolation | Sparse-prefix extrapolation (needs the LM mean, not the graph) |
+| Anomaly detection (AUROC 0.94→0.98), selective prediction | Composer-era classification (Task 5) |
+| Denoising with known noise (both axes, significant) | Performer-ID feature quality (Task 6: graph *hurts*) |
+
+The consistent story: **structure + calibration on the note field is where the prior earns
+its keep** — every task that scores per-note recovery or uncertainty improves; every task
+that collapses expression to a piece-level summary does not. That is the thesis's own scope,
+now bounded by evidence on both sides.
