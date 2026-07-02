@@ -118,17 +118,27 @@ def fit_laplacian_field(
     mask: Optional[np.ndarray] = None,
     mean=0.0,
     x0=(0.0, 0.0, -2.0),
+    noise_floor: float = 0.0,
 ) -> Tuple[GraphGaussianField, dict]:
     """Empirical-Bayes fit of (lam, eta, noise_var) by marginal likelihood.
 
     ``lam`` and ``eta`` are the additive-form precision parameters Q_G = lam I + eta L.
     Returns the fitted :class:`GraphGaussianField` and a dict of hyperparameters.
     Parameters are optimized in log-space to keep them positive.
+
+    ``noise_floor`` (an absolute variance, default 0 = off) clamps ``noise_var`` from
+    below *inside the objective* and in the returned hyperparameters.  On a minority
+    of mask realizations the unconstrained maximizer degenerates (noise_var -> 0,
+    an overconfident posterior whose held-out NLL blows up); the floor is the same
+    principle as the predictive-variance floor in ``imputation_eval._predict_channel``
+    applied to the fit itself.  Callers typically pass a small fraction of the
+    observed residual variance, e.g. ``0.05 * np.var((y - mean)[mask])``.
     """
     L = np.asarray(L, dtype=float)
 
     def neg_lml(logp: np.ndarray) -> float:
         lam, eta, nv = np.exp(logp)
+        nv = max(nv, noise_floor)
         try:
             Q = laplacian_precision(L, lam=lam, eta=eta)
             field = GraphGaussianField(Q, mean=mean)
@@ -138,6 +148,7 @@ def fit_laplacian_field(
 
     best = nelder_mead(neg_lml, np.asarray(x0, dtype=float))
     lam, eta, noise_var = np.exp(best)
+    noise_var = max(noise_var, noise_floor)
     Q = laplacian_precision(L, lam=lam, eta=eta)
     field = GraphGaussianField(Q, mean=mean)
     return field, {"lam": float(lam), "eta": float(eta), "noise_var": float(noise_var)}
