@@ -68,6 +68,42 @@ The large LM-vs-zero dynamics gap in the original table was mostly the leak. The
 `ridge + graph` τ blow-up (finding #2 below) is tamed but not cured by the floor —
 it is a bad-mean artefact, not a fit artefact.
 
+### Corrected per-channel breakdown (score-only + floor; `logs/channelwise_floor.log`)
+
+```
+[tau]                                    [log r]                                  [v]
+mean   graph  RMSE    NLL   cov         mean   graph  RMSE    NLL   cov         mean   graph  RMSE    NLL   cov
+zero   off   0.163 -0.796 0.946         zero   off   0.960  1.495 0.784         zero   off   0.119 -0.719 0.877
+zero   on    0.156 -0.800 0.945         zero   on    0.678  0.975 0.908         zero   on    0.080 -1.099 0.917
+ridge  off   0.157 -0.785 0.948         ridge  off   0.709  1.036 0.911         ridge  off   0.101 -0.906 0.892
+ridge  on    1.874 21.693 0.927         ridge  on    0.652  0.932 0.909         ridge  on    0.081 -1.116 0.909
+LM     off   0.167 -0.709 0.927         LM     off   0.753  1.123 0.890         LM     off   0.118 -0.729 0.864
+LM     on    0.158 -0.819 0.944         LM     on    0.659  0.946 0.911         LM     on    0.083 -1.070 0.911
+```
+
+The channel story survives, with honest magnitudes: the graph fixes articulation
+coverage (0.78 → 0.91) and roughly halves velocity RMSE for *every* mean; on the
+corrected `v` channel the LM mean no longer dominates (LM+graph 0.083 ≈ zero+graph
+0.080 ≈ ridge+graph 0.081 — the old 0.039 was the leak). τ is near the warp noise floor,
+as before.
+
+### Per-channel variance rescaling (upgrade 2)
+
+A conformal-style per-(cell, channel) std scale, fit on the **head** split
+(`metrics.std_rescale_factor`, `scripts/eval_asap_channelwise.py --var-rescale`), applied
+to the eval predictions. For `LM + graph`, pooled:
+
+```
+                 coverage@0.9   cal-err   NLL
+before rescale       0.922       0.067   -0.314
+after  rescale       0.899       0.048   -0.234
+```
+
+Coverage lands on the 0.90 target and the PIT calibration error improves, at a modest
+NLL cost (the τ scales ≈ 0.75 shrink intervals that the KS/coverage metrics reward but
+the log-score does not). Report it as an optional post-hoc step: use it when nominal
+coverage is the contract, skip it when log-score is.
+
 ### The LM-size ablation does not survive the leak fix
 
 Re-running the identical corrected eval with the big model's score-only embeddings
