@@ -35,6 +35,34 @@ from .prior import laplacian_precision
 _LOG2PI = np.log(2.0 * np.pi)
 
 
+# --------------------------------------------------------------------------- data
+def load_piece_arrays(path: str):
+    """Load the named per-piece array cache from ``scripts/extract_asap_arrays.py``.
+
+    Returns ``(head, eval, meta)`` lists of per-piece dicts.  Refuses caches whose
+    provenance does not record the MAESTRO contamination filter — downstream evals
+    must not silently run on possibly-contaminated pieces.
+    """
+    import pickle
+
+    with open(path, "rb") as fh:
+        blob = pickle.load(fh)
+    meta = blob.get("meta", {})
+    if not meta.get("contamination_filtered"):
+        raise ValueError(
+            f"{path} does not record contamination filtering; regenerate it with "
+            "scripts/extract_asap_arrays.py (which always applies the MAESTRO filter)."
+        )
+    return blob["head"], blob["eval"], meta
+
+
+def piece_score(p: dict):
+    """Rebuild the :class:`~score_bundle.score.Score` support from a cached piece dict."""
+    from .score import Score
+
+    return Score.from_arrays(p["pitch"], p["onset"], p["duration"], p["voice"])
+
+
 # --------------------------------------------------------------------------- masks
 def prefix_mask(n: int, observed_frac: float) -> np.ndarray:
     """Observe the first ``observed_frac`` of notes (score order); predict the rest.
@@ -233,7 +261,15 @@ def denoise_channel(
                       (without it the EB fit occasionally collapses noise_var -> 0
                       and the latent intervals shrink to nothing).
     ``graph-oracle``  GMRF posterior with the true noise variance fixed.
+    ``graph-calib``   GMRF posterior, blind, but hyperparameters chosen by held-out
+                      predictive NLL on a calibration split of the notes (directly
+                      optimizes what the eval scores) instead of in-sample marglik.
+                      NB: in practice this can *also* collapse noise_var on smooth
+                      pieces (its NLL explodes on real ASAP data); kept for
+                      completeness, not a recommended default.
     """
+    from .model import fit_laplacian_field_calib
+
     y_noisy = np.asarray(y_noisy, dtype=float)
     mean = np.asarray(mean, dtype=float)
     nv = float(noise_std) ** 2
@@ -244,6 +280,10 @@ def denoise_channel(
     if method == "graph":
         floor = 0.05 * float(np.var(y_noisy - mean))
         field, hp = fit_laplacian_field(L, y_noisy, mask=None, mean=mean, noise_floor=floor)
+        return field.posterior(y_noisy, hp["noise_var"])
+    if method == "graph-calib":
+        field, hp = fit_laplacian_field_calib(L, y_noisy, mask=None, mean=mean,
+                                              rng=np.random.default_rng(0))
         return field.posterior(y_noisy, hp["noise_var"])
     if method == "graph-oracle":
         field = _fit_graph_fixed_noise(L, y_noisy, mean, nv)

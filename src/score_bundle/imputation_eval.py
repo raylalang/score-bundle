@@ -57,12 +57,15 @@ def _predict_channel(
     fit_hyper: bool,
     graph_hyper: str = "marglik",
     rng: Optional[np.random.Generator] = None,
+    noise_floor_frac: float = 0.0,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Held-out (pred, std) for one channel under one mean and one graph setting.
 
     ``graph_hyper`` selects how the graph hyperparameters are chosen when ``fit_hyper``:
     ``"marglik"`` (in-sample marginal likelihood) or ``"calib"`` (held-out calibration-split
-    NLL, :func:`fit_laplacian_field_calib`).
+    NLL, :func:`fit_laplacian_field_calib`).  ``noise_floor_frac > 0`` floors the EB
+    ``noise_var`` at that fraction of the observed residual variance (guards against the
+    degenerate noise_var -> 0 fits that spike held-out NLL).
     """
     held = ~mask
     if use_graph:
@@ -70,7 +73,9 @@ def _predict_channel(
             if graph_hyper == "calib":
                 field, hp = fit_laplacian_field_calib(L, y, mask=mask, mean=mean_full, rng=rng)
             else:
-                field, hp = fit_laplacian_field(L, y, mask=mask, mean=mean_full)
+                floor = noise_floor_frac * float(np.var((y - mean_full)[mask]))
+                field, hp = fit_laplacian_field(L, y, mask=mask, mean=mean_full,
+                                                noise_floor=floor)
             nv = hp["noise_var"]
         else:
             Q = laplacian_precision(L, lam=lam, eta=eta)
@@ -99,6 +104,7 @@ def impute_methods(
     noise_var: Optional[float] = None,
     graph_variants: Optional[List[Tuple[object, bool, str]]] = None,
     rng: Optional[np.random.Generator] = None,
+    noise_floor_frac: float = 0.0,
 ) -> Dict[Tuple[str, object], CellResult]:
     """Run every (mean source, graph variant) cell on one piece.
 
@@ -130,6 +136,7 @@ def impute_methods(
                 pred, std = _predict_channel(
                     score, L, Y[:, c], M[:, c], mask, use_graph, lam, eta, noise_var,
                     fit_hyper, graph_hyper=ghyper, rng=rng,
+                    noise_floor_frac=noise_floor_frac,
                 )
                 yt.append(Y[held, c]); pr.append(pred); sd.append(std)
                 ch.append(np.full(pred.shape[0], c, dtype=int))

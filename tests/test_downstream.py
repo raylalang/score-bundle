@@ -139,6 +139,15 @@ def test_graph_oracle_noise_variant_is_calibrated():
     assert 0.80 <= np.mean(covs) <= 0.99             # known noise -> calibrated intervals
 
 
+def test_denoise_graph_calib_variant_runs():
+    rng = np.random.default_rng(8)
+    ds = make_synthetic(rng, n=40, eta=3.0, noise_var=0.0)
+    noise_std = 0.5 * float(np.std(ds.y_true))
+    y_noisy = ds.y_true + rng.normal(scale=noise_std, size=40)
+    pred, std = denoise_channel(ds.L, y_noisy, np.zeros(40), noise_std, "graph-calib")
+    assert pred.shape == (40,) and np.all(std >= 0)
+
+
 def test_denoise_unknown_method_raises():
     with pytest.raises(ValueError):
         denoise_channel(np.eye(3), np.zeros(3), np.zeros(3), 0.1, "nope")

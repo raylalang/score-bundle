@@ -103,6 +103,13 @@ def main() -> None:
                     help="skip the (expensive) calibration-split graph variant in the bootstrap")
     ap.add_argument("--seed", type=int, default=0, help="base seed for piece selection")
     ap.add_argument("--arrays-cache", default=None, help="pickle cache of per-piece arrays")
+    ap.add_argument("--embeddings", default="emb", choices=["emb", "emb_scoreonly"],
+                    help="which cached embedding feeds mu_LM: 'emb' (LM saw performed "
+                         "velocities — leaks the held-out v target into its own feature) "
+                         "or 'emb_scoreonly' (constant placeholder velocity; honest)")
+    ap.add_argument("--noise-floor-frac", type=float, default=0.0,
+                    help="floor the EB noise_var at this fraction of the observed residual "
+                         "variance (0 = off; guards the degenerate overconfident fits)")
     ap.add_argument("--out-dir", default="figures")
     ap.add_argument("--device", default=None)
     args = ap.parse_args()
@@ -164,9 +171,14 @@ def main() -> None:
             print(f"cached arrays -> {cache}", flush=True)
 
     # --- fit the mu_LM head on head pieces ----------------------------------
-    H = np.concatenate([p["emb"] for p in head_arr]); Yh = np.concatenate([p["y"] for p in head_arr])
+    ekey = args.embeddings
+    if ekey not in head_arr[0]:
+        print(f"cache has no {ekey!r} arrays; regenerate with scripts/extract_asap_arrays.py")
+        sys.exit(1)
+    H = np.concatenate([p[ekey] for p in head_arr]); Yh = np.concatenate([p["y"] for p in head_arr])
     W = lmfeat.fit_prior_mean_head(H, Yh, l2=args.l2)
-    print(f"fit mu_LM head on {len(head_arr)} pieces, {len(H)} notes", flush=True)
+    print(f"fit mu_LM head on {len(head_arr)} pieces, {len(H)} notes "
+          f"(embeddings={ekey}, noise_floor_frac={args.noise_floor_frac})", flush=True)
 
     # --- cells: means x graph variants --------------------------------------
     variants = [(False, False, "marglik"), ("graph", True, "marglik")]
@@ -186,10 +198,11 @@ def main() -> None:
         for pi, p in enumerate(eval_arr):
             score = piece_score(p); y = p["y"]
             mask = ie.random_mask(len(y), seed_rng, observed_frac=args.observed_frac)
-            mu_lm = lmfeat.apply_prior_mean(p["emb"], W)
+            mu_lm = lmfeat.apply_prior_mean(p[ekey], W)
             means = {"zero": np.zeros_like(y), "ridge": ie.ridge_mean(score, y, mask), "LM": mu_lm}
             cells = ie.impute_methods(score, y, means, mask, fit_hyper=True,
-                                      graph_variants=variants, rng=seed_rng)
+                                      graph_variants=variants, rng=seed_rng,
+                                      noise_floor_frac=args.noise_floor_frac)
             for key, cell in cells.items():
                 pool[key][0].append(cell.y); pool[key][1].append(cell.pred); pool[key][2].append(cell.std)
                 pp = per_piece[key].setdefault(pi, [[], [], []])
