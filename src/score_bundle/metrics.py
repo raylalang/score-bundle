@@ -57,6 +57,24 @@ def calibration_error(y_true: np.ndarray, mean: np.ndarray, std: np.ndarray) -> 
     return float(np.max(np.abs(cdf - u)))
 
 
+def std_rescale_factor(
+    y_true: np.ndarray, mean: np.ndarray, std: np.ndarray, level: float = 0.9
+) -> float:
+    """Multiplicative std factor s so that coverage@``level`` is exact on this data.
+
+    Conformal-style variance scaling: with normalized residuals z = (y - mean)/std,
+    ``s = quantile(|z|, level) / z_level`` makes the central ``level`` interval of
+    N(mean, (s*std)^2) cover exactly a ``level`` fraction of the given examples.
+    Fit s on *calibration* data (never the eval notes), then multiply eval stds by it.
+    """
+    from statistics import NormalDist
+
+    std = np.clip(np.asarray(std, dtype=float), 1e-12, None)
+    z = np.abs((np.asarray(y_true) - np.asarray(mean)) / std)
+    z_level = NormalDist().inv_cdf(0.5 + level / 2.0)
+    return float(np.quantile(z, level) / z_level)
+
+
 def evaluate(y_true, mean, std, level: float = 0.9) -> Dict[str, float]:
     """Bundle the common metrics into one dict."""
     return {

@@ -153,6 +153,21 @@ def test_denoise_unknown_method_raises():
         denoise_channel(np.eye(3), np.zeros(3), np.zeros(3), 0.1, "nope")
 
 
+def test_std_rescale_factor_restores_coverage():
+    from score_bundle.metrics import std_rescale_factor
+
+    rng = np.random.default_rng(9)
+    y = rng.normal(size=5000)
+    mean = np.zeros(5000)
+    overconfident = np.full(5000, 0.5)  # true std is 1.0
+    s = std_rescale_factor(y, mean, overconfident, level=0.9)
+    assert s == pytest.approx(2.0, rel=0.05)
+    assert coverage(y, mean, s * overconfident, level=0.9) == pytest.approx(0.9, abs=0.01)
+    # already-calibrated stds are left (nearly) alone
+    s1 = std_rescale_factor(y, mean, np.ones(5000), level=0.9)
+    assert s1 == pytest.approx(1.0, rel=0.05)
+
+
 def test_fit_laplacian_field_respects_noise_floor():
     from score_bundle.model import fit_laplacian_field
 
