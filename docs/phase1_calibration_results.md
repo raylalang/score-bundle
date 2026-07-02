@@ -11,6 +11,16 @@ real, held-out, contamination-filtered performances.
 > The corrected headline still supports the thesis claim — and with tighter significance —
 > but with smaller (honest) margins for the LM mean. Details in the new section.
 
+> **✔ Update (2026-07-03, branch `phase0-leakfree-restart`): the leak has a principled
+> fix that is honest *and* recovers accuracy.** The score-only band-aid below removes the
+> leak by corrupting the velocity input; the real fix is a **leak-free read-out** — read the
+> per-note embedding at the pre-velocity (DURATION) token, which is causally blind to the
+> note's own velocity, with no retraining. See
+> [Leak-free read-out](#leak-free-read-out-2026-07-03). The `v`-channel LM RMSE goes
+> 0.118 (band-aid) → **0.090** (leak-free), still far above the 0.057 leaky floor (i.e.
+> genuinely honest), because the band-aid also destroyed *neighbour* velocity context that
+> the leak-free read-out keeps.
+
 ## Corrected results (2026-07-02)
 
 ### Finding A — the LM mean leaked the velocity target
@@ -29,6 +39,51 @@ LM-mean `v` RMSE moves 0.057 → 0.112 (score-only), while `tau` (0.143 vs 0.144
 `log r` (0.724 vs 0.723) are unchanged — exactly the leak signature. All corrected
 numbers below use score-only embeddings. (Conditioning on *observed* notes' velocities
 would be legitimate; mask-aware embeddings are future work — score-only is conservative.)
+
+## Leak-free read-out (2026-07-03)
+
+The score-only band-aid removes the leak by *corrupting the input* (constant velocity 64),
+which also destroys the **neighbour** velocity context the model legitimately uses. The
+principled fix keeps the real performed velocities in the input but **reads the per-note
+embedding one token earlier**, at the pre-velocity (DURATION) token: in the fixed 4-token
+group `[TIME_SHIFT, PITCH, DURATION, VELOCITY]`, that state is *causally blind* to the
+note's own velocity, yet under next-token pretraining it is exactly the state trained to
+predict it — so the fix needs **no retraining**. `lm/features.py:note_score_positions`,
+selected via `note_embeddings(..., readout="pre_velocity")`; cached as `emb_leakfree`
+(`scripts/extract_asap_arrays.py`, schema v2); proven invariant to the note's own velocity
+by `tests/test_lm_leakage.py`.
+
+**Per-note read-out A/B (40 head + 30 eval pieces, small LM, `v` channel):**
+
+```
+                     v RMSE (LM mean)        v RMSE (LM + graph)   v cov@.9   v NLL (LM+graph)
+emb (leaky)             0.057  ← dishonest       —                    —          —
+emb_scoreonly (band-aid) 0.118                   0.083               0.911      -1.070
+emb_leakfree (fix)       0.090                   0.079               0.899      -1.127
+```
+
+The leak-free read-out is **honest** (0.090 sits far above the 0.057 leaky floor — it is
+predicting, not decoding; the structural test guarantees no leak) **and recovers ~20% of
+the accuracy the band-aid threw away** (0.118 → 0.090 for the mean; 0.083 → 0.079 with the
+graph), with better `v` calibration (NLL −1.07 → −1.13). `tau`/`log r` are unchanged (they
+never leaked).
+
+**Pooled headline, leak-free (30 × 4, `--embeddings emb_leakfree --noise-floor-frac 0.05`,
+`logs/robust_leakfree.log`):** `LM + graph` RMSE **0.3929** [0.354, 0.416], NLL **−0.332**
+[−0.42, −0.24], cov 0.917 — the best cell, essentially matching the score-only pooled numbers
+(the `v` gain is diluted by `tau`/`log r` in the pooled RMSE) but now honest by construction
+and better on the channel that leaked. The graph advantage stays significant on both axes:
+
+```
+paired per-piece diff (negative = LM+graph better)      RMSE                  NLL
+LM+graph vs LM mean-only     -0.0520 [-0.0684,-0.0362]*   -0.1490 [-0.1838,-0.1166]*
+LM+graph vs ridge mean-only  -0.0281 [-0.0454,-0.0134]*   -0.1122 [-0.1575,-0.0665]*
+LM+graph vs zero+graph       -0.0112 [-0.0172,-0.0051]*   -0.0233 [-0.0642,+0.0185]
+```
+
+`emb_leakfree` is now the default `--embeddings` in the eval scripts. (Stage 2 — a masked
+score-conditioned pretraining objective that aligns the LM's training with this read-out and
+adds bidirectional score context — is the next step on the restart branch.)
 
 ### Finding B — the EB noise floor fixes the collapse
 
