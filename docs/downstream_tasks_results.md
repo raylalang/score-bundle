@@ -117,8 +117,8 @@ prefix LM   off    0.424  0.37 0.843     0.427  0.42 0.877      0.429  0.53 0.89
 prefix LM   on     0.428  0.34 0.849     1.035  2.26 0.863      0.410  0.59 0.896
 block  LM   off    0.424  0.73 0.850     0.424  0.40 0.873      0.426  0.49 0.889
 block  LM   on     0.440  0.80 0.840     0.403  0.42 0.873      0.402  0.61 0.886
-random LM   off    (see phase1 doc)      0.447  0.05 0.893      0.450  0.21 0.894
-random LM   on     0.410 -0.05 0.909     0.404 -0.12 0.920      0.393  0.01 0.925
+random LM   off    0.446  0.08 0.887     0.447  0.05 0.893      0.450  0.21 0.894
+random LM   on     0.410 -0.04 0.911     0.404 -0.10 0.922      0.393  0.10 0.925
 ```
 
 **Verdict: mixed, and instructive.** The task cleanly separates the two ingredients:
