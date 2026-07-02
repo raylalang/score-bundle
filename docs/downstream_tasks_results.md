@@ -62,7 +62,32 @@ pooled   LM    on       0.977 [0.969,0.982]
 larger still (v: 0.73 → 0.88). Honest note: `zero + graph` matches `LM + graph` here —
 for error detection the structured residual, not the learned mean, does the work.
 
-<!-- scale=2σ table to be appended when the run completes -->
+### scale = 2σ errors — harder, larger graph gain (`logs/anomaly_s2.log`)
+
+```
+channel  mean  graph            AUROC [95% CI]       AP
+tau      zero  off      0.953 [0.944,0.961]      0.430
+tau      zero  on       0.957 [0.949,0.964]      0.463
+tau      LM    off      0.898 [0.871,0.919]      0.354
+tau      LM    on       0.928 [0.908,0.944]      0.408
+log r    zero  off      0.790 [0.763,0.816]      0.299
+log r    zero  on       0.910 [0.898,0.923]      0.462
+log r    LM    off      0.855 [0.832,0.877]      0.409
+log r    LM    on       0.911 [0.897,0.923]      0.473
+v        zero  off      0.819 [0.800,0.837]      0.396
+v        zero  on       0.954 [0.947,0.960]      0.636
+v        LM    off      0.835 [0.811,0.856]      0.419
+v        LM    on       0.951 [0.943,0.958]      0.622
+
+pooled   zero  off      0.854 [0.838,0.869]
+pooled   zero  on       0.940 [0.934,0.947]
+pooled   LM    off      0.863 [0.849,0.876]
+pooled   LM    on       0.930 [0.921,0.937]
+```
+
+The subtler the injected errors, the more the graph matters (pooled gain +0.04 at 3σ,
++0.09 at 2σ) — neighbours are what let the model notice a note that is only somewhat
+off relative to its local context.
 
 ---
 
