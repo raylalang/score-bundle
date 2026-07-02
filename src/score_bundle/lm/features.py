@@ -23,15 +23,61 @@ from .tokenizer import MidiTokenizer
 
 
 def note_velocity_positions(tokenizer: MidiTokenizer, tokens: List[int]) -> List[int]:
-    """Indices of each note's VELOCITY token (the per-note read-out position)."""
+    """Indices of each note's VELOCITY token (the *post*-velocity read-out position).
+
+    This is the historical read-out. In a causal model the hidden state here has already
+    attended to the note's own performed velocity, so an embedding read here **leaks** the
+    velocity target into a "score-conditioned" prior mean (see the 2026-07-02 correction in
+    ``docs/phase1_calibration_results.md``). Correct for *reconstruction* / z-init (it does
+    encode the note's realized features); wrong for the *predictive* prior mean ``mu_LM``.
+    Use :func:`note_score_positions` for the leak-free predictive read-out.
+    """
     return [i for i, tok in enumerate(tokens) if tokenizer.token_type(tok)[0] == "velocity"]
 
 
-def note_embeddings(model, tokenizer: MidiTokenizer, tokens: List[int]) -> np.ndarray:
+def note_score_positions(tokenizer: MidiTokenizer, tokens: List[int]) -> List[int]:
+    """Indices of each note's DURATION token — the leak-free, pre-velocity read-out.
+
+    In the fixed 4-token group ``[TIME_SHIFT, PITCH, DURATION, VELOCITY]`` the DURATION token
+    sits immediately before VELOCITY, so its causal hidden state is **structurally blind** to
+    the note's own performed velocity, yet under next-token pretraining it is exactly the
+    state trained to *predict* that velocity from score + left context. Reading here removes
+    the velocity leak with no retraining. (TIME_SHIFT/DURATION carry *score* onset/duration in
+    the Phase-1 bridge, not the tau/log r targets, so only velocity ever leaked.)
+
+    Robust to the ``add_bos_eos=False`` stride used by :func:`note_embeddings_long`: each
+    velocity position minus one is that note's duration token.
+    """
+    return [i - 1 for i in note_velocity_positions(tokenizer, tokens)]
+
+
+_READOUTS = {
+    "velocity": note_velocity_positions,   # post-velocity (leaks v; reconstruction/z-init)
+    "pre_velocity": note_score_positions,  # leak-free predictive read-out
+    "score": note_score_positions,         # alias
+    "duration": note_score_positions,      # alias
+}
+
+
+def _readout_positions(readout: str, tokenizer: MidiTokenizer, tokens: List[int]) -> List[int]:
+    try:
+        fn = _READOUTS[readout]
+    except KeyError:
+        raise ValueError(
+            f"unknown readout {readout!r}; expected one of {sorted(_READOUTS)}"
+        )
+    return fn(tokenizer, tokens)
+
+
+def note_embeddings(
+    model, tokenizer: MidiTokenizer, tokens: List[int], readout: str = "velocity"
+) -> np.ndarray:
     """Run the (PyTorch) model and return per-note embeddings, shape (n_notes, d_model).
 
     ``model`` is a ``score_bundle.lm.model_torch.MusicGPT``.  ``tokens`` must fit in the
-    model's ``block_size``; for long pieces use :func:`note_embeddings_long`.
+    model's ``block_size``; for long pieces use :func:`note_embeddings_long`.  ``readout``
+    selects the per-note position: ``"velocity"`` (default, historical; leaks velocity) or
+    ``"pre_velocity"``/``"score"``/``"duration"`` (leak-free predictive read-out).
     """
     import torch  # local import keeps this module importable without torch
 
@@ -39,18 +85,22 @@ def note_embeddings(model, tokenizer: MidiTokenizer, tokens: List[int]) -> np.nd
     device = next(model.parameters()).device
     idx = torch.as_tensor(tokens, dtype=torch.long, device=device)[None]  # (1, T)
     hidden = model.embed(idx)[0]                                          # (T, d)
-    pos = note_velocity_positions(tokenizer, tokens)
+    pos = _readout_positions(readout, tokenizer, tokens)
     return hidden[pos].detach().cpu().numpy()
 
 
-def note_embeddings_long(model, tokenizer: MidiTokenizer, notes) -> np.ndarray:
+def note_embeddings_long(
+    model, tokenizer: MidiTokenizer, notes, readout: str = "velocity"
+) -> np.ndarray:
     """Per-note embeddings for a whole piece, windowed to the model's ``block_size``.
 
     Encodes ``notes`` (a sequence of :class:`~score_bundle.lm.tokenizer.NoteEvent`) without
     BOS/EOS so the stride is exactly 4 tokens/note, then runs the model on consecutive
     block-sized windows (split at note boundaries) and concatenates the per-note read-outs.
     Returns shape ``(len(notes), d_model)``.  Windows start fresh, so notes near a window's
-    start see less left context — acceptable for a per-note feature.
+    start see less left context — acceptable for a per-note feature.  ``readout`` selects the
+    per-note position (see :func:`note_embeddings`); default ``"velocity"`` preserves the
+    historical behaviour, ``"pre_velocity"`` is the leak-free read-out.
     """
     import torch
 
@@ -65,7 +115,7 @@ def note_embeddings_long(model, tokenizer: MidiTokenizer, notes) -> np.ndarray:
             chunk = toks[s : s + win]
             idx = torch.as_tensor(chunk, dtype=torch.long, device=device)[None]
             hidden = model.embed(idx)[0]
-            pos = note_velocity_positions(tokenizer, chunk)
+            pos = _readout_positions(readout, tokenizer, chunk)
             embs.append(hidden[pos].detach().cpu().numpy())
     return np.concatenate(embs, axis=0) if embs else np.zeros((0, model.cfg.d_model))
 

@@ -87,12 +87,19 @@ def main() -> None:
                 notes = [NoteEvent(int(n.pitch), float(n.onset), float(n.duration),
                                    int(np.clip(vel[i], 1, 127)))
                          for i, n in enumerate(score_m.notes)]
+                # (leaky) historical variant: real performed velocity, readout at the
+                # VELOCITY token -> leaks v_i into mu_LM. Kept for the A/B baseline.
                 emb = lmfeat.note_embeddings_long(model, tok, notes)
-                # score-only variant: constant placeholder velocity, so the embedding
-                # cannot contain the note's own performed velocity (the h_i readout sits
-                # at the VELOCITY token, which otherwise leaks v_i into mu_LM)
+                # score-only band-aid: constant placeholder velocity kills the leak by
+                # corrupting the input (loses some real velocity signal).
                 notes_so = [NoteEvent(n.pitch, n.onset, n.duration, 64) for n in notes]
                 emb_scoreonly = lmfeat.note_embeddings_long(model, tok, notes_so)
+                # leak-free readout: REAL performed velocity in the input, but the embedding
+                # is read at the pre-velocity (DURATION) token, which is causally blind to
+                # this note's own velocity. No band-aid, no retraining.
+                emb_leakfree = lmfeat.note_embeddings_long(
+                    model, tok, notes, readout="pre_velocity"
+                )
                 if len(emb) != len(y) or len(y) < 8:
                     continue
                 out.append({
@@ -104,6 +111,7 @@ def main() -> None:
                     "voice": np.array([getattr(n, "voice", 0) for n in score_m.notes]),
                     "y": np.asarray(y), "emb": np.asarray(emb),
                     "emb_scoreonly": np.asarray(emb_scoreonly),
+                    "emb_leakfree": np.asarray(emb_leakfree),
                 })
                 print(f"  [{tag}] {rec.performance}: {len(y)} notes", flush=True)
             except Exception as exc:
@@ -116,6 +124,8 @@ def main() -> None:
     blob = {
         "head": head_arr, "eval": eval_arr,
         "meta": {
+            "schema_version": 2,  # v2 adds emb_leakfree (pre-velocity readout)
+            "embeddings": ["emb", "emb_scoreonly", "emb_leakfree"],
             "seed": args.seed, "max_notes": args.max_notes,
             "checkpoint": args.checkpoint,
             "contamination_filtered": True,

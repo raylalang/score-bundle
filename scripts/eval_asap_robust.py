@@ -103,10 +103,13 @@ def main() -> None:
                     help="skip the (expensive) calibration-split graph variant in the bootstrap")
     ap.add_argument("--seed", type=int, default=0, help="base seed for piece selection")
     ap.add_argument("--arrays-cache", default=None, help="pickle cache of per-piece arrays")
-    ap.add_argument("--embeddings", default="emb", choices=["emb", "emb_scoreonly"],
-                    help="which cached embedding feeds mu_LM: 'emb' (LM saw performed "
-                         "velocities — leaks the held-out v target into its own feature) "
-                         "or 'emb_scoreonly' (constant placeholder velocity; honest)")
+    ap.add_argument("--embeddings", default="emb_leakfree",
+                    choices=["emb", "emb_scoreonly", "emb_leakfree"],
+                    help="which cached embedding feeds mu_LM: 'emb' (leaky — readout at the "
+                         "VELOCITY token sees the held-out v target); 'emb_scoreonly' "
+                         "(band-aid — constant placeholder velocity, loses signal); "
+                         "'emb_leakfree' (default — real velocity input, pre-velocity readout "
+                         "that is causally blind to it)")
     ap.add_argument("--noise-floor-frac", type=float, default=0.0,
                     help="floor the EB noise_var at this fraction of the observed residual "
                          "variance (0 = off; guards the degenerate overconfident fits)")
