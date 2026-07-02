@@ -1,7 +1,7 @@
 """Downstream tasks built on the Phase-1 graph posterior (numpy-only).
 
-Three demonstrations that the score-graph prior earns its keep beyond the Phase-1
-random-mask imputation benchmark:
+Demonstrations that the score-graph prior earns its keep beyond the Phase-1 random-mask
+imputation benchmark:
 
 1. **Performance completion / expressive rendering.** Predict the expression of
    unheard notes from a small observed excerpt — a contiguous prefix (the performer
@@ -20,13 +20,26 @@ random-mask imputation benchmark:
    calibration object (no observation-noise floor: the target is the latent y, not
    a held-out observation).
 
+4. **Selective prediction (risk--coverage).** Use the per-note predictive std to
+   triage: abstain on the least-confident notes and report error over the rest. A
+   model whose uncertainty is *informative* (not just marginally calibrated) triages
+   better than random abstention; the excess-over-random area isolates ranking
+   quality from raw accuracy. See :func:`risk_coverage`.
+
+5. **Style / era classification from inferred expression.** Aggregate per-note
+   expression into performer-style descriptors (:func:`style_features`) and classify
+   the composer era from expression *alone* (no score/pitch features); tests whether
+   graph-denoised expression carries cleaner style signal than raw observed values.
+
 Everything here is numpy-only (Phase-1 core rules); the LM mean arrives as an array.
 """
 from __future__ import annotations
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
+
+_trapz = getattr(np, "trapezoid", None) or np.trapz
 
 from .model import GraphGaussianField, fit_laplacian_field
 from .optimize import nelder_mead
@@ -289,3 +302,130 @@ def denoise_channel(
         field = _fit_graph_fixed_noise(L, y_noisy, mean, nv)
         return field.posterior(y_noisy, nv)
     raise ValueError(f"unknown denoise method {method!r}")
+
+
+# --------------------------------------------------------------------------- selective
+def risk_coverage(
+    y: np.ndarray, pred: np.ndarray, std: np.ndarray, n_points: int = 20
+) -> Tuple[np.ndarray, np.ndarray, float]:
+    """Risk--coverage curve from uncertainty-ordered abstention.
+
+    Sort predictions by *ascending* predictive std (most confident first); for each
+    coverage c in (0, 1], report the RMSE over the most-confident ``c`` fraction. A
+    monotone-increasing curve means the std ranks errors correctly.  Returns
+    ``(coverages, risks, aurc)`` where ``aurc`` is the area under the curve (lower is
+    better: confident predictions really are more accurate).
+    """
+    y = np.asarray(y, dtype=float); pred = np.asarray(pred, dtype=float)
+    std = np.asarray(std, dtype=float)
+    order = np.argsort(std, kind="mergesort")
+    sq = ((y - pred) ** 2)[order]
+    n = y.size
+    covs = np.linspace(1.0 / n_points, 1.0, n_points)
+    risks = np.array([np.sqrt(np.mean(sq[: max(1, int(round(c * n)))])) for c in covs])
+    return covs, risks, float(_trapz(risks, covs))
+
+
+def selective_report(
+    y: np.ndarray, pred: np.ndarray, std: np.ndarray, n_points: int = 20
+) -> Dict[str, float]:
+    """Selective-prediction summary: AURC vs a random-abstention reference.
+
+    ``aurc`` uses the model's own std to order abstention; ``aurc_random`` averages the
+    risk--coverage area over random orderings (analytically, every prefix has the full-set
+    RMSE, so its curve is flat at the full RMSE).  ``excess`` = aurc_random - aurc > 0 iff
+    the model's uncertainty *ranking* carries information beyond its point accuracy — the
+    part that isolates calibration/ordering quality from raw RMSE.  ``rmse_at_50`` is the
+    error over the most-confident half.
+    """
+    covs, risks, aurc = risk_coverage(y, pred, std, n_points=n_points)
+    full_rmse = float(np.sqrt(np.mean((np.asarray(y) - np.asarray(pred)) ** 2)))
+    aurc_random = full_rmse * float(_trapz(np.ones_like(covs), covs))
+    k50 = max(1, int(round(0.5 * y.size)))
+    order = np.argsort(np.asarray(std), kind="mergesort")
+    sq = ((np.asarray(y) - np.asarray(pred)) ** 2)[order]
+    return {
+        "rmse": full_rmse,
+        "aurc": aurc,
+        "aurc_random": aurc_random,
+        "excess": aurc_random - aurc,
+        "rmse_at_50": float(np.sqrt(np.mean(sq[:k50]))),
+    }
+
+
+# --------------------------------------------------------------------------- style
+# ASAP composers -> coarse musical era (style label independent of the specific notes).
+COMPOSER_ERA: Dict[str, str] = {
+    "Bach": "Baroque", "Scarlatti": "Baroque", "Handel": "Baroque",
+    "Haydn": "Classical", "Mozart": "Classical", "Beethoven": "Classical",
+    "Schubert": "Romantic", "Chopin": "Romantic", "Schumann": "Romantic",
+    "Liszt": "Romantic", "Brahms": "Romantic", "Mendelssohn": "Romantic",
+    "Balakirev": "Romantic", "Glinka": "Romantic",
+    "Debussy": "Modern", "Ravel": "Modern", "Scriabin": "Modern",
+    "Rachmaninoff": "Modern", "Prokofiev": "Modern",
+}
+
+
+def era_of(composer: str) -> Optional[str]:
+    """Map an ASAP composer string to a coarse era label (None if unknown)."""
+    return COMPOSER_ERA.get((composer or "").strip().split()[0] if composer else "", None)
+
+
+def style_features(y: np.ndarray, order: Optional[np.ndarray] = None) -> np.ndarray:
+    """Performance-style descriptors from expression alone (no score/pitch features).
+
+    ``y`` is (N, 3) = [tau, log r, v].  Returns an 8-vector of aggregates that describe
+    *how* a piece is played, independent of *what* is played: rubato magnitude and
+    smoothness (tau), articulation level and spread (log r), dynamic range and
+    jaggedness (v).  ``order`` (score-time order of the notes) is used for the lag-1
+    autocorrelation / successive-difference features; defaults to as-given order.
+    """
+    y = np.asarray(y, dtype=float)
+    tau, logr, v = y[:, 0], y[:, 1], y[:, 2]
+    if order is not None:
+        idx = np.asarray(order)
+        tau, logr, v = tau[idx], logr[idx], v[idx]
+
+    def lag1(x):
+        if x.size < 3 or np.std(x) < 1e-9:
+            return 0.0
+        return float(np.corrcoef(x[:-1], x[1:])[0, 1])
+
+    def jag(x):
+        return float(np.mean(np.abs(np.diff(x)))) if x.size > 1 else 0.0
+
+    return np.array([
+        float(np.std(tau)), lag1(tau), jag(tau),
+        float(np.mean(logr)), float(np.std(logr)),
+        float(np.std(v)), jag(v), lag1(v),
+    ])
+
+
+def loo_nearest_centroid(X: np.ndarray, labels: Sequence[str]) -> Tuple[float, Dict[str, float]]:
+    """Leave-one-out nearest-centroid accuracy (standardized, shared-diagonal metric).
+
+    Dependency-light stand-in for a classifier: for each held-out row, standardize by the
+    training features' std, assign to the nearest class mean.  Returns
+    ``(accuracy, per_class_recall)``.  Deterministic — no RNG.
+    """
+    X = np.asarray(X, dtype=float)
+    labels = np.asarray(list(labels))
+    n = X.shape[0]
+    classes = sorted(set(labels))
+    correct = 0
+    per_class = {c: [0, 0] for c in classes}  # [hits, support]
+    for i in range(n):
+        tr = np.ones(n, dtype=bool); tr[i] = False
+        Xtr, ytr = X[tr], labels[tr]
+        sd = Xtr.std(axis=0) + 1e-9
+        Xtr_s = Xtr / sd
+        xi = X[i] / sd
+        cents = {c: Xtr_s[ytr == c].mean(axis=0) for c in classes if np.any(ytr == c)}
+        pred = min(cents, key=lambda c: float(np.sum((xi - cents[c]) ** 2)))
+        per_class[labels[i]][1] += 1
+        if pred == labels[i]:
+            correct += 1
+            per_class[labels[i]][0] += 1
+    acc = correct / n
+    recall = {c: (h / s if s else float("nan")) for c, (h, s) in per_class.items()}
+    return acc, recall

@@ -1,8 +1,7 @@
 # Downstream tasks — does the score-graph prior earn its keep beyond imputation?
 
-Three downstream demonstrations chosen (from the candidate list: rendering, anomaly
-detection, performer classification, denoising, masked completion) for having an
-objective metric, an honest baseline, and direct reuse of the Phase-1 machinery:
+Five downstream demonstrations, chosen for having an objective metric, an honest
+baseline, and direct reuse of the Phase-1 machinery:
 
 1. **Performance completion / expressive rendering** — predict unheard notes from a
    small observed excerpt (prefix = pure extrapolation, the rendering use-case; block =
@@ -11,10 +10,18 @@ objective metric, an honest baseline, and direct reuse of the Phase-1 machinery:
    leave-one-out predictive surprise; the task that directly *cashes in* calibration.
 3. **Transcription denoising** — observe every note through synthetic noise (the
    ATEPP/Aria-MIDI scaling scenario) and recover clean values by posterior shrinkage.
+4. **Selective prediction (risk--coverage)** — use the per-note predictive std to
+   abstain on low-confidence notes; measures whether the uncertainty is *informative*,
+   not just marginally calibrated.
+5. **Style/era classification from inferred expression** — classify composer era from
+   expression aggregates alone; probes whether graph-denoised expression is a cleaner
+   downstream *feature*. (Reported as an honest negative.)
 
-Rejected: performer/style classification (ASAP performer labels are sparse and
-confounded with piece identity — no honest eval); masked-note completion (that *is*
-Phase 1).
+All five need **no data beyond ASAP** — the only aligned score↔performance corpus. Tasks
+that would need more/other data are blocked by *labels*, not corpus size: real
+(non-synthetic) performance errors and performer identity are not annotated in
+ASAP/MAESTRO. Rejected here: performer identification (no labels); masked-note completion
+(that *is* Phase 1).
 
 ### One-line verdicts (did the graph prior help on BOTH accuracy and calibration?)
 
@@ -25,6 +32,8 @@ Phase 1).
 | **Denoising (blind noise)** | — | intervals collapse (coverage 0.54–0.64) | **No** (honest negative) — per-piece noise estimation unreliable |
 | **Completion — interpolation** | RMSE 0.450→0.393 (obs 0.5) | NLL 0.21→0.01, coverage 0.894→0.925 | **Yes** — the Phase-1 result |
 | **Completion — sparse extrapolation** | LM mean essential; graph ≈ neutral or slightly hurts | — | **Partial** — graph needs nearby observed notes |
+| **Selective prediction** | abstaining by graph std cuts log r RMSE@50% 0.83→0.54; flags the LM+graph τ blowup (full 0.61 → confident-half 0.07) | graph gives per-note std → triages within a piece; no-graph only piece-level | **Yes** (qualified) — per-note uncertainty is informative on log r + catches instabilities |
+| **Style/era classification** | 0.37–0.38 vs 0.489 majority; graph ≈ raw | — | **No** (honest negative) — expression-only style features don't beat majority; graph doesn't help feature quality |
 
 **Common setup.** 30 held-out ASAP eval pieces (≤400 notes each), piece-disjoint from
 the 40-piece head split (used only to fit the LM head / calibration scales),
@@ -197,3 +206,75 @@ The `graph-calib` calibration-split variant collapses the same way. Denoising
 applications should treat the transcription noise scale as (approximately) known — e.g.
 calibrated once per AMT system, or estimated jointly across many pieces (future work) —
 rather than per piece.
+
+---
+
+## Task 4 — selective prediction (risk–coverage)
+
+The purest test of the calibration claim: if the per-note predictive std is *informative*,
+abstaining on the least-confident held-out notes should drop the error on the rest. We run
+the Phase-1 grid, then per cell sort held-out predictions by predictive std and trace the
+risk–coverage curve. Two numbers: **AURC** (area under it, lower = confident predictions
+really are accurate) and **excess** = AURC(random abstention) − AURC (the part that
+isolates *ranking quality* from raw accuracy — a homoscedastic std can only triage between
+pieces, never within one). 30 pieces × 4 seeds. Reproduce: `scripts/eval_asap_selective.py`
+(log `logs/selective.log`). Per-channel (the honest comparison — pooling mixes channels
+of very different scale):
+
+```
+mean  graph  chan    RMSE   AURC  excess  rmse@50%
+zero  off    tau    0.163  0.071  0.084   0.063
+zero  on     tau    0.156  0.068  0.080   0.063
+zero  off    log r  0.950  0.801  0.101   0.828
+zero  on     log r  0.673  0.505  0.134   0.537     <- graph std triages log r
+zero  off    v      0.119  0.101  0.012   0.105
+zero  on     v      0.080  0.066  0.010   0.070
+LM    on     tau    0.614  0.252  0.331   0.068     <- catches the known τ blowup
+```
+
+**Verdict: yes, qualified.** The graph's per-note uncertainty is informative where the
+errors are heteroscedastic:
+
+- **Articulation (log r)** is the clean win — the graph std raises `excess` 0.101 → 0.134
+  and abstaining on the least-confident half cuts RMSE 0.828 → 0.537 (vs 0.950 → 0.828 for
+  the flat std). The graph knows *which* articulation predictions to trust.
+- **The known LM+graph τ instability is caught by its own uncertainty.** That cell's full
+  RMSE is 0.614 (a few pieces blow up — Phase-1 finding #2), but the most-confident 50% has
+  RMSE 0.068: the posterior flags exactly the pieces it botched. Selective prediction turns
+  a failure mode into a safe-abstention story.
+- **Near-noise-floor channels (v, τ-zero)** gain little from per-note triage over
+  piece-level — their errors are close to homoscedastic, so there is little ranking to do.
+
+---
+
+## Task 5 — style / era classification from inferred expression (honest negative)
+
+Does the graph-structured posterior yield expression *features* that are more useful
+downstream? We classify each piece's composer era (Baroque / Classical / Romantic /
+Modern) from **expression aggregates alone** — 8 style descriptors of τ / log r / v
+(rubato magnitude & smoothness, articulation level & spread, dynamic range & jaggedness),
+never pitch or score identity — comparing three feature sources: `raw` (observed
+expression), `graph` (graph-denoised expression), and `lm` (the score-only prior mean, a
+lower bound with no access to the performance). Leave-one-piece-out nearest-centroid over
+90 pieces. Reproduce: `scripts/eval_asap_style.py` (log `logs/style.log`).
+
+```
+90 pieces | Baroque=9 Classical=29 Modern=8 Romantic=44 | majority baseline = 0.489
+
+features  LOO acc   per-class recall
+lm          0.378    Baroque 0.67  Classical 0.45  Modern 0.38  Romantic 0.27
+raw         0.378    Baroque 0.78  Classical 0.45  Modern 0.38  Romantic 0.25
+graph       0.367    Baroque 0.78  Classical 0.45  Modern 0.38  Romantic 0.23
+```
+
+**Verdict: no — an honest negative on two counts.** (1) Expression-only style features do
+**not** beat the majority-class baseline (0.37–0.38 vs 0.489) with this simple classifier:
+the features carry *some* signal (Baroque, i.e. Bach, is distinguishable at recall 0.78 —
+less rubato, more even dynamics — and Classical at 0.45) but Romantic/Modern blur.
+(2) **Graph-denoising does not improve the features** (0.378 raw ≈ 0.367 graph): shrinking
+the per-note expression toward a smooth field removes as much style signal as noise. The
+graph prior helps *per-note recovery and calibration*, not *piece-level style aggregates* —
+consistent with the thesis scope (structure + calibration on the note field), and a useful
+boundary on where the prior does and does not add value. A fairer test would need performer
+labels and a stronger classifier; neither changes the conclusion that graph-denoising is
+not a style-feature enhancer.

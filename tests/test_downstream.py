@@ -8,10 +8,15 @@ from score_bundle.downstream import (
     average_precision,
     block_mask,
     denoise_channel,
+    era_of,
     independent_denoise,
     inject_anomalies,
+    loo_nearest_centroid,
     loo_predictive,
     prefix_mask,
+    risk_coverage,
+    selective_report,
+    style_features,
 )
 from score_bundle.metrics import coverage, rmse
 from score_bundle.model import GraphGaussianField
@@ -151,6 +156,57 @@ def test_denoise_graph_calib_variant_runs():
 def test_denoise_unknown_method_raises():
     with pytest.raises(ValueError):
         denoise_channel(np.eye(3), np.zeros(3), np.zeros(3), 0.1, "nope")
+
+
+def test_risk_coverage_monotone_when_std_ranks_errors():
+    # construct predictions whose error grows with std -> perfect ranking
+    rng = np.random.default_rng(10)
+    std = np.linspace(0.1, 2.0, 200)
+    err = std * rng.choice([-1.0, 1.0], size=200)  # |error| grows with std
+    y = err
+    pred = np.zeros(200)
+    covs, risks, aurc = risk_coverage(y, pred, std)
+    assert np.all(np.diff(risks) >= -1e-9)               # risk increases with coverage
+    rep = selective_report(y, pred, std)
+    assert rep["excess"] > 0                             # ranking beats random abstention
+    assert rep["rmse_at_50"] < rep["rmse"]               # confident half is more accurate
+
+
+def test_selective_report_random_std_has_no_excess():
+    rng = np.random.default_rng(11)
+    y = rng.normal(size=500)
+    pred = np.zeros(500)
+    std = rng.uniform(0.5, 1.5, size=500)  # std uncorrelated with error
+    rep = selective_report(y, pred, std)
+    assert abs(rep["excess"]) < 0.1 * rep["rmse"]        # ~no triage value
+
+
+def test_era_of_maps_known_composers():
+    assert era_of("Bach") == "Baroque"
+    assert era_of("Beethoven") == "Classical"
+    assert era_of("Chopin") == "Romantic"
+    assert era_of("Debussy") == "Modern"
+    assert era_of("Unknown Composer") is None
+
+
+def test_style_features_shape_and_determinism():
+    rng = np.random.default_rng(12)
+    y = rng.normal(size=(60, 3))
+    f1 = style_features(y)
+    f2 = style_features(y)
+    assert f1.shape == (8,)
+    np.testing.assert_array_equal(f1, f2)
+
+
+def test_loo_nearest_centroid_separates_clean_clusters():
+    rng = np.random.default_rng(13)
+    a = rng.normal(loc=[0, 0], scale=0.1, size=(15, 2))
+    b = rng.normal(loc=[5, 5], scale=0.1, size=(15, 2))
+    X = np.vstack([a, b])
+    labels = ["A"] * 15 + ["B"] * 15
+    acc, recall = loo_nearest_centroid(X, labels)
+    assert acc > 0.95
+    assert recall["A"] > 0.9 and recall["B"] > 0.9
 
 
 def test_std_rescale_factor_restores_coverage():
