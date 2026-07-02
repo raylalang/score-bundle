@@ -112,6 +112,9 @@ def main() -> None:
                     "y": np.asarray(y), "emb": np.asarray(emb),
                     "emb_scoreonly": np.asarray(emb_scoreonly),
                     "emb_leakfree": np.asarray(emb_leakfree),
+                    # raw MIDI velocities: needed to rebuild NoteEvents at eval time
+                    # (mask-aware embeddings replace held-out notes' velocities per mask)
+                    "velocity": np.asarray(vel, dtype=float),
                 })
                 print(f"  [{tag}] {rec.performance}: {len(y)} notes", flush=True)
             except Exception as exc:
@@ -124,7 +127,7 @@ def main() -> None:
     blob = {
         "head": head_arr, "eval": eval_arr,
         "meta": {
-            "schema_version": 2,  # v2 adds emb_leakfree (pre-velocity readout)
+            "schema_version": 3,  # v2: emb_leakfree; v3: raw per-note MIDI velocities
             "embeddings": ["emb", "emb_scoreonly", "emb_leakfree"],
             "seed": args.seed, "max_notes": args.max_notes,
             "checkpoint": args.checkpoint,
