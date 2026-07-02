@@ -130,7 +130,16 @@ bootstrap 95% CIs over pieces. Reproduce: `scripts/eval_asap_denoise.py`
 beats the independent-shrinkage oracle baseline on RMSE at every level and mean (e.g.
 0.293 vs 0.315 at level 1.0 with the LM mean; 0.299 vs 0.360 with the zero mean) *and*
 on NLL, at matched ~0.90 coverage. The structured prior extracts more signal from the
-same noisy observations than per-note shrinkage, exactly as the thesis argues.
+same noisy observations than per-note shrinkage, exactly as the thesis argues. Paired
+per-piece bootstrap (`logs/denoise_paired.log`): **all eight contrasts significant** —
+
+```
+graph-oracle − independent          RMSE                     NLL
+level 0.5, zero mean      -0.0127 [-0.0175,-0.0086]*  -0.0782 [-0.0990,-0.0608]*
+level 0.5, LM mean        -0.0064 [-0.0093,-0.0041]*  -0.0525 [-0.0651,-0.0406]*
+level 1.0, zero mean      -0.0390 [-0.0537,-0.0269]*  -0.1507 [-0.2089,-0.1109]*
+level 1.0, LM mean        -0.0169 [-0.0238,-0.0115]*  -0.0912 [-0.1128,-0.0714]*
+```
 
 **Honest negative: fully-blind denoising does not work yet.** Estimating the noise level
 per piece by EB (even with the 5% noise floor) systematically underestimates it on real
