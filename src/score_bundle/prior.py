@@ -3,13 +3,14 @@
 The prior precision Q_G is built from the graph Laplacian L_G.  Two interchangeable
 forms (see the concept note, section 8.4):
 
-    Laplacian:        Q_G = lambda I + alpha L_G
-    Matern / SPDE:    Q_G = sigma^{-2} (kappa^2 I + L_G)^alpha
+    Laplacian:        Q_G = lambda I + eta L_G
+    Matern / SPDE:    Q_G = sigma_g^{-2} (kappa^2 I + L_G)^alpha
 
 Intuition: Q_G penalizes differences between connected notes, so nearby/related
 notes have correlated expressive deviations.  lambda (or kappa) controls the pull
-toward the mean; alpha controls smoothness/range.  For integer alpha, Q_G is sparse
-(a Gaussian Markov random field).
+toward the mean; eta weights the Laplacian coupling and alpha (the Matern
+exponent) controls smoothness/range.  For integer alpha, Q_G is sparse (a
+Gaussian Markov random field).
 """
 from __future__ import annotations
 
