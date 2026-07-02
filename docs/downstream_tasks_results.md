@@ -16,6 +16,16 @@ Rejected: performer/style classification (ASAP performer labels are sparse and
 confounded with piece identity — no honest eval); masked-note completion (that *is*
 Phase 1).
 
+### One-line verdicts (did the graph prior help on BOTH accuracy and calibration?)
+
+| Task | Accuracy | Calibration | Verdict |
+|------|----------|-------------|---------|
+| **Anomaly detection** | AUROC 0.94→0.98 (3σ), 0.85→0.94 (2σ), every channel | (ranking task; uses the calibrated per-note std) | **Yes** — clear win, grows as errors get subtler |
+| **Denoising (known noise)** | RMSE lower than independent shrinkage, all 8 contrasts significant | NLL lower, all 8 significant, at matched ~0.90 coverage | **Yes** — win on both axes |
+| **Denoising (blind noise)** | — | intervals collapse (coverage 0.54–0.64) | **No** (honest negative) — per-piece noise estimation unreliable |
+| **Completion — interpolation** | RMSE 0.450→0.393 (obs 0.5) | NLL 0.21→0.01, coverage 0.894→0.925 | **Yes** — the Phase-1 result |
+| **Completion — sparse extrapolation** | LM mean essential; graph ≈ neutral or slightly hurts | — | **Partial** — graph needs nearby observed notes |
+
 **Common setup.** 30 held-out ASAP eval pieces (≤400 notes each), piece-disjoint from
 the 40-piece head split (used only to fit the LM head / calibration scales),
 contamination-filtered against MAESTRO Phase-0 pretraining, provenance recorded in the
@@ -93,7 +103,45 @@ off relative to its local context.
 
 ## Task 1 — performance completion / rendering
 
-<!-- pending: logs/completion.log -->
+Predict unheard notes from an observed excerpt. Three mask shapes at observed fractions
+{0.1, 0.25, 0.5}: **prefix** (hear the opening, predict the rest — pure extrapolation,
+the rendering use-case), **block** (one contiguous hidden span — gap extrapolation), and
+**random** (the Phase-1 interpolation setting, as the reference). Same 3×2 grid (mean ×
+graph), score-only embeddings, EB noise floor. Reproduce: `scripts/eval_asap_completion.py`
+(log `logs/completion.log`). Pooled RMSE / NLL / coverage:
+
+```
+                 observed=0.10            observed=0.25            observed=0.50
+mask   mean+graph  RMSE   NLL   cov      RMSE   NLL   cov       RMSE   NLL   cov
+prefix LM   off    0.424  0.37 0.843     0.427  0.42 0.877      0.429  0.53 0.895
+prefix LM   on     0.428  0.34 0.849     1.035  2.26 0.863      0.410  0.59 0.896
+block  LM   off    0.424  0.73 0.850     0.424  0.40 0.873      0.426  0.49 0.889
+block  LM   on     0.440  0.80 0.840     0.403  0.42 0.873      0.402  0.61 0.886
+random LM   off    (see phase1 doc)      0.447  0.05 0.893      0.450  0.21 0.894
+random LM   on     0.410 -0.05 0.909     0.404 -0.12 0.920      0.393  0.01 0.925
+```
+
+**Verdict: mixed, and instructive.** The task cleanly separates the two ingredients:
+
+- **The LM mean is what makes extrapolation work.** On prefix/block, `LM` (mean alone)
+  already reaches RMSE ~0.42 regardless of how little is observed, while `zero` and
+  `ridge` means sit at 0.54–0.62 and extrapolate worse as the excerpt shrinks — the
+  learned prior mean generalizes across the piece where the hand-built means cannot.
+- **The graph helps interpolation, not sparse extrapolation.** On the random masks the
+  graph improves `LM` on both axes at every fraction (e.g. observed 0.5: RMSE
+  0.450 → 0.393, NLL 0.21 → 0.01, coverage 0.894 → 0.925) — the Phase-1 result. But on
+  prefix/block with very little observed (0.1–0.25) the graph gives essentially nothing
+  or slightly hurts (prefix 0.25 `LM+graph` RMSE spikes to 1.04): with no observed
+  neighbours near the target, the GMRF propagates the mean's own error across the gap and
+  the per-piece EB fit is unstable. By observed 0.5 the graph helps block extrapolation
+  again (0.426 → 0.402).
+- **`ridge + graph` is unusable under extrapolation** (RMSE up to 90, NLL 1e4): the same
+  bad-mean-amplification artefact as Phase-1 finding #2, worst when the mean is both bad
+  *and* extrapolated far.
+
+Takeaway for rendering: use the LM mean for the global shape and the graph residual only
+where observed notes are nearby (interpolation / dense excerpts); for sparse-prefix
+rendering the mean alone is the honest recommendation.
 
 ---
 
