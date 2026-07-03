@@ -26,10 +26,11 @@
 \@writefile{toc}{\contentsline {section}{\numberline {1.2}Headline result}{6}{section.1.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {1.1}{\ignorespaces Held-out ASAP, strict protocol, 30{} pieces $\times $ 4 mask seeds, 40\%{} of notes hidden. Lower RMSE/NLL is better; coverage closer to the nominal 90\% is better.}}{6}{table.1.1}\protected@file@percent }
 \newlabel{tab:headline-exec}{{1.1}{6}{Held-out ASAP, strict protocol, \nPieces {} pieces $\times $ 4 mask seeds, \maskRate {} of notes hidden. Lower RMSE/NLL is better; coverage closer to the nominal 90\% is better}{table.1.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {1.3}Status at a glance}{6}{section.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.3}Where the gain comes from (by channel)}{6}{section.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.4}Status at a glance}{7}{section.1.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {1.2}{\ignorespaces The four phases and their status.}}{7}{table.1.2}\protected@file@percent }
 \newlabel{tab:phases}{{1.2}{7}{The four phases and their status}{table.1.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {1.4}The decision on the table today}{7}{section.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.5}The decision on the table today}{7}{section.1.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {chapter}{\numberline {2}Project Definition (PRD)}{8}{chapter.2}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
@@ -144,90 +145,97 @@
 \newlabel{sec:posterior}{{7.5}{24}{Observation model and posterior}{section.7.5}{}}
 \newlabel{eq:obs}{{7.11}{24}{Observation model and posterior}{equation.7.5.11}{}}
 \newlabel{eq:posterior}{{7.12}{24}{Observation model and posterior}{equation.7.5.12}{}}
-\@writefile{toc}{\contentsline {paragraph}{Predictive variance for held-out observations (the variance floor).}{24}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The four compared systems as special cases.}{24}{section*.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7.1}{\ignorespaces The four systems as special cases of the posterior mean $m = \Sigma _y(Q_{\mathcal  {G}}\,\mu + P\,\tilde  y)$, $\Sigma _y= (Q_{\mathcal  {G}}+ P)^{-1}$, with $Q_{\mathcal  {G}}= \lambda I + \eta L_{\mathcal  {G}}$ and $P$ the observation precision ($1/\sigma _e^2$ on observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the notes, so a held-out note returns its prior mean with a single shared predictive std; ``graph on'' propagates the observed values $\tilde  y$ through the graph, giving a per-note mean and per-note std $\sqrt  {(\Sigma _y)_{ii} + \sigma _e^2}$.}}{24}{table.7.1}\protected@file@percent }
+\newlabel{tab:system-posteriors}{{7.1}{24}{The four systems as special cases of the posterior mean $m = \Sy (\Qg \,\mu + P\,\tilde y)$, $\Sy = (\Qg + P)^{-1}$, with $\Qg = \lambda I + \eta \Lg $ and $P$ the observation precision ($1/\sigma _e^2$ on observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the notes, so a held-out note returns its prior mean with a single shared predictive std; ``graph on'' propagates the observed values $\tilde y$ through the graph, giving a per-note mean and per-note std $\sqrt {(\Sy )_{ii} + \sigma _e^2}$}{table.7.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Predictive variance for held-out observations (the variance floor).}{24}{section*.4}\protected@file@percent }
 \newlabel{eq:floor}{{7.13}{24}{Predictive variance for held-out observations (the variance floor)}{equation.7.5.13}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {7.6}Hyperparameters (empirical Bayes)}{24}{section.7.6}\protected@file@percent }
 \newlabel{sec:eb}{{7.6}{24}{Hyperparameters (empirical Bayes)}{section.7.6}{}}
 \newlabel{eq:marglik}{{7.14}{24}{Hyperparameters (empirical Bayes)}{equation.7.6.14}{}}
-\@writefile{toc}{\contentsline {paragraph}{Noise floor.}{24}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Guard (validating the fitted field).}{24}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Noise floor.}{25}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Guard (validating the fitted field).}{25}{section*.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7.7}Evaluation: recovery and calibration}{25}{section.7.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7.8}Phase 2: intonation and vibrato (continuously pitched instruments)}{25}{section.7.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7.9}Phase 3: waveform likelihood}{25}{section.7.9}\protected@file@percent }
 \newlabel{sec:phase3-math}{{7.9}{25}{Phase 3: waveform likelihood}{section.7.9}{}}
 \newlabel{eq:waveform}{{7.18}{25}{Phase 3: waveform likelihood}{equation.7.9.18}{}}
-\newlabel{eq:amp-post}{{7.19}{25}{Phase 3: waveform likelihood}{equation.7.9.19}{}}
-\newlabel{eq:collapsed}{{7.20}{25}{Phase 3: waveform likelihood}{equation.7.9.20}{}}
+\newlabel{eq:amp-post}{{7.19}{26}{Phase 3: waveform likelihood}{equation.7.9.19}{}}
+\newlabel{eq:collapsed}{{7.20}{26}{Phase 3: waveform likelihood}{equation.7.9.20}{}}
 \citation{maestro}
 \citation{asap}
 \citation{vienna4x22}
-\@writefile{toc}{\contentsline {chapter}{\numberline {8}Data and Experimental Protocol}{26}{chapter.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {8}Data and Experimental Protocol}{27}{chapter.8}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:data}{{8}{26}{Data and Experimental Protocol}{chapter.8}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {8.1}Pretraining corpus (MAESTRO)}{26}{section.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.2}Evaluation corpus (ASAP) and target extraction}{26}{section.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.3}Contamination control and the strict protocol}{26}{section.8.3}\protected@file@percent }
-\newlabel{sec:contam}{{8.3}{26}{Contamination control and the strict protocol}{section.8.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {8.4}Metrics}{26}{section.8.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.5}Performer-identification corpus (Vienna 4x22)}{26}{section.8.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {9}Phase-1 Results}{27}{chapter.9}\protected@file@percent }
+\newlabel{ch:data}{{8}{27}{Data and Experimental Protocol}{chapter.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8.1}Pretraining corpus (MAESTRO)}{27}{section.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.2}Evaluation corpus (ASAP) and target extraction}{27}{section.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.3}Contamination control and the strict protocol}{27}{section.8.3}\protected@file@percent }
+\newlabel{sec:contam}{{8.3}{27}{Contamination control and the strict protocol}{section.8.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {8.4}Metrics}{27}{section.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.5}Performer-identification corpus (Vienna 4x22)}{27}{section.8.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {9}Phase-1 Results}{28}{chapter.9}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:results}{{9}{27}{Phase-1 Results}{chapter.9}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {9.1}Headline: recovery and calibration}{27}{section.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.2}The evaluation leak: discovery, fix, re-measurement}{27}{section.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.3}Hyperparameter fragility and the guard}{27}{section.9.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.4}Do hand-built features suffice?}{27}{section.9.4}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {9.1}{\ignorespaces The graph's contribution per prior mean. {\color  {red}\textbf  {[TODO: final figure.]}}}}{28}{figure.9.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {9.2}{\ignorespaces The 1-in-120 fit collapse, guard off vs.\ on.}}{28}{figure.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.5}Stage-2: task-matched pretraining, an honest negative}{28}{section.9.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.6}Scaling: a bigger LM does not help}{28}{section.9.6}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {9.3}{\ignorespaces Where the network earns its place (per channel). {\color  {red}\textbf  {[TODO: final figure.]}}}}{29}{figure.9.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {10}Downstream Tasks}{30}{chapter.10}\protected@file@percent }
+\newlabel{ch:results}{{9}{28}{Phase-1 Results}{chapter.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9.1}Headline: recovery and calibration}{28}{section.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.2}Per-channel breakdown: where the graph earns its keep}{28}{section.9.2}\protected@file@percent }
+\newlabel{sec:perchannel}{{9.2}{28}{Per-channel breakdown: where the graph earns its keep}{section.9.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9.1}{\ignorespaces Per-channel recovery (RMSE) and 90\%-interval coverage on held-out ASAP ($30\times 4$ masks, noise-floored empirical Bayes). ``Graph off'' isolates the prior mean; ``graph on'' adds the GMRF residual. Timing and articulation are unchanged by the leak-free read-out; on loudness, the leak-free/strict read-out lowers the graph-on $v$ RMSE to $\approx $0.078, and the feature+network stack reaches $v$ RMSE $0.0755$ (the best loudness cell measured).}}{28}{table.9.1}\protected@file@percent }
+\newlabel{tab:perchannel}{{9.1}{28}{Per-channel recovery (RMSE) and 90\%-interval coverage on held-out ASAP ($\nPieces \times 4$ masks, noise-floored empirical Bayes). ``Graph off'' isolates the prior mean; ``graph on'' adds the GMRF residual. Timing and articulation are unchanged by the leak-free read-out; on loudness, the leak-free/strict read-out lowers the graph-on $v$ RMSE to $\approx $0.078, and the feature+network stack reaches $v$ RMSE $0.0755$ (the best loudness cell measured)}{table.9.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9.1}{\ignorespaces The graph's contribution per prior mean. {\color  {red}\textbf  {[TODO: final figure.]}}}}{29}{figure.9.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {9.2}{\ignorespaces The 1-in-120 fit collapse, guard off vs.\ on.}}{29}{figure.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.3}The evaluation leak: discovery, fix, re-measurement}{29}{section.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.4}Hyperparameter fragility and the guard}{29}{section.9.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {9.3}{\ignorespaces Where the network earns its place (per channel). {\color  {red}\textbf  {[TODO: final figure.]}}}}{30}{figure.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.5}Do hand-built features suffice?}{30}{section.9.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.6}Stage-2: task-matched pretraining, an honest negative}{30}{section.9.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.7}Scaling: a bigger LM does not help}{30}{section.9.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {10}Downstream Tasks}{31}{chapter.10}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:downstream}{{10}{30}{Downstream Tasks}{chapter.10}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {10.1}Error spotting (anomaly detection) --- clear win}{30}{section.10.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10.2}Denoising --- win at known noise level}{30}{section.10.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10.3}Completion / rendering from an excerpt --- partial}{30}{section.10.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10.4}Selective prediction --- qualified win}{30}{section.10.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10.5}Musical-era classification --- honest negative}{30}{section.10.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10.6}Performer identification (Vienna 4x22) --- mixed}{31}{section.10.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10.7}The boundary}{31}{section.10.7}\protected@file@percent }
-\newlabel{sec:boundary}{{10.7}{31}{The boundary}{section.10.7}{}}
-\@writefile{toc}{\contentsline {chapter}{\numberline {11}Discussion}{32}{chapter.11}\protected@file@percent }
+\newlabel{ch:downstream}{{10}{31}{Downstream Tasks}{chapter.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {10.1}Error spotting (anomaly detection) --- clear win}{31}{section.10.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.2}Denoising --- win at known noise level}{31}{section.10.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.3}Completion / rendering from an excerpt --- partial}{31}{section.10.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.4}Selective prediction --- qualified win}{31}{section.10.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.5}Musical-era classification --- honest negative}{31}{section.10.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.6}Performer identification (Vienna 4x22) --- mixed}{32}{section.10.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.7}The boundary}{32}{section.10.7}\protected@file@percent }
+\newlabel{sec:boundary}{{10.7}{32}{The boundary}{section.10.7}{}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {11}Discussion}{33}{chapter.11}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:discussion}{{11}{32}{Discussion}{chapter.11}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {11.1}Interpretation}{32}{section.11.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {11.2}Limitations}{32}{section.11.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {11.3}Threats to validity}{32}{section.11.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {12}Future Work}{33}{chapter.12}\protected@file@percent }
+\newlabel{ch:discussion}{{11}{33}{Discussion}{chapter.11}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {11.1}Interpretation}{33}{section.11.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11.2}Limitations}{33}{section.11.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11.3}Threats to validity}{33}{section.11.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {12}Future Work}{34}{chapter.12}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:future}{{12}{33}{Future Work}{chapter.12}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {12.1}Phase 2: intonation and vibrato}{33}{section.12.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {12.2}Phase 3: a differentiable-synthesizer audio likelihood}{33}{section.12.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {12.3}Geometric direction: the score-bundle connection Laplacian}{33}{section.12.3}\protected@file@percent }
-\newlabel{sec:future-geom}{{12.3}{33}{Geometric direction: the score-bundle connection Laplacian}{section.12.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {12.4}Unknown score support}{33}{section.12.4}\protected@file@percent }
-\newlabel{sec:future-amt}{{12.4}{33}{Unknown score support}{section.12.4}{}}
-\@writefile{toc}{\contentsline {chapter}{\numberline {13}Conclusion}{34}{chapter.13}\protected@file@percent }
+\newlabel{ch:future}{{12}{34}{Future Work}{chapter.12}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {12.1}Phase 2: intonation and vibrato}{34}{section.12.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {12.2}Phase 3: a differentiable-synthesizer audio likelihood}{34}{section.12.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {12.3}Geometric direction: the score-bundle connection Laplacian}{34}{section.12.3}\protected@file@percent }
+\newlabel{sec:future-geom}{{12.3}{34}{Geometric direction: the score-bundle connection Laplacian}{section.12.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {12.4}Unknown score support}{34}{section.12.4}\protected@file@percent }
+\newlabel{sec:future-amt}{{12.4}{34}{Unknown score support}{section.12.4}{}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {13}Conclusion}{35}{chapter.13}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{ch:conclusion}{{13}{34}{Conclusion}{chapter.13}{}}
+\newlabel{ch:conclusion}{{13}{35}{Conclusion}{chapter.13}{}}
 \gdef \LT@v {\LT@entry 
     {1}{128.34692pt}\LT@entry 
     {4}{267.76526pt}}
-\@writefile{toc}{\contentsline {chapter}{\numberline {A}Notation summary}{35}{appendix.A}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {A}Notation summary}{36}{appendix.A}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{app:notation}{{A}{35}{Notation summary}{appendix.A}{}}
-\@writefile{toc}{\contentsline {chapter}{\numberline {B}Additional results}{36}{appendix.B}\protected@file@percent }
+\newlabel{app:notation}{{A}{36}{Notation summary}{appendix.A}{}}
+\@writefile{toc}{\contentsline {chapter}{\numberline {B}Additional results}{37}{appendix.B}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\newlabel{app:extra}{{B}{36}{Additional results}{appendix.B}{}}
+\newlabel{app:extra}{{B}{37}{Additional results}{appendix.B}{}}
 \bibcite{lindgren2011}{1}
 \bibcite{rueheld2005}{2}
 \bibcite{borovitskiy2021}{3}
@@ -240,4 +248,4 @@
 \bibcite{asap}{10}
 \bibcite{maestro}{11}
 \bibcite{vienna4x22}{12}
-\gdef \@abspage@last{39}
+\gdef \@abspage@last{40}

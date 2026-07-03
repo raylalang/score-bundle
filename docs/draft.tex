@@ -58,6 +58,9 @@
 \newcommand{\covHead}{92\%}            % coverage of nominal-90\% intervals
 \newcommand{\nPieces}{30}
 \newcommand{\maskRate}{40\%}
+\newcommand{\rmseNetOff}{0.451}        % network mean, graph off
+\newcommand{\nllNetOff}{$-0.105$}
+\newcommand{\covNetOff}{89\%}
 
 % --- notation (must match docs/formulation.tex and CLAUDE.md) ---------
 \newcommand{\R}{\mathbb{R}}
@@ -149,10 +152,33 @@ nominal 90\% is better.}
 \toprule
 System & RMSE & NLL & 90\%-interval coverage \\
 \midrule
-Predict zero                 & \rmseZero     & \nllZero  & \covZero \\
-Graph alone                  & \rmseGraph    & \nllGraph & \covHead \\
-\textbf{Network + graph} (headline)   & \textbf{\rmseNetGraph} & {\boldmath\nllNetGraph} & \covHead \\
-Features + network + graph   & \rmseStack    & \nllStack & \covHead \\
+Zero mean, graph off               & \rmseZero     & \nllZero    & \covZero \\
+Zero mean $+$ graph                & \rmseGraph    & \nllGraph   & \covHead \\
+Network mean, graph off            & \rmseNetOff   & \nllNetOff  & \covNetOff \\
+\textbf{Network mean $+$ graph} (headline)   & \textbf{\rmseNetGraph} & {\boldmath\nllNetGraph} & \covHead \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The four rows isolate each ingredient (mean $\times$ graph on/off) and
+reappear split by channel in Table~\ref{tab:perchannel}. The strongest system
+measured is \emph{feature + network mean + graph} --- stacking the 25 hand-built
+score features onto the network mean --- at pooled RMSE~\rmseStack{} /
+NLL~\nllStack; it is the alternative headline weighed in \S\ref{sec:open-decisions}.
+
+\section{Where the gain comes from (by channel)}
+The single pooled number above blends three channels that behave very differently
+(full numbers in \S\ref{sec:perchannel}). This is the sharper form of the claim:
+
+\begin{table}[h]\centering
+\footnotesize
+\begin{tabular}{@{}p{3.0cm}p{10.0cm}@{}}
+\toprule
+Channel & What the graph does \\
+\midrule
+Timing ($\tau$) & Already near the alignment's measurement floor; the graph adds little (RMSE $\approx 0.16$ either way). \\
+Articulation ($\log r$) & Fixes \emph{calibration} --- lifts 90\% coverage from $0.78$ to $0.91$ --- and cuts error ($0.96 \to 0.68$). \\
+Loudness ($v$) & Where \emph{recovery} improves most: the graph roughly halves the error ($0.12 \to 0.08$), and this is the one channel where the learned music-model mean carries signal the hand-built features lack. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -187,9 +213,9 @@ Harmonic amplitudes $a$, audio $x$ & Not started (scoped) \\
 Both candidate headline systems are supported by the evidence; the contribution
 claim is identical either way. The choice is one of presentation:
 \begin{itemize}[leftmargin=*]
-  \item \textbf{Network + graph} --- the cleaner single-model story
+  \item \textbf{Network mean + graph} --- the cleaner single-model story
         (RMSE~\rmseNetGraph, NLL~\nllNetGraph); or
-  \item \textbf{Features + network + graph} --- slightly better numbers
+  \item \textbf{Feature + network mean + graph} --- slightly better numbers
         (RMSE~\rmseStack, NLL~\nllStack), at the cost of carrying a 25-feature
         hand-built regressor alongside the model.
 \end{itemize}
@@ -401,7 +427,7 @@ The \textbf{score graph} earns its place: it cuts error well below any per-note
 predictor and brings the nominal-90\% intervals to $\approx$92\% coverage. The
 \textbf{from-scratch music model} adds specifically loudness knowledge and sharper
 calibration --- against a strong 25-feature hand-built baseline it \emph{ties on
-average error}, and the two \emph{stack} (features + network + graph is the best
+average error}, and the two \emph{stack} (feature + network mean + graph is the best
 system measured, RMSE~\rmseStack). The honest framing is that the network adds
 calibration and dynamics information the hand-built features lack, and the best
 system uses both.
@@ -447,8 +473,8 @@ The evaluation is built to be hard to fool:
 
 \section{Open decisions for today's meeting}\label{sec:open-decisions}
 \begin{enumerate}[leftmargin=*]
-  \item \textbf{Headline system.} Adopt \emph{features + network + graph} (best
-        numbers, RMSE~\rmseStack) as the headline, or keep \emph{network + graph}
+  \item \textbf{Headline system.} Adopt \emph{feature + network mean + graph} (best
+        numbers, RMSE~\rmseStack) as the headline, or keep \emph{network mean + graph}
         (cleaner single-model story, RMSE~\rmseNetGraph) with features reported as
         an available add-on? Both are supported; the contribution is the same.
   \item \textbf{Next phase.} Begin Phase~3 (audio via a differentiable synthesizer,
@@ -741,6 +767,35 @@ Masked notes are predicted from their graph neighbours through the conditional
 Gaussian --- the held-out \emph{imputation} task. The per-note posterior standard
 deviation is $\sigma_i = \sqrt{(\Sy)_{ii}}$.
 
+\paragraph{The four compared systems as special cases.}
+The systems compared in Chapter~\ref{ch:results} are simply choices of the prior
+mean $\mu \in \{0,\ \muLM\}$ and of whether the graph coupling is on ($\eta > 0$) or
+off ($\eta = 0$, making $\Qg = \lambda I$ diagonal, so each note decouples). Writing
+$[\,\cdot\,]_h$ for the entries at held-out notes, the master posterior mean
+$m = \Sy(\Qg\,\mu + P\,\tilde y)$ specialises as in
+Table~\ref{tab:system-posteriors}.
+
+\begin{table}[h]\centering
+\caption{The four systems as special cases of the posterior mean
+$m = \Sy(\Qg\,\mu + P\,\tilde y)$, $\Sy = (\Qg + P)^{-1}$, with
+$\Qg = \lambda I + \eta\Lg$ and $P$ the observation precision ($1/\sigma_e^2$ on
+observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the
+notes, so a held-out note returns its prior mean with a single shared predictive
+std; ``graph on'' propagates the observed values $\tilde y$ through the graph,
+giving a per-note mean and per-note std $\sqrt{(\Sy)_{ii} + \sigma_e^2}$.}
+\label{tab:system-posteriors}
+\begin{tabular}{@{}llcl@{}}
+\toprule
+System & $\mu$ & $\eta$ & Prediction $m_h$ at held-out notes \\
+\midrule
+Zero mean, graph off     & $0$     & $0$   & $0$ \\
+Zero mean $+$ graph      & $0$     & $>0$  & $\bigl[(\Qg+P)^{-1}P\,\tilde y\bigr]_h$ \\
+Network mean, graph off  & $\muLM$ & $0$   & $\mu_{\mathrm{LM},h}$ \\
+Network mean $+$ graph    & $\muLM$ & $>0$  & $\bigl[(\Qg+P)^{-1}(\Qg\,\muLM+P\,\tilde y)\bigr]_h$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \paragraph{Predictive variance for held-out observations (the variance floor).}
 A held-out \emph{observation} at node $i$ is $\tilde y_i = y_i + e_i$, so its
 predictive variance must include the observation noise:
@@ -900,6 +955,46 @@ the graph's contribution is significant on \emph{both} axes
 
 \figph{digest_headline.png}{0.7}{The graph's contribution per prior mean.
 \TODO{final figure.}}
+
+\section{Per-channel breakdown: where the graph earns its keep}\label{sec:perchannel}
+The pooled headline (Table~\ref{tab:headline-exec}) averages three normalised
+channels, but the effect is far from uniform (Table~\ref{tab:perchannel}). Timing
+($\tau$) is already near the alignment's measurement floor, so the graph barely
+moves it and it slightly over-covers --- not where the structure earns its keep.
+Articulation ($\log r$) is where the graph most improves \emph{calibration}: a bare
+prior mean badly under-covers (coverage $0.78$), and the graph residual lifts every
+mean to $\approx$0.91 coverage while also cutting error ($0.96 \to 0.68$ for the zero
+mean). Loudness ($v$) is where \emph{recovery} improves most --- the graph roughly
+halves the error --- and it is the one channel where the learned mean carries signal
+the hand-built features lack.
+
+\begin{table}[h]\centering
+\caption{Per-channel recovery (RMSE) and 90\%-interval coverage on held-out ASAP
+($\nPieces \times 4$ masks, noise-floored empirical Bayes). ``Graph off'' isolates
+the prior mean; ``graph on'' adds the GMRF residual. Timing and articulation are
+unchanged by the leak-free read-out; on loudness, the leak-free/strict read-out
+lowers the graph-on $v$ RMSE to $\approx$0.078, and the feature+network stack reaches
+$v$ RMSE $0.0755$ (the best loudness cell measured).}
+\label{tab:perchannel}
+\footnotesize
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Articulation $\log r$} & \multicolumn{2}{c}{Loudness $v$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+System & RMSE & cov & RMSE & cov & RMSE & cov \\
+\midrule
+Zero mean, graph off        & 0.163 & 0.95 & 0.960 & 0.78 & 0.119 & 0.88 \\
+Zero mean $+$ graph         & 0.156 & 0.95 & 0.678 & 0.91 & 0.080 & 0.92 \\
+Network mean, graph off     & 0.167 & 0.93 & 0.753 & 0.89 & 0.118 & 0.86 \\
+Network mean $+$ graph      & \textbf{0.158} & 0.94 & \textbf{0.659} & 0.91 & \textbf{0.083} & 0.91 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Two things a single pooled number hides: the graph's calibration win is
+almost entirely the articulation channel, and its recovery win is almost entirely
+loudness --- timing contributes little either way. The pooled RMSE improvement is
+therefore a blend of a large loudness gain diluted by a near-static timing channel.
 
 \section{The evaluation leak: discovery, fix, re-measurement}
 An earlier read-out let the network see a note's own loudness --- the very target it
