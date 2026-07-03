@@ -24,7 +24,8 @@ data/
 checkpoints/
 .cache/
 logs/
-figures/
+/figures/
+!docs/figures/
 *.pt
 *.pkl
 
