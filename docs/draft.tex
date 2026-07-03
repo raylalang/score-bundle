@@ -617,15 +617,19 @@ to each score event a vector of continuous expressive variables; in Phase~1
   y_i \;=\; \bigl[\, \tau_i,\; \log r_i,\; v_i \,\bigr] \in \R^{3},
   \label{eq:variables}
 \end{equation}
-with
+defined, relative to the monotone score-time warp $T(\cdot)$ (score beats $\to$
+performance seconds, estimated from the alignment's beat grids), as
 \begin{align}
-  \tau_i    &= t_i - T(b_i)                       && \text{onset residual (s): performed onset $t_i$ minus tempo-implied onset,} \nonumber\\
-  \log r_i  &= \log \tfrac{\delta_i}{T(b_i + d_i) - T(b_i)} && \text{articulation: log ratio of performed duration $\delta_i$ to warp-implied duration,} \nonumber\\
-  v_i       &= \tilde v_i / 127 - \overline{\tilde v/127}  && \text{dynamics: centred, unit-range MIDI velocity $\tilde v_i$.} \nonumber
+  \tau_i   &= t_i - T(b_i), \label{eq:tau}\\
+  \log r_i &= \log \frac{\delta_i}{\,T(b_i + d_i) - T(b_i)\,}, \label{eq:logr}\\
+  v_i      &= \tilde v_i / 127 - \overline{\tilde v/127}. \label{eq:vel}
 \end{align}
-Here $T(\cdot)$ is the monotone time warp (score beats $\to$ performance seconds)
-estimated from the alignment's beat grids; conditioning on $T$ is what makes the
-per-note field $y$ well defined and jointly Gaussian. Later phases add channels on
+Here $\tau_i$ is the \emph{onset residual} in seconds (performed onset $t_i$ minus
+the tempo-implied onset $T(b_i)$); $\log r_i$ is the \emph{articulation} (log ratio
+of performed duration $\delta_i$ to the warp-implied duration); and $v_i$ is the
+\emph{dynamics} (centred, unit-range MIDI velocity $\tilde v_i$). Conditioning on
+the warp $T$ is what makes the per-note field $y$ well defined and jointly Gaussian.
+Later phases add channels on
 the same support: intonation $c_i$ (cents), vibrato parameters, and the fundamental
 curve $f_0$ (Phase~2); harmonic amplitudes $a$ (Phase~3). The task is
 \emph{score-informed}: $\score$ is given, and we infer the posterior over $y$
@@ -653,49 +657,68 @@ order (each note coupled only to its temporal neighbours), an AR(1)-style smooth
 the \emph{independent} baseline drops all edges ($\Lg = 0$).
 
 \section{Graph prior over performance variables}
-Each channel of $y$ (a scalar field over the $N$ nodes) receives a Gaussian Markov
-random field prior whose precision is built from $\Lg$ in one of two interchangeable
-forms:
+Each channel of $y$ (a scalar field over the $N$ nodes) receives a \emph{Gaussian
+Markov random field} (GMRF) prior: a multivariate Gaussian whose precision (inverse
+covariance) $\Qg$ is \emph{sparse} and built from the graph Laplacian $\Lg$, so that
+each note is conditionally independent of all others given its graph neighbours. We
+use one of two interchangeable forms,
 \begin{align}
-  \text{additive:} \qquad & \Qg \;=\; \lambda I + \eta\, \Lg,
-      && \lambda > 0 \text{ (ridge / pull to the mean)}, \;\; \eta \ge 0 \text{ (coupling)};
+  \text{additive:} \quad & \Qg = \lambda I + \eta\, \Lg,
+      && \lambda > 0,\;\; \eta \ge 0;
   \label{eq:additive}\\[2pt]
-  \text{Mat\'ern / SPDE:} \qquad & \Qg \;=\; \sigma_g^{-2}\,\bigl(\kappa^2 I + \Lg\bigr)^{\alpha},
-      && \sigma_g > 0,\;\; \kappa > 0 \text{ (inv.\ length)},\;\; \alpha \in \mathbb{Z}_{\ge 1}.
+  \text{Mat\'ern / SPDE:} \quad & \Qg = \sigma_g^{-2}\,(\kappa^2 I + \Lg)^{\alpha},
+      && \sigma_g > 0,\;\; \kappa > 0,\;\; \alpha \in \mathbb{Z}_{\ge 1}.
   \label{eq:matern}
 \end{align}
-For integer $\alpha$ both forms are sparse GMRF precisions. The joint prior over the
-stacked field ($k$ channels) is block-diagonal across channels, each with its own
-hyperparameters. Throughout, $\alpha$ is \emph{only} the Mat\'ern exponent, $\eta$
-is \emph{only} the additive Laplacian weight, and $\sigma_g$ is the Mat\'ern prior
-scale --- plain $\sigma$ is reserved for the posterior standard deviation
+Reading the additive form: the $\eta\,\Lg$ term penalises differences between
+connected notes (neighbours are \emph{encouraged}, not forced, to share expressive
+behaviour), while the $\lambda I$ term is a ridge that pulls the field toward its
+mean and sets the overall scale. For integer $\alpha$ both precisions are sparse,
+which makes the posterior cheap. The joint prior over the stacked field ($k$
+channels) is block-diagonal across channels, each with its own hyperparameters and
+length scales. Throughout, $\alpha$ is \emph{only} the Mat\'ern exponent, $\eta$
+\emph{only} the additive Laplacian weight, and $\sigma_g$ the Mat\'ern prior scale
+--- plain $\sigma$ is reserved for the posterior standard deviation
 (\S\ref{sec:posterior}).
 
-\paragraph{Prior mean.}
-The field is centred on a mean $\mu$ from one of three sources: $\mu = 0$; a
-hand-built ridge regression on local score features; or the \emph{learned} mean
-$\muLM$. For the latter, a pretrained autoregressive music language model supplies a
-per-note embedding $h_i \in \R^{d}$, read at the last token \emph{preceding} note
-$i$'s velocity token (the duration token): a causal model's hidden state at position
-$t$ contains token $t$ itself, so a read-out at the velocity token would leak each
-note's own velocity target into $\muLM$. The general rule is that a read-out fit on
-observed notes must never contain its own target (a bidirectional model needs a
-leave-one-out read-out, each note read at a masked copy of its own velocity
-position). Under the \emph{strict} evaluation protocol, held-out notes' velocities
-are additionally excluded from the LM \emph{input} (replaced by a placeholder), so
-$\muLM$ at a held-out note depends only on the score and the \emph{observed} notes'
-performances. A ridge head $W_{\mathrm{head}}$, fit on a piece-disjoint split, maps
-embeddings to means:
+\section{The prior mean: zero, features, or the learned mean}\label{sec:prior-mean}
+The GMRF field is centred on a mean $\mu$, and a central question of the thesis is
+\emph{where that mean should come from}. We compare three sources:
+\begin{enumerate}[leftmargin=*,noitemsep]
+  \item \textbf{zero} --- $\mu = 0$: the model is a pure smoother, with no prior
+        guess for each note;
+  \item \textbf{hand-built features} --- a ridge regression that predicts each
+        note's expression from $\sim$25 interpretable score features (metric
+        position in the bar, pitch and melodic interval, contour, local rhythm,
+        chord/harmonic context, note density, \dots);
+  \item \textbf{the learned mean} $\muLM$ --- read from the Phase-0 music model.
+\end{enumerate}
+For the learned mean, the pretrained autoregressive model supplies a per-note
+embedding $h_i \in \R^{d}$, and a ridge head $W_{\mathrm{head}}$ (fit on a
+piece-disjoint split) maps it to the mean; the graph then models the \emph{residual}
+$y - \muLM$:
 \begin{equation}
-  \mu_{\mathrm{LM},i} \;=\; W_{\mathrm{head}}^{\top} \bigl[ h_i;\, 1 \bigr],
-  \qquad\quad
-  y \;=\; \muLM + \xi, \qquad \xi \sim \N\bigl(0,\, \Qg^{-1}\bigr).
+  \mu_{\mathrm{LM},i} = W_{\mathrm{head}}^{\top}\,[\, h_i;\, 1\,],
+  \qquad
+  y = \muLM + \xi, \qquad \xi \sim \N\!\bigl(0,\, \Qg^{-1}\bigr).
   \label{eq:lm-mean}
 \end{equation}
-The LM supplies the expressive signal; the graph prior models the \emph{residual}
-with correlated, calibrated uncertainty. This turns the core comparison into: does a
-score-graph residual prior on top of a learned mean improve recovery \emph{and}
-calibration over the mean alone, and over hand-built baselines?
+
+\paragraph{Leak-free read-out.}
+The embedding $h_i$ is read at the token \emph{preceding} note $i$'s velocity token
+(its duration token). A causal model's hidden state at position $t$ already contains
+token $t$, so reading at the velocity token would leak each note's own velocity ---
+the target --- into $\muLM$. The general rule: \emph{a read-out fit on observed
+notes must never contain its own target} (a bidirectional model instead needs a
+leave-one-out read-out, each note read at a masked copy of its own velocity
+position). Under the \emph{strict} protocol, held-out notes' velocities are also
+removed from the LM \emph{input}, so $\muLM$ at a held-out note depends only on the
+score and the \emph{observed} notes' performances.
+
+\medskip\noindent
+This reduces the central comparison to a single question: does a score-graph
+residual prior on top of a learned mean improve recovery \emph{and} calibration over
+the mean alone, and over the hand-built baselines?
 
 \section{Observation model and posterior}
 \label{sec:posterior}

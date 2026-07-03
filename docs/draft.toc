@@ -1,83 +1,84 @@
-\contentsline {part}{I\hspace {1em}Project Plan and Status}{4}{part.1}%
-\contentsline {chapter}{\numberline {1}Executive Summary}{5}{chapter.1}%
-\contentsline {section}{\numberline {1.1}The project in one paragraph}{5}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Headline result}{5}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Status at a glance}{5}{section.1.3}%
-\contentsline {section}{\numberline {1.4}The decision on the table today}{6}{section.1.4}%
-\contentsline {chapter}{\numberline {2}Project Definition (PRD)}{7}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Problem and motivation}{7}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Objectives and central question}{7}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Scope and non-goals}{7}{section.2.3}%
-\contentsline {section}{\numberline {2.4}Success criteria}{8}{section.2.4}%
-\contentsline {section}{\numberline {2.5}Deliverables}{8}{section.2.5}%
-\contentsline {section}{\numberline {2.6}Performance variables (requirements)}{8}{section.2.6}%
-\contentsline {chapter}{\numberline {3}Roadmap and Detailed Plan}{10}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Monthly roadmap}{10}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Weekly execution plan}{11}{section.3.2}%
-\contentsline {section}{\numberline {3.3}Decision gates}{12}{section.3.3}%
-\contentsline {chapter}{\numberline {4}Current Status --- 2026-07-03}{13}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Headline}{13}{section.4.1}%
-\contentsline {section}{\numberline {4.2}What each ingredient does}{13}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Downstream demonstrations at a glance}{13}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Trustworthy by design}{14}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Open decisions for today's meeting}{14}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Risk register}{14}{section.4.6}%
-\contentsline {part}{II\hspace {1em}Thesis Draft}{16}{part.2}%
-\contentsline {chapter}{\numberline {5}Introduction}{17}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Motivation}{17}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Problem statement}{17}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Contributions}{17}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Scope and non-goals}{18}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Thesis outline}{18}{section.5.5}%
-\contentsline {chapter}{\numberline {6}Background and Related Work}{19}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Computational models of expressive performance}{19}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Score-to-performance alignment}{19}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Structured priors: GMRFs and the SPDE approach}{19}{section.6.3}%
-\contentsline {section}{\numberline {6.4}Symbolic music language models}{19}{section.6.4}%
-\contentsline {section}{\numberline {6.5}Differentiable synthesis}{20}{section.6.5}%
-\contentsline {chapter}{\numberline {7}Model and Formulation}{21}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Setting}{21}{section.7.1}%
-\contentsline {section}{\numberline {7.2}The score graph}{21}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Graph prior over performance variables}{22}{section.7.3}%
-\contentsline {paragraph}{Prior mean.}{22}{section*.2}%
-\contentsline {section}{\numberline {7.4}Observation model and posterior}{22}{section.7.4}%
-\contentsline {paragraph}{Predictive variance for held-out observations (the variance floor).}{23}{section*.3}%
-\contentsline {section}{\numberline {7.5}Hyperparameters (empirical Bayes)}{23}{section.7.5}%
-\contentsline {paragraph}{Noise floor.}{23}{section*.4}%
-\contentsline {paragraph}{Guard (validating the fitted field).}{23}{section*.5}%
-\contentsline {section}{\numberline {7.6}Evaluation: recovery and calibration}{23}{section.7.6}%
-\contentsline {section}{\numberline {7.7}Phase 2: intonation and vibrato (continuously pitched instruments)}{24}{section.7.7}%
-\contentsline {section}{\numberline {7.8}Phase 3: waveform likelihood}{24}{section.7.8}%
-\contentsline {chapter}{\numberline {8}Data and Experimental Protocol}{25}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Pretraining corpus (MAESTRO)}{25}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Evaluation corpus (ASAP) and target extraction}{25}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Contamination control and the strict protocol}{25}{section.8.3}%
-\contentsline {section}{\numberline {8.4}Metrics}{25}{section.8.4}%
-\contentsline {section}{\numberline {8.5}Performer-identification corpus (Vienna 4x22)}{25}{section.8.5}%
-\contentsline {chapter}{\numberline {9}Phase-1 Results}{26}{chapter.9}%
-\contentsline {section}{\numberline {9.1}Headline: recovery and calibration}{26}{section.9.1}%
-\contentsline {section}{\numberline {9.2}The evaluation leak: discovery, fix, re-measurement}{26}{section.9.2}%
-\contentsline {section}{\numberline {9.3}Hyperparameter fragility and the guard}{26}{section.9.3}%
-\contentsline {section}{\numberline {9.4}Do hand-built features suffice?}{26}{section.9.4}%
-\contentsline {section}{\numberline {9.5}Stage-2: task-matched pretraining, an honest negative}{27}{section.9.5}%
-\contentsline {section}{\numberline {9.6}Scaling: a bigger LM does not help}{27}{section.9.6}%
-\contentsline {chapter}{\numberline {10}Downstream Tasks}{29}{chapter.10}%
-\contentsline {section}{\numberline {10.1}Error spotting (anomaly detection) --- clear win}{29}{section.10.1}%
-\contentsline {section}{\numberline {10.2}Denoising --- win at known noise level}{29}{section.10.2}%
-\contentsline {section}{\numberline {10.3}Completion / rendering from an excerpt --- partial}{29}{section.10.3}%
-\contentsline {section}{\numberline {10.4}Selective prediction --- qualified win}{29}{section.10.4}%
-\contentsline {section}{\numberline {10.5}Musical-era classification --- honest negative}{29}{section.10.5}%
-\contentsline {section}{\numberline {10.6}Performer identification (Vienna 4x22) --- mixed}{30}{section.10.6}%
-\contentsline {section}{\numberline {10.7}The boundary}{30}{section.10.7}%
-\contentsline {chapter}{\numberline {11}Discussion}{31}{chapter.11}%
-\contentsline {section}{\numberline {11.1}Interpretation}{31}{section.11.1}%
-\contentsline {section}{\numberline {11.2}Limitations}{31}{section.11.2}%
-\contentsline {section}{\numberline {11.3}Threats to validity}{31}{section.11.3}%
-\contentsline {chapter}{\numberline {12}Future Work}{32}{chapter.12}%
-\contentsline {section}{\numberline {12.1}Phase 2: intonation and vibrato}{32}{section.12.1}%
-\contentsline {section}{\numberline {12.2}Phase 3: a differentiable-synthesizer audio likelihood}{32}{section.12.2}%
-\contentsline {section}{\numberline {12.3}Geometric direction: the score-bundle connection Laplacian}{32}{section.12.3}%
-\contentsline {section}{\numberline {12.4}Unknown score support}{32}{section.12.4}%
-\contentsline {chapter}{\numberline {13}Conclusion}{33}{chapter.13}%
-\contentsline {chapter}{\numberline {A}Notation summary}{34}{appendix.A}%
-\contentsline {chapter}{\numberline {B}Additional results}{35}{appendix.B}%
+\contentsline {part}{I\hspace {1em}Project Plan and Status}{5}{part.1}%
+\contentsline {chapter}{\numberline {1}Executive Summary}{6}{chapter.1}%
+\contentsline {section}{\numberline {1.1}The project in one paragraph}{6}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Headline result}{6}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Status at a glance}{6}{section.1.3}%
+\contentsline {section}{\numberline {1.4}The decision on the table today}{7}{section.1.4}%
+\contentsline {chapter}{\numberline {2}Project Definition (PRD)}{8}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Problem and motivation}{8}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Objectives and central question}{8}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Scope and non-goals}{8}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Success criteria}{9}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Deliverables}{9}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Performance variables (requirements)}{9}{section.2.6}%
+\contentsline {chapter}{\numberline {3}Roadmap and Detailed Plan}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Monthly roadmap}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Weekly execution plan}{12}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Decision gates}{13}{section.3.3}%
+\contentsline {chapter}{\numberline {4}Current Status --- 2026-07-03}{14}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Headline}{14}{section.4.1}%
+\contentsline {section}{\numberline {4.2}What each ingredient does}{14}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Downstream demonstrations at a glance}{14}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Trustworthy by design}{15}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Open decisions for today's meeting}{15}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Risk register}{15}{section.4.6}%
+\contentsline {part}{II\hspace {1em}Thesis Draft}{17}{part.2}%
+\contentsline {chapter}{\numberline {5}Introduction}{18}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Motivation}{18}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Problem statement}{18}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Contributions}{18}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Scope and non-goals}{19}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Thesis outline}{19}{section.5.5}%
+\contentsline {chapter}{\numberline {6}Background and Related Work}{20}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Computational models of expressive performance}{20}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Score-to-performance alignment}{20}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Structured priors: GMRFs and the SPDE approach}{20}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Symbolic music language models}{20}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Differentiable synthesis}{21}{section.6.5}%
+\contentsline {chapter}{\numberline {7}Model and Formulation}{22}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Setting}{22}{section.7.1}%
+\contentsline {section}{\numberline {7.2}The score graph}{22}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Graph prior over performance variables}{23}{section.7.3}%
+\contentsline {section}{\numberline {7.4}The prior mean: zero, features, or the learned mean}{23}{section.7.4}%
+\contentsline {paragraph}{Leak-free read-out.}{23}{section*.2}%
+\contentsline {section}{\numberline {7.5}Observation model and posterior}{24}{section.7.5}%
+\contentsline {paragraph}{Predictive variance for held-out observations (the variance floor).}{24}{section*.3}%
+\contentsline {section}{\numberline {7.6}Hyperparameters (empirical Bayes)}{24}{section.7.6}%
+\contentsline {paragraph}{Noise floor.}{24}{section*.4}%
+\contentsline {paragraph}{Guard (validating the fitted field).}{24}{section*.5}%
+\contentsline {section}{\numberline {7.7}Evaluation: recovery and calibration}{25}{section.7.7}%
+\contentsline {section}{\numberline {7.8}Phase 2: intonation and vibrato (continuously pitched instruments)}{25}{section.7.8}%
+\contentsline {section}{\numberline {7.9}Phase 3: waveform likelihood}{25}{section.7.9}%
+\contentsline {chapter}{\numberline {8}Data and Experimental Protocol}{26}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Pretraining corpus (MAESTRO)}{26}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Evaluation corpus (ASAP) and target extraction}{26}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Contamination control and the strict protocol}{26}{section.8.3}%
+\contentsline {section}{\numberline {8.4}Metrics}{26}{section.8.4}%
+\contentsline {section}{\numberline {8.5}Performer-identification corpus (Vienna 4x22)}{26}{section.8.5}%
+\contentsline {chapter}{\numberline {9}Phase-1 Results}{27}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Headline: recovery and calibration}{27}{section.9.1}%
+\contentsline {section}{\numberline {9.2}The evaluation leak: discovery, fix, re-measurement}{27}{section.9.2}%
+\contentsline {section}{\numberline {9.3}Hyperparameter fragility and the guard}{27}{section.9.3}%
+\contentsline {section}{\numberline {9.4}Do hand-built features suffice?}{27}{section.9.4}%
+\contentsline {section}{\numberline {9.5}Stage-2: task-matched pretraining, an honest negative}{28}{section.9.5}%
+\contentsline {section}{\numberline {9.6}Scaling: a bigger LM does not help}{28}{section.9.6}%
+\contentsline {chapter}{\numberline {10}Downstream Tasks}{30}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Error spotting (anomaly detection) --- clear win}{30}{section.10.1}%
+\contentsline {section}{\numberline {10.2}Denoising --- win at known noise level}{30}{section.10.2}%
+\contentsline {section}{\numberline {10.3}Completion / rendering from an excerpt --- partial}{30}{section.10.3}%
+\contentsline {section}{\numberline {10.4}Selective prediction --- qualified win}{30}{section.10.4}%
+\contentsline {section}{\numberline {10.5}Musical-era classification --- honest negative}{30}{section.10.5}%
+\contentsline {section}{\numberline {10.6}Performer identification (Vienna 4x22) --- mixed}{31}{section.10.6}%
+\contentsline {section}{\numberline {10.7}The boundary}{31}{section.10.7}%
+\contentsline {chapter}{\numberline {11}Discussion}{32}{chapter.11}%
+\contentsline {section}{\numberline {11.1}Interpretation}{32}{section.11.1}%
+\contentsline {section}{\numberline {11.2}Limitations}{32}{section.11.2}%
+\contentsline {section}{\numberline {11.3}Threats to validity}{32}{section.11.3}%
+\contentsline {chapter}{\numberline {12}Future Work}{33}{chapter.12}%
+\contentsline {section}{\numberline {12.1}Phase 2: intonation and vibrato}{33}{section.12.1}%
+\contentsline {section}{\numberline {12.2}Phase 3: a differentiable-synthesizer audio likelihood}{33}{section.12.2}%
+\contentsline {section}{\numberline {12.3}Geometric direction: the score-bundle connection Laplacian}{33}{section.12.3}%
+\contentsline {section}{\numberline {12.4}Unknown score support}{33}{section.12.4}%
+\contentsline {chapter}{\numberline {13}Conclusion}{34}{chapter.13}%
+\contentsline {chapter}{\numberline {A}Notation summary}{35}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Additional results}{36}{appendix.B}%
