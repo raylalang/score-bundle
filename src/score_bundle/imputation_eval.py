@@ -29,7 +29,8 @@ CellResult = namedtuple("CellResult", ["y", "pred", "std", "channel"])
 from .baselines import ridge_impute
 from .graph import build_adjacency, laplacian
 from .metrics import evaluate as _evaluate_metrics
-from .model import GraphGaussianField, fit_laplacian_field, fit_laplacian_field_calib
+from .model import (GraphGaussianField, fit_laplacian_field,
+                    fit_laplacian_field_calib, fit_laplacian_field_guarded)
 from .prior import laplacian_precision
 from .score import Score
 
@@ -58,6 +59,7 @@ def _predict_channel(
     graph_hyper: str = "marglik",
     rng: Optional[np.random.Generator] = None,
     noise_floor_frac: float = 0.0,
+    guard: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Held-out (pred, std) for one channel under one mean and one graph setting.
 
@@ -65,7 +67,10 @@ def _predict_channel(
     ``"marglik"`` (in-sample marginal likelihood) or ``"calib"`` (held-out calibration-split
     NLL, :func:`fit_laplacian_field_calib`).  ``noise_floor_frac > 0`` floors the EB
     ``noise_var`` at that fraction of the observed residual variance (guards against the
-    degenerate noise_var -> 0 fits that spike held-out NLL).
+    degenerate noise_var -> 0 fits that spike held-out NLL).  ``guard=True`` swaps the
+    marglik fit for :func:`fit_laplacian_field_guarded` (calibration-split screen +
+    fallback ladder against the rare catastrophic (lam, eta) collapse); default off to
+    preserve the published protocol.
     """
     held = ~mask
     if use_graph:
@@ -74,8 +79,13 @@ def _predict_channel(
                 field, hp = fit_laplacian_field_calib(L, y, mask=mask, mean=mean_full, rng=rng)
             else:
                 floor = noise_floor_frac * float(np.var((y - mean_full)[mask]))
-                field, hp = fit_laplacian_field(L, y, mask=mask, mean=mean_full,
-                                                noise_floor=floor)
+                fit = fit_laplacian_field_guarded if guard else fit_laplacian_field
+                # fresh deterministic rng for the guard's screen split: consuming the
+                # shared eval rng would desynchronize mask draws between guard-on and
+                # guard-off runs (they must stay identical-mask A/Bs)
+                kw = {"rng": np.random.default_rng(0)} if guard else {}
+                field, hp = fit(L, y, mask=mask, mean=mean_full,
+                                noise_floor=floor, **kw)
             nv = hp["noise_var"]
         else:
             Q = laplacian_precision(L, lam=lam, eta=eta)
@@ -105,6 +115,7 @@ def impute_methods(
     graph_variants: Optional[List[Tuple[object, bool, str]]] = None,
     rng: Optional[np.random.Generator] = None,
     noise_floor_frac: float = 0.0,
+    guard: bool = False,
 ) -> Dict[Tuple[str, object], CellResult]:
     """Run every (mean source, graph variant) cell on one piece.
 
@@ -136,7 +147,7 @@ def impute_methods(
                 pred, std = _predict_channel(
                     score, L, Y[:, c], M[:, c], mask, use_graph, lam, eta, noise_var,
                     fit_hyper, graph_hyper=ghyper, rng=rng,
-                    noise_floor_frac=noise_floor_frac,
+                    noise_floor_frac=noise_floor_frac, guard=guard,
                 )
                 yt.append(Y[held, c]); pr.append(pred); sd.append(std)
                 ch.append(np.full(pred.shape[0], c, dtype=int))

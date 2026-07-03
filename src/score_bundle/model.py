@@ -154,6 +154,93 @@ def fit_laplacian_field(
     return field, {"lam": float(lam), "eta": float(eta), "noise_var": float(noise_var)}
 
 
+def fit_laplacian_field_guarded(
+    L: np.ndarray,
+    y_obs: np.ndarray,
+    mask: Optional[np.ndarray] = None,
+    mean=0.0,
+    x0=(0.0, 0.0, -2.0),
+    noise_floor: float = 0.0,
+    calib_frac: float = 0.3,
+    guard_factor: float = 2.0,
+    rng: Optional[np.random.Generator] = None,
+) -> Tuple[GraphGaussianField, dict]:
+    """Marginal-likelihood EB fit with a calibration-split screen against collapse.
+
+    A small minority of (mean, mask) realizations send the marginal-likelihood
+    maximizer into a regime whose held-out predictions are catastrophically wrong
+    while the in-sample objective looks fine (observed on the ASAP eval: one piece,
+    one cell out of 120, tau RMSE 17 under one head and 4.5 under another, each
+    dominating the pooled graph-on metrics; see
+    docs/phase1_calibration_results.md).  The noise floor does not catch it — the
+    failure is in (lam, eta), not noise_var.
+
+    Guard: re-split the observed nodes (``calib_frac`` held out), condition the
+    fitted field on the fit subset, and reject the fit if its calibration-subset
+    RMSE exceeds ``guard_factor x`` the mean-only RMSE on the same subset — i.e.
+    the graph is only allowed to *help* (up to a factor) relative to predicting the
+    prior mean.  Fallback ladder, recorded in ``hp["guard"]``:
+
+        "marglik"       screen passed (or too few observed nodes to split)
+        "calib"         marglik fit rejected; calibration-NLL fit passed
+        "conservative"  both rejected; no-coupling field (eta=0, prior variance =
+                        observed residual variance) — behaves like the mean-only
+                        baseline with honest uncertainty
+
+    Deterministic given ``rng``; default rng(0) mirrors ``fit_laplacian_field_calib``.
+    """
+    L = np.asarray(L, dtype=float)
+    y_obs = np.asarray(y_obs, dtype=float)
+    n = L.shape[0]
+    if mask is None:
+        mask = np.ones(n, dtype=bool)
+    mask = np.asarray(mask, dtype=bool)
+    if rng is None:
+        rng = np.random.default_rng(0)
+    mean_vec = _as_vec(mean, n)
+
+    field_ml, hp_ml = fit_laplacian_field(L, y_obs, mask=mask, mean=mean,
+                                          x0=x0, noise_floor=noise_floor)
+
+    obs_idx = np.where(mask)[0]
+    n_calib = int(round(calib_frac * obs_idx.size))
+    if obs_idx.size < 8 or n_calib < 2 or obs_idx.size - n_calib < 2:
+        return field_ml, {**hp_ml, "guard": "marglik"}
+
+    perm = rng.permutation(obs_idx)
+    calib_idx = perm[:n_calib]
+    fit_mask = np.zeros(n, dtype=bool)
+    fit_mask[perm[n_calib:]] = True
+
+    base_rmse = float(np.sqrt(np.mean((y_obs - mean_vec)[calib_idx] ** 2)))
+    thresh = guard_factor * max(base_rmse, 1e-12)
+
+    def calib_rmse(field: GraphGaussianField, nv: float) -> float:
+        try:
+            m, _ = field.posterior(y_obs, nv, mask=fit_mask)
+        except (np.linalg.LinAlgError, ValueError):
+            return float("inf")
+        return float(np.sqrt(np.mean((y_obs[calib_idx] - m[calib_idx]) ** 2)))
+
+    if calib_rmse(field_ml, hp_ml["noise_var"]) <= thresh:
+        return field_ml, {**hp_ml, "guard": "marglik"}
+
+    field_cal, hp_cal = fit_laplacian_field_calib(L, y_obs, mask=mask, mean=mean,
+                                                  rng=rng, x0=x0)
+    hp_cal["noise_var"] = max(hp_cal["noise_var"], noise_floor)
+    if calib_rmse(field_cal, hp_cal["noise_var"]) <= thresh:
+        return field_cal, {**hp_cal, "guard": "calib"}
+
+    resid_var = float(np.var((y_obs - mean_vec)[obs_idx]))
+    resid_var = max(resid_var, 1e-12)
+    lam = 1.0 / resid_var
+    Q = laplacian_precision(L, lam=lam, eta=0.0)
+    field = GraphGaussianField(Q, mean=mean)
+    nv = max(noise_floor, 0.05 * resid_var)
+    return field, {"lam": float(lam), "eta": 0.0, "noise_var": float(nv),
+                   "guard": "conservative"}
+
+
 def fit_laplacian_field_calib(
     L: np.ndarray,
     y_obs: np.ndarray,

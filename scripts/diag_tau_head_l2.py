@@ -11,6 +11,7 @@ Result (2026-07-03, logs/diag_tau_l2.log): the blowup is a single catastrophic E
 fit collapse (seed 2, piece 28, tau RMSE 17.0) that exists only under the l2=100
 head; see docs/phase1_calibration_results.md.
 """
+import sys
 import time
 
 import numpy as np
@@ -19,6 +20,9 @@ from score_bundle import imputation_eval as ie
 from score_bundle.downstream import load_piece_arrays, piece_score
 from score_bundle.lm import features as lmfeat
 from score_bundle.metrics import evaluate
+
+GUARD = "--guard" in sys.argv
+print(f"guard={'on' if GUARD else 'off'}", flush=True)
 
 head, ev, meta = load_piece_arrays(".cache/asap_arrays_named.pkl")
 ev = ev[:30]
@@ -38,7 +42,7 @@ for s in range(4):
         means = {f"LM{int(l2)}": lmfeat.apply_prior_mean(p["emb_leakfree"], w)
                  for l2, w in W.items()}
         cells = ie.impute_methods(score, y, means, mask, fit_hyper=True,
-                                  rng=seed_rng, noise_floor_frac=0.05)
+                                  rng=seed_rng, noise_floor_frac=0.05, guard=GUARD)
         for l2 in W:
             cell = cells[(f"LM{int(l2)}", True)]
             t = cell.channel == 0

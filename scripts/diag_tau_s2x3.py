@@ -3,6 +3,7 @@
 Reproduces the eval's LM-s2x3 pipeline exactly (LOO embeddings, head_rng=7 head,
 l2=10, identical masks) and reports per-(seed, piece) tau graph-on RMSE.
 """
+import sys
 import time
 
 import numpy as np
@@ -51,7 +52,8 @@ for s in range(4):
         emb = mk.masked_note_embeddings_loo(model, tok, notes_of(p), mask)
         mu = lmfeat.apply_prior_mean(emb, W)
         out = ie.impute_methods(score, y, {"s2x3": mu}, mask, fit_hyper=True,
-                                rng=seed_rng, noise_floor_frac=0.05)
+                                rng=seed_rng, noise_floor_frac=0.05,
+                                guard="--guard" in sys.argv)
         cell = out[("s2x3", True)]
         t = cell.channel == 0
         yy, pp_, ss_ = cell.y[t], cell.pred[t], cell.std[t]

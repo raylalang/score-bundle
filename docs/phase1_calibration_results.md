@@ -195,9 +195,9 @@ strength changes *exposure* to the catastrophic regime (a slightly different pri
 one piece tips one fit past what `noise_floor_frac=0.05` can catch, and the graph
 propagates it). Consequences: (a) pooled graph-on numbers are not robust to a single
 collapsed fit — report medians or per-cell screens alongside; (b) a guard is worth
-implementing (clip the fitted prior mean to a multiple of the observed residual scale, or
-fall back to zero-mean when the EB objective lands in the collapsed regime) — open
-follow-up, protocol-changing, so not retrofitted into published numbers.
+implementing — **done**, see "The EB guard" below. (The mean-clip idea sketched here was
+wrong: the prior mean is identical across seeds for a given piece/head — only the mask
+realization differs — so the guard has to validate the *fitted field*, not the mean.)
 
 ### Stage 2: masked, score-conditioned pretraining vs the Stage-1 read-out (2026-07-03)
 
@@ -273,6 +273,47 @@ head's ridge strength or the embedding family: piece 28's EB τ fit sits on a kn
 and which mask seed tips it depends on small changes in the prior mean. The EB guard
 (previous subsection) is now supported by evidence at two heads and two embedding
 families, always localized to the same piece.
+
+### The EB guard: validating the fitted field (2026-07-03)
+
+The piece-28 collapse is a knife-edge event in the marginal-likelihood fit itself — the
+same piece catastrophically collapses under two heads (`l2=10`, `l2=100`) and two
+embedding families (Stage-1 `emb_leakfree`, Stage-2 3×), always one (piece, seed) cell
+out of 120, with the tipping seed depending on small prior-mean changes. The noise floor
+does not catch it (the failure lives in the fitted `(λ, η)`, not `noise_var`), and
+mean-clipping cannot (the mean is seed-invariant). The fix validates the **fitted
+field** on data it did not fit:
+
+`fit_laplacian_field_guarded()` (`src/score_bundle/model.py`) runs the standard marglik
+fit, then screens it: hold back a calibration split (30% of observed nodes, fresh
+`default_rng(0)`), condition the fitted field on the remaining observed nodes, and
+reject if the calibration-split RMSE exceeds `guard_factor=2×` the mean-only RMSE on
+the same nodes. On rejection it falls down a ladder — marglik → calibration-objective
+fit (`fit_laplacian_field_calib`, noise floor re-applied) → a conservative decoupled
+field (`η=0`, `λ=1/resid_var`, `noise_var=max(floor, 0.05·resid_var)`) — and records
+the path taken in `hp["guard"]`. Plumbed through `impute_methods(guard=True)`
+(**default off**: published numbers keep the exact published code path); the guard uses
+its own fresh rng so identical-mask A/B comparisons stay in lockstep. Tests:
+`tests/test_eb_guard.py` (healthy fit → identical hp + posterior, path `"marglik"`;
+forced rejection → conservative, finite, bounded error; tiny-`n` screen skip; rng
+lockstep under `impute_methods`).
+
+**Three measured verdicts** (`logs/eval_guard_ab.log`, `logs/diag_tau_l2_guarded.log`,
+`logs/diag_tau_s2x3_guarded.log`):
+
+1. **Published protocol: guard on ≡ guard off, bit-identical.** LM mean, `l2=10` head,
+   30×4 identical masks: pooled 0.3929 / −0.3321 / 0.917 both ways; the screen never
+   fires on a healthy fit, so the guard is a free insurance policy, not a new protocol.
+2. **Both known catastrophes removed.** Stage-2 3× embeddings, `l2=10`: piece 28
+   seed 3 τ RMSE 4.51 → **0.239**, pooled τ graph-on 0.4185 → **0.1564** (NLL −0.779).
+   Stage-1 `l2=100` head: piece 28 seed 2 τ RMSE 17.0 → healthy, pooled τ graph-on
+   1.58 / +14.5 → **0.1564 / −0.828**.
+3. **Healthy cells untouched.** In both guarded diagnostics the only cells above 0.5
+   are the four chronic piece-7 cells, at exactly their unguarded values (0.63 / 0.59 /
+   0.59 / 0.57); every non-collapsed cell is byte-identical to the unguarded run.
+
+Recommendation: run future evals with `guard=True` and report `hp["guard"]` counts;
+published tables stay guard-off (provably equivalent on that protocol anyway).
 
 ### Finding B — the EB noise floor fixes the collapse
 
