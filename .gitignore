@@ -28,6 +28,7 @@ logs/
 !docs/figures/
 *.pt
 *.pkl
+*.pdf
 
 # OS
 .DS_Store

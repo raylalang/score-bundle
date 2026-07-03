@@ -28,7 +28,7 @@
 \contentsline {section}{\numberline {5.2}The evaluation leak: discovery, fix, re-measurement}{9}{section.5.2}%
 \contentsline {section}{\numberline {5.3}Hyperparameter fragility and the guard}{9}{section.5.3}%
 \contentsline {section}{\numberline {5.4}Do hand-built features suffice?}{9}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Stage-2: task-matched pretraining, an honest negative}{9}{section.5.5}%
+\contentsline {section}{\numberline {5.5}Stage-2: task-matched pretraining, an honest negative}{10}{section.5.5}%
 \contentsline {section}{\numberline {5.6}Scaling: a bigger LM does not help}{10}{section.5.6}%
 \contentsline {chapter}{\numberline {6}Downstream Tasks}{12}{chapter.6}%
 \contentsline {section}{\numberline {6.1}Error spotting (anomaly detection) --- clear win}{12}{section.6.1}%
@@ -36,7 +36,7 @@
 \contentsline {section}{\numberline {6.3}Completion / rendering from an excerpt --- partial}{12}{section.6.3}%
 \contentsline {section}{\numberline {6.4}Selective prediction --- qualified win}{12}{section.6.4}%
 \contentsline {section}{\numberline {6.5}Musical-era classification --- honest negative}{12}{section.6.5}%
-\contentsline {section}{\numberline {6.6}Performer identification (Vienna 4x22) --- mixed}{12}{section.6.6}%
+\contentsline {section}{\numberline {6.6}Performer identification (Vienna 4x22) --- mixed}{13}{section.6.6}%
 \contentsline {section}{\numberline {6.7}The boundary}{13}{section.6.7}%
 \contentsline {chapter}{\numberline {7}Discussion}{14}{chapter.7}%
 \contentsline {section}{\numberline {7.1}Interpretation}{14}{section.7.1}%
