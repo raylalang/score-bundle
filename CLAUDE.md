@@ -24,12 +24,20 @@ note conceptually in sync.
   ASAP eval (`scripts/eval_asap_robust.py`, `src/score_bundle/imputation_eval.py`) shows
   `LM mean + graph residual` best on RMSE *and* calibration — see
   `docs/phase1_calibration_results.md` (**read the 2026-07-02 correction first**: the LM
-  mean must use *score-only embeddings* — the `h_i` readout sits at the VELOCITY token and
-  otherwise leaks each note's own velocity into `μ_LM` — and the EB fit needs
-  `noise_floor` / `noise_floor_frac=0.05`). NB the graph posterior needs a
-  **predictive-variance floor** (held-out `y=f+ε` has variance `diag(Σ_y)+noise_var`) or
-  NLL/coverage blow up; the EB fit needs the matching **noise_var floor** or a minority of
-  fits collapse. Downstream tasks (completion / anomaly / denoising):
+  mean must use the *leak-free pre-velocity read-out* (`emb_leakfree`) — a readout at the
+  VELOCITY token leaks each note's own velocity into `μ_LM`; any readout fit on observed
+  rows must never contain its own target (bidirectional models need the leave-one-out
+  readout in `lm/masked.py`) — and the EB fit needs `noise_floor` /
+  `noise_floor_frac=0.05`). NB the graph posterior needs a **predictive-variance floor**
+  (held-out `y=f+ε` has variance `diag(Σ_y)+noise_var`) or NLL/coverage blow up; the EB
+  fit needs the matching **noise_var floor** or a minority of fits collapse; and a rare
+  knife-edge marglik collapse (one cell in 120) is screened by
+  `fit_laplacian_field_guarded` / `impute_methods(guard=True)` — default off, use it for
+  new runs, published tables stay guard-off (measured bit-identical there). Honest
+  baselines: `rich_score_features` (`baselines.py`) ties the LM mean on RMSE (the LM's
+  edge is calibration + the `v` channel; `feat+LM` stacks best — headline adoption is a
+  user decision); Stage-2 masked pretraining is an honest negative at matched budget.
+  Downstream tasks (completion / anomaly / denoising):
   `src/score_bundle/downstream.py`, `docs/downstream_tasks_results.md`.
   Aria frozen-feature upper-bound baseline is an import-guarded stub (`lm/aria_baseline.py`).
 - **Phase 2 — intonation/vibrato (stubs + helpers).** `src/score_bundle/phase2/`.

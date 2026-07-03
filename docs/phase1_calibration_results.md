@@ -551,13 +551,21 @@ with **percentile-bootstrap 95% CIs over pieces** and a paired bootstrap, and wr
 objective (the same principle as the predictive-variance floor in finding #1), and/or report
 median/trimmed NLL. The calibration-split variant (`fit_laplacian_field_calib`) is *not* a
 reliable cure here (its single-seed mean NLL −0.413 is slightly worse than marglik's −0.544).
+*(Since applied — see [Finding B](#finding-b--the-eb-noise-floor-fixes-the-collapse); the
+remaining knife-edge case is handled by the EB guard section above.)*
 
 ## Open follow-ups
 
-- **Robustify the EB fit:** `noise_var` floor (or a weak prior) inside
-  `fit_laplacian_field`, then re-run `eval_asap_robust.py` for a clean CI table; report
-  median/trimmed NLL alongside the mean.
-- Calibration-split hyperparameters, and a per-channel temperature/variance-scaling baseline,
-  to push coverage to exactly 0.90.
+*(Status as of 2026-07-03 — most of these have since been done; see the dated sections
+above for the results.)*
+
+- ~~**Robustify the EB fit**~~ Done — `noise_floor` / `noise_floor_frac=0.05` (Finding B),
+  the EB guard for the residual knife-edge collapse, and median + worst-cell columns in
+  every pooled report (`MetricAccumulator.report`).
+- ~~Calibration-split hyperparameters, and a per-channel temperature/variance-scaling
+  baseline.~~ Done — `fit_laplacian_field_calib` exists (and is the guard's first
+  fallback); per-channel variance rescaling is upgrade 2 above.
 - The `τ` channel is near the noise floor; consider whether the warp resolution limits it.
+  (Still open; piece 7 is chronically mildly hard on `τ` at every setting.)
 - Aria frozen-feature upper-bound baseline (Step 4) is stubbed — aria is not installed here.
+  (Still open, deliberately skipped.)

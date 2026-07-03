@@ -53,16 +53,25 @@ python examples/phase0_pretrain_lm.py          # pretrain the LM (needs torch)
 python examples/phase0_lm_features_to_prior.py # LM embeddings → prior mean → graph posterior
 ```
 
-**Phase-1 result (held-out ASAP, corrected 2026-07-02).** With a MAESTRO-pretrained LM
-(val ppl 10.85), **score-only embeddings** (a velocity-target leak in the original LM
-mean was found and fixed) and an **EB noise floor**, `LM mean + graph residual` is the
-best cell on both recovery and calibration — RMSE 0.394 [0.356, 0.417], NLL −0.314
-[−0.41, −0.22], coverage 0.922 (target 0.90) over 30 pieces × 4 seeds — and the paired
-bootstrap against LM-mean-only and ridge-mean-only is significant on both RMSE and NLL.
-Full tables, the leakage correction, and the noise-floor fix are in
-[`docs/phase1_calibration_results.md`](docs/phase1_calibration_results.md). Reproduce with
-`scripts/eval_asap_robust.py --embeddings emb_scoreonly --noise-floor-frac 0.05`.
-Downstream demonstrations (completion / anomaly detection / denoising) are in
+**Phase-1 result (held-out ASAP, corrected 2026-07-02, confirmed 2026-07-03).** With a
+MAESTRO-pretrained LM (val ppl 10.85), the **leak-free pre-velocity read-out**
+(`emb_leakfree` — a velocity-target leak in the original LM mean was found and fixed),
+an **EB noise floor**, and a **strict mask-aware protocol** (held-out notes' velocities
+never enter the LM input), `LM mean + graph residual` is the best single-representation
+cell on both recovery and calibration — RMSE 0.393, NLL −0.322, coverage 0.921 (target
+0.90) over 30 pieces × 4 seeds; the graph's paired advantage over mean-only baselines is
+significant on both RMSE and NLL. Stacking 25 hand-built score features with the LM
+improves it further (`feat+LM+graph` 0.388 / −0.333 strict — confirmed candidate
+headline, adoption pending). Three honesty results are reported alongside: hand-built
+features **tie** the LM mean on RMSE (its real edge is calibration + dynamics); a
+task-aligned masked pretraining objective (Stage 2) does **not** beat the causal
+read-out at matched budget; and a guarded EB fit (`fit_laplacian_field_guarded`)
+removes a rare one-cell-in-120 fit collapse without touching healthy fits. Full tables
+and corrections in
+[`docs/phase1_calibration_results.md`](docs/phase1_calibration_results.md); reproduce
+with `scripts/eval_asap_robust.py --noise-floor-frac 0.05` (leak-free embeddings are the
+default). Downstream demonstrations (completion / anomaly detection / denoising /
+selective prediction / style / performer-ID) are in
 [`docs/downstream_tasks_results.md`](docs/downstream_tasks_results.md). The aria
 frozen-feature upper-bound baseline (`lm/aria_baseline.py`) is an import-guarded stub
 (aria not installed here).
