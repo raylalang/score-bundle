@@ -107,8 +107,16 @@ plain $\sigma$ is reserved for the posterior standard deviation
 The field is centred on a mean $\mu$ from one of three sources: $\mu = 0$; a hand-built
 ridge regression on local score features; or the \emph{learned} mean $\muLM$. For the
 latter, a pretrained autoregressive music language model supplies a per-note embedding
-$h_i \in \R^{d}$ (its hidden state at note $i$'s last token), and a ridge head
-$W_{\mathrm{head}}$, fit on a disjoint split, maps embeddings to means:
+$h_i \in \R^{d}$, read at the last token \emph{preceding} note $i$'s velocity token (the
+duration token): a causal model's hidden state at position $t$ contains token $t$ itself,
+so a read-out at the velocity token would leak each note's own velocity target into
+$\muLM$ --- the general rule is that a read-out fit on observed notes must never contain
+its own target (a bidirectional model needs a leave-one-out read-out, each note read at a
+masked copy of its own velocity position). Under the \emph{strict} evaluation protocol,
+held-out notes' velocities are additionally excluded from the LM \emph{input} (replaced
+by a placeholder), so $\muLM$ at a held-out note depends only on the score and the
+\emph{observed} notes' performances. A ridge head $W_{\mathrm{head}}$, fit on a
+piece-disjoint split, maps embeddings to means:
 \begin{equation}
   \mu_{\mathrm{LM},i} \;=\; W_{\mathrm{head}}^{\top} \bigl[ h_i;\, 1 \bigr],
   \qquad\quad
@@ -178,6 +186,19 @@ degenerates ($\sigma_e^2 \to 0$), producing an overconfident posterior; the same
 as \eqref{eq:floor} applies to the \emph{fit}: constrain $\sigma_e^2 \ge \varepsilon_{\mathrm{nv}}$
 (a small floor, e.g.\ a fixed fraction of the observed residual variance) inside the
 optimization.
+
+\paragraph{Guard (validating the fitted field).}
+Rarely (empirically one evaluation cell in $\sim$120, always the same piece), the
+maximizer of \eqref{eq:marglik} lands on degenerate $(\lambda, \eta)$ that the noise
+floor cannot catch --- the fitted field then extrapolates catastrophically to the
+held-out nodes. The guard screens the fit on data it did not use: hold back a
+calibration subset of the observed nodes ($\sim$30\%), condition the fitted field on the
+remainder, and reject the fit if its calibration-subset RMSE exceeds a small multiple
+($2\times$) of the mean-only RMSE on the same nodes. On rejection, fall back down a
+ladder: marginal likelihood $\to$ the calibration-split objective above $\to$ a
+conservative decoupled fit ($\eta = 0$, $\lambda = 1/\widehat{\operatorname{Var}}[\tilde
+y_o - \mu_o]$). On healthy fits the screen never fires, so guarded and unguarded runs are
+identical except at the collapsed cells.
 
 \section{Evaluation: recovery and calibration}
 

@@ -38,7 +38,12 @@
 \newcommand{\rmseZero}{0.566}
 \newcommand{\rmseGraph}{0.404}
 \newcommand{\rmseNetGraph}{0.393}      % published headline (strict protocol)
-\newcommand{\rmseStack}{0.388}         % features + network + graph (candidate)
+\newcommand{\rmseStack}{0.388}         % features + network + graph (candidate, strict)
+\newcommand{\nllZero}{$-0.007$}
+\newcommand{\nllGraph}{$-0.308$}
+\newcommand{\nllNetGraph}{$-0.322$}    % strict protocol
+\newcommand{\nllStack}{$-0.333$}       % strict protocol
+\newcommand{\covZero}{87\%}
 \newcommand{\covHead}{92\%}            % coverage of nominal-90\% intervals
 \newcommand{\nPieces}{30}
 \newcommand{\maskRate}{40\%}
@@ -153,8 +158,8 @@ vibrato (require continuously pitched instruments), and unknown-score inference.
 (Appendix~\ref{app:formulation}); the essentials are reproduced here.}
 
 \section{Score and performance variables}
-The known score is $\mathcal{S}=\{s_i\}_{i=1}^N$ with $s_i=(p_i,b_i,d_i)$ (pitch
-degree, beat onset, beat duration). Each note carries a Phase-1 performance
+The known score is $\mathcal{S}=\{s_i\}_{i=1}^N$ with $s_i=(p_i,b_i,d_i)$ (pitch as
+MIDI number, beat onset, beat duration). Each note carries a Phase-1 performance
 vector
 \[
   y_i = [\,\tau_i,\ \log r_i,\ v_i\,]\in\mathbb{R}^3,
@@ -177,14 +182,18 @@ so that connected notes have correlated expressive deviations, with a closed-for
 Gaussian posterior. \TODO{state per-channel construction.}
 
 \section{Observation and posterior}
-With $\tilde y = y + e,\ e\sim\mathcal N(0,\Sigma_e)$, the posterior is Gaussian,
+With $\tilde y = y + e,\ e\sim\mathcal N(0,\Sigma_e)$ on the \emph{observed} notes, write
+$P$ for the diagonal observation precision --- $\Sigma_e^{-1}$ at observed nodes, $0$ at
+held-out nodes, so held-out notes carry no likelihood term. The posterior is Gaussian,
 \[
   p(y\mid\tilde y)=\mathcal N(m,\ \Sy),\quad
-  \Sy=(Q_G+\Sigma_e^{-1})^{-1},\quad
-  m=\Sy(Q_G\,\mu+\Sigma_e^{-1}\tilde y).
+  \Sy=(Q_G+P)^{-1},\quad
+  m=\Sy(Q_G\,\mu+P\,\tilde y),
 \]
-Held-out notes carry no likelihood term and are predicted from their neighbours.
-\TODO{predictive variance = latent + observation noise (the corrected form).}
+and held-out notes are predicted from their neighbours through the conditional Gaussian.
+A held-out \emph{observation} is $y_i + e_i$, so its predictive variance must include the
+observation noise, $(\Sy)_{ii} + \sigma_e^2$; scoring against the latent variance
+$(\Sy)_{ii}$ alone is catastrophically overconfident (NLL and coverage blow up).
 
 \section{Learned prior mean and the leak-free read-out}
 The prior mean $\mu$ can be the LM prediction $\muLM$: a from-scratch decoder-only
@@ -194,16 +203,19 @@ velocity enters the network, so it cannot leak the target.
 \TODO{Fig.: the 4-token group and the pre-velocity read-out position.}
 
 \section{Hyperparameters, fit, and robustness}
-Prior hyperparameters are learned by (restricted) marginal likelihood per piece.
-Two safeguards: a floor on the observation-noise level, and a self-validating
-guard that falls back to a conservative fit when the fitted field fails on a
-held-back sliver of observed notes. \TODO{state both precisely.}
+Prior hyperparameters are learned by maximizing the marginal likelihood of the
+observed notes, per piece and per channel.
+Two safeguards: a floor on the observation-noise level inside the fit, and a
+self-validating guard that falls back to a conservative fit when the fitted field
+fails on a held-back sliver of observed notes (precise statements in
+Appendix~\ref{app:formulation}, \S5).
 
 % =====================================================================
 \chapter{Data and Experimental Protocol}\label{ch:data}
 
 \section{Pretraining corpus (MAESTRO)}
-\TODO{size, split, tokenisation; only MAESTRO MIDI is used for pretraining.}
+Pretraining uses only the MAESTRO corpus \cite{maestro} (piano performances
+captured on Disklavier instruments, as MIDI). \TODO{size, split, tokenisation.}
 
 \section{Evaluation corpus (ASAP) and target extraction}
 ASAP is the only corpus pairing written scores with performances; it supplies the
@@ -212,10 +224,12 @@ targets $y=[\tau,\log r,v]$ via the score$\leftrightarrow$performance beat warp.
 
 \section{Contamination control and the strict protocol}
 Because ASAP reuses many MAESTRO recordings, every ASAP performance whose MAESTRO
-twin was in pretraining is removed ($\approx$1000 $\to$ $\approx$650), so the
+twin was in pretraining is removed (1036 $\to$ 653 aligned performances), so the
 model is tested only on unseen performances. A \emph{strict} protocol
-additionally blanks every hidden note's loudness from the input.
-\TODO{exact counts; cost of strictness (essentially nil).}
+additionally blanks every hidden note's loudness from the input; its measured cost
+is essentially nil on error (+0.0003 for the network system, +0.0000 for the
+feature--network stack) and a small, honest calibration price ($\approx$+0.014
+NLL) --- the strict numbers are the ones quoted throughout.
 
 \section{Metrics}
 Recovery: RMSE (per channel and pooled). Calibration: negative log predictive
@@ -235,17 +249,17 @@ model (LM guess + score graph) attains the lowest error and best-calibrated
 confidence; the graph's contribution is significant on \emph{both} axes.
 
 \begin{table}[t]\centering
-\caption{Held-out ASAP, strict protocol. Lower RMSE/NLL is better; coverage
-closer to 90\% is better. \TODO{verify against docs/phase1\_calibration\_results.md;
-add NLL and CIs.}}
+\caption{Held-out ASAP, strict protocol (numbers verified against
+docs/phase1\_calibration\_results.md, 2026-07-03). Lower RMSE/NLL is better; coverage
+closer to 90\% is better. \TODO{add per-piece bootstrap CIs.}}
 \begin{tabular}{lccc}
 \toprule
 System & RMSE & NLL & coverage \\
 \midrule
-Predict zero                 & \rmseZero     & \TODO{} & \TODO{} \\
-Graph alone                  & \rmseGraph    & \TODO{} & \TODO{} \\
-Network + graph (headline)   & \textbf{\rmseNetGraph} & \TODO{} & \covHead \\
-Features + network + graph   & \rmseStack    & \TODO{} & \TODO{} \\
+Predict zero                 & \rmseZero     & \nllZero  & \covZero \\
+Graph alone                  & \rmseGraph    & \nllGraph & \covHead \\
+Network + graph (headline)   & \textbf{\rmseNetGraph} & {\boldmath\nllNetGraph} & \covHead \\
+Features + network + graph   & \rmseStack    & \nllStack & \covHead \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -258,13 +272,24 @@ An earlier read-out let the network see a note's own loudness --- the very targe
 it was asked to predict --- inflating the apparent loudness advantage. We read the
 summary one position earlier (provably blind to the note's own loudness, pinned by
 an automated test), re-measured everything, and adopted the strict protocol. The
-corrected advantage is smaller but honest and statistically significant.
-\TODO{before/after loudness numbers (band-aid $\to$ leak-free $\to$ flawed claim).}
+corrected advantage is smaller but honest and statistically significant: on the
+loudness channel, the network's mean-only error was 0.057 \emph{with} the leak (the
+retracted claim), 0.118 under a first band-aid fix that also destroyed neighbour
+context, and 0.090 with the final leak-free read-out.
 
 \section{Hyperparameter fragility and the guard}
-On a minority of evaluation cells the noise fit collapsed toward zero
-(overconfident); a noise-level floor plus a self-validating guard fix it, shown
-harmless on healthy runs (bit-for-bit identical). \TODO{numbers; the 1-in-120 cell.}
+Two distinct failure modes were found and fixed. First, on a minority of mask
+realisations the fitted noise level collapsed toward zero (overconfident
+intervals); a noise-level floor inside the fit removes it. Second, a rarer
+knife-edge collapse of the fitted coupling itself: one evaluation cell in 120 ---
+always the same piece --- produced timing errors of 4.5 and 17 in two independent
+runs, single-handedly dominating the pooled average (e.g.\ pooled timing RMSE
+0.16 $\to$ 1.58). The self-validating guard removes both catastrophic cells
+(4.5~$\to$~0.24; 17~$\to$~healthy) while being bit-for-bit identical to the
+unguarded fit on the published protocol --- it never fires on a healthy fit.
+Pooled tables additionally report the median and worst per-cell error, so any
+future collapse is visible by construction.
+\figph{digest_collapse.png}{0.7}{The 1-in-120 fit collapse, guard off vs.\ on.}
 
 \section{Do hand-built features suffice?}
 Against a rich 25-feature score baseline fit under the same protocol, the network
@@ -275,15 +300,23 @@ the network earns its place (per channel). \TODO{final figure.}}
 
 \section{Stage-2: task-matched pretraining, an honest negative}
 A bidirectional, mask-aware retraining (matched exactly to the evaluation task)
-did \emph{not} beat the original at matched compute (3$\times$ budget does not
-close it). The honest lesson: the original read-out already extracted what the
-objective change was meant to unlock. \TODO{table; the reintroduced-leak catch.}
+did \emph{not} beat the original at matched compute: pooled error is slightly but
+significantly worse (+0.011), confidence quality ties strict-to-strict
+($-0.325$ vs.\ $-0.322$), and a 3$\times$ budget does not close the gap (timing
+improves, articulation and loudness do not). The honest lesson: the original
+read-out already extracted what the objective change was meant to unlock. En
+route, the same leak pattern tried to re-enter through the new bidirectional
+read-out (a note read at its own velocity token \emph{contains} that velocity);
+it was caught by its signature and fixed with a leave-one-out read-out, now a
+documented design rule pinned by a structural test. \TODO{full table.}
 
 \section{Scaling: a bigger LM does not help}
-A 1.3$\times$ larger, lower-perplexity model gives an essentially identical
-downstream result once the leak is removed --- the earlier ``scaling'' gain was
-the loudness leak. Practical rule: judge the LM downstream, not by perplexity.
-\TODO{numbers.}
+A 1.3$\times$ larger, lower-perplexity model (25.6M parameters, validation
+perplexity 9.66 vs.\ 10.85) gives an essentially identical downstream result once
+the leak is removed (RMSE 0.394 vs.\ 0.394, identical within noise) --- the
+earlier ``scaling'' gain was the loudness leak. Practical rule: judge the LM
+downstream, not by perplexity. (Measured with the earlier score-only read-out;
+conservative for the LM rows.)
 
 % =====================================================================
 \chapter{Downstream Tasks}\label{ch:downstream}
@@ -292,30 +325,41 @@ Six tasks with objective metrics and honest baselines; all outcomes reported.
 
 \section{Error spotting (anomaly detection) --- clear win}
 Corrupt a small fraction of notes; rank by suspiciousness. The graph model ranks
-better (AUROC \TODO{}) and its edge \emph{grows} as errors get subtler.
+better on every channel (AUROC 0.94~$\to$~0.98 at 3$\sigma$ corruptions,
+0.85~$\to$~0.94 at 2$\sigma$) and its edge \emph{grows} as errors get subtler.
 
 \section{Denoising --- win at known noise level}
 Recover true values from added noise. With the noise level known, the graph beats
-per-note shrinkage on both error and calibration. \emph{Honest negative}:
-estimating the noise level from a single piece is unreliable. \TODO{numbers.}
+per-note shrinkage on both error and calibration (all 8 contrasts significant, at
+matched $\approx$0.90 coverage). \emph{Honest negative}: estimating the noise
+level blind from a single piece is unreliable --- intervals collapse to 0.54--0.64
+coverage --- so transcription noise must be treated as known per system.
 
 \section{Completion / rendering from an excerpt --- partial}
-Predict the expression of the rest of a piece from its opening. The LM guess
-carries the far-future; the graph helps only where hidden notes have nearby heard
-neighbours. \TODO{numbers.}
+Predict the expression of the rest of a piece from its opening. Interpolation
+(scattered hidden notes) is the clear win --- RMSE 0.450~$\to$~0.393, NLL
+0.21~$\to$~0.01 at half the notes observed. Extrapolating far past the excerpt,
+the LM guess carries the prediction and the graph is neutral or slightly harmful:
+the graph helps only where hidden notes have nearby heard neighbours.
 
 \section{Selective prediction --- qualified win}
 Discarding the least-confident predictions lowers error on the rest, most clearly
-for articulation and for catching the model's own misfires. \TODO{numbers.}
+for articulation (keeping the confident half cuts its RMSE 0.83~$\to$~0.54) and
+for catching the model's own misfires (a timing blow-up at 0.61 overall falls to
+0.07 on the confident half). Only the graph provides the per-note confidence
+this triage needs; the no-graph baselines rank at piece level only.
 
 \section{Musical-era classification --- honest negative}
-Style statistics alone do not beat the majority-class baseline; the graph, a
-note-level tool, does not help whole-piece summaries. \TODO{numbers.}
+Style statistics alone do not beat the majority-class baseline (accuracy
+0.37--0.38 vs.\ 0.489 majority); the graph, a note-level tool, does not help
+whole-piece summaries.
 
 \section{Performer identification (Vienna 4x22) --- mixed}
-The extracted expression \emph{does} carry a pianist's identity
-(3--4$\times$ chance), validating our extraction; graph smoothing does not help
-this whole-performance summary. \TODO{numbers.}
+The extracted expression \emph{does} carry a pianist's identity --- accuracy
+0.136--0.179 against a 1-of-22 chance rate of 0.045 (3--4$\times$ chance),
+validating the extraction. Graph smoothing \emph{hurts} this whole-performance
+summary (0.080): denoising toward the ensemble mean removes exactly the
+idiosyncrasy that identifies a performer.
 
 \section{The boundary}
 Across all six: \textbf{the graph prior helps whenever notes are judged one by one
