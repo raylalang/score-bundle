@@ -175,8 +175,8 @@ feat+LM vs LM     (graph on)    -0.1588 [-0.4709,-0.0014]*   -5.0226 [-15.0747,+
 3. **They stack.** `feat+LM` graph-on is the best cell we have measured on this protocol —
    pooled 0.3872 / −0.348, beating the published `LM+graph` 0.3928 / −0.336 and
    significantly beating either input alone on RMSE. The two representations carry
-   complementary information. (Candidate headline upgrade, but adopt only after a rerun
-   under the published `l2=10` head and the strict mask-aware protocol.)
+   complementary information. (Candidate headline upgrade — both adoption gates have
+   since passed; see the confirmation below.)
 4. **The `feat`-on and `LM`-on pooled/tau rows above are contaminated by an EB failure
    mode, not a real regression** — see the caveat below. Uncontaminated comparisons:
    all mean-only rows, the `log r` / `v` per-channel rows, and `feat+LM` (whose fits did
@@ -198,6 +198,36 @@ collapsed fit — report medians or per-cell screens alongside; (b) a guard is w
 implementing — **done**, see "The EB guard" below. (The mean-clip idea sketched here was
 wrong: the prior mean is identical across seeds for a given piece/head — only the mask
 realization differs — so the guard has to validate the *fitted field*, not the mean.)
+
+**Confirmation under the published head and the strict protocol (2026-07-03).** Both
+adoption gates passed.
+
+1. *Published-setting grid* (`scripts/eval_asap_feature_baseline.py --force-l2 10`;
+   feature variant CV-picked at that l2: **feat-lin**, the 25 raw features;
+   `logs/feature_baseline_l2_10.log`). All 120 cells healthy — no τ blowups, consistent
+   with the exposure story above (`l2=10` never collapsed). Pooled graph-on: zero
+   0.4041 / −0.3083, feat 0.4106 / −0.3086, LM 0.3928 / −0.3357, **feat+LM 0.3879 /
+   −0.3474 / 0.919**. Paired per-piece: feat+LM vs LM −0.0044 [−0.0074, −0.0015]* RMSE,
+   −0.0115 [−0.0186, −0.0049]* NLL; feat+LM vs feat −0.0191* RMSE. Per-channel `v`
+   graph-on **0.0755** — the best `v` cell measured on this protocol. One nuance: the
+   LM-vs-feat mean-only NLL edge shrinks at `l2=10` (−0.0304, CI just touches 0) versus
+   `l2=100` (−0.0489*), so "the LM wins calibration" should cite the stack's significant
+   margins, not the solo contrast.
+2. *Strict mask-aware gate* (`scripts/eval_featlm_strict.py`; features are score-only,
+   hence mask-independent — only the LM embedding side is recomputed per (piece, seed)
+   with held-out velocities replaced by the placeholder;
+   `logs/eval_featlm_strict_lin.log`). The script's non-strict cell reproduces the grid
+   cell exactly (0.3879 / −0.3474). Strict − non-strict paired: RMSE **+0.0000**
+   [−0.0005, +0.0006] ns, NLL **+0.0143** [+0.0084, +0.0201]* — the same strictness cost
+   the LM-only headline paid. A first run with the rff feature variant (not the grid's
+   pick) gave the same contrast (+0.0001 / +0.0142*), so the gate is
+   representation-stable. **Strict cell to quote: 0.3879 / −0.3330 / 0.921.**
+
+Strict-to-strict, `feat+LM+graph` (0.3879 / −0.333) beats the published `LM+graph`
+(0.3930 / −0.322) on both error and NLL. Whether it becomes *the* headline system or is
+reported as an available upgrade is a framing decision (single-model story vs best
+number) — flagged for the 2026-07-03 meeting; the contribution claim (structure +
+calibration, marginal value isolated) is identical either way.
 
 ### Stage 2: masked, score-conditioned pretraining vs the Stage-1 read-out (2026-07-03)
 

@@ -71,6 +71,10 @@ def main() -> None:
                     choices=["emb", "emb_scoreonly", "emb_leakfree"])
     ap.add_argument("--l2-grid", type=float, nargs="+",
                     default=[0.1, 1.0, 10.0, 100.0, 1000.0])
+    ap.add_argument("--force-l2", type=float, default=None,
+                    help="skip CV l2 selection and use this l2 for every head "
+                         "(e.g. 10 = the published protocol; the CV-selected l2=100 "
+                         "run exposed the piece-28 EB tau collapse)")
     args = ap.parse_args()
 
     head, ev, meta = load_piece_arrays(args.arrays_cache)
@@ -90,13 +94,16 @@ def main() -> None:
 
     # --- identical head protocol per representation: 5-fold CV l2 on head ---
     ys_head = [np.asarray(p["y"], dtype=float) for p in head]
+    l2_grid = [args.force_l2] if args.force_l2 is not None else args.l2_grid
     chosen = {}
-    print("\nHead-split 5-fold CV (pooled-RMSE by l2; identical protocol per rep):")
+    print("\nHead-split 5-fold CV (pooled-RMSE by l2; identical protocol per rep):"
+          if args.force_l2 is None else
+          f"\nForced l2={args.force_l2:g} for every head (CV skipped):")
     for name, fn in reps.items():
         Hs = [fn(p) for p in head]
-        best, scores = cv_l2(Hs, ys_head, args.l2_grid)
+        best, scores = cv_l2(Hs, ys_head, l2_grid)
         chosen[name] = best
-        row = "  ".join(f"l2={l2:g}: {scores[l2]:.4f}" for l2 in args.l2_grid)
+        row = "  ".join(f"l2={l2:g}: {scores[l2]:.4f}" for l2 in l2_grid)
         print(f"  {name:9s} -> l2={best:g}   ({row})", flush=True)
 
     # pick the better feature variant by CV to carry into the grid
@@ -115,7 +122,7 @@ def main() -> None:
         return np.concatenate([rep_feat(p), reps["LM"](p)], axis=1)
 
     grid_reps = {"feat": rep_feat, "LM": reps["LM"], "feat+LM": rep_cat}
-    l2_cat, _ = cv_l2([rep_cat(p) for p in head], ys_head, args.l2_grid)
+    l2_cat, _ = cv_l2([rep_cat(p) for p in head], ys_head, l2_grid)
     grid_l2 = {"feat": chosen[feat_name], "LM": chosen["LM"], "feat+LM": l2_cat}
     print(f"l2 per grid mean: {grid_l2}", flush=True)
 
