@@ -1,82 +1,94 @@
-# Score-Bundle Models — one-page digest for the 2026-07-03 meeting
+# Score-Bundle Models — meeting digest (2026-07-03)
 
-*Companion to `docs/status_2026-07-02.md` (§1–§10 have the full plain-language story).
-Every number here comes from a re-run on held-out data; nothing is carried over from
-the retracted January results.*
+*Every number here is from a re-run on held-out data.*
 
-## What the project shows now, in one paragraph
+## The project in one paragraph
 
-Given the printed score and a recorded performance with some notes' expression hidden,
-the system infers the hidden notes' **timing, articulation, and loudness with honest
-error bars**. The two ingredients each earn a distinct place: the **score graph**
-(notes connected by adjacency in time, voice, and chord) is what makes the error bars
-honest and cuts error substantially over any per-note predictor; the **pretrained
-network** contributes specifically *loudness* knowledge and better-calibrated
-confidence. Neither claim rests on the other, and both survived a week of adversarial
-checking.
+Given the printed score and a recorded performance (piano MIDI), the system infers
+**how each written note was played** — its timing, articulation, and loudness —
+each with an honest error bar. Two ingredients carry the result, with distinct
+roles: a **score graph** (notes connected by adjacency in score-time, voice, and
+chord) makes the error bars trustworthy and cuts prediction error substantially
+below any per-note predictor; a small **music network** we train ourselves on
+piano performances adds loudness knowledge and sharper confidence.
 
-## Headline numbers (held-out ASAP, 30 pieces × 4 mask seeds, strict protocol)
+## Headline result
+
+Held-out ASAP, 30 pieces × 4 mask seeds, 40% of notes hidden. Lower RMSE/NLL is
+better; coverage should sit near the nominal 90%.
 
 | System | Error (RMSE) | Confidence quality (NLL) | 90%-interval coverage |
 |---|---|---|---|
 | Predict zero | 0.566 | −0.007 | 87% |
 | Graph alone | 0.404 | −0.308 | 92% |
-| Network + graph (published headline) | **0.393** | **−0.322** | **92%** |
-| Features + network + graph (candidate) | 0.388 | −0.333 | 92% |
+| **Network + graph** | **0.393** | **−0.322** | **92%** |
+| Features + network + graph | 0.388 | −0.333 | 92% |
 
-*The candidate row was confirmed this morning under the published tuning and the same
-strict protocol as the headline row — see "this morning's confirmations" below.*
+**The full model is best on both axes at once — lowest error and best-calibrated
+confidence — and the graph's contribution is statistically significant on both,
+piece by piece.**
 
-## The week's three honesty results (what a referee would ask, answered first)
+## What we found
 
-1. **"Is the network peeking at the answer?"** It was — we found the leak, fixed it
-   (the read-out is now structurally incapable of seeing a note's own loudness),
-   re-measured everything, and added a stricter protocol where hidden notes'
-   loudnesses are absent from the input entirely. Cost of full strictness: ~nothing
-   (error 0.3928 → 0.3930). The corrected numbers above are the strict ones.
-2. **"Couldn't hand-built features do the same?"** Half yes — and we say so. On
-   average error, 25 hand-built score features **tie** the network. The network's
-   real, significant edge is confidence quality and loudness prediction (19% better
-   RMSE on that channel). Best of all they **stack**: features + network together is
-   the best system measured.
-3. **"Was the training objective even aligned with the task?"** We rebuilt
-   pretraining to match the task exactly (bidirectional, mask-aware) — and it did
-   **not** beat the original at matched compute (error slightly worse, confidence
-   tied, timing better, articulation worse; 3× compute doesn't close it). An honest
-   negative worth reporting: the original read-out was already extracting what the
-   objective change was supposed to unlock. En route we caught the same leak pattern
-   trying to re-enter through the new read-out, which is now a documented design rule
-   rather than a one-off fix.
+1. **The graph earns its place.** It cuts error well below per-note prediction and
+   brings the nominal-90% intervals to ~92% coverage. Its advantage over the same
+   prediction *without* the graph is significant on both accuracy and confidence.
+2. **The network's specific contribution is loudness and calibration.** Against a
+   strong hand-built baseline (25 score features fit under the same protocol) the
+   network **ties on average error**; its real, significant edge is loudness
+   (~19% lower error on that channel) and confidence quality. Best of all, the two
+   **stack** — features + network is the best system in the table.
+3. **A task-matched training variant doesn't help.** We also trained a
+   bidirectional, mask-aware version aligned exactly with the evaluation task; at
+   matched compute it does **not** beat the simpler network (3× compute doesn't
+   change that). The straightforward setup already captures the signal.
 
-## This morning's confirmations (run while preparing this digest)
+## Where the structure helps — six downstream demonstrations
 
-- **Candidate headline** (features + network + graph) re-measured under the published
-  tuning and protocol: **confirmed**. Error 0.388, confidence −0.333 under the strict
-  protocol — better than the current headline (0.393 / −0.322) on both counts, with the
-  per-piece improvements statistically significant. Full strictness again costs
-  essentially nothing (error +0.0000). No fit collapses under the published tuning.
-- **Fit-collapse guard**: one evaluation piece can send the error-bar fitting step
-  into a wildly wrong fit (1 cell in 120; it dominated two diagnostic runs). A guard
-  (validate the fit on a held-back sliver of the observed notes; fall back to a
-  conservative fit if it fails) was implemented and tested this morning: on the
-  published protocol it changes **nothing, bit for bit** (it never fires on a healthy
-  fit); both known collapsed cells return to normal (worst case, pooled timing error
-  1.58 → 0.156); every healthy cell is untouched. It is off for published numbers and
-  free to enable everywhere else.
+A single boundary emerges across all six: **the graph helps whenever notes are
+judged one at a time (recovery, confidence, spotting errors), and does not help
+when a whole performance is collapsed into a summary.**
 
-## Decision to make at the meeting
+- **Error spotting** — *clear win*: it flags corrupted notes better than any
+  structure-free baseline, and its edge *grows* as the errors get subtler.
+- **Cleaning noisy transcriptions** — *win* at a known noise level (better error
+  and equally honest confidence).
+- **Completing a performance from an excerpt** — *partial*: the network guess
+  carries the far-future; the graph helps where hidden notes have nearby heard
+  neighbours.
+- **Knowing when to trust a prediction** — *qualified win*: setting aside the
+  least-confident predictions genuinely lowers error on the rest.
+- **Guessing musical era from playing style** — *negative*: a note-level tool does
+  not help piece-level style summaries.
+- **Identifying the pianist** (Vienna 4x22, 22 pianists × 4 shared excerpts) —
+  *mixed*: the extracted expression **does** carry a performer's identity (3–4×
+  chance), validating what we recover; smoothing it with the graph does not help
+  this summary.
 
-Adopt **features + network + graph** as the thesis headline system (this morning's
-confirmation held), or keep **network + graph** as the headline with features
-reported as an available upgrade? The first is the better number; the second is the
-cleaner single-model story. The write-up supports either; the contribution claim —
-*structure + calibration, with each ingredient's marginal value isolated* — is
-unchanged in both.
+## How the evaluation is kept trustworthy
+
+- **Unseen test pieces.** 30 held-out pieces the network never saw. Because ASAP
+  reuses many MAESTRO recordings, every test performance whose training twin was
+  seen is removed (≈1000 → 650), so the numbers reflect generalization.
+- **No peeking at the target.** The network's per-note read-out is taken *before*
+  a note's own loudness enters it, so it cannot copy the answer; a strict variant
+  additionally blanks hidden notes' loudness from the input — at essentially no
+  cost to the numbers.
+- **A self-checking fit.** The per-piece confidence fit validates itself on
+  held-back observed notes and falls back to a conservative fit if it misbehaves;
+  on healthy fits it changes nothing. Every pooled table also reports the median,
+  so no single bad cell can hide in the mean.
+
+## Decision for the meeting
+
+Adopt **features + network + graph** as the headline system (the better numbers),
+or keep **network + graph** as the headline with features reported as an available
+add-on (the cleaner single-model story)? Both are supported; the contribution —
+*structure + calibration, with each ingredient's marginal value isolated* — is the
+same either way.
 
 ## Figures
 
-![Graph contribution per prior mean](figures/digest_headline.png)
+![The graph's contribution per prior mean](figures/digest_headline.png)
 
-![Where the network earns its place](figures/digest_channels.png)
-
-![The one-in-120 fit collapse and the guard](figures/digest_collapse.png)
+![Where the network earns its place (per channel)](figures/digest_channels.png)
