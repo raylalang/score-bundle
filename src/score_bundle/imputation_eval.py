@@ -193,11 +193,28 @@ class MetricAccumulator:
                 np.concatenate(sds), np.concatenate(chs))
 
     def report(self, level: float = 0.9) -> Dict[Tuple[str, bool], Dict[str, float]]:
-        """Metrics per (mean, graph) cell, pooled over all channels and pieces."""
+        """Metrics per (mean, graph) cell, pooled over all channels and pieces.
+
+        Besides the pooled metrics, each entry carries ``rmse_median_cell`` /
+        ``rmse_worst_cell`` — the median and max RMSE over the individual
+        :meth:`add` calls (one per evaluated (piece, seed) cell). Pooled RMSE is
+        not robust to a single collapsed EB fit (one cell out of 120 once drove
+        pooled tau from 0.16 to 1.58); the median stays honest and the worst
+        cell makes a collapse visible instead of silently dominating the mean.
+        """
         rep = {}
         for key in self._cells:
             yt, pr, sd, _ = self._pooled(key)
-            rep[key] = _evaluate_metrics(yt, pr, sd, level=level)
+            m = _evaluate_metrics(yt, pr, sd, level=level)
+            cell_rmse = [
+                float(np.sqrt(np.mean((p - y) ** 2)))
+                for y, p in zip(self._cells[key][0], self._cells[key][1])
+                if len(y)
+            ]
+            if cell_rmse:
+                m["rmse_median_cell"] = float(np.median(cell_rmse))
+                m["rmse_worst_cell"] = float(np.max(cell_rmse))
+            rep[key] = m
         return rep
 
     def report_by_channel(
@@ -217,9 +234,18 @@ class MetricAccumulator:
 
 
 def format_report(rep: Dict[Tuple[str, bool], Dict[str, float]], level: float = 0.9) -> str:
-    """Pretty 3x2 table: mean source x graph, with RMSE / NLL / coverage / cal-error."""
+    """Pretty 3x2 table: mean source x graph, with RMSE / NLL / coverage / cal-error.
+
+    When the report carries per-cell stats (see :meth:`MetricAccumulator.report`),
+    two extra columns show the median and worst per-cell RMSE — a pooled RMSE far
+    above the median flags a collapsed fit rather than a uniform regression.
+    """
     cov_key = "coverage@%.2f" % level
-    lines = [f"{'mean source':14s} {'graph':6s} {'RMSE':>8s} {'NLL':>8s} {'cov@.9':>8s} {'cal-err':>8s}"]
+    has_cells = any("rmse_median_cell" in m for m in rep.values())
+    header = f"{'mean source':14s} {'graph':6s} {'RMSE':>8s} {'NLL':>8s} {'cov@.9':>8s} {'cal-err':>8s}"
+    if has_cells:
+        header += f" {'med-cell':>9s} {'worst':>8s}"
+    lines = [header]
     order = ["zero", "ridge", "LM"]
     names = {k[0] for k in rep}
     for name in order + sorted(names - set(order)):
@@ -228,10 +254,13 @@ def format_report(rep: Dict[Tuple[str, bool], Dict[str, float]], level: float = 
             if key not in rep:
                 continue
             m = rep[key]
-            lines.append(
+            row = (
                 f"{name:14s} {('on' if use_graph else 'off'):6s} "
                 f"{m['rmse']:8.4f} {m['nll']:8.4f} {m[cov_key]:8.3f} {m['calibration_error']:8.3f}"
             )
+            if has_cells and "rmse_median_cell" in m:
+                row += f" {m['rmse_median_cell']:9.4f} {m['rmse_worst_cell']:8.4f}"
+            lines.append(row)
     return "\n".join(lines)
 
 

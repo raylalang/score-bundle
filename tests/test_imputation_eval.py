@@ -71,8 +71,21 @@ def test_multichannel_shapes_and_accumulator():
     acc.add(cells)  # pooling two "pieces"
     rep = acc.report(level=0.9)
     assert ("LM", True) in rep and "rmse" in rep[("LM", True)]
+    # per-cell robustness stats: identical cells -> median == worst == each cell's RMSE
+    m = rep[("LM", True)]
+    assert m["rmse_median_cell"] == m["rmse_worst_cell"] > 0
     table = ie.format_report(rep)
     assert "mean source" in table and "LM" in table
+    assert "med-cell" in table and "worst" in table
+
+    # a single collapsed cell must surface in the worst column, not move the median
+    bad = {k: ie.CellResult(c.y, c.pred + 100.0, c.std, c.channel)
+           for k, c in cells.items()}
+    acc.add(bad)
+    rep2 = acc.report(level=0.9)
+    m2 = rep2[("LM", True)]
+    assert m2["rmse_worst_cell"] > 50.0
+    assert m2["rmse_median_cell"] == m["rmse_median_cell"]
 
     # per-channel breakdown
     chan = acc.report_by_channel(["c0", "c1"], level=0.9)
