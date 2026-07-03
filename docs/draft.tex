@@ -1,0 +1,396 @@
+% =====================================================================
+%  draft.tex — Thesis DRAFT skeleton for the Score-Bundle Models project.
+%
+%  This is a scaffold, not a finished thesis: prose is written where the
+%  result is known and honest, and \TODO{...} marks everything to fill in
+%  (numbers, figures, citations, expansions).  Exact figures live in
+%  docs/phase1_calibration_results.md, docs/downstream_tasks_results.md,
+%  docs/status_2026-07-02.md; the full model derivation is docs/formulation.tex.
+%
+%  Compiles with plain pdflatex (no bibtex needed — manual thebibliography).
+%  Numbers are centralised in the macros below so there is ONE place to edit.
+% =====================================================================
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figures/}}
+
+% --- draft helpers ---------------------------------------------------
+\newcommand{\TODO}[1]{{\color{red}\textbf{[TODO: #1]}}}
+\newcommand{\placeholder}[1]{{\color{gray}\textit{#1}}}
+% Figure placeholder: shows the figure if present, else a TODO box.
+\newcommand{\figph}[3]{% {file}{width}{caption}
+  \begin{figure}[t]\centering
+  \IfFileExists{figures/#1}{\includegraphics[width=#2\linewidth]{#1}}%
+    {\fbox{\parbox[c][0.28\linewidth][c]{#2\linewidth}{\centering\TODO{figure: #1}}}}
+  \caption{#3}\end{figure}}
+
+% --- headline numbers (UPDATE from docs/phase1_calibration_results.md) ---
+\newcommand{\rmseZero}{0.566}
+\newcommand{\rmseGraph}{0.404}
+\newcommand{\rmseNetGraph}{0.393}      % published headline (strict protocol)
+\newcommand{\rmseStack}{0.388}         % features + network + graph (candidate)
+\newcommand{\covHead}{92\%}            % coverage of nominal-90\% intervals
+\newcommand{\nPieces}{30}
+\newcommand{\maskRate}{40\%}
+
+% --- notation (must match docs/formulation.tex and CLAUDE.md) ---------
+\newcommand{\Sy}{\Sigma_y}             % posterior covariance
+\newcommand{\muLM}{\mu_{\mathrm{LM}}}  % LM prior mean
+
+\title{\textbf{Score-Bundle Models}\\[0.3em]
+  \large Bayesian Score-Informed Performance Transcription\\
+  with Calibrated Uncertainty \TODO{finalise title}}
+\author{Ray \TODO{full name} \\[0.5em]
+  \small Supervisor: \TODO{name} \\
+  \small \TODO{institution / degree programme}}
+\date{Draft --- \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Given a printed score and a recording of a performance (as piano MIDI in this
+work), we recover \emph{how} each written note was played --- its micro-timing,
+articulation, and dynamics --- together with a calibrated statement of
+confidence. The core idea is a \emph{score graph}: notes that are related in the
+score are modelled as related in performance, via a Gaussian Markov random field
+(GMRF) prior over per-note expressive variables. A small, from-scratch symbolic
+music language model supplies a learned prior mean, and the graph models the
+residual with structured, calibrated uncertainty. On held-out ASAP piano
+performances the full model recovers hidden notes with lower error than any
+per-note predictor (RMSE~$\approx\rmseNetGraph$) and better-calibrated confidence
+(nominal-90\% intervals cover the truth $\approx\covHead$ of the time), with the
+graph's contribution statistically significant on both axes. Six downstream tasks
+map exactly where the structure helps (per-note recovery, confidence, error
+spotting) and where it does not (whole-performance summaries).
+\TODO{tighten abstract; insert final numbers and the one headline sentence.}
+\end{abstract}
+
+\tableofcontents
+
+% =====================================================================
+\chapter{Introduction}\label{ch:intro}
+
+\section{Motivation}
+\TODO{Why expressive performance matters; the gap between a score (what to play)
+and a performance (how it was played); why uncertainty is essential.}
+A score specifies \emph{what} to play; a performance realises \emph{how}. The
+difference --- micro-timing, articulation, dynamics --- is where musical
+expression lives, and recovering it from a recording is both scientifically
+interesting and practically useful (analysis, pedagogy, expressive rendering).
+
+\section{Problem statement}
+We study \emph{score-informed} performance transcription: the symbolic score
+(note identities, onsets, durations) is \emph{known}, and the task is to infer
+the continuous performance variables attached to each note, with uncertainty.
+This is the inverse of expressive synthesis. Inferring the score itself
+(full automatic music transcription) is out of scope; see \S\ref{sec:scope}.
+\TODO{formal one-paragraph statement; forward/inverse framing.}
+
+\section{Contributions}
+\begin{enumerate}[leftmargin=*]
+  \item A \textbf{score-graph structured prior} (GMRF/SPDE) over per-note
+        expressive variables, giving a closed-form posterior with calibrated
+        per-note uncertainty, validated on held-out data.
+  \item An \textbf{honest characterisation of a learned prior mean}: a
+        from-scratch symbolic music LM contributes calibration- and
+        loudness-specific information; against a rich hand-built score-feature
+        baseline it \emph{ties on average error} and the two \emph{stack}.
+  \item A \textbf{map of where the structure helps}, via six downstream tasks
+        with objective metrics and honest baselines (three wins, two mixed, one
+        negative).
+  \item \textbf{Methodological rigour}: a discovered-and-fixed evaluation leak,
+        a strict leakage-free protocol, and a robustness guard for the
+        hyperparameter fit. \TODO{phrase as a contribution, not an apology.}
+  \item \placeholder{(Planned / future)} A path to audio via a differentiable
+        synthesizer likelihood (Phase~3) and a geometric ``connection-Laplacian''
+        generalisation of the graph prior.
+\end{enumerate}
+
+\section{Scope and non-goals}\label{sec:scope}
+In scope: piano, symbolic (MIDI) performance variables (timing, articulation,
+dynamics), known score. Not (yet) in scope: audio input/output, intonation and
+vibrato (require continuously pitched instruments), and unknown-score inference.
+\TODO{expand; state assumptions explicitly.}
+
+\section{Thesis outline}
+\TODO{one line per chapter.}
+
+% =====================================================================
+\chapter{Background and Related Work}\label{ch:related}
+
+\section{Computational models of expressive performance}
+\TODO{survey; position our per-note, uncertainty-first framing.}
+\cite{cancino2018,oore2018}
+
+\section{Score-to-performance alignment}
+\TODO{how aligned corpora are built; ASAP; note-level alignment.} \cite{asap}
+
+\section{Structured priors: GMRFs and the SPDE approach}
+\TODO{graph Laplacian priors; the SPDE/GMRF link; Mat\'ern GPs on graphs.}
+\cite{lindgren2011,rueheld2005,borovitskiy2021}
+
+\section{Symbolic music language models}
+\TODO{Music Transformer, REMI, performance RNNs; from-scratch (nanoGPT) rationale.}
+\cite{musictransformer,remi,oore2018,nanogpt}
+
+\section{Differentiable synthesis}
+\TODO{DDSP; harmonic-plus-noise; why it matters for Phase~3.} \cite{ddsp}
+
+% =====================================================================
+\chapter{Model and Formulation}\label{ch:model}
+\emph{The complete derivation is in \texttt{docs/formulation.tex}
+(Appendix~\ref{app:formulation}); the essentials are reproduced here.}
+
+\section{Score and performance variables}
+The known score is $\mathcal{S}=\{s_i\}_{i=1}^N$ with $s_i=(p_i,b_i,d_i)$ (pitch
+degree, beat onset, beat duration). Each note carries a Phase-1 performance
+vector
+\[
+  y_i = [\,\tau_i,\ \log r_i,\ v_i\,]\in\mathbb{R}^3,
+\]
+the onset residual (s), the articulation/duration ratio (log), and the
+(normalised) velocity. \TODO{define $\tau$ relative to the estimated tempo warp.}
+
+\section{The score graph}
+Build a weighted graph $G=(V,E)$ over notes with edge weights from score-time,
+pitch, voice, and phrase adjacency, with Laplacian $L_G=D-W$. \TODO{final edge
+definition; which adjacencies were used.}
+
+\section{Graph prior (GMRF)}
+Place a Gaussian prior with precision built from the graph,
+\[
+  Q_G = \lambda I + \eta L_G
+  \qquad\text{(or Mat\'ern/SPDE }Q_G=\sigma_g^{-2}(\kappa^2 I + L_G)^{\alpha}),
+\]
+so that connected notes have correlated expressive deviations, with a closed-form
+Gaussian posterior. \TODO{state per-channel construction.}
+
+\section{Observation and posterior}
+With $\tilde y = y + e,\ e\sim\mathcal N(0,\Sigma_e)$, the posterior is Gaussian,
+\[
+  p(y\mid\tilde y)=\mathcal N(m,\ \Sy),\quad
+  \Sy=(Q_G+\Sigma_e^{-1})^{-1},\quad
+  m=\Sy(Q_G\,\mu+\Sigma_e^{-1}\tilde y).
+\]
+Held-out notes carry no likelihood term and are predicted from their neighbours.
+\TODO{predictive variance = latent + observation noise (the corrected form).}
+
+\section{Learned prior mean and the leak-free read-out}
+The prior mean $\mu$ can be the LM prediction $\muLM$: a from-scratch decoder-only
+Transformer, pretrained by next-token prediction on MAESTRO, read out per note.
+\textbf{Crucially}, the read-out is taken \emph{before} a note's own performed
+velocity enters the network, so it cannot leak the target.
+\TODO{Fig.: the 4-token group and the pre-velocity read-out position.}
+
+\section{Hyperparameters, fit, and robustness}
+Prior hyperparameters are learned by (restricted) marginal likelihood per piece.
+Two safeguards: a floor on the observation-noise level, and a self-validating
+guard that falls back to a conservative fit when the fitted field fails on a
+held-back sliver of observed notes. \TODO{state both precisely.}
+
+% =====================================================================
+\chapter{Data and Experimental Protocol}\label{ch:data}
+
+\section{Pretraining corpus (MAESTRO)}
+\TODO{size, split, tokenisation; only MAESTRO MIDI is used for pretraining.}
+
+\section{Evaluation corpus (ASAP) and target extraction}
+ASAP is the only corpus pairing written scores with performances; it supplies the
+targets $y=[\tau,\log r,v]$ via the score$\leftrightarrow$performance beat warp.
+\TODO{alignment/matching procedure; how many pieces/notes.}
+
+\section{Contamination control and the strict protocol}
+Because ASAP reuses many MAESTRO recordings, every ASAP performance whose MAESTRO
+twin was in pretraining is removed ($\approx$1000 $\to$ $\approx$650), so the
+model is tested only on unseen performances. A \emph{strict} protocol
+additionally blanks every hidden note's loudness from the input.
+\TODO{exact counts; cost of strictness (essentially nil).}
+
+\section{Metrics}
+Recovery: RMSE (per channel and pooled). Calibration: negative log predictive
+density (NLL), central-interval coverage, PIT. \TODO{define; report median
+alongside mean (single-cell collapse guard).}
+
+\section{Performer-identification corpus (Vienna 4x22)}
+For the one task ASAP cannot support (performer identity), the small Vienna~4x22
+corpus (22 pianists $\times$ 4 shared excerpts) is used. \cite{vienna4x22}
+
+% =====================================================================
+\chapter{Phase-1 Results}\label{ch:results}
+
+\section{Headline: recovery and calibration}
+On \nPieces{} held-out ASAP pieces with \maskRate{} of notes hidden, the full
+model (LM guess + score graph) attains the lowest error and best-calibrated
+confidence; the graph's contribution is significant on \emph{both} axes.
+
+\begin{table}[t]\centering
+\caption{Held-out ASAP, strict protocol. Lower RMSE/NLL is better; coverage
+closer to 90\% is better. \TODO{verify against docs/phase1\_calibration\_results.md;
+add NLL and CIs.}}
+\begin{tabular}{lccc}
+\toprule
+System & RMSE & NLL & coverage \\
+\midrule
+Predict zero                 & \rmseZero     & \TODO{} & \TODO{} \\
+Graph alone                  & \rmseGraph    & \TODO{} & \TODO{} \\
+Network + graph (headline)   & \textbf{\rmseNetGraph} & \TODO{} & \covHead \\
+Features + network + graph   & \rmseStack    & \TODO{} & \TODO{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\figph{digest_headline.png}{0.7}{The graph's contribution per prior mean.
+\TODO{final figure.}}
+
+\section{The evaluation leak: discovery, fix, re-measurement}
+An earlier read-out let the network see a note's own loudness --- the very target
+it was asked to predict --- inflating the apparent loudness advantage. We read the
+summary one position earlier (provably blind to the note's own loudness, pinned by
+an automated test), re-measured everything, and adopted the strict protocol. The
+corrected advantage is smaller but honest and statistically significant.
+\TODO{before/after loudness numbers (band-aid $\to$ leak-free $\to$ flawed claim).}
+
+\section{Hyperparameter fragility and the guard}
+On a minority of evaluation cells the noise fit collapsed toward zero
+(overconfident); a noise-level floor plus a self-validating guard fix it, shown
+harmless on healthy runs (bit-for-bit identical). \TODO{numbers; the 1-in-120 cell.}
+
+\section{Do hand-built features suffice?}
+Against a rich 25-feature score baseline fit under the same protocol, the network
+\emph{ties on average error}; its genuine, significant edge is calibration and
+loudness. Best of all, features and network \emph{stack}
+(RMSE $\rmseStack$ vs.\ $\rmseNetGraph$). \figph{digest_channels.png}{0.7}{Where
+the network earns its place (per channel). \TODO{final figure.}}
+
+\section{Stage-2: task-matched pretraining, an honest negative}
+A bidirectional, mask-aware retraining (matched exactly to the evaluation task)
+did \emph{not} beat the original at matched compute (3$\times$ budget does not
+close it). The honest lesson: the original read-out already extracted what the
+objective change was meant to unlock. \TODO{table; the reintroduced-leak catch.}
+
+\section{Scaling: a bigger LM does not help}
+A 1.3$\times$ larger, lower-perplexity model gives an essentially identical
+downstream result once the leak is removed --- the earlier ``scaling'' gain was
+the loudness leak. Practical rule: judge the LM downstream, not by perplexity.
+\TODO{numbers.}
+
+% =====================================================================
+\chapter{Downstream Tasks}\label{ch:downstream}
+Six tasks with objective metrics and honest baselines; all outcomes reported.
+\TODO{one results table per task; move detail from docs/downstream\_tasks\_results.md.}
+
+\section{Error spotting (anomaly detection) --- clear win}
+Corrupt a small fraction of notes; rank by suspiciousness. The graph model ranks
+better (AUROC \TODO{}) and its edge \emph{grows} as errors get subtler.
+
+\section{Denoising --- win at known noise level}
+Recover true values from added noise. With the noise level known, the graph beats
+per-note shrinkage on both error and calibration. \emph{Honest negative}:
+estimating the noise level from a single piece is unreliable. \TODO{numbers.}
+
+\section{Completion / rendering from an excerpt --- partial}
+Predict the expression of the rest of a piece from its opening. The LM guess
+carries the far-future; the graph helps only where hidden notes have nearby heard
+neighbours. \TODO{numbers.}
+
+\section{Selective prediction --- qualified win}
+Discarding the least-confident predictions lowers error on the rest, most clearly
+for articulation and for catching the model's own misfires. \TODO{numbers.}
+
+\section{Musical-era classification --- honest negative}
+Style statistics alone do not beat the majority-class baseline; the graph, a
+note-level tool, does not help whole-piece summaries. \TODO{numbers.}
+
+\section{Performer identification (Vienna 4x22) --- mixed}
+The extracted expression \emph{does} carry a pianist's identity
+(3--4$\times$ chance), validating our extraction; graph smoothing does not help
+this whole-performance summary. \TODO{numbers.}
+
+\section{The boundary}
+Across all six: \textbf{the graph prior helps whenever notes are judged one by one
+for accuracy or confidence, and does not help when a performance is collapsed into
+a summary.} This is exactly the thesis claim, now bounded by evidence on both
+sides.
+
+% =====================================================================
+\chapter{Discussion}\label{ch:discussion}
+\section{Interpretation}
+\TODO{why structure helps calibration; why the LM's edge is loudness.}
+\section{Limitations}
+\TODO{symbolic-only; piano-only; single-corpus alignment dependence.}
+\section{Threats to validity}
+\TODO{leakage (addressed), contamination (addressed), fit collapse (guarded),
+median vs mean reporting.}
+
+% =====================================================================
+\chapter{Future Work}\label{ch:future}
+\section{Phase 2: intonation and vibrato}
+\TODO{f0 extraction from monophonic audio; new channels; datasets (URMP, singing).}
+\section{Phase 3: a differentiable-synthesizer audio likelihood}
+The intended step to audio: $x=\Phi(z)\mathbf a+\varepsilon$, amplitudes
+marginalised analytically, nonlinear positions inferred approximately.
+\TODO{status: not yet started.}
+\section{Geometric direction: the score-bundle connection Laplacian}
+The current graph prior is the \emph{flat} case of a graph connection Laplacian;
+non-trivial edge transforms give a genuine fibre bundle with measurable
+curvature/holonomy. \TODO{see docs/geometry\_direction.md; litmus test.}
+\section{Unknown score support}
+\TODO{toward full AMT via a discrete latent layer.}
+
+% =====================================================================
+\chapter{Conclusion}\label{ch:conclusion}
+\TODO{restate the validated contribution (structure + calibration, each
+ingredient isolated), the boundary, and the road to audio.}
+
+% =====================================================================
+\appendix
+\chapter{Full formulation}\label{app:formulation}
+\TODO{\texttt{\textbackslash input\{formulation\}} here, or merge
+docs/formulation.tex into this appendix.}
+
+\chapter{Additional results}\label{app:extra}
+\TODO{per-channel tables, ablations, reliability diagrams / PIT histograms.}
+
+% =====================================================================
+\begin{thebibliography}{99}
+\bibitem{lindgren2011} F.~Lindgren, H.~Rue, J.~Lindstr\"om.
+  An explicit link between Gaussian fields and Gaussian Markov random fields:
+  the SPDE approach. \emph{JRSS-B}, 2011.
+\bibitem{rueheld2005} H.~Rue, L.~Held.
+  \emph{Gaussian Markov Random Fields: Theory and Applications}. 2005.
+\bibitem{borovitskiy2021} V.~Borovitskiy et al.
+  Mat\'ern Gaussian Processes on Graphs. \emph{AISTATS}, 2021.
+\bibitem{ddsp} J.~Engel, L.~Hantrakul, C.~Gu, A.~Roberts.
+  DDSP: Differentiable Digital Signal Processing. \emph{ICLR}, 2020.
+\bibitem{musictransformer} C.-Z.~A.~Huang et al.
+  Music Transformer. \emph{ICLR}, 2019.
+\bibitem{remi} Y.-S.~Huang, Y.-H.~Yang.
+  Pop Music Transformer (REMI). \emph{ACM MM}, 2020.
+\bibitem{oore2018} S.~Oore et al.
+  This Time with Feeling: Learning Expressive Musical Performance. 2018.
+\bibitem{nanogpt} A.~Karpathy. nanoGPT. \url{https://github.com/karpathy/nanoGPT}.
+\bibitem{cancino2018} C.~Cancino-Chac\'on et al.
+  Computational Models of Expressive Music Performance: A Review.
+  \emph{Front.\ Digit.\ Humanit.}, 2018.
+\bibitem{asap} F.~Foscarin et al.
+  ASAP: a dataset of aligned scores and performances. \emph{ISMIR}, 2020.
+\bibitem{maestro} C.~Hawthorne et al.
+  Enabling Factorized Piano Music Modeling with the MAESTRO Dataset.
+  \emph{ICLR}, 2019.
+\bibitem{vienna4x22} W.~Goebl. The Vienna 4x22 Piano Corpus. \TODO{cite details.}
+\bibitem{TODO} \TODO{add remaining references (Singer--Wu connection Laplacian,
+  Tymoczko, ATEPP, Aria-MIDI, alignment methods, \dots).}
+\end{thebibliography}
+
+\end{document}
