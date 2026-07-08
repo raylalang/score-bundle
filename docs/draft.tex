@@ -76,10 +76,10 @@
 \title{\textbf{Score-Bundle Models}\\[0.3em]
   \large Bayesian Score-Informed Performance Transcription
   with Calibrated Uncertainty\\[0.4em]
-  \normalsize\textit{Project requirements, status, and thesis draft (one document)}}
+  \normalsize\textit{Project requirements, status, and thesis draft (unified document)}}
 \author{Raynaldi Lalang \\[0.5em]
-  \small Supervisor: \placeholder{(supervisor name)} \\
-  \small \placeholder{(institution / degree programme)}}
+  \small Supervisor: Kazuyoshi Yoshii \\
+  \small Kyoto University}
 \date{Working document --- compiled \today}
 
 \begin{document}
@@ -90,8 +90,9 @@
 this work), we recover \emph{how} each written note was played --- its
 micro-timing, articulation, and dynamics --- together with a calibrated statement
 of confidence. The core idea is a \emph{score graph}: notes that are related in
-the score are modelled as related in performance, via a Gaussian Markov random
-field (GMRF) prior over per-note expressive variables. A small, from-scratch
+the score are modelled as related in performance, via a Gaussian process defined on
+that graph (a graph GP, computed as a Gaussian Markov random field) over per-note
+expressive variables. A small, from-scratch
 symbolic music language model supplies a learned prior mean, and the graph models
 the residual with structured, calibrated uncertainty. On held-out ASAP piano
 performances the full model recovers hidden notes with lower error than any
@@ -598,14 +599,15 @@ annotations \cite{asap}, and is the source of the targets used here. The quality
 this alignment upper-bounds the quality of the extracted targets, a dependence we
 treat as an explicit risk (Table~\ref{tab:risks}).
 
-\section{Structured priors: GMRFs and the SPDE approach}
+\section{Structured priors: graph Gaussian processes, GMRFs, and the SPDE approach}
 Gaussian Markov random fields place a Gaussian prior whose sparse precision encodes
 conditional-independence structure \cite{rueheld2005}. The SPDE approach links
 Gaussian fields to GMRFs and yields Mat\'ern-type priors with interpretable range
 and smoothness \cite{lindgren2011}; these constructions extend to graphs, giving
-Mat\'ern Gaussian processes on graph nodes \cite{borovitskiy2021}. Our score-graph
-prior is exactly such a graph GMRF, with the graph built from musical adjacency
-rather than physical space.
+Mat\'ern \emph{Gaussian processes on graph nodes} \cite{borovitskiy2021}. Our
+score-graph prior is exactly such a graph Gaussian process --- equivalently a graph
+GMRF, its sparse-precision computational form --- with the graph built from musical
+adjacency rather than physical space.
 
 \section{Symbolic music language models}
 Transformer and RNN models over tokenised MIDI (Music Transformer, REMI,
@@ -682,27 +684,41 @@ The \emph{temporal-only} baseline replaces $W$ by the chain adjacency of score-t
 order (each note coupled only to its temporal neighbours), an AR(1)-style smoother;
 the \emph{independent} baseline drops all edges ($\Lg = 0$).
 
-\section{Graph prior over performance variables}
-Each channel of $y$ (a scalar field over the $N$ nodes) receives a \emph{Gaussian
-Markov random field} (GMRF) prior: a multivariate Gaussian whose precision (inverse
-covariance) $\Qg$ is \emph{sparse} and built from the graph Laplacian $\Lg$, so that
-each note is conditionally independent of all others given its graph neighbours. We
-use one of two interchangeable forms,
+\section{The graph Gaussian process prior}\label{sec:graphgp}
+Each channel of $y$ (a scalar field over the $N$ notes) is given a \emph{Gaussian
+process on the score graph} --- a graph GP. It is a multivariate Gaussian
+$y \sim \N(\mu, K)$ over the notes whose covariance kernel $K$ is defined by the
+graph; we specify it through its \emph{precision} (inverse covariance)
+$\Qg = K^{-1}$, in one of two forms:
 \begin{align}
   \text{additive:} \quad & \Qg = \lambda I + \eta\, \Lg,
       && \lambda > 0,\;\; \eta \ge 0;
   \label{eq:additive}\\[2pt]
-  \text{Mat\'ern / SPDE:} \quad & \Qg = \sigma_g^{-2}\,(\kappa^2 I + \Lg)^{\alpha},
-      && \sigma_g > 0,\;\; \kappa > 0,\;\; \alpha \in \mathbb{Z}_{\ge 1}.
+  \text{graph Mat\'ern / SPDE:} \quad & \Qg = \sigma_g^{-2}\,(\kappa^2 I + \Lg)^{\alpha},
+      && \sigma_g > 0,\;\; \kappa > 0,\;\; \alpha \in \mathbb{Z}_{\ge 1},
   \label{eq:matern}
 \end{align}
-Reading the additive form: the $\eta\,\Lg$ term penalises differences between
-connected notes (neighbours are \emph{encouraged}, not forced, to share expressive
-behaviour), while the $\lambda I$ term is a ridge that pulls the field toward its
-mean and sets the overall scale. For integer $\alpha$ both precisions are sparse,
-which makes the posterior cheap. The joint prior over the stacked field ($k$
-channels) is block-diagonal across channels, each with its own hyperparameters and
-length scales. Throughout, $\alpha$ is \emph{only} the Mat\'ern exponent, $\eta$
+so the kernel is $K = \Qg^{-1}$. The second form is exactly the \emph{graph Mat\'ern
+Gaussian process} of Borovitskiy et al.\ \cite{borovitskiy2021}: its covariance
+shares the graph Laplacian's eigenvectors, with eigenvalue
+$\sigma_g^{2}(\kappa^2 + \nu_j)^{-\alpha}$ on the Laplacian eigenvalue $\nu_j$ --- the
+graph analogue of a Euclidean Mat\'ern GP obtained through the SPDE link of Lindgren
+et al.\ \cite{lindgren2011}. The additive form \eqref{eq:additive} is the plainest
+such graph GP and is the one used for the headline results; the Mat\'ern form is
+implemented and available as an ablation.
+
+\paragraph{Precision, not kernel --- a computational choice.}
+Working with $\Qg = K^{-1}$ rather than $K$ does not change the model, only how it is
+computed: $\Qg$ is \emph{sparse} --- each note couples only to its graph neighbours,
+which is precisely the Markov property of a \emph{Gaussian Markov random field}
+(GMRF) --- whereas the kernel $K = \Qg^{-1}$ is dense. That sparsity is what makes the
+posterior (\S\ref{sec:posterior}) closed-form and cheap; the GP and GMRF views
+describe the same distribution. Reading the additive form, the $\eta\,\Lg$ term
+penalises differences between connected notes (neighbours are \emph{encouraged}, not
+forced, to share expressive behaviour), while the $\lambda I$ ridge pulls the field
+toward its mean and sets the overall scale. The joint prior over the stacked field
+($k$ channels) is block-diagonal across channels, each with its own hyperparameters
+and length scales. Throughout, $\alpha$ is \emph{only} the Mat\'ern exponent, $\eta$
 \emph{only} the additive Laplacian weight, and $\sigma_g$ the Mat\'ern prior scale
 --- plain $\sigma$ is reserved for the posterior standard deviation
 (\S\ref{sec:posterior}).
@@ -906,6 +922,28 @@ $a \sim \N(\mu_a, \Sigma_a)$, the amplitudes marginalise exactly:
 writing $\Phi = \Phi(z)$. Inference over the nonlinear $z$ (Laplace approximation or
 variational inference, initialised from the nominal score) is the open Phase-3 step;
 the graph prior \eqref{eq:additive} plays the role of $p(z)$'s structured component.
+
+\paragraph{From imputation to audio: the task structure across phases.}
+It is worth being explicit that the \emph{visible/hidden partition of
+\S\ref{sec:posterior} is a Phase-1 evaluation device, not a feature of the method}.
+In Phase 1 the performance is supplied as clean MIDI, so the per-note targets are
+read off almost exactly ($\Sigma_e \approx 0$); there is nothing to infer unless we
+manufacture a prediction task, which is why we \emph{mask} a fraction of notes and
+impute them from the rest. The masking makes the structured prior testable; it is
+not intrinsic to score-informed transcription. In the audio phases the situation is
+the genuine one: the model is given \textbf{only the score and the audio} --- an
+$f_0$ curve in Phase 2, the waveform $x$ in Phase 3 --- and \textbf{no} per-note
+performance values at all. The observation is no longer at the note level, so there
+is \emph{no} visible/hidden split: \emph{every} note's expressive variables are
+latent and inferred \emph{jointly} from the single audio observation through the
+likelihood (Eq.~\eqref{eq:waveform}). The unifying view across all three phases is
+that \textbf{only the likelihood changes} --- from per-note noisy targets with a mask
+($P = 0$ on held-out notes) in Phase 1, to $f_0$-derived targets in Phase 2, to the
+global audio likelihood $p(x \mid z)$ in Phase 3 --- while the graph Gaussian process
+prior (\S\ref{sec:graphgp}) is carried over \emph{unchanged}. Correspondingly the
+task graduates from held-out imputation to full inference: in Phase 3 the natural
+evaluation is held-out pieces and posterior-predictive resynthesis, not note-level
+masking.
 
 % =====================================================================
 \chapter{Data and Experimental Protocol}\label{ch:data}

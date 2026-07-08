@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.6.9)  3 JUL 2026 15:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.6.9)  3 JUL 2026 16:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -498,12 +498,12 @@ ination with the same identifier (name{page.1}) has been already used, duplicat
 e ignored
 <to be read again> 
                    \relax 
-l.105 \end{abstract}
+l.106 \end{abstract}
                      [1]pdfTeX warning (ext4): destination with the same identi
 fier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.118 \tableofcontents
+l.119 \tableofcontents
                        [1] (./draft.toc [2
 
 ] [3])
@@ -520,47 +520,47 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [6
 
 ]
-Underfull \hbox (badness 4328) in paragraph at lines 199--199
+Underfull \hbox (badness 4328) in paragraph at lines 200--200
 []|\T1/cmr/m/n/9 From-scratch sym-bolic mu-sic
  []
 
 
-Underfull \hbox (badness 1509) in paragraph at lines 199--199
+Underfull \hbox (badness 1509) in paragraph at lines 200--200
 \T1/cmr/m/n/9 LM (back-bone + rep-re-sen-ta-
  []
 
 
-Underfull \hbox (badness 2503) in paragraph at lines 201--201
+Underfull \hbox (badness 2503) in paragraph at lines 202--202
 []|\T1/cmr/m/n/9 1 --- core
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 201--201
+Underfull \hbox (badness 10000) in paragraph at lines 202--202
 []|\T1/cmr/m/n/9 Timing, ar-tic-u-la-tion, dy-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 201--201
+Underfull \hbox (badness 10000) in paragraph at lines 202--202
 \T1/cmr/m/n/9 nam-ics from aligned
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 202--202
+Underfull \hbox (badness 10000) in paragraph at lines 203--203
 []|\T1/cmr/m/n/9 Score-graph GMRF prior,
  []
 
 
-Underfull \hbox (badness 4084) in paragraph at lines 202--202
+Underfull \hbox (badness 4084) in paragraph at lines 203--203
 \T1/cmr/m/n/9 closed-form pos-te-rior, cal-i-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 204--204
+Underfull \hbox (badness 10000) in paragraph at lines 205--205
 []|\T1/cmr/m/n/9 2 --- ex-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 204--204
+Underfull \hbox (badness 10000) in paragraph at lines 205--205
 \T1/cmr/m/n/9 ten-sion
  []
 
@@ -569,451 +569,451 @@ Chapter 2.
 [8
 
 ]
-Overfull \hbox (8.11739pt too wide) in paragraph at lines 302--302
+Overfull \hbox (8.11739pt too wide) in paragraph at lines 303--303
 []|\T1/cmr/m/n/10.95 Phase| 
  []
 
 
-Overfull \hbox (8.11739pt too wide) in paragraph at lines 306--306
+Overfull \hbox (8.11739pt too wide) in paragraph at lines 307--307
 []|\T1/cmr/m/n/10.95 Phase| 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 311--311
-[]|\T1/cmr/m/n/10.95 Local tempo /
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 311--312
-[]|\T1/cmr/m/n/10.95 all (de-fines the
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 312--312
+[]|\T1/cmr/m/n/10.95 Local tempo /
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 312--313
+[]|\T1/cmr/m/n/10.95 all (de-fines the
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 313--313
 []|\T1/cmr/m/n/10.95 s (re-port
  []
 
 
-Overfull \hbox (7.39793pt too wide) in paragraph at lines 313--313
+Overfull \hbox (7.39793pt too wide) in paragraph at lines 314--314
 []|\T1/cmr/m/n/10.95 dimensionless| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 315--315
+Underfull \hbox (badness 10000) in paragraph at lines 316--316
 []|\T1/cmr/m/n/10.95 on/off or
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 315--315
+Underfull \hbox (badness 10000) in paragraph at lines 316--316
 []|\T1/cmr/m/n/10.95 1
  []
 
 
-Overfull \hbox (7.30663pt too wide) in paragraph at lines 315--315
+Overfull \hbox (7.30663pt too wide) in paragraph at lines 316--316
 \T1/cmr/m/n/10.95 (opt.)| 
  []
 
 
-Underfull \hbox (badness 4060) in paragraph at lines 316--316
+Underfull \hbox (badness 4060) in paragraph at lines 317--317
 []|\T1/cmr/m/n/10.95 Intonation de-vi-a-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 317--317
+Underfull \hbox (badness 10000) in paragraph at lines 318--318
 []|\T1/cmr/m/n/10.95 Instantaneous $\OML/cmm/m/it/10.95 f[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 319--319
+Underfull \hbox (badness 10000) in paragraph at lines 320--320
 []|\T1/cmr/m/n/10.95 Amplitude en-ve-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 320--320
+Underfull \hbox (badness 10000) in paragraph at lines 321--321
 []|\T1/cmr/m/n/10.95 Harmonic am-pli-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 321--321
+Underfull \hbox (badness 10000) in paragraph at lines 322--322
 []|\T1/cmr/m/n/10.95 Posterior un-cer-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 321--321
+Underfull \hbox (badness 10000) in paragraph at lines 322--322
 []|\T1/cmr/m/n/10.95 same as
  []
 
 [9] [10]
 Chapter 3.
 
-Underfull \hbox (badness 10000) in paragraph at lines 346--346
+Underfull \hbox (badness 10000) in paragraph at lines 347--347
 []|\T1/cmr/m/n/10.95 Foundations:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 346--346
+Underfull \hbox (badness 10000) in paragraph at lines 347--347
 \T1/cmr/m/n/10.95 testable the-sis +
  []
 
 
-Underfull \hbox (badness 1163) in paragraph at lines 346--346
+Underfull \hbox (badness 1163) in paragraph at lines 347--347
 \T1/cmr/m/n/10.95 music-LM back-bone
  []
 
 
-Underfull \hbox (badness 6125) in paragraph at lines 347--349
+Underfull \hbox (badness 6125) in paragraph at lines 348--350
 []|\T1/cmr/m/n/10.95 Fix the task as score-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 347--349
+Underfull \hbox (badness 10000) in paragraph at lines 348--350
 \T1/cmr/m/n/10.95 informed per-for-mance
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 347--349
+Underfull \hbox (badness 10000) in paragraph at lines 348--350
 \T1/cmr/m/n/10.95 tran-scrip-tion; choose
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 347--349
+Underfull \hbox (badness 10000) in paragraph at lines 348--350
 \T1/cmr/m/n/10.95 Phase-1 tar-gets; build
  []
 
 
-Underfull \hbox (badness 1275) in paragraph at lines 347--349
+Underfull \hbox (badness 1275) in paragraph at lines 348--350
 \T1/cmr/m/n/10.95 + mu-sic LM and run a
  []
 
 
-Underfull \hbox (badness 4001) in paragraph at lines 347--349
+Underfull \hbox (badness 4001) in paragraph at lines 348--350
 \T1/cmr/m/n/10.95 first pre-train-ing; in-spect
  []
 
 
-Overfull \hbox (5.77351pt too wide) in paragraph at lines 347--349
+Overfull \hbox (5.77351pt too wide) in paragraph at lines 348--350
 \T1/cmr/m/n/10.95 ASAP/MAESTRO/ATEPP;
  []
 
 
-Underfull \hbox (badness 4454) in paragraph at lines 350--350
+Underfull \hbox (badness 4454) in paragraph at lines 351--351
 []|\T1/cmr/m/n/10.95 Reliable tar-gets +
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 351--353
+Underfull \hbox (badness 10000) in paragraph at lines 352--354
 []|\T1/cmr/m/n/10.95 Build score$\OMS/cmsy/m/n/10.95 $$\T1/cmr/m/n/10.95 perfor
 mance
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 351--353
+Underfull \hbox (badness 10000) in paragraph at lines 352--354
 \T1/cmr/m/n/10.95 align-ment and fea-ture
  []
 
 
-Underfull \hbox (badness 1466) in paragraph at lines 351--353
+Underfull \hbox (badness 1466) in paragraph at lines 352--354
 \T1/cmr/m/n/10.95 ex-trac-tion; de-rive tempo,
  []
 
 
-Underfull \hbox (badness 3989) in paragraph at lines 351--353
+Underfull \hbox (badness 3989) in paragraph at lines 352--354
 \T1/cmr/m/n/10.95 on-set resid-u-als, du-ra-tion
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 351--353
+Underfull \hbox (badness 10000) in paragraph at lines 352--354
 \T1/cmr/m/n/10.95 ra-tios, ve-loc-ity; im-ple-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 351--353
+Underfull \hbox (badness 10000) in paragraph at lines 352--354
 \T1/cmr/m/n/10.95 ment independent-note
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 351--353
+Underfull \hbox (badness 10000) in paragraph at lines 352--354
 \T1/cmr/m/n/10.95 and temporal-smoothing
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 353--354
+Underfull \hbox (badness 10000) in paragraph at lines 354--355
 []|\T1/cmr/bx/n/10.95 Done \T1/cmr/m/n/10.95 (ahead of
  []
 
 
-Underfull \hbox (badness 5637) in paragraph at lines 355--356
+Underfull \hbox (badness 5637) in paragraph at lines 356--357
 \T1/cmr/m/n/10.95 note-level vari-ables; run
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 357--358
+Underfull \hbox (badness 10000) in paragraph at lines 358--359
 []|\T1/cmr/bx/n/10.95 Done \T1/cmr/m/n/10.95 --- gate
  []
 
 
-Underfull \hbox (badness 2744) in paragraph at lines 357--358
+Underfull \hbox (badness 2744) in paragraph at lines 358--359
 \T1/cmr/m/n/10.95 passed; six down-
  []
 
 
-Underfull \hbox (badness 2326) in paragraph at lines 357--358
+Underfull \hbox (badness 2326) in paragraph at lines 358--359
 \T1/cmr/m/n/10.95 stream tasks com-
  []
 
 
-Overfull \hbox (13.2157pt too wide) in paragraph at lines 358--358
+Overfull \hbox (13.2157pt too wide) in paragraph at lines 359--359
 []|\T1/cmr/m/n/10.95 September| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 358--359
+Underfull \hbox (badness 10000) in paragraph at lines 359--360
 []|\T1/cmr/m/n/10.95 Chosen ex-ten-sion:
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 358--359
+Underfull \hbox (badness 10000) in paragraph at lines 359--360
 \T1/cmr/m/n/10.95 mono-phonic in-to-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 358--359
+Underfull \hbox (badness 10000) in paragraph at lines 359--360
 \T1/cmr/m/n/10.95 na-tion (Phase 2)
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 358--359
+Underfull \hbox (badness 10000) in paragraph at lines 359--360
 \T1/cmr/m/n/10.95 or wave-form pi-lot
  []
 
 
-Underfull \hbox (badness 1097) in paragraph at lines 359--361
+Underfull \hbox (badness 1097) in paragraph at lines 360--362
 []|\T1/cmr/m/n/10.95 If au-dio: small-est dif-fer-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 359--361
+Underfull \hbox (badness 10000) in paragraph at lines 360--362
 \T1/cmr/m/n/10.95 en-tiable syn-the-sizer on
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 359--361
+Underfull \hbox (badness 10000) in paragraph at lines 360--362
 \T1/cmr/m/n/10.95 syn-thetic/monophonic
  []
 
 
-Underfull \hbox (badness 1297) in paragraph at lines 359--361
+Underfull \hbox (badness 1297) in paragraph at lines 360--362
 \T1/cmr/m/n/10.95 data, pa-ram-e-ter re-cov-ery,
  []
 
 
-Underfull \hbox (badness 1117) in paragraph at lines 359--361
+Underfull \hbox (badness 1117) in paragraph at lines 360--362
 \T1/cmr/m/n/10.95 iden-ti-fi-a-bil-ity. If in-to-na-
  []
 
 
-Overfull \hbox (1.42111pt too wide) in paragraph at lines 362--362
+Overfull \hbox (1.42111pt too wide) in paragraph at lines 363--363
 []|\T1/cmr/m/n/10.95 October| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 362--364
+Underfull \hbox (badness 10000) in paragraph at lines 363--365
 \T1/cmr/m/n/10.95 ex-am-ples; doc-u-ment
  []
 
 
-Underfull \hbox (badness 5939) in paragraph at lines 362--364
+Underfull \hbox (badness 5939) in paragraph at lines 363--365
 \T1/cmr/m/n/10.95 lim-i-ta-tions; write meth-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 362--364
+Underfull \hbox (badness 10000) in paragraph at lines 363--365
 \T1/cmr/m/n/10.95 ods/results/ dis-cus-sion;
  []
 
 [11
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 380--380
+Underfull \hbox (badness 10000) in paragraph at lines 381--381
 []|\T1/cmr/m/n/10.95 One-paragraph ob-jec-tive, in-
  []
 
 
-Underfull \hbox (badness 2762) in paragraph at lines 382--382
+Underfull \hbox (badness 2762) in paragraph at lines 383--383
 []|\T1/cmr/m/n/10.95 Organised re-view: per-for-mance
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 383--383
+Underfull \hbox (badness 10000) in paragraph at lines 384--384
 []|\T1/cmr/m/n/10.95 Audit of
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 383--383
+Underfull \hbox (badness 10000) in paragraph at lines 384--384
 \T1/cmr/m/n/10.95 ASAP/MAESTRO/ATEPP:
  []
 
 
-Underfull \hbox (badness 2617) in paragraph at lines 386--386
+Underfull \hbox (badness 2617) in paragraph at lines 387--387
 []|\T1/cmr/m/n/10.95 Independent-note and temporal-
  []
 
 
-Underfull \hbox (badness 6188) in paragraph at lines 387--387
+Underfull \hbox (badness 6188) in paragraph at lines 388--388
 []|\T1/cmr/m/n/10.95 Candidate score graphs (time,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 389--389
+Underfull \hbox (badness 10000) in paragraph at lines 390--390
 []|\T1/cmr/m/n/10.95 Graph/prior/precision ab-la-tions;
  []
 
 
-Underfull \hbox (badness 6608) in paragraph at lines 389--389
+Underfull \hbox (badness 6608) in paragraph at lines 390--390
 \T1/cmr/m/n/10.95 cov-er-age and PIT di-ag-nos-tics.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 389--390
+Underfull \hbox (badness 10000) in paragraph at lines 390--391
 []|\T1/cmr/m/n/10.95 Done (gate
  []
 
 
-Underfull \hbox (badness 1057) in paragraph at lines 390--390
+Underfull \hbox (badness 1057) in paragraph at lines 391--391
 []|\T1/cmr/m/n/10.95 Choose Phase 2 (in-to-na-tion) or
  []
 
 
-Underfull \hbox (badness 7869) in paragraph at lines 390--390
+Underfull \hbox (badness 7869) in paragraph at lines 391--391
 \T1/cmr/m/n/10.95 Phase 3 (wave-form); set up
  []
 
 
-Underfull \hbox (badness 1694) in paragraph at lines 394--394
+Underfull \hbox (badness 1694) in paragraph at lines 395--395
 []|\T1/cmr/m/n/10.95 Methods/results/discussion draft,
  []
 
 
-Underfull \hbox (badness 5519) in paragraph at lines 394--394
+Underfull \hbox (badness 5519) in paragraph at lines 395--395
 \T1/cmr/m/n/10.95 re-pro-ducible pack-age, pre-sen-ta-
  []
 
 [12] [13]
 Chapter 4.
 
-Underfull \hbox (badness 10000) in paragraph at lines 449--450
+Underfull \hbox (badness 10000) in paragraph at lines 450--451
 []|\T1/cmr/m/n/9 all 8 con-trasts sig-nif-i-cant at
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 453--453
+Underfull \hbox (badness 10000) in paragraph at lines 454--454
 []|\T1/cmr/m/n/9 Performer iden-ti-fi-ca-tion (Vi-enna
  []
 
 [14
 
 ]
-Underfull \hbox (badness 1237) in paragraph at lines 502--502
+Underfull \hbox (badness 1237) in paragraph at lines 503--503
 []|\T1/cmr/m/n/10.95 Week 10 gate: re-quire im-prove-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 502--503
+Underfull \hbox (badness 10000) in paragraph at lines 503--504
 []|\T1/cmr/bx/n/10.95 Resolved \T1/cmr/m/n/10.95 ---
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 502--503
+Underfull \hbox (badness 10000) in paragraph at lines 503--504
 \T1/cmr/m/n/10.95 beats per-note
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 502--503
+Underfull \hbox (badness 10000) in paragraph at lines 503--504
 \T1/cmr/m/n/10.95 base-lines on
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 502--503
+Underfull \hbox (badness 10000) in paragraph at lines 503--504
 \T1/cmr/m/n/10.95 both, sig-nif-i-
  []
 
 
-Underfull \hbox (badness 7576) in paragraph at lines 503--503
+Underfull \hbox (badness 7576) in paragraph at lines 504--504
 []|\T1/cmr/m/n/10.95 Prior hy-per-pa-ram-e-ter
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 503--503
+Underfull \hbox (badness 10000) in paragraph at lines 504--504
 \T1/cmr/m/n/10.95 iden-ti-fi-a-bil-ity (pre-ci-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 503--503
+Underfull \hbox (badness 10000) in paragraph at lines 504--504
 \T1/cmr/m/n/10.95 sion vs. smooth-ness
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 503--504
+Underfull \hbox (badness 10000) in paragraph at lines 504--505
 []|\T1/cmr/bx/n/10.95 Hit & mit-i-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 503--504
+Underfull \hbox (badness 10000) in paragraph at lines 504--505
 \T1/cmr/m/n/10.95 level floor +
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 503--504
+Underfull \hbox (badness 10000) in paragraph at lines 504--505
 \T1/cmr/m/n/10.95 self-validating
  []
 
 
-Underfull \hbox (badness 1348) in paragraph at lines 504--505
+Underfull \hbox (badness 1348) in paragraph at lines 505--506
 []|\T1/cmr/bx/n/10.95 Outcome: \T1/cmr/m/n/10.95 ties
  []
 
 
-Underfull \hbox (badness 4048) in paragraph at lines 504--505
+Underfull \hbox (badness 4048) in paragraph at lines 505--506
 \T1/cmr/m/n/10.95 adds cal-i-bra-tion
  []
 
 
-Underfull \hbox (badness 2644) in paragraph at lines 506--506
+Underfull \hbox (badness 2644) in paragraph at lines 507--507
 []|\T1/cmr/m/n/10.95 Waveform iden-ti-fi-a-bil-
  []
 
 
-Underfull \hbox (badness 7631) in paragraph at lines 506--506
+Underfull \hbox (badness 7631) in paragraph at lines 507--507
 \T1/cmr/m/n/10.95 ity & mul-ti-modal-ity
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 507--507
+Underfull \hbox (badness 10000) in paragraph at lines 508--508
 []|\T1/cmr/m/n/10.95 Contribution con-cen-
  []
 
 
-Underfull \hbox (badness 1112) in paragraph at lines 507--507
+Underfull \hbox (badness 1112) in paragraph at lines 508--508
 []|\T1/cmr/m/n/10.95 Keep Phase 1 self-contained and
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 507--508
+Underfull \hbox (badness 10000) in paragraph at lines 508--509
 []|\T1/cmr/bx/n/10.95 Mitigated \T1/cmr/m/n/10.95 ---
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 507--508
+Underfull \hbox (badness 10000) in paragraph at lines 508--509
 \T1/cmr/m/n/10.95 Phase 1 is a
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 508--508
+Underfull \hbox (badness 10000) in paragraph at lines 509--509
 []|\T1/cmr/m/n/10.95 Keep score sup-port known;
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 508--508
+Underfull \hbox (badness 10000) in paragraph at lines 509--509
 \T1/cmr/m/n/10.95 unknown-score in-fer-ence stays
  []
 
@@ -1030,17 +1030,17 @@ Chapter 6.
 ] [21]
 Chapter 7.
 LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 6
-30.
+32.
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
-Underfull \hbox (badness 4819) in paragraph at lines 630--631
+Underfull \hbox (badness 4819) in paragraph at lines 632--633
 \T1/cmr/m/it/10.95 This chap-ter is the com-plete model deriva-tion (pre-vi-ous
 ly main-tained sep-a-rately as
  []
 
 
-Underfull \hbox (badness 1314) in paragraph at lines 630--631
+Underfull \hbox (badness 1314) in paragraph at lines 632--633
 \T1/cmtt/m/it/10.95 docs/formulation.tex\T1/cmr/m/it/10.95 , now merged here as
  the sin-gle source of truth). No-ta-tion is
  []
@@ -1048,7 +1048,7 @@ Underfull \hbox (badness 1314) in paragraph at lines 630--631
 [22
 
 ] [23] [24] [25]
-Overfull \hbox (31.02957pt too wide) detected at line 905
+Overfull \hbox (31.02957pt too wide) detected at line 921
 []
  []
 
@@ -1058,24 +1058,24 @@ Chapter 8.
 
 ]
 Chapter 9.
-<figures//digest_headline.png, id=691, 520.344pt x 216.81pt>
+<figures//digest_headline.png, id=700, 520.344pt x 216.81pt>
 File: figures//digest_headline.png Graphic file (type png)
 <use figures//digest_headline.png>
-Package pdftex.def Info: figures//digest_headline.png  used on input line 957.
+Package pdftex.def Info: figures//digest_headline.png  used on input line 995.
 (pdftex.def)             Requested size: 317.07614pt x 132.12157pt.
 [28
 
 ]
-<figures//digest_collapse.png, id=700, 520.344pt x 202.356pt>
+<figures//digest_collapse.png, id=708, 520.344pt x 202.356pt>
 File: figures//digest_collapse.png Graphic file (type png)
 <use figures//digest_collapse.png>
-Package pdftex.def Info: figures//digest_collapse.png  used on input line 1022.
+Package pdftex.def Info: figures//digest_collapse.png  used on input line 1060.
 
 (pdftex.def)             Requested size: 317.07614pt x 123.31346pt.
-<figures//digest_channels.png, id=701, 520.344pt x 187.902pt>
+<figures//digest_channels.png, id=709, 520.344pt x 187.902pt>
 File: figures//digest_channels.png Graphic file (type png)
 <use figures//digest_channels.png>
-Package pdftex.def Info: figures//digest_channels.png  used on input line 1029.
+Package pdftex.def Info: figures//digest_channels.png  used on input line 1067.
 
 (pdftex.def)             Requested size: 317.07614pt x 114.50536pt.
  [29 <./figures//digest_headline.png> <./figures//digest_collapse.png>]
@@ -1098,7 +1098,7 @@ Chapter 13.
 ]
 Appendix A.
 
-Underfull \hbox (badness 1112) in paragraph at lines 1202--1203
+Underfull \hbox (badness 1112) in paragraph at lines 1240--1241
 []|\T1/cmr/m/n/10.95 posterior mean, pos-te-rior co-vari-ance, pos-te-rior std
  []
 
@@ -1107,13 +1107,13 @@ Underfull \hbox (badness 1112) in paragraph at lines 1202--1203
 ]
 Appendix B.
 
-Underfull \hbox (badness 2119) in paragraph at lines 1215--1220
+Underfull \hbox (badness 2119) in paragraph at lines 1253--1258
 \T1/cmr/m/n/10.95 with-out the global tempo layer), and re-li-a-bil-ity di-a-gr
 ams / PIT his-tograms live in
  []
 
 
-Underfull \hbox (badness 7851) in paragraph at lines 1215--1220
+Underfull \hbox (badness 7851) in paragraph at lines 1253--1258
 \T1/cmtt/m/n/10.95 docs/phase1_calibration_results.md \T1/cmr/m/n/10.95 and \T1
 /cmtt/m/n/10.95 docs/downstream_tasks_results.md\T1/cmr/m/n/10.95 ; they
  []
@@ -1124,14 +1124,14 @@ Underfull \hbox (badness 7851) in paragraph at lines 1215--1220
 
 ] (./draft.aux)
 Package rerunfilecheck Info: File `draft.out' has not changed.
-(rerunfilecheck)             Checksum: 3D93A0DE0AB6EAD0EEF730EFE7BB876F;16530.
+(rerunfilecheck)             Checksum: CE81A60724623AFD9C0D827DA9F45063;16644.
  ) 
 Here is how much of TeX's memory you used:
- 11764 strings out of 480247
- 177880 string characters out of 5896152
- 485836 words of memory out of 5000000
+ 11765 strings out of 480247
+ 177891 string characters out of 5896152
+ 485865 words of memory out of 5000000
  29318 multiletter control sequences out of 15000+600000
- 499311 words of font info for 102 fonts, out of 8000000 for 9000
+ 498625 words of font info for 101 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  60i,14n,63p,740b,482s stack positions out of 5000i,500n,10000p,200000b,80000s
  </sessions/dreamy-nifty-darwin/.texlive2021/texmf-var/fonts/pk/ljfour/jknapp
@@ -1149,31 +1149,30 @@ ecbx1200.600pk> </sessions/dreamy-nifty-darwin/.texlive2021/texmf-var/fonts/pk/
 ljfour/jknappen/ec/ecbx2488.600pk> </sessions/dreamy-nifty-darwin/.texlive2021/
 texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1095.600pk> </sessions/dreamy-nifty-d
 arwin/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1095.600pk> </sess
-ions/dreamy-nifty-darwin/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ect
-i1000.600pk> </sessions/dreamy-nifty-darwin/.texlive2021/texmf-var/fonts/pk/ljf
-our/jknappen/ec/ecrm1000.600pk> </sessions/dreamy-nifty-darwin/.texlive2021/tex
-mf-var/fonts/pk/ljfour/jknappen/ec/ecti1095.600pk> </sessions/dreamy-nifty-darw
-in/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </session
-s/dreamy-nifty-darwin/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx17
-28.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbsy10.
-pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></
-usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/sh
-are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/te
-xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-di
-st/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/typ
-e1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
-ic/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pf
-b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr
-/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/
-texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on draft.pdf (40 pages, 556926 bytes).
+ions/dreamy-nifty-darwin/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecr
+m1000.600pk> </sessions/dreamy-nifty-darwin/.texlive2021/texmf-var/fonts/pk/ljf
+our/jknappen/ec/ecti1095.600pk> </sessions/dreamy-nifty-darwin/.texlive2021/tex
+mf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </sessions/dreamy-nifty-darw
+in/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1728.600pk></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbsy10.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share
+/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on draft.pdf (40 pages, 559201 bytes).
 PDF statistics:
- 1525 PDF objects out of 1728 (max. 8388607)
- 836 compressed objects within 9 object streams
- 189 named destinations out of 1000 (max. 500000)
+ 1527 PDF objects out of 1728 (max. 8388607)
+ 841 compressed objects within 9 object streams
+ 191 named destinations out of 1000 (max. 500000)
  672 words of extra memory for PDF output out of 10000 (max. 10000000)
 

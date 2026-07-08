@@ -118,7 +118,7 @@
 \newlabel{ch:related}{{6}{20}{Background and Related Work}{chapter.6}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {6.1}Computational models of expressive performance}{20}{section.6.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6.2}Score-to-performance alignment}{20}{section.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.3}Structured priors: GMRFs and the SPDE approach}{20}{section.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Structured priors: graph Gaussian processes, GMRFs, and the SPDE approach}{20}{section.6.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6.4}Symbolic music language models}{20}{section.6.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6.5}Differentiable synthesis}{21}{section.6.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {chapter}{\numberline {7}Model and Formulation}{22}{chapter.7}\protected@file@percent }
@@ -133,35 +133,40 @@
 \newlabel{eq:vel}{{7.5}{22}{Setting}{equation.7.1.5}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {7.2}The score graph}{22}{section.7.2}\protected@file@percent }
 \newlabel{eq:adjacency}{{7.6}{22}{The score graph}{equation.7.2.6}{}}
+\citation{borovitskiy2021}
+\citation{lindgren2011}
 \newlabel{eq:laplacian}{{7.7}{23}{The score graph}{equation.7.2.7}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.3}Graph prior over performance variables}{23}{section.7.3}\protected@file@percent }
-\newlabel{eq:additive}{{7.8}{23}{Graph prior over performance variables}{equation.7.3.8}{}}
-\newlabel{eq:matern}{{7.9}{23}{Graph prior over performance variables}{equation.7.3.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.3}The graph Gaussian process prior}{23}{section.7.3}\protected@file@percent }
+\newlabel{sec:graphgp}{{7.3}{23}{The graph Gaussian process prior}{section.7.3}{}}
+\newlabel{eq:additive}{{7.8}{23}{The graph Gaussian process prior}{equation.7.3.8}{}}
+\newlabel{eq:matern}{{7.9}{23}{The graph Gaussian process prior}{equation.7.3.9}{}}
+\@writefile{toc}{\contentsline {paragraph}{Precision, not kernel --- a computational choice.}{23}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7.4}The prior mean: zero, features, or the learned mean}{23}{section.7.4}\protected@file@percent }
 \newlabel{sec:prior-mean}{{7.4}{23}{The prior mean: zero, features, or the learned mean}{section.7.4}{}}
 \newlabel{eq:lm-mean}{{7.10}{23}{The prior mean: zero, features, or the learned mean}{equation.7.4.10}{}}
-\@writefile{toc}{\contentsline {paragraph}{Leak-free read-out.}{23}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Leak-free read-out.}{24}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7.5}Observation model and posterior}{24}{section.7.5}\protected@file@percent }
 \newlabel{sec:posterior}{{7.5}{24}{Observation model and posterior}{section.7.5}{}}
 \newlabel{eq:obs}{{7.11}{24}{Observation model and posterior}{equation.7.5.11}{}}
 \newlabel{eq:posterior}{{7.12}{24}{Observation model and posterior}{equation.7.5.12}{}}
-\@writefile{toc}{\contentsline {paragraph}{The four compared systems as special cases.}{24}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The four compared systems as special cases.}{24}{section*.4}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {7.1}{\ignorespaces The four systems as special cases of the posterior mean $m = \Sigma _y(Q_{\mathcal  {G}}\,\mu + P\,\tilde  y)$, $\Sigma _y= (Q_{\mathcal  {G}}+ P)^{-1}$, with $Q_{\mathcal  {G}}= \lambda I + \eta L_{\mathcal  {G}}$ and $P$ the observation precision ($1/\sigma _e^2$ on observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the notes, so a held-out note returns its prior mean with a single shared predictive std; ``graph on'' propagates the observed values $\tilde  y$ through the graph, giving a per-note mean and per-note std $\sqrt  {(\Sigma _y)_{ii} + \sigma _e^2}$.}}{24}{table.7.1}\protected@file@percent }
 \newlabel{tab:system-posteriors}{{7.1}{24}{The four systems as special cases of the posterior mean $m = \Sy (\Qg \,\mu + P\,\tilde y)$, $\Sy = (\Qg + P)^{-1}$, with $\Qg = \lambda I + \eta \Lg $ and $P$ the observation precision ($1/\sigma _e^2$ on observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the notes, so a held-out note returns its prior mean with a single shared predictive std; ``graph on'' propagates the observed values $\tilde y$ through the graph, giving a per-note mean and per-note std $\sqrt {(\Sy )_{ii} + \sigma _e^2}$}{table.7.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Predictive variance for held-out observations (the variance floor).}{24}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Predictive variance for held-out observations (the variance floor).}{24}{section*.5}\protected@file@percent }
 \newlabel{eq:floor}{{7.13}{24}{Predictive variance for held-out observations (the variance floor)}{equation.7.5.13}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.6}Hyperparameters (empirical Bayes)}{24}{section.7.6}\protected@file@percent }
-\newlabel{sec:eb}{{7.6}{24}{Hyperparameters (empirical Bayes)}{section.7.6}{}}
-\newlabel{eq:marglik}{{7.14}{24}{Hyperparameters (empirical Bayes)}{equation.7.6.14}{}}
-\@writefile{toc}{\contentsline {paragraph}{Noise floor.}{25}{section*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Guard (validating the fitted field).}{25}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.6}Hyperparameters (empirical Bayes)}{25}{section.7.6}\protected@file@percent }
+\newlabel{sec:eb}{{7.6}{25}{Hyperparameters (empirical Bayes)}{section.7.6}{}}
+\newlabel{eq:marglik}{{7.14}{25}{Hyperparameters (empirical Bayes)}{equation.7.6.14}{}}
+\@writefile{toc}{\contentsline {paragraph}{Noise floor.}{25}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Guard (validating the fitted field).}{25}{section*.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7.7}Evaluation: recovery and calibration}{25}{section.7.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7.8}Phase 2: intonation and vibrato (continuously pitched instruments)}{25}{section.7.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.9}Phase 3: waveform likelihood}{25}{section.7.9}\protected@file@percent }
-\newlabel{sec:phase3-math}{{7.9}{25}{Phase 3: waveform likelihood}{section.7.9}{}}
-\newlabel{eq:waveform}{{7.18}{25}{Phase 3: waveform likelihood}{equation.7.9.18}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.9}Phase 3: waveform likelihood}{26}{section.7.9}\protected@file@percent }
+\newlabel{sec:phase3-math}{{7.9}{26}{Phase 3: waveform likelihood}{section.7.9}{}}
+\newlabel{eq:waveform}{{7.18}{26}{Phase 3: waveform likelihood}{equation.7.9.18}{}}
 \newlabel{eq:amp-post}{{7.19}{26}{Phase 3: waveform likelihood}{equation.7.9.19}{}}
 \newlabel{eq:collapsed}{{7.20}{26}{Phase 3: waveform likelihood}{equation.7.9.20}{}}
+\@writefile{toc}{\contentsline {paragraph}{From imputation to audio: the task structure across phases.}{26}{section*.8}\protected@file@percent }
 \citation{maestro}
 \citation{asap}
 \citation{vienna4x22}

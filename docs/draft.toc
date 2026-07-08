@@ -33,24 +33,26 @@
 \contentsline {chapter}{\numberline {6}Background and Related Work}{20}{chapter.6}%
 \contentsline {section}{\numberline {6.1}Computational models of expressive performance}{20}{section.6.1}%
 \contentsline {section}{\numberline {6.2}Score-to-performance alignment}{20}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Structured priors: GMRFs and the SPDE approach}{20}{section.6.3}%
+\contentsline {section}{\numberline {6.3}Structured priors: graph Gaussian processes, GMRFs, and the SPDE approach}{20}{section.6.3}%
 \contentsline {section}{\numberline {6.4}Symbolic music language models}{20}{section.6.4}%
 \contentsline {section}{\numberline {6.5}Differentiable synthesis}{21}{section.6.5}%
 \contentsline {chapter}{\numberline {7}Model and Formulation}{22}{chapter.7}%
 \contentsline {section}{\numberline {7.1}Setting}{22}{section.7.1}%
 \contentsline {section}{\numberline {7.2}The score graph}{22}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Graph prior over performance variables}{23}{section.7.3}%
+\contentsline {section}{\numberline {7.3}The graph Gaussian process prior}{23}{section.7.3}%
+\contentsline {paragraph}{Precision, not kernel --- a computational choice.}{23}{section*.2}%
 \contentsline {section}{\numberline {7.4}The prior mean: zero, features, or the learned mean}{23}{section.7.4}%
-\contentsline {paragraph}{Leak-free read-out.}{23}{section*.2}%
+\contentsline {paragraph}{Leak-free read-out.}{24}{section*.3}%
 \contentsline {section}{\numberline {7.5}Observation model and posterior}{24}{section.7.5}%
-\contentsline {paragraph}{The four compared systems as special cases.}{24}{section*.3}%
-\contentsline {paragraph}{Predictive variance for held-out observations (the variance floor).}{24}{section*.4}%
-\contentsline {section}{\numberline {7.6}Hyperparameters (empirical Bayes)}{24}{section.7.6}%
-\contentsline {paragraph}{Noise floor.}{25}{section*.5}%
-\contentsline {paragraph}{Guard (validating the fitted field).}{25}{section*.6}%
+\contentsline {paragraph}{The four compared systems as special cases.}{24}{section*.4}%
+\contentsline {paragraph}{Predictive variance for held-out observations (the variance floor).}{24}{section*.5}%
+\contentsline {section}{\numberline {7.6}Hyperparameters (empirical Bayes)}{25}{section.7.6}%
+\contentsline {paragraph}{Noise floor.}{25}{section*.6}%
+\contentsline {paragraph}{Guard (validating the fitted field).}{25}{section*.7}%
 \contentsline {section}{\numberline {7.7}Evaluation: recovery and calibration}{25}{section.7.7}%
 \contentsline {section}{\numberline {7.8}Phase 2: intonation and vibrato (continuously pitched instruments)}{25}{section.7.8}%
-\contentsline {section}{\numberline {7.9}Phase 3: waveform likelihood}{25}{section.7.9}%
+\contentsline {section}{\numberline {7.9}Phase 3: waveform likelihood}{26}{section.7.9}%
+\contentsline {paragraph}{From imputation to audio: the task structure across phases.}{26}{section*.8}%
 \contentsline {chapter}{\numberline {8}Data and Experimental Protocol}{27}{chapter.8}%
 \contentsline {section}{\numberline {8.1}Pretraining corpus (MAESTRO)}{27}{section.8.1}%
 \contentsline {section}{\numberline {8.2}Evaluation corpus (ASAP) and target extraction}{27}{section.8.2}%
