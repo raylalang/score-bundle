@@ -67,23 +67,29 @@
 \contentsline {section}{\numberline {9.5}Do hand-built features suffice?}{30}{section.9.5}%
 \contentsline {section}{\numberline {9.6}Stage-2: task-matched pretraining, an honest negative}{30}{section.9.6}%
 \contentsline {section}{\numberline {9.7}Scaling: a bigger LM does not help}{30}{section.9.7}%
-\contentsline {chapter}{\numberline {10}Downstream Tasks}{31}{chapter.10}%
-\contentsline {section}{\numberline {10.1}Error spotting (anomaly detection) --- clear win}{31}{section.10.1}%
-\contentsline {section}{\numberline {10.2}Denoising --- win at known noise level}{31}{section.10.2}%
-\contentsline {section}{\numberline {10.3}Completion / rendering from an excerpt --- partial}{31}{section.10.3}%
-\contentsline {section}{\numberline {10.4}Selective prediction --- qualified win}{31}{section.10.4}%
-\contentsline {section}{\numberline {10.5}Musical-era classification --- honest negative}{31}{section.10.5}%
-\contentsline {section}{\numberline {10.6}Performer identification (Vienna 4x22) --- mixed}{32}{section.10.6}%
-\contentsline {section}{\numberline {10.7}The boundary}{32}{section.10.7}%
-\contentsline {chapter}{\numberline {11}Discussion}{33}{chapter.11}%
-\contentsline {section}{\numberline {11.1}Interpretation}{33}{section.11.1}%
-\contentsline {section}{\numberline {11.2}Limitations}{33}{section.11.2}%
-\contentsline {section}{\numberline {11.3}Threats to validity}{33}{section.11.3}%
-\contentsline {chapter}{\numberline {12}Future Work}{34}{chapter.12}%
-\contentsline {section}{\numberline {12.1}Phase 2: intonation and vibrato}{34}{section.12.1}%
-\contentsline {section}{\numberline {12.2}Phase 3: a differentiable-synthesizer audio likelihood}{34}{section.12.2}%
-\contentsline {section}{\numberline {12.3}Geometric direction: the score-bundle connection Laplacian}{34}{section.12.3}%
-\contentsline {section}{\numberline {12.4}Unknown score support}{34}{section.12.4}%
-\contentsline {chapter}{\numberline {13}Conclusion}{35}{chapter.13}%
-\contentsline {chapter}{\numberline {A}Notation summary}{36}{appendix.A}%
-\contentsline {chapter}{\numberline {B}Additional results}{37}{appendix.B}%
+\contentsline {section}{\numberline {9.8}Kernel comparison (planned)}{30}{section.9.8}%
+\contentsline {chapter}{\numberline {10}Downstream Tasks}{32}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Error spotting (anomaly detection) --- clear win}{32}{section.10.1}%
+\contentsline {section}{\numberline {10.2}Denoising --- win at known noise level}{32}{section.10.2}%
+\contentsline {section}{\numberline {10.3}Completion / rendering from an excerpt --- partial}{32}{section.10.3}%
+\contentsline {section}{\numberline {10.4}Selective prediction --- qualified win}{32}{section.10.4}%
+\contentsline {section}{\numberline {10.5}Musical-era classification --- honest negative}{32}{section.10.5}%
+\contentsline {section}{\numberline {10.6}Performer identification (Vienna 4x22) --- mixed}{33}{section.10.6}%
+\contentsline {section}{\numberline {10.7}The boundary}{33}{section.10.7}%
+\contentsline {chapter}{\numberline {11}Discussion}{34}{chapter.11}%
+\contentsline {section}{\numberline {11.1}Interpretation}{34}{section.11.1}%
+\contentsline {section}{\numberline {11.2}Limitations}{34}{section.11.2}%
+\contentsline {section}{\numberline {11.3}Threats to validity}{34}{section.11.3}%
+\contentsline {chapter}{\numberline {12}Future Work}{35}{chapter.12}%
+\contentsline {section}{\numberline {12.1}Phase 2: intonation and vibrato}{35}{section.12.1}%
+\contentsline {section}{\numberline {12.2}Phase 3: a differentiable-synthesizer audio likelihood}{35}{section.12.2}%
+\contentsline {section}{\numberline {12.3}Incorporating music theory}{35}{section.12.3}%
+\contentsline {paragraph}{(A) In the graph / kernel --- the most experimental route.}{35}{section*.9}%
+\contentsline {paragraph}{(B) In the prior mean --- the most incremental route.}{35}{section*.10}%
+\contentsline {paragraph}{(C) In the connection --- the geometric route.}{36}{section*.11}%
+\contentsline {paragraph}{Litmus test (the same for all three).}{36}{section*.12}%
+\contentsline {section}{\numberline {12.4}Geometric direction: the score-bundle connection Laplacian}{36}{section.12.4}%
+\contentsline {section}{\numberline {12.5}Unknown score support}{36}{section.12.5}%
+\contentsline {chapter}{\numberline {13}Conclusion}{37}{chapter.13}%
+\contentsline {chapter}{\numberline {A}Notation summary}{38}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Additional results}{39}{appendix.B}%
