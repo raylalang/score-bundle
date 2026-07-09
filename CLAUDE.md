@@ -39,6 +39,14 @@ note conceptually in sync.
   user decision); Stage-2 masked pretraining is an honest negative at matched budget.
   Downstream tasks (completion / anomaly / denoising):
   `src/score_bundle/downstream.py`, `docs/downstream_tasks_results.md`.
+  Kernel comparison (2026-07-09, `scripts/eval_kernels.py`,
+  `docs/kernel_comparison_results.md`): Matérn/diffusion/normalized-Laplacian all tie
+  the additive default (spectral machinery: `prior.SPECTRAL_KERNELS`,
+  `model.SpectralGaussianField` — covariance form, since the diffusion precision
+  overflows); **harmonic chord+voice-leading edges** (`graph.build_adjacency_harmonic`)
+  are the only significant both-axes win (0.385/−0.335 strict) and compose with feat+LM
+  (0.378/−0.346 best cells); tonal-distance *replacement* of the pitch metric hurts.
+  Headline adoption again a user decision.
   Aria frozen-feature upper-bound baseline is an import-guarded stub (`lm/aria_baseline.py`).
 - **Phase 2 — intonation/vibrato (stubs + helpers).** `src/score_bundle/phase2/`.
 - **Phase 3 — waveform likelihood (stubs + helpers).** `src/score_bundle/phase3/`.
@@ -58,6 +66,7 @@ note conceptually in sync.
 | `Q_G` | graph prior precision; additive `λI + ηL_G`, or Matérn `σ_g⁻²(κ²I+L_G)^α` |
 | `λ, η` | additive ridge term, Laplacian weight |
 | `σ_g, κ, α` | Matérn scale, inverse-length, exponent |
+| `g(ν)`, `t` | spectral kernel: covariance eigenvalues of `L_G`'s spectrum; diffusion time (`K = σ_g² exp(−t L_G)`) |
 | `Σ_e` | observation-noise covariance; `Σ_y` posterior covariance; `m` posterior mean |
 | `σ` | **posterior standard deviation only** (not a prior scale) |
 | `μ_LM`, `h_i` | LM-predicted prior mean, LM per-note embedding |

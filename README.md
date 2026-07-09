@@ -66,7 +66,14 @@ headline, adoption pending). Three honesty results are reported alongside: hand-
 features **tie** the LM mean on RMSE (its real edge is calibration + dynamics); a
 task-aligned masked pretraining objective (Stage 2) does **not** beat the causal
 read-out at matched budget; and a guarded EB fit (`fit_laplacian_field_guarded`)
-removes a rare one-cell-in-120 fit collapse without touching healthy fits. Full tables
+removes a rare one-cell-in-120 fit collapse without touching healthy fits. A
+**kernel comparison** (2026-07-09) holds this protocol fixed and swaps only the kernel:
+Matérn (α=1–3), diffusion/heat, and normalized-Laplacian variants all tie the additive
+default, and the one significant both-axes improvement is **adding chord +
+voice-leading edges** to the score graph (0.385 / −0.335 strict; composes with feat+LM
+to 0.378 / −0.346), while *replacing* semitone distance with a circle-of-fifths metric
+hurts — see [`docs/kernel_comparison_results.md`](docs/kernel_comparison_results.md).
+Full tables
 and corrections in
 [`docs/phase1_calibration_results.md`](docs/phase1_calibration_results.md); reproduce
 with `scripts/eval_asap_robust.py --noise-floor-frac 0.05` (leak-free embeddings are the

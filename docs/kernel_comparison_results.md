@@ -128,12 +128,29 @@ of pitch distance. This also means the published headline was left on the table 
 plain graph: the harmonic+VL graph with the plain LM mean already beats the
 feat+LM+plain-graph candidate on RMSE (0.3852 vs 0.3879 strict).
 
-## Stack cell (winning kernel × candidate-headline mean)
+## Stack cells (winning kernel × candidate-headline mean)
 
-*(run 2026-07-09, `logs/kernels_featlm_*.log`, `results/kernels_featlm/`)*
+*(run 2026-07-09, `logs/kernels_featlm_report.log`, `results/kernels_featlm/`)*
 
-PENDING — feat+LM strict mean × {additive, harmonic, harmonic+VL}; the additive cell
-must reproduce the published 0.3879 / −0.333 candidate.
+Same protocol, mean = the candidate-headline **feat+LM strict** representation
+(feat-lin score features + mask-aware LM embeddings, concat head at l2=10). Sanity
+gate passed: the additive cell reproduces the published strict candidate
+(0.3879 / −0.333 / 0.921) exactly.
+
+| Mean × kernel | RMSE | NLL | cov@.9 | ΔRMSE vs feat+LM+additive | ΔNLL |
+|---|---|---|---|---|---|
+| feat+LM × additive (published candidate) | 0.3879 | −0.3330 | 0.921 | — | — |
+| feat+LM × harmonic (chord) | **0.3784** | −0.3418 | 0.923 | −0.0095 [−0.0133,−0.0061]* | −0.0088 [−0.0176,+0.0012] |
+| feat+LM × harmonic + voice-leading | 0.3795 | **−0.3459** | 0.922 | −0.0082 [−0.0117,−0.0053]* | −0.0129 [−0.0193,−0.0060]* |
+
+The kernel gain survives intact on top of the feature-stacked mean (same magnitude as
+on the plain LM mean), i.e. **the mean upgrade and the graph upgrade are orthogonal and
+compose**. Best strict cells measured to date: RMSE 0.3784 (feat+LM × chord graph) and
+NLL −0.3459 (feat+LM × chord+VL graph) — vs the published headline 0.3930 / −0.322 and
+the candidate 0.3879 / −0.333. As with feat+LM itself, **adoption into the headline is
+the user's call** (it adds two hand-designed edge families to the story); the honest
+framing either way is unchanged — structure + calibration with each ingredient's
+marginal value isolated, now including the graph's edge families.
 
 ## Reproduce
 

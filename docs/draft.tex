@@ -1122,8 +1122,10 @@ edges gives the only significant both-axes win over the baseline
 ($\Delta$RMSE $-0.008^{*}$, $\Delta$NLL $-0.013^{*}$; chord edges carry the recovery
 gain, concentrated in articulation and loudness --- $\tau$ stays pinned at the warp
 floor). The harmonic graph with the plain network mean (RMSE $0.385$) even edges out
-the feature-stacked candidate on the plain graph (\rmseStack), and the two changes are
-orthogonal, so they can compose.
+the feature-stacked candidate on the plain graph (\rmseStack) --- and the two upgrades
+\emph{compose}: on the feat+LM mean the harmonic graphs still gain
+$\Delta$RMSE $-0.008^{*}$ / $\Delta$NLL $-0.013^{*}$, giving the best strict cells
+measured to date, RMSE $0.378$ (chord edges) and NLL $-0.346$ (chord + voice-leading).
 
 \begin{table}[h]\centering
 \caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; guard on).
