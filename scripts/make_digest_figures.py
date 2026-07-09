@@ -304,6 +304,53 @@ def fig_confirmation(conf_log):
     plt.close(fig)
 
 
+def _load_gp_cells(pattern):
+    import glob, pickle
+    ys, prs, sds = [], [], []
+    for f in sorted(glob.glob(pattern)):
+        for v in pickle.load(open(f, "rb"))["cells"].values():
+            ys.append(v[0]); prs.append(v[1]); sds.append(v[2])
+    return np.concatenate(ys), np.concatenate(prs), np.concatenate(sds)
+
+
+def fig_gp_calibration(dev_pattern, conf_pattern):
+    """Reliability diagram + PIT histogram for the GP-first model (appendix)."""
+    import sys
+    sys.path.insert(0, "src")
+    from score_bundle.metrics import coverage as _coverage, pit_values as _pit
+
+    sets = [("development", _load_gp_cells(dev_pattern), BLUE_DK),
+            ("confirmation", _load_gp_cells(conf_pattern), AQUA)]
+    levels = np.linspace(0.1, 0.95, 18)
+    fig, ax = plt.subplots(figsize=(5.0, 4.6))
+    ax.plot([0, 1], [0, 1], color=BASE, ls="--", lw=1, label="ideal")
+    for name, (y, pr, sd), color in sets:
+        emp = [_coverage(y, pr, sd, level=L) for L in levels]
+        ax.plot(levels, emp, "o-", ms=3.5, lw=1.6, color=color, label=name)
+    ax.set_xlabel("nominal coverage"); ax.set_ylabel("empirical coverage")
+    ax.set_title("Reliability — GP-first model", color=INK, fontsize=12,
+                 loc="left", pad=10)
+    ax.legend(frameon=False, fontsize=9, loc="upper left")
+    ax.grid(color=GRID, lw=0.8); ax.set_axisbelow(True)
+    for s in ("top", "right"):
+        ax.spines[s].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(f"{OUT}/gpfirst_reliability.png")
+    plt.close(fig)
+
+    fig, axes = plt.subplots(1, 2, figsize=(8.6, 3.2), sharey=True)
+    for ax, (name, (y, pr, sd), color) in zip(axes, sets):
+        u = _pit(y, pr, sd)
+        ax.hist(u, bins=20, range=(0, 1), color=color, edgecolor=SURFACE)
+        ax.axhline(len(u) / 20, color=INK2, ls="--", lw=1)
+        ax.set_title(f"PIT — {name}", color=INK, fontsize=11, loc="left")
+        ax.set_xlabel("PIT value")
+        _style(ax, xgrid=False)
+    fig.tight_layout()
+    fig.savefig(f"{OUT}/gpfirst_pit.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     import sys
     grid_log = "logs/feature_baseline_l2_10.log"
@@ -313,6 +360,8 @@ if __name__ == "__main__":
         fig_channels(grid_log)
         fig_kernels("logs/kernels_report.log")
         fig_confirmation("logs/confirmation_verdict.log")
-        print("headline + channels + kernels + confirmation written")
+        fig_gp_calibration("results/graphgp_v2/b_featlm.shard*.pkl",
+                           "results/graphgp_conf/b_featlm.shard*.pkl")
+        print("headline + channels + kernels + confirmation + calibration written")
     fig_collapse("logs/diag_tau_s2x3.log", "logs/diag_tau_s2x3_guarded.log")
     print("collapse written")

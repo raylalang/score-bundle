@@ -53,7 +53,7 @@ python examples/phase0_pretrain_lm.py          # pretrain the LM (needs torch)
 python examples/phase0_lm_features_to_prior.py # LM embeddings → prior mean → graph posterior
 ```
 
-**Phase-1 result (GP-first model; preregistered confirmation 2026-07-09).** The thesis
+**Phase-1 result (GP-first model; confirmation run 2026-07-09, adopted 2026-07-10).** The thesis
 model is **one multi-output graph Gaussian process** over (note, channel)
 (`src/score_bundle/gp.py`): channels coupled by a coregionalization matrix, a
 shape-normalized spectral kernel of the score-graph Laplacian, and all side
@@ -130,11 +130,14 @@ mean, std = gp.posterior(Y, mask, x_hat)     # (N, 3) each; per-note, per-channe
 ## Examples
 
 ```bash
+python examples/phase1_graphgp.py              # THE THESIS MODEL: one multi-output graph GP
+                                               # vs its nested ablations (numpy-only)
 python examples/phase1_synthetic_recovery.py   # recovery + calibration on known latents
-python examples/phase1_imputation.py           # held-out imputation vs baselines
+python examples/phase1_imputation.py           # development form: imputation vs baselines
 ```
 
-The imputation example reproduces the core comparison — the score-graph prior beating the
+The GP example demonstrates the thesis model end to end; the imputation example
+reproduces the development-form comparison — the score-graph prior beating the
 independent, temporal-only, and ridge-feature baselines on held-out RMSE and NLL.
 
 ## Tests

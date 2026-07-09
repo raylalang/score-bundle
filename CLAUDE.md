@@ -102,7 +102,8 @@ or `a_i(t)` for the amplitude envelope. (These were deliberately disambiguated.)
 
 ## Conventions
 
-- **NumPy-first statistical core.** The Phase-1 package (graph / prior / model / metrics /
+- **NumPy-first statistical core.** The Phase-1 package (graph / prior / model / **gp** /
+  metrics /
   tokenizer / data) must import and test with **numpy only**; `scipy` and `scikit-learn` are
   optional and import-guarded. The **Phase-0 LM is PyTorch** (`lm/model_torch.py`) —
   import-guarded so the package still imports without torch, but training and the LM tests
