@@ -200,6 +200,44 @@ conservative decoupled fit ($\eta = 0$, $\lambda = 1/\widehat{\operatorname{Var}
 y_o - \mu_o]$). On healthy fits the screen never fires, so guarded and unguarded runs are
 identical except at the collapsed cells.
 
+\section{The full model: one multi-output graph GP}
+
+The sections above describe the per-channel development form (a plug-in mean
+$\mu$, one scalar field per channel). The thesis model assembles the same
+ingredients as \emph{one} Gaussian process over the $3N$ values
+$(\text{note}, \text{channel})$, with covariance
+\begin{equation}
+K \;=\; B \otimes K_G(s)\; +\; \sum_f \operatorname{diag}(c_f) \otimes X_f X_f^\top
+\;+\; \operatorname{diag}(\varsigma^2) \otimes I .
+\label{eq:gpfirst-form}
+\end{equation}
+Here $K_G(s) = U\,g(\nu; s)\,U^\top$ is a shape-normalized spectral kernel of the
+score-graph Laplacian ($g(0) = 1$; additive $g = 1/(1+s\nu)$ by default, Mat\'ern
+$g = (s/(s+\nu))^{\alpha}$ and diffusion $g = e^{-s\nu}$ as alternatives), so all
+scale lives in the $3\times 3$ PSD coregionalization matrix $B$ (log-Cholesky
+parameterized) that couples the channels. Each $X_f$ is a per-note feature matrix
+(score-only features with a bias column; the LM's mask-aware per-note embeddings),
+and its linear kernel is exactly the \emph{marginalized Bayesian linear mean}:
+$y = X\beta + f + e$ with $\beta \sim \N(0, \Sigma_\beta)$ marginalizes to a
+zero-mean GP with $X\Sigma_\beta X^\top$ added to the kernel. The plug-in read-out
+head of \S4 is thereby replaced by per-piece Bayesian weights under the same
+evidence that fits everything else: $s$, $B$, the per-channel feature scales
+$c_f$, and the per-channel noise $\varsigma^2$ maximize the exact log marginal
+likelihood of the observed block (per-note masks keep it Kronecker-compatible),
+with the same noise floor as \S6. Inference is exact conjugate GP regression;
+predictive standard deviations include the channel noise as in \S5.
+
+\paragraph{Special cases.} Constraining $B$ diagonal and dropping the feature
+kernels recovers the per-channel model of \S3--\S6 exactly (the joint marginal
+likelihood equals the sum of per-channel ones; a unit test pins the identity).
+Inserting a fixed cross-piece mean $\mu$ reproduces the two-stage pipeline inside
+the coupled model. A guarded variant of the joint fit mirrors the ladder of \S6
+with an added overconfidence screen; one measured limitation remains --- a rare
+per-piece timing tail driven by a few held-out outliers under the Gaussian
+likelihood's quadratic penalty, invisible to any observed-split screen ---
+documented with its remedies (heavy-tailed timing likelihood; deploy-time floors;
+median-of-pieces reporting) rather than patched post hoc.
+
 \section{Evaluation: recovery and calibration}
 
 Predictions on held-out notes are scored on both axes. With held-out values $y_i$,
@@ -279,6 +317,7 @@ $\ell_b$, $\ell_p$, $w_v$ & graph length scales (beats, semitones), voice bonus 
 $\Qg$ & graph prior precision: $\lambda I + \eta \Lg$ or $\sigma_g^{-2}(\kappa^2 I + \Lg)^\alpha$ \\
 $\lambda$, $\eta$ & additive ridge term, Laplacian weight \\
 $\sigma_g$, $\kappa$, $\alpha$ & Mat\'ern scale, inverse length, exponent \\
+$B$, $c_f$, $g(\nu; s)$, $X_f$, $\varsigma^2$ & coregionalization matrix; feature-kernel scales; shape-normalized spectral kernel and its parameter; feature matrices; per-channel noise \eqref{eq:gpfirst-form} \\
 $\mu$, $\muLM$, $h_i$ & prior mean; LM-predicted mean; LM per-note embedding \\
 $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
 $m$, $\Sigma_y$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\

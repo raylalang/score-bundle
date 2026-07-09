@@ -84,38 +84,6 @@ both columns.
    Yesterday's lesson cuts both ways: theory-as-replacement hurt, theory-as-extra-edges
    helped — the gauge construction is the principled version of "extra structure".
 
-## A late development (last evening) — your graph-GP direction, taken seriously
-
-After this digest was prepared, we ran the review you prompted: how orthodox is our
-model as a *graph Gaussian process*, against the three papers you shared? Verdict:
-the core was already a graph GP, but three things weren't — the three channels were
-separate models, the graph's own settings were hand-fixed, and the learned guess was
-bolted on rather than part of the model. We rebuilt it as **one** graph GP that fixes
-all three (the old system is provably a special case of it), and then did something
-new for this project: we **preregistered** a confirmation protocol and ran it exactly
-once on **20 fresh pieces no decision had ever touched**.
-
-- **Confirmed on fresh pieces:** the single-GP model recovers hidden notes better
-  than this digest's headline system (error 0.376 vs 0.393, significant piece by
-  piece), and the score graph's contribution to honest confidence is confirmed
-  inside it (significant).
-- **Not confirmed:** its pooled confidence-quality advantage — a statistical tie,
-  traced to a single piece where a few timing outliers blow up one score; the
-  *typical* piece is better-calibrated under the new model. Reusing the same test
-  pieces all week had flattered every model; the fresh set caught that, which is
-  exactly what it is for.
-- **What drives the gain:** letting each piece fit its own (Bayesian) feature
-  weights inside the model — not the extra mathematical machinery per se; we
-  measured that distinction explicitly. One boundary found: with only an opening
-  excerpt observed, the per-piece weights can extrapolate badly — the old approach
-  remains the right tool for that use-case.
-
-Per the rule we committed to before seeing the fresh data, the single-GP model is
-now the working headline; everything in this digest remains valid as its ablation
-chain. Full write-up with the preregistration and all numbers:
-`docs/graphgp_first_design.md`. We'd value your read on the remaining calibration
-tail (a heavy-tailed timing noise model is the natural fix).
-
 ## Where everything lives
 
 Full tables and significance: `docs/kernel_comparison_results.md` (kernel comparison,
