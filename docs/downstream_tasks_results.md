@@ -6,7 +6,10 @@
 > `logs/downstream_gpfirst_report.log`): anomaly detection is a **stronger** win
 > (v AUROC 0.995, log r 0.986, τ 0.978 — best on every channel), oracle-noise
 > denoising slightly better (RMSE 0.182/0.276, cov 0.90), selective prediction
-> transfers (confident-half RMSE 0.076), era stays negative, blind-noise denoising
+> transfers (confident-half RMSE 0.076), era stays negative (0.10 raw / 0.20
+> GP-denoised vs 0.60 majority, n=30), performer-ID stays mixed with a milder
+> smoothing penalty (raw 0.136 > GP-denoised 0.114 > two-stage-denoised 0.080;
+> GP-feat variant — Vienna provides no LM embeddings), blind-noise denoising
 > stays a failure in both parameterizations, and completion exposes the GP-first
 > **extrapolation boundary** (per-piece feature weights explode when fit on a short
 > excerpt — the cross-piece head remains the honest tool there). Verdict lines below

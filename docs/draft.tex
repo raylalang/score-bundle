@@ -500,10 +500,11 @@ whole pipeline as \textbf{one multi-output graph GP} (\S\ref{sec:gpfirst}); its
 claims were \emph{preregistered and confirmed once} on \nConfPieces{} pieces
 untouched by any decision (Table~\ref{tab:headline-conf}: RMSE \rmseGP{} vs.\ the
 two-stage \rmseConfOldHead, paired \dRmseConf{} significant; graph calibration
-contribution \dNllGraphConf{} significant; coverage \covGP); the six downstream
+contribution \dNllGraphConf{} significant; coverage \covGP); all six downstream
 tasks were re-validated under the new model (anomaly stronger, denoising and
-selective transfer, era still negative, completion exposes the extrapolation
-boundary); and the evaluation gained a development/confirmation split, a GP-side
+selective transfer, era and performer-ID keep their verdicts, completion exposes
+the extrapolation boundary --- Table~\ref{tab:downstream-both}); and the
+evaluation gained a development/confirmation split, a GP-side
 zero-leak audit, and two precisely-diagnosed limitations (\S\ref{sec:guard-gp},
 \S\ref{sec:boundary}). GP-first is the thesis model; the two-stage systems below
 remain its nested ablations.
@@ -1406,10 +1407,30 @@ added chord/voice-leading edges are the only both-axes win. The independent
 % =====================================================================
 \chapter{Downstream Tasks}\label{ch:downstream}
 Six tasks with objective metrics and honest baselines; all outcomes reported
-(summary in Table~\ref{tab:downstream-glance}). Every task was run under the
+(summary in Table~\ref{tab:downstream-both}). Every task was run under the
 two-stage pipeline during development and \emph{re-validated under the GP-first
-model with identical corruptions and masks}, so old-vs-new is paired
-(\texttt{logs/downstream\_gpfirst\_report.log}); both verdicts are given.
+model} --- with identical corruptions and masks where the task permits pairing;
+performer-ID uses the GP-feat variant, since Vienna provides no LM embeddings
+(\texttt{logs/downstream\_gpfirst\_report.log}). Both verdicts are given.
+
+\begin{table}[h]\centering
+\caption{Downstream tasks: two-stage development verdict and GP-first
+re-validation.}\label{tab:downstream-both}
+\footnotesize
+\begin{tabular}{@{}p{4.1cm}p{4.3cm}p{4.6cm}@{}}
+\toprule
+Task & Two-stage (dev study) & GP-first re-run \\
+\midrule
+Error spotting (anomaly) & clear win (AUROC $\to$0.98) & \textbf{stronger}: best on all channels ($v$ 0.995) \\
+Denoising, known noise & win (8/8 contrasts) & slightly better (0.182/0.276, cov 0.90) \\
+Denoising, blind noise & failure & failure in both parameterizations \\
+Completion from excerpt & partial (interp.\ wins) & partial + \textbf{extrapolation boundary} (\S\ref{sec:boundary}) \\
+Selective prediction & qualified win & transfers (rmse@50\% 0.076) \\
+Era classification & honest negative (0.37 vs 0.49) & still negative (0.20 vs 0.60, n=30) \\
+Performer-ID (Vienna) & mixed (raw 0.14 $>$ denoised 0.08) & mixed, milder (GP-denoised 0.11) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Error spotting (anomaly detection) --- clear win, stronger under the GP}
 Corrupt a small fraction of notes; rank by suspiciousness. The two-stage graph
@@ -1455,12 +1476,15 @@ $0.10$ raw / $0.20$ GP-denoised vs.\ $0.60$ majority in the paired GP-first re-r
 (the 30-piece development subset). A note-level tool does not help whole-piece
 summaries, whichever model extracts the notes.
 
-\section{Performer identification (Vienna 4x22) --- mixed}
+\section{Performer identification (Vienna 4x22) --- mixed, both regimes}
 The extracted expression \emph{does} carry a pianist's identity --- accuracy
 $0.136$--$0.179$ against a 1-of-22 chance rate of $0.045$ ($3$--$4\times$ chance),
-validating the extraction. Graph smoothing \emph{hurts} this whole-performance
-summary ($0.080$): denoising toward the ensemble mean removes exactly the
-idiosyncrasy that identifies a performer.
+validating the extraction. Smoothing \emph{hurts} this whole-performance summary in
+both regimes: denoising toward an ensemble mean removes exactly the idiosyncrasy
+that identifies a performer. The GP-first re-run (its GP-feat variant; the corpus
+provides no LM embeddings) reproduces the pattern with a milder penalty --- raw
+$0.136$, GP-denoised $0.114$, two-stage-denoised $0.080$ --- consistent with the
+GP's evidence-fitted noise removing less of the per-note signal.
 
 \section{The boundary}\label{sec:boundary}
 Across all six, two boundaries emerge. \textbf{(1) The structure boundary} (both
