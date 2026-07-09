@@ -93,6 +93,33 @@ per-channel, paired per-piece bootstrap vs the published baselines loaded from
 - ICM transfers information across channels on rank-1 data.
 - Bitwise held-out-target leak invariance through fit + posterior.
 
+## PREREGISTERED confirmation protocol (written 2026-07-09, BEFORE any confirmation data)
+
+The 30 dev pieces have adjudicated ~6 selection decisions; the confirmation set fixes
+the family-wise inflation. **This section is written before the confirmation cache
+exists and will not be edited after the run; the run happens exactly once.**
+
+- **Data:** `.cache/asap_arrays_named50.pkl` eval pieces 31–50 (`--eval-start 30`,
+  n=20) — same seed-0 folder shuffle and contamination filter, first 30 verified
+  identical to the dev set, pieces 31–50 never used for any decision. Masks:
+  `default_rng(2000 + s)`, s = 0..3 (disjoint rng base from dev's 1000+s), 40% hidden,
+  strict mask-aware embeddings, `noise_floor_frac 0.05`, published protocol otherwise.
+- **Systems, run once each** (no tuning, no iteration, all results reported):
+  1. `b_featlm` — the GP-first candidate (primary);
+  2. `b_featlm_nograph` — the graph contrast inside GP-first;
+  3. `b_feat` — the LM contrast inside GP-first;
+  4. old adopted headline — feat+LM mean + harmonic(chord+VL) graph, old pipeline,
+     guard on;
+  5. old `LM + plain graph` — the published anchor.
+- **Preregistered claims:** (C1) b_featlm beats the old headline on RMSE and NLL,
+  paired per-piece 95% CI excluding 0; (C2) the graph contribution inside GP-first
+  (b_featlm vs nograph) is significant on NLL; (C3) b_featlm coverage@0.9 lies in
+  [0.88, 0.95].
+- **Decision rule (set in advance):** adopt GP-first as the thesis model iff C1 holds
+  on both axes (or holds on RMSE with NLL not significantly worse) AND C2 holds;
+  otherwise keep the current headline and report GP-first as the orthodoxy ablation.
+  Dev-set numbers stay labeled "development" in the thesis either way.
+
 ## Decision framework (the user's call; this branch produces evidence)
 
 Paired vs the adopted headline (0.3795 / −0.3459 / 0.922 strict):
