@@ -37,7 +37,7 @@ OUT_DIR = "results/graphgp"
 CHANNELS = ["tau", "log r", "v"]
 
 CONFIGS = ["a_diag", "a_icm", "a_icm_m2", "b_feat", "b_featlm",
-           "c_graph", "c_harm", "d_corpus"]
+           "c_graph", "c_harm", "c_harm_lm", "d_corpus", "d_hybrid"]
 
 BASELINES = {  # label -> (pickle path, mean-block name)
     "zero+graph": ("results/kernels/additive.pkl", "zero"),
@@ -76,8 +76,8 @@ def piece_setup(p, config: str, emb=None):
     if config.startswith(("b_", "c_", "d_")):
         X = zscore_cols(rich_score_features(score, rff_dim=0))
         feats.append(np.concatenate([X, np.ones((len(X), 1))], axis=1))
-    if config == "b_featlm":
-        assert emb is not None, "b_featlm needs the mask-aware embedding dump"
+    if config in ("b_featlm", "c_harm_lm"):
+        assert emb is not None, "this config needs the mask-aware embedding dump"
         feats.append(zscore_cols(emb))
 
     if config == "c_graph":
@@ -86,7 +86,7 @@ def piece_setup(p, config: str, emb=None):
             return np.linalg.eigh(laplacian(build_adjacency(score, ell_b=eb, ell_p=ep)))
         n_graph = 2
         g0 = np.log([2.0, 4.0])
-    elif config == "c_harm":
+    elif config in ("c_harm", "c_harm_lm"):
         def graph_eig(gp_params):  # [log ell_b, log ell_p, log chord_w, log vl_w]
             eb, ep, cw, vw = np.exp(gp_params)
             return np.linalg.eigh(laplacian(build_adjacency_harmonic(
@@ -104,7 +104,7 @@ def piece_setup(p, config: str, emb=None):
 
 
 def fit_and_predict(Y, mask, feats, graph_eig, n_graph, g0, kernel, x_init=None,
-                    frozen_x=None, maxiter=200):
+                    frozen_x=None, refit_noise=False, maxiter=200):
     """One joint fit (or frozen apply) + posterior; returns (yt, pr, sd, ch, info)."""
     from score_bundle.gp import MultiOutputGraphGP
 
@@ -118,7 +118,27 @@ def fit_and_predict(Y, mask, feats, graph_eig, n_graph, g0, kernel, x_init=None,
 
     if n_graph == 0:
         gp = make_gp(g0)
-        if frozen_x is not None:
+        if frozen_x is not None and refit_noise:
+            # d_hybrid: corpus-frozen structure, per-piece noise by marglik (k params)
+            from score_bundle.optimize import nelder_mead
+            k = Y.shape[1]
+            base = np.asarray(frozen_x, dtype=float).copy()
+            floor_log = np.log(np.maximum(floor, 1e-12))
+
+            def neg_noise(logn):
+                x = base.copy()
+                x[-k:] = np.maximum(logn, floor_log)
+                try:
+                    v = -gp.log_marginal_likelihood(Y, mask, x)
+                except (np.linalg.LinAlgError, ValueError):
+                    return 1e12
+                return v if np.isfinite(v) else 1e12
+
+            best_n = nelder_mead(neg_noise, base[-k:], max_iter=200)
+            x_hat = base
+            x_hat[-k:] = np.maximum(best_n, floor_log)
+            info = {"optimizer": "frozen+noise"}
+        elif frozen_x is not None:
             x_hat, info = frozen_x, {"optimizer": "frozen"}
         else:
             x_hat, info = gp.fit(Y, mask, x0=x_init, noise_floor=floor, maxiter=maxiter)
@@ -196,9 +216,9 @@ def stage_run(args) -> None:
         print(f"=== {config}: kernel={kernel} shard {shard_k}/{shard_n}", flush=True)
 
         frozen = None
-        if config == "d_corpus":
+        if config in ("d_corpus", "d_hybrid"):
             frozen = fit_corpus_params(head, kernel, args)
-            print(f"[d_corpus] corpus params fit on {args.corpus_pieces} head pieces",
+            print(f"[{config}] corpus params fit on {args.corpus_pieces} head pieces",
                   flush=True)
 
         cells, infos = {}, []
@@ -208,8 +228,8 @@ def stage_run(args) -> None:
                     continue
                 Y = np.asarray(p["y"], dtype=float)
                 mask = masks[(pi, s)]
-                emb = emb_dump[(pi, s)] if (config == "b_featlm") else None
-                base_cfg = "b_feat" if config == "d_corpus" else config
+                emb = emb_dump[(pi, s)] if config in ("b_featlm", "c_harm_lm") else None
+                base_cfg = "b_feat" if config in ("d_corpus", "d_hybrid") else config
                 feats, graph_eig, n_graph, g0 = piece_setup(p, base_cfg, emb=emb)
                 if config == "a_diag":
                     # three single-channel fits through the same machinery
@@ -225,7 +245,8 @@ def stage_run(args) -> None:
                 else:
                     cell, info = fit_and_predict(
                         Y, mask, feats, graph_eig, n_graph, g0, kernel,
-                        frozen_x=frozen, maxiter=args.maxiter)
+                        frozen_x=frozen, refit_noise=(config == "d_hybrid"),
+                        maxiter=args.maxiter)
                     infos.append(info)
                 cells[("GP", pi, s)] = cell
             print(f"[{config}] seed {s + 1}/{seeds} done ({len(cells)} cells)", flush=True)
