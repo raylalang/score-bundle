@@ -46,7 +46,10 @@ note conceptually in sync.
   overflows); **harmonic chord+voice-leading edges** (`graph.build_adjacency_harmonic`)
   are the only significant both-axes win (0.385/−0.335 strict) and compose with feat+LM
   (0.378/−0.346 best cells); tonal-distance *replacement* of the pitch metric hurts.
-  Headline adoption again a user decision.
+  **Headline adopted 2026-07-09** (decision delegated by the user, after a zero-leak
+  audit — `scripts/audit_kernel_leakfree.py`, bitwise invariance on the real pipeline):
+  `feat+LM + harmonic(chord+VL) graph` 0.379/−0.346/0.922 strict; LM+plain-graph
+  0.393/−0.322 stays the ablation path.
   Aria frozen-feature upper-bound baseline is an import-guarded stub (`lm/aria_baseline.py`).
 - **Phase 2 — intonation/vibrato (stubs + helpers).** `src/score_bundle/phase2/`.
 - **Phase 3 — waveform likelihood (stubs + helpers).** `src/score_bundle/phase3/`.

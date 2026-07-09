@@ -148,6 +148,35 @@ def test_guarded_impossible_factor_falls_back_conservative():
     assert np.all(np.isfinite(std))
 
 
+@pytest.mark.parametrize("kernel", ["additive", "matern2", "diffusion"])
+def test_heldout_targets_cannot_influence_predictions(kernel):
+    """Zero-leak contract of the kernel-sweep cell: corrupting y at HELD-OUT nodes
+    (arbitrarily large values) must leave the EB fit, the guard path, the posterior
+    at held-out nodes, and the predictive std bitwise unchanged — mirroring the
+    per-cell block of scripts/eval_kernels.py stage_run (noise floor from observed
+    residuals only, guarded fit, predictive-variance floor)."""
+    _, L, y, mask = _setup(seed=7)
+    mean = 0.1 * np.ones_like(y)
+    eig = np.linalg.eigh(L)
+    held = ~mask
+
+    def cell(y_in):
+        floor = 0.05 * float(np.var((y_in - mean)[mask]))
+        field, hp = fit_spectral_field_guarded(
+            None, y_in, kernel=kernel, mask=mask, mean=mean, noise_floor=floor,
+            rng=np.random.default_rng(0), eig=eig)
+        m, std = field.posterior(y_in, hp["noise_var"], mask=mask)
+        return m[held], np.sqrt(std[held] ** 2 + hp["noise_var"]), hp
+
+    y_corrupt = y.copy()
+    y_corrupt[held] = 1e6 * np.arange(1, held.sum() + 1)
+    pred_a, std_a, hp_a = cell(y)
+    pred_b, std_b, hp_b = cell(y_corrupt)
+    assert hp_a == hp_b
+    np.testing.assert_array_equal(pred_a, pred_b)
+    np.testing.assert_array_equal(std_a, std_b)
+
+
 # --------------------------------------------------------------------------- music-theory graphs
 def test_fifths_distance_orders_intervals_tonally():
     # unison 0, perfect fifth 1, major second 2, semitone 5, tritone 6

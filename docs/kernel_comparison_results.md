@@ -146,11 +146,50 @@ gate passed: the additive cell reproduces the published strict candidate
 The kernel gain survives intact on top of the feature-stacked mean (same magnitude as
 on the plain LM mean), i.e. **the mean upgrade and the graph upgrade are orthogonal and
 compose**. Best strict cells measured to date: RMSE 0.3784 (feat+LM × chord graph) and
-NLL −0.3459 (feat+LM × chord+VL graph) — vs the published headline 0.3930 / −0.322 and
-the candidate 0.3879 / −0.333. As with feat+LM itself, **adoption into the headline is
-the user's call** (it adds two hand-designed edge families to the story); the honest
-framing either way is unchanged — structure + calibration with each ingredient's
-marginal value isolated, now including the graph's edge families.
+NLL −0.3459 (feat+LM × chord+VL graph) — vs the previous headline 0.3930 / −0.322 and
+the candidate 0.3879 / −0.333.
+
+## Zero-leak audit (pre-adoption, 2026-07-09)
+
+Requested before the headline decision; **every check passed**.
+
+- **Code audit.** The score support (`pitch`, `onset`, `duration`, `voice`) is built
+  exclusively from the score MIDI (`features.load_asap`: beat onsets/durations from the
+  score's own beat grid) — performance data enters only through the targets `y` and the
+  raw `velocity` array. So every graph builder (combinatorial, chain, tonal, harmonic,
+  harmonic+VL) and `rich_score_features` receive score-side quantities only; the head is
+  fit on piece-disjoint head pieces; the EB fit, guard screen, and noise floor use
+  observed nodes only; `SpectralGaussianField.posterior` touches `y` only at observed
+  indices.
+- **Bitwise invariance, library level** (`tests/test_kernels.py::
+  test_heldout_targets_cannot_influence_predictions`): corrupting held-out `y` to 1e6
+  leaves the guarded fit, hyperparameters, held-out predictions, and predictive stds
+  bitwise unchanged (additive / matern2 / diffusion).
+- **Bitwise invariance, real pipeline end-to-end** (`scripts/audit_kernel_leakfree.py`, run on
+  the actual `eval_kernels.py` stages with the real cache + checkpoint): (a) corrupting
+  **held-out velocities** in the LM-input source leaves the strict mask-aware `μ_LM`
+  bitwise unchanged (and reproduces the sweep's cached `μ` to 5e-14); (b) corrupting
+  **held-out y targets** to 1e6 leaves all predictions and stds bitwise unchanged while
+  the ground-truth column (and hence the dirty-run RMSE, 1e6) proves the corruption
+  landed.
+- **Disclosed benchmark-definition property (not a leak):** the `v` target is centered
+  by the full-piece velocity mean *before* masking (`normalize_velocity`), so the
+  target's definition — identically for every kernel row, method, baseline, and all
+  published numbers — involves a piece-level constant that includes held-out notes. No
+  predictor input contains held-out information.
+
+## Decision (delegated by the user, 2026-07-09)
+
+**Adopted headline: feature + network mean + harmonic (chord + voice-leading) graph —
+RMSE 0.3795 / NLL −0.3459 / coverage 0.922 strict.** Rationale: it is the only
+configuration in which every ingredient — the graph itself, the feature-stacked mean,
+and the harmonic edge families — carries a paired per-piece improvement significant on
+*both* recovery and calibration; the added edges are score structure, which is the
+thesis claim; and the pre-adoption audit above found zero leakage. Chord+VL is chosen
+over chord-only (slightly better RMSE) because the headline claim requires both-axes
+significance (chord-only's NLL CI just misses). `LM mean + plain graph`
+(0.3930 / −0.322) remains fully reported as the ablation path; nothing about the
+published protocol changed.
 
 ## Reproduce
 

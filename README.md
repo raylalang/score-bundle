@@ -61,8 +61,12 @@ never enter the LM input), `LM mean + graph residual` is the best single-represe
 cell on both recovery and calibration — RMSE 0.393, NLL −0.322, coverage 0.921 (target
 0.90) over 30 pieces × 4 seeds; the graph's paired advantage over mean-only baselines is
 significant on both RMSE and NLL. Stacking 25 hand-built score features with the LM
-improves it further (`feat+LM+graph` 0.388 / −0.333 strict — confirmed candidate
-headline, adoption pending). Three honesty results are reported alongside: hand-built
+improves it further (`feat+LM+graph` 0.388 / −0.333 strict), and the **adopted headline
+system** (2026-07-09, after the kernel comparison and a zero-leak audit) adds the
+harmonic edge families on top: `feat+LM + chord/voice-leading graph`
+**0.379 / −0.346 / 0.922 strict** — every ingredient's paired per-piece gain is
+significant on both axes; `LM + plain graph` remains the reported ablation path.
+Three honesty results are reported alongside: hand-built
 features **tie** the LM mean on RMSE (its real edge is calibration + dynamics); a
 task-aligned masked pretraining objective (Stage 2) does **not** beat the causal
 read-out at matched budget; and a guarded EB fit (`fit_laplacian_field_guarded`)

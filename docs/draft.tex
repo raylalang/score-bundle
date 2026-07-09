@@ -48,8 +48,10 @@
 % --- headline numbers (UPDATE from docs/phase1_calibration_results.md) ---
 \newcommand{\rmseZero}{0.566}
 \newcommand{\rmseGraph}{0.404}
-\newcommand{\rmseNetGraph}{0.393}      % published headline (strict protocol)
-\newcommand{\rmseStack}{0.388}         % features + network + graph (candidate, strict)
+\newcommand{\rmseNetGraph}{0.393}      % network + plain graph (strict protocol)
+\newcommand{\rmseStack}{0.388}         % features + network + plain graph (strict)
+\newcommand{\rmseHeadline}{0.379}      % ADOPTED headline: features + network + harmonic graph (strict, 2026-07-09)
+\newcommand{\nllHeadline}{$-0.346$}    % adopted headline NLL (strict)
 \newcommand{\nllZero}{$-0.007$}
 \newcommand{\nllGraph}{$-0.308$}
 \newcommand{\nllNetGraph}{$-0.322$}    % strict protocol
@@ -95,10 +97,13 @@ that graph (a graph GP, computed as a Gaussian Markov random field) over per-not
 expressive variables. A small, from-scratch
 symbolic music language model supplies a learned prior mean, and the graph models
 the residual with structured, calibrated uncertainty. On held-out ASAP piano
-performances the full model recovers hidden notes with lower error than any
-per-note predictor (RMSE~$\approx\rmseNetGraph$) and better-calibrated confidence
-(nominal-90\% intervals cover the truth $\approx\covHead$ of the time), with the
-graph's contribution statistically significant on both axes. Six downstream tasks
+performances the full model --- hand-built score features stacked on the network
+mean, over a score graph augmented with chord and voice-leading edges --- recovers
+hidden notes with lower error than any per-note predictor
+(RMSE~$\approx\rmseHeadline$) and better-calibrated confidence (nominal-90\%
+intervals cover the truth $\approx\covHead$ of the time), with the graph's
+contribution, and separately the harmonic edges' contribution, statistically
+significant on both axes. Six downstream tasks
 map exactly where the structure helps (per-note recovery, confidence, error
 spotting) and where it does not (whole-performance summaries). Phases~2--3 extend
 the same prior to intonation/vibrato and to audio via a differentiable synthesizer;
@@ -156,16 +161,19 @@ System & RMSE & NLL & 90\%-interval coverage \\
 Zero mean, graph off               & \rmseZero     & \nllZero    & \covZero \\
 Zero mean $+$ graph                & \rmseGraph    & \nllGraph   & \covHead \\
 Network mean, graph off            & \rmseNetOff   & \nllNetOff  & \covNetOff \\
-\textbf{Network mean $+$ graph} (headline)   & \textbf{\rmseNetGraph} & {\boldmath\nllNetGraph} & \covHead \\
+Network mean $+$ graph             & \rmseNetGraph & \nllNetGraph & \covHead \\
+Feature $+$ network mean $+$ graph & \rmseStack    & \nllStack   & \covHead \\
+\textbf{Feature $+$ network mean $+$ harmonic graph} (headline) & \textbf{\rmseHeadline} & {\boldmath\nllHeadline} & \covHead \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent The four rows isolate each ingredient (mean $\times$ graph on/off) and
-reappear split by channel in Table~\ref{tab:perchannel}. The strongest system
-measured is \emph{feature + network mean + graph} --- stacking the 25 hand-built
-score features onto the network mean --- at pooled RMSE~\rmseStack{} /
-NLL~\nllStack; it is the alternative headline weighed in \S\ref{sec:open-decisions}.
+\noindent The rows isolate each ingredient --- mean $\times$ graph on/off (split by
+channel in Table~\ref{tab:perchannel}), the 25 hand-built score features stacked on
+the network mean, and finally the chord + voice-leading edge families added to the
+score graph (\S\ref{sec:kernels}); each step's paired per-piece improvement is
+statistically significant. The headline system was adopted 2026-07-09 after the
+kernel comparison; the plain-graph rows remain the published ablation path.
 
 \section{Where the gain comes from (by channel)}
 The single pooled number above blends three channels that behave very differently
@@ -210,17 +218,18 @@ Harmonic amplitudes $a$, audio $x$ & Not started (scoped) \\
 \end{tabular}
 \end{table}
 
-\section{The decision on the table today}
-Both candidate headline systems are supported by the evidence; the contribution
-claim is identical either way. The choice is one of presentation:
-\begin{itemize}[leftmargin=*]
-  \item \textbf{Network mean + graph} --- the cleaner single-model story
-        (RMSE~\rmseNetGraph, NLL~\nllNetGraph); or
-  \item \textbf{Feature + network mean + graph} --- slightly better numbers
-        (RMSE~\rmseStack, NLL~\nllStack), at the cost of carrying a 25-feature
-        hand-built regressor alongside the model.
-\end{itemize}
-See \S\ref{sec:open-decisions} for the full framing.
+\section{The headline decision (resolved 2026-07-09)}
+Both candidate systems were supported by the evidence and the contribution claim is
+identical either way; after the kernel comparison (\S\ref{sec:kernels}) the adopted
+headline is \textbf{feature + network mean + harmonic graph}
+(RMSE~\rmseHeadline, NLL~\nllHeadline): it is the only configuration whose every
+ingredient --- the graph itself, the feature-stacked mean, and the chord +
+voice-leading edges --- carries a paired per-piece improvement that is significant
+on \emph{both} recovery and calibration, and the added edge families are score
+structure, which is the thesis. The costs carried alongside the model are a
+25-feature hand-built regressor and two interpretable edge families. The cleaner
+single-model story (\emph{network mean + plain graph}, RMSE~\rmseNetGraph,
+NLL~\nllNetGraph) remains fully reported as the ablation path.
 
 
 % =====================================================================
@@ -416,22 +425,26 @@ Three gates govern the risky transitions:
 
 \section{Headline}
 On \nPieces{} held-out ASAP pieces the model never saw, with \maskRate{} of notes
-hidden, the full model (music-model guess + score-graph prior) is the best
-configuration on both accuracy (RMSE~\rmseNetGraph) and calibrated confidence
-(nominal-90\% intervals cover the truth $\approx\covHead$ of the time). The score
-graph's contribution is statistically significant on both accuracy and confidence,
-piece by piece (Table~\ref{tab:headline-exec}), and each ingredient has an
-isolated, defensible role.
+hidden, the full model (feature-stacked music-model guess + score-graph prior with
+chord/voice-leading edges) is the best configuration on both accuracy
+(RMSE~\rmseHeadline) and calibrated confidence (nominal-90\% intervals cover the
+truth $\approx\covHead$ of the time). The score graph's contribution --- and,
+separately, the harmonic edges' --- is statistically significant on both accuracy
+and confidence, piece by piece (Table~\ref{tab:headline-exec}), and each ingredient
+has an isolated, defensible role.
 
 \section{What each ingredient does}
 The \textbf{score graph} earns its place: it cuts error well below any per-note
 predictor and brings the nominal-90\% intervals to $\approx$92\% coverage. The
 \textbf{from-scratch music model} adds specifically loudness knowledge and sharper
 calibration --- against a strong 25-feature hand-built baseline it \emph{ties on
-average error}, and the two \emph{stack} (feature + network mean + graph is the best
-system measured, RMSE~\rmseStack). The honest framing is that the network adds
-calibration and dynamics information the hand-built features lack, and the best
-system uses both.
+average error}, and the two \emph{stack}. The \textbf{harmonic edge families}
+(same-chord and stepwise voice-leading, \S\ref{sec:kernels}) add a further
+significant gain on both axes on top of any mean, giving the adopted headline
+(feature + network mean + harmonic graph, RMSE~\rmseHeadline). The honest framing
+is that the network adds calibration and dynamics information the hand-built
+features lack, the harmonic edges add score structure the plain graph lacks, and
+the best system uses all three.
 
 \section{Downstream demonstrations at a glance}
 Six tasks map the reach of the structured prior (full write-ups in
@@ -474,10 +487,15 @@ The evaluation is built to be hard to fool:
 
 \section{Open decisions for today's meeting}\label{sec:open-decisions}
 \begin{enumerate}[leftmargin=*]
-  \item \textbf{Headline system.} Adopt \emph{feature + network mean + graph} (best
-        numbers, RMSE~\rmseStack) as the headline, or keep \emph{network mean + graph}
-        (cleaner single-model story, RMSE~\rmseNetGraph) with features reported as
-        an available add-on? Both are supported; the contribution is the same.
+  \item \textbf{Headline system --- RESOLVED (2026-07-09).} Adopted \emph{feature +
+        network mean + harmonic graph} (RMSE~\rmseHeadline, NLL~\nllHeadline): after
+        the kernel comparison, every ingredient's paired per-piece gain is
+        significant on both axes, and the added chord/voice-leading edges are score
+        structure --- the thesis claim itself. \emph{Network mean + plain graph}
+        (RMSE~\rmseNetGraph) stays fully reported as the ablation path. A
+        pre-adoption audit re-verified zero target leakage end-to-end (bitwise
+        invariance of predictions to held-out targets and of the strict prior mean
+        to held-out velocities, on the real pipeline).
   \item \textbf{Next phase.} Begin Phase~3 (audio via a differentiable synthesizer,
         the most novel part) now, or spend the time hardening and writing up
         Phase~1 first?
@@ -1126,6 +1144,9 @@ the feature-stacked candidate on the plain graph (\rmseStack) --- and the two up
 \emph{compose}: on the feat+LM mean the harmonic graphs still gain
 $\Delta$RMSE $-0.008^{*}$ / $\Delta$NLL $-0.013^{*}$, giving the best strict cells
 measured to date, RMSE $0.378$ (chord edges) and NLL $-0.346$ (chord + voice-leading).
+The chord + voice-leading configuration --- the variant significant on both axes ---
+was adopted as the headline system after a zero-leak audit
+(\S\ref{sec:open-decisions}).
 
 \begin{table}[h]\centering
 \caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; guard on).
