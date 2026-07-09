@@ -12,8 +12,10 @@ from __future__ import annotations
 
 from . import baselines, features, graph, lm, metrics, prior, synthetic, variables
 from .graph import build_adjacency, chain_adjacency, laplacian
-from .model import GraphGaussianField, fit_laplacian_field
-from .prior import laplacian_precision, matern_precision
+from .model import (GraphGaussianField, SpectralGaussianField, fit_laplacian_field,
+                    fit_spectral_field, fit_spectral_field_guarded)
+from .prior import (SPECTRAL_KERNELS, laplacian_precision, matern_precision,
+                    spectral_covariance)
 from .score import Note, Score
 
 __version__ = "0.1.0"
@@ -27,7 +29,12 @@ __all__ = [
     "laplacian_precision",
     "matern_precision",
     "GraphGaussianField",
+    "SpectralGaussianField",
     "fit_laplacian_field",
+    "fit_spectral_field",
+    "fit_spectral_field_guarded",
+    "SPECTRAL_KERNELS",
+    "spectral_covariance",
     "graph",
     "prior",
     "metrics",

@@ -22,7 +22,7 @@ from typing import Optional, Tuple
 import numpy as np
 
 from .optimize import nelder_mead
-from .prior import laplacian_precision
+from .prior import SPECTRAL_KERNELS, laplacian_precision, spectral_covariance
 
 _LOG2PI = np.log(2.0 * np.pi)
 
@@ -107,6 +107,72 @@ class GraphGaussianField:
         r = y_obs[idx] - self.mean[idx]
 
         sign, logdet = np.linalg.slogdet(C)
+        Cinv_r = np.linalg.solve(C, r)
+        n = idx.size
+        return float(-0.5 * (r @ Cinv_r + logdet + n * _LOG2PI))
+
+
+class SpectralGaussianField:
+    """A Gaussian field y ~ N(mean, K) given in *covariance* form (one channel).
+
+    Same inference API as :class:`GraphGaussianField` (``posterior`` /
+    ``log_marginal_likelihood``), but parameterized by the prior covariance instead
+    of the precision.  Needed for the kernel comparison: dense spectral kernels such
+    as the diffusion kernel have precision eigenvalues exp(t nu) that overflow while
+    their covariance eigenvalues exp(-t nu) are benign, so inference runs in the
+    standard GP-regression (covariance) form.  For any positive-definite kernel the
+    two forms give identical posteriors.
+    """
+
+    def __init__(self, K: np.ndarray, mean=0.0):
+        self.K = np.asarray(K, dtype=float)
+        self.N = self.K.shape[0]
+        self.mean = _as_vec(mean, self.N)
+
+    def posterior(
+        self,
+        y_obs: np.ndarray,
+        noise_var,
+        mask: Optional[np.ndarray] = None,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Closed-form posterior mean and per-note latent std (GP regression form)."""
+        y_obs = np.asarray(y_obs, dtype=float)
+        if mask is None:
+            mask = np.ones(self.N, dtype=bool)
+        mask = np.asarray(mask, dtype=bool)
+        idx = np.where(mask)[0]
+        if idx.size == 0:
+            return self.mean.copy(), np.sqrt(np.clip(np.diag(self.K), 0.0, None))
+        nv = _as_vec(noise_var, self.N)[idx]
+
+        C = self.K[np.ix_(idx, idx)] + np.diag(nv)
+        A = np.linalg.solve(C, self.K[idx, :])  # (n_obs, N)
+        m = self.mean + A.T @ (y_obs[idx] - self.mean[idx])
+        var = np.diag(self.K) - np.einsum("ij,ij->j", self.K[idx, :], A)
+        std = np.sqrt(np.clip(var, 0.0, None))
+        return m, std
+
+    def log_marginal_likelihood(
+        self,
+        y_obs: np.ndarray,
+        noise_var,
+        mask: Optional[np.ndarray] = None,
+    ) -> float:
+        """log p(y_obs_observed | theta) = N(y_o; mu_o, K_oo + Sigma_e)."""
+        y_obs = np.asarray(y_obs, dtype=float)
+        if mask is None:
+            mask = np.ones(self.N, dtype=bool)
+        mask = np.asarray(mask, dtype=bool)
+        idx = np.where(mask)[0]
+        if idx.size == 0:
+            return 0.0
+        nv = _as_vec(noise_var, self.N)[idx]
+
+        C = self.K[np.ix_(idx, idx)] + np.diag(nv)
+        r = y_obs[idx] - self.mean[idx]
+        sign, logdet = np.linalg.slogdet(C)
+        if sign <= 0:
+            raise np.linalg.LinAlgError("kernel + noise covariance not positive definite")
         Cinv_r = np.linalg.solve(C, r)
         n = idx.size
         return float(-0.5 * (r @ Cinv_r + logdet + n * _LOG2PI))
@@ -300,3 +366,190 @@ def fit_laplacian_field_calib(
     Q = laplacian_precision(L, lam=lam, eta=eta)
     field = GraphGaussianField(Q, mean=mean)
     return field, {"lam": float(lam), "eta": float(eta), "noise_var": float(noise_var)}
+
+
+# --------------------------------------------------------------------------- spectral kernels
+def _eig_of(L: Optional[np.ndarray], eig) -> Tuple[np.ndarray, np.ndarray]:
+    """Resolve (nu, U) from a precomputed eigendecomposition or a Laplacian."""
+    if eig is not None:
+        nu, U = eig
+        return np.asarray(nu, dtype=float), np.asarray(U, dtype=float)
+    if L is None:
+        raise ValueError("provide either L or eig=(nu, U)")
+    return np.linalg.eigh(np.asarray(L, dtype=float))
+
+
+def _hp_dict(kernel: str, params: np.ndarray, noise_var: float) -> dict:
+    names = SPECTRAL_KERNELS[kernel].param_names
+    return {"kernel": kernel, "noise_var": float(noise_var),
+            **{k: float(v) for k, v in zip(names, params)}}
+
+
+def fit_spectral_field(
+    L: Optional[np.ndarray],
+    y_obs: np.ndarray,
+    kernel: str = "additive",
+    mask: Optional[np.ndarray] = None,
+    mean=0.0,
+    noise_floor: float = 0.0,
+    eig: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+) -> Tuple[SpectralGaussianField, dict]:
+    """Empirical-Bayes fit of a registered spectral kernel's parameters + noise_var.
+
+    The spectral analogue of :func:`fit_laplacian_field`: kernel parameters (see
+    :data:`~score_bundle.prior.SPECTRAL_KERNELS`) and the observation noise are
+    optimized jointly in log-space by marginal likelihood, with the same
+    ``noise_floor`` clamp.  Pass ``eig = np.linalg.eigh(L)`` to reuse one
+    eigendecomposition across channels/seeds (it depends only on the graph).
+    """
+    nu, U = _eig_of(L, eig)
+    spec = SPECTRAL_KERNELS[kernel]
+    x0 = np.asarray(list(spec.x0) + [-2.0], dtype=float)
+
+    def neg_lml(logp: np.ndarray) -> float:
+        params = np.exp(logp[:-1])
+        nv = max(float(np.exp(logp[-1])), noise_floor)
+        try:
+            K = spectral_covariance(U, nu, kernel, params)
+            field = SpectralGaussianField(K, mean=mean)
+            return -field.log_marginal_likelihood(y_obs, nv, mask)
+        except (np.linalg.LinAlgError, ValueError):
+            return 1e12
+
+    best = nelder_mead(neg_lml, x0)
+    params = np.exp(best[:-1])
+    noise_var = max(float(np.exp(best[-1])), noise_floor)
+    K = spectral_covariance(U, nu, kernel, params)
+    field = SpectralGaussianField(K, mean=mean)
+    return field, _hp_dict(kernel, params, noise_var)
+
+
+def fit_spectral_field_calib(
+    L: Optional[np.ndarray],
+    y_obs: np.ndarray,
+    kernel: str = "additive",
+    mask: Optional[np.ndarray] = None,
+    mean=0.0,
+    calib_frac: float = 0.3,
+    rng: Optional[np.random.Generator] = None,
+    eig: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+) -> Tuple[SpectralGaussianField, dict]:
+    """Calibration-split fit of a spectral kernel (analogue of
+    :func:`fit_laplacian_field_calib`): parameters chosen by held-out predictive NLL
+    on a split of the observed nodes, with the noise-floored predictive variance."""
+    nu, U = _eig_of(L, eig)
+    y_obs = np.asarray(y_obs, dtype=float)
+    n = nu.size
+    if mask is None:
+        mask = np.ones(n, dtype=bool)
+    mask = np.asarray(mask, dtype=bool)
+    if rng is None:
+        rng = np.random.default_rng(0)
+
+    obs_idx = np.where(mask)[0]
+    n_calib = int(round(calib_frac * obs_idx.size))
+    if obs_idx.size < 4 or n_calib < 1 or obs_idx.size - n_calib < 1:
+        return fit_spectral_field(None, y_obs, kernel=kernel, mask=mask, mean=mean,
+                                  eig=(nu, U))
+
+    perm = rng.permutation(obs_idx)
+    calib_idx = perm[:n_calib]
+    fit_mask = np.zeros(n, dtype=bool)
+    fit_mask[perm[n_calib:]] = True
+
+    spec = SPECTRAL_KERNELS[kernel]
+    x0 = np.asarray(list(spec.x0) + [-2.0], dtype=float)
+
+    def neg_calib_nll(logp: np.ndarray) -> float:
+        params = np.exp(logp[:-1])
+        nv = float(np.exp(logp[-1]))
+        try:
+            K = spectral_covariance(U, nu, kernel, params)
+            field = SpectralGaussianField(K, mean=mean)
+            m, std = field.posterior(y_obs, nv, mask=fit_mask)
+        except (np.linalg.LinAlgError, ValueError):
+            return 1e12
+        pred_var = std[calib_idx] ** 2 + nv
+        r = y_obs[calib_idx] - m[calib_idx]
+        nll = 0.5 * (_LOG2PI + np.log(pred_var) + r ** 2 / pred_var)
+        return float(np.mean(nll))
+
+    best = nelder_mead(neg_calib_nll, x0)
+    params = np.exp(best[:-1])
+    noise_var = float(np.exp(best[-1]))
+    K = spectral_covariance(U, nu, kernel, params)
+    field = SpectralGaussianField(K, mean=mean)
+    return field, _hp_dict(kernel, params, noise_var)
+
+
+def fit_spectral_field_guarded(
+    L: Optional[np.ndarray],
+    y_obs: np.ndarray,
+    kernel: str = "additive",
+    mask: Optional[np.ndarray] = None,
+    mean=0.0,
+    noise_floor: float = 0.0,
+    calib_frac: float = 0.3,
+    guard_factor: float = 2.0,
+    rng: Optional[np.random.Generator] = None,
+    eig: Optional[Tuple[np.ndarray, np.ndarray]] = None,
+) -> Tuple[object, dict]:
+    """Guarded spectral EB fit — same screen + fallback ladder as
+    :func:`fit_laplacian_field_guarded`, for any registered kernel.
+
+    Ladder (recorded in ``hp["guard"]``): ``"marglik"`` -> ``"calib"`` ->
+    ``"conservative"``.  The conservative bottom rung is kernel-independent by
+    design: a no-coupling diagonal field whose prior variance is the observed
+    residual variance (identical to the additive guard's bottom rung), so a broken
+    kernel can never do worse than the mean-only baseline scale.
+    """
+    nu, U = _eig_of(L, eig)
+    y_obs = np.asarray(y_obs, dtype=float)
+    n = nu.size
+    if mask is None:
+        mask = np.ones(n, dtype=bool)
+    mask = np.asarray(mask, dtype=bool)
+    if rng is None:
+        rng = np.random.default_rng(0)
+    mean_vec = _as_vec(mean, n)
+
+    field_ml, hp_ml = fit_spectral_field(None, y_obs, kernel=kernel, mask=mask,
+                                         mean=mean, noise_floor=noise_floor,
+                                         eig=(nu, U))
+
+    obs_idx = np.where(mask)[0]
+    n_calib = int(round(calib_frac * obs_idx.size))
+    if obs_idx.size < 8 or n_calib < 2 or obs_idx.size - n_calib < 2:
+        return field_ml, {**hp_ml, "guard": "marglik"}
+
+    perm = rng.permutation(obs_idx)
+    calib_idx = perm[:n_calib]
+    fit_mask = np.zeros(n, dtype=bool)
+    fit_mask[perm[n_calib:]] = True
+
+    base_rmse = float(np.sqrt(np.mean((y_obs - mean_vec)[calib_idx] ** 2)))
+    thresh = guard_factor * max(base_rmse, 1e-12)
+
+    def calib_rmse(field, nv: float) -> float:
+        try:
+            m, _ = field.posterior(y_obs, nv, mask=fit_mask)
+        except (np.linalg.LinAlgError, ValueError):
+            return float("inf")
+        return float(np.sqrt(np.mean((y_obs[calib_idx] - m[calib_idx]) ** 2)))
+
+    if calib_rmse(field_ml, hp_ml["noise_var"]) <= thresh:
+        return field_ml, {**hp_ml, "guard": "marglik"}
+
+    field_cal, hp_cal = fit_spectral_field_calib(None, y_obs, kernel=kernel, mask=mask,
+                                                 mean=mean, rng=rng, eig=(nu, U))
+    hp_cal["noise_var"] = max(hp_cal["noise_var"], noise_floor)
+    if calib_rmse(field_cal, hp_cal["noise_var"]) <= thresh:
+        return field_cal, {**hp_cal, "guard": "calib"}
+
+    resid_var = float(np.var((y_obs - mean_vec)[obs_idx]))
+    resid_var = max(resid_var, 1e-12)
+    lam = 1.0 / resid_var
+    field = GraphGaussianField(lam * np.eye(n), mean=mean)
+    nv = max(noise_floor, 0.05 * resid_var)
+    return field, {"kernel": kernel, "lam": float(lam), "noise_var": float(nv),
+                   "guard": "conservative"}
