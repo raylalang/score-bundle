@@ -1,5 +1,12 @@
 # Phase 0 — A from-scratch symbolic music language model
 
+> **Role update (2026-07-10, GP-first):** in the thesis model the LM's per-note
+> embeddings enter the Phase-1 multi-output graph GP as a **feature kernel** (a
+> marginalized Bayesian linear mean with per-piece weights, `src/score_bundle/gp.py`)
+> — measured marginal value −0.008 RMSE / −0.034 NLL (dev, paired) with the removal
+> cost confirmed in direction on the confirmation set. The "learned prior mean μ_LM"
+> framing below is the two-stage development form, retained as the ablation path.
+
 This document specifies the Phase-0 model the professor asked for: a symbolic music
 language model (LM) built from the ground up — our own tokenizer, architecture, and
 training loop — rather than a downloaded black box. It states what we build, why, and

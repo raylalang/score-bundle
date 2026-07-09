@@ -29,7 +29,7 @@ The editable diagram is `docs/architecture.excalidraw`.
 
 | Phase | Scope | Variables added | Inference | Data |
 |------:|-------|-----------------|-----------|------|
-| **0 — foundation** | from-scratch symbolic music LM (backbone + representations) | — (learned prior mean `μ_LM`, note embeddings `h_i`) | next-token (autoregressive) pretraining | MAESTRO/ATEPP, Lakh, GiantMIDI |
+| **0 — foundation** | from-scratch symbolic music LM (backbone + representations) | — (per-note embeddings `h_i`, a feature kernel of the Phase-1 GP; `μ_LM` in the development form) | next-token (autoregressive) pretraining | MAESTRO/ATEPP, Lakh, GiantMIDI |
 | **1 — core (piano)** | timing, articulation, dynamics | `y = [τ, log r, v]` | closed-form Gaussian posterior over the graph field | ASAP, MAESTRO |
 | **2 — extension (mono)** | intonation, vibrato | `c` (cents), `u(t)`, `f₀` | same prior, f0-derived targets | URMP, Vocadito/Opencpop |
 | **3 — extension (waveform)** | timbre | harmonic amplitudes `a` | marginalize `a` exactly, Laplace/VI over nonlinear `z` | + audio |
@@ -44,9 +44,9 @@ documented stubs for the open research steps (f0 extraction, position inference 
 
 **Phase 0 — music language model.** A decoder-only Transformer over note-structured MIDI
 tokens, built from the ground up (`src/score_bundle/lm/`). It is the generative backbone and
-a representation learner: per-note embeddings `h_i` map to a learned prior mean `μ_LM`, and
-the Phase-1 graph prior models the residual `y − μ_LM` with calibrated structured
-uncertainty. Design + rationale in [`docs/music_lm_design.md`](docs/music_lm_design.md).
+a representation learner: its per-note embeddings `h_i` enter the Phase-1 GP as a
+feature kernel (the marginalized Bayesian linear mean); in the two-stage development
+form they map to a plug-in mean `μ_LM` whose residual the graph models. Design + rationale in [`docs/music_lm_design.md`](docs/music_lm_design.md).
 
 ```bash
 python examples/phase0_pretrain_lm.py          # pretrain the LM (needs torch)
@@ -108,11 +108,23 @@ y_obs = field.sample(rng) + rng.normal(scale=0.1, size=len(score))
 mean, std = field.posterior(y_obs, noise_var=0.01)  # per-note estimate ± uncertainty
 ```
 
-Empirical-Bayes hyperparameters:
+Empirical-Bayes hyperparameters (per-channel development form):
 
 ```python
 from score_bundle import fit_laplacian_field
 field, hp = fit_laplacian_field(laplacian(W), y_obs)   # learns lam, eta, noise_var
+```
+
+**The thesis model** — one multi-output graph GP over all three channels, features
+in the kernel, everything by evidence:
+
+```python
+from score_bundle.gp import MultiOutputGraphGP
+
+nu, U = np.linalg.eigh(laplacian(W))
+gp = MultiOutputGraphGP(nu, U, kernel="additive", features=[X])  # X: (N, d) score features
+x_hat, info = gp.fit(Y, mask, noise_floor=0.05 * Y[mask].var(axis=0))
+mean, std = gp.posterior(Y, mask, x_hat)     # (N, 3) each; per-note, per-channel
 ```
 
 ## Examples
@@ -164,9 +176,23 @@ tests/            unit + behavioural tests
 ## Math (Phase 1)
 
 Known score `S = {s_i}`, `s_i = (p_i, b_i, d_i)`. Per-note variables
-`y_i = [τ_i, log r_i, v_i]`. Score graph `G=(V,E)` with Laplacian `L_G`. Prior
-`y ~ N(μ, Q_G⁻¹)` with `Q_G = λI + ηL_G` (or `σ_g⁻²(κ²I + L_G)^α`). Observation
-`ỹ = y + e`, `e ~ N(0, Σ_e)`. Posterior:
+`y_i = [τ_i, log r_i, v_i]`. Score graph `G=(V,E)` with Laplacian `L_G`.
+
+**The thesis model** is one GP over the `3N` values (note, channel):
+
+```
+K = B ⊗ K_G(s) + Σ_f diag(c_f) ⊗ X_f X_fᵀ + diag(ς²) ⊗ I
+```
+
+with `K_G(s) = U g(ν; s) Uᵀ` a shape-normalized spectral kernel of `L_G`, `B` the
+3×3 coregionalization matrix, `X_f` per-note feature matrices (score features; LM
+embeddings — the linear kernel is the marginalized Bayesian linear mean), and `ς²`
+per-channel noise; everything fit by the exact per-piece marginal likelihood
+(`score_bundle.gp.MultiOutputGraphGP`), exact conjugate inference.
+
+**The per-channel development form** (its nested special case) is a scalar field
+per channel: prior `y ~ N(μ, Q_G⁻¹)` with `Q_G = λI + ηL_G` (or
+`σ_g⁻²(κ²I + L_G)^α`), observation `ỹ = y + e`, `e ~ N(0, Σ_e)`, posterior
 
 ```
 Σ_y = (Q_G + Σ_e⁻¹)⁻¹,   m = Σ_y (Q_G μ + Σ_e⁻¹ ỹ)

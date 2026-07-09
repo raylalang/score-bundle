@@ -11,6 +11,7 @@ See ``docs/architecture.svg`` for the high-level picture.
 from __future__ import annotations
 
 from . import baselines, features, graph, lm, metrics, prior, synthetic, variables
+from .gp import MultiOutputGraphGP
 from .graph import build_adjacency, chain_adjacency, laplacian
 from .model import (GraphGaussianField, SpectralGaussianField, fit_laplacian_field,
                     fit_spectral_field, fit_spectral_field_guarded)
@@ -28,6 +29,7 @@ __all__ = [
     "laplacian",
     "laplacian_precision",
     "matern_precision",
+    "MultiOutputGraphGP",
     "GraphGaussianField",
     "SpectralGaussianField",
     "fit_laplacian_field",

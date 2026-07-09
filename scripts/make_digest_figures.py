@@ -263,6 +263,47 @@ def fig_collapse(unguarded_log, guarded_log):
     plt.close(fig)
 
 
+def read_confirmation(path):
+    """{system: (rmse, nll, cov)} from logs/confirmation_verdict.log."""
+    out = {}
+    for line in open(path):
+        m = re.match(r"(.+?)\s{2,}([\d.]+)\s+(-?[\d.]+)\s+([\d.]+)\s*$", line.rstrip())
+        if m and "system" not in line:
+            out[m.group(1).strip()] = (float(m.group(2)), float(m.group(3)),
+                                       float(m.group(4)))
+    return out
+
+
+def fig_confirmation(conf_log):
+    """The thesis headline: one-shot confirmation RMSE, 20 untouched pieces."""
+    conf = read_confirmation(conf_log)
+    rows = [  # (log key, display, color)
+        ("GP b_featlm", "GP-first (full model)", BLUE_DK),
+        ("GP b_feat", "GP-first, no music model", MUTED),
+        ("GP b_featlm_nograph", "GP-first, no graph", MUTED),
+        ("old headline (feat+LM+harm)", "two-stage pipeline (strongest)", BLUE_LT),
+        ("old LM+graph", "two-stage pipeline (plain)", MUTED),
+    ]
+    fig, ax = plt.subplots(figsize=(7.6, 3.0))
+    ys = np.arange(len(rows))[::-1]
+    for y, (key, label, color) in zip(ys, rows):
+        r = conf[key][0]
+        ax.plot([0.35, r], [y, y], color=GRID, lw=2, zorder=1)
+        ax.scatter([r], [y], s=85 if color == BLUE_DK else 60, color=color, zorder=3)
+        ax.annotate(f"{r:.3f}", (r, y), textcoords="offset points",
+                    xytext=(8, -3), color=INK2, fontsize=9)
+    ax.set_xlim(0.35, 0.425)
+    ax.set_yticks(ys)
+    ax.set_yticklabels([r[1] for r in rows], color=INK)
+    ax.set_xlabel("pooled RMSE on 20 untouched pieces (lower is better)")
+    ax.set_title("Preregistered confirmation: the single GP wins",
+                 color=INK, fontsize=12, loc="left", pad=12)
+    _style(ax)
+    fig.tight_layout()
+    fig.savefig(f"{OUT}/gpfirst_confirmation.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     import sys
     grid_log = "logs/feature_baseline_l2_10.log"
@@ -271,6 +312,7 @@ if __name__ == "__main__":
                      "logs/kernels_featlm_report.log", "logs/eval_featlm_strict_lin.log")
         fig_channels(grid_log)
         fig_kernels("logs/kernels_report.log")
-        print("headline + channels + kernels written")
+        fig_confirmation("logs/confirmation_verdict.log")
+        print("headline + channels + kernels + confirmation written")
     fig_collapse("logs/diag_tau_s2x3.log", "logs/diag_tau_s2x3_guarded.log")
     print("collapse written")

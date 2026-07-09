@@ -1,5 +1,17 @@
 # Downstream tasks — does the score-graph prior earn its keep beyond imputation?
 
+> **Status (2026-07-10):** these results are the **two-stage-regime record**. All six
+> tasks were re-validated under the GP-first thesis model with identical corruptions
+> and masks (`scripts/eval_downstream_gpfirst.py`,
+> `logs/downstream_gpfirst_report.log`): anomaly detection is a **stronger** win
+> (v AUROC 0.995, log r 0.986, τ 0.978 — best on every channel), oracle-noise
+> denoising slightly better (RMSE 0.182/0.276, cov 0.90), selective prediction
+> transfers (confident-half RMSE 0.076), era stays negative, blind-noise denoising
+> stays a failure in both parameterizations, and completion exposes the GP-first
+> **extrapolation boundary** (per-piece feature weights explode when fit on a short
+> excerpt — the cross-piece head remains the honest tool there). Verdict lines below
+> are the original two-stage ones.
+
 Six downstream demonstrations, chosen for having an objective metric, an honest
 baseline, and direct reuse of the Phase-1 machinery:
 

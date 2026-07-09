@@ -6,9 +6,14 @@ Guidance for working in this repo. Read `README.md` and `docs/music_lm_design.md
 
 A research codebase for **Bayesian, score-informed performance transcription**: given a
 known symbolic score and a performance, infer per-note expressive variables (timing,
-articulation, dynamics; later intonation/vibrato) with calibrated uncertainty, using a
-**score graph** as a structured prior. The model is one generative process run two ways —
-forward = synthesis, inverse = transcription. See `docs/architecture.svg`.
+articulation, dynamics; later intonation/vibrato) with calibrated uncertainty. **The
+thesis model is one multi-output Gaussian process on the score graph** (GP-first,
+`src/score_bundle/gp.py`): channels coupled by coregionalization, side information
+(score features, LM embeddings) marginalized into the kernel, everything fit by exact
+per-piece evidence; the earlier two-stage pipeline (plug-in mean + per-channel graph
+residual) is its nested special case and ablation chain. The model is one generative
+process run two ways — forward = synthesis, inverse = transcription. See
+`docs/architecture.svg`.
 
 The companion thesis plan lives in Notion ("Score-Bundle Models"); keep code and that
 note conceptually in sync.
@@ -17,7 +22,8 @@ note conceptually in sync.
 
 - **Phase 0 — music LM (implemented).** From-scratch **PyTorch** decoder-only Transformer
   over note-structured MIDI tokens (`src/score_bundle/lm/`, hand-written causal attention).
-  Provides a learned prior mean `μ_LM` and per-note embeddings that feed Phase 1. Tokenizer
+  Provides per-note embeddings `h_i` that feed the Phase-1 GP as a feature kernel (in the
+  two-stage development form, a plug-in mean `μ_LM`). Tokenizer
   and batching are framework-agnostic NumPy; the model is PyTorch.
 - **Phase 1 — core, piano (implemented + evaluated).** Score graph → Gaussian graph prior →
   closed-form posterior with per-note uncertainty; baselines; calibration metrics. Held-out
@@ -35,10 +41,11 @@ note conceptually in sync.
   `fit_laplacian_field_guarded` / `impute_methods(guard=True)` — default off, use it for
   new runs, published tables stay guard-off (measured bit-identical there). Honest
   baselines: `rich_score_features` (`baselines.py`) ties the LM mean on RMSE (the LM's
-  edge is calibration + the `v` channel; `feat+LM` stacks best — headline adoption is a
-  user decision); Stage-2 masked pretraining is an honest negative at matched budget.
+  edge is calibration + the `v` channel; both survive as feature kernels of the GP);
+  Stage-2 masked pretraining is an honest negative at matched budget.
   Downstream tasks (completion / anomaly / denoising):
-  `src/score_bundle/downstream.py`, `docs/downstream_tasks_results.md`.
+  `src/score_bundle/downstream.py`, `docs/downstream_tasks_results.md` (re-validated
+  under the GP; see the banner there + `scripts/eval_downstream_gpfirst.py`).
   Kernel comparison (2026-07-09, `scripts/eval_kernels.py`,
   `docs/kernel_comparison_results.md`): Matérn/diffusion/normalized-Laplacian all tie
   the additive default (spectral machinery: `prior.SPECTRAL_KERNELS`,
@@ -87,7 +94,7 @@ note conceptually in sync.
 | `B`, `c_f`, `g(ν; s)`, `ς²` | GP-first: coregionalization matrix; feature-kernel scales; shape-normalized spectral kernel (g(0)=1, shape `s`); per-channel noise |
 | `Σ_e` | observation-noise covariance; `Σ_y` posterior covariance; `m` posterior mean |
 | `σ` | **posterior standard deviation only** (not a prior scale) |
-| `μ_LM`, `h_i` | LM-predicted prior mean, LM per-note embedding |
+| `μ_LM`, `h_i` | LM-predicted plug-in mean (development form), LM per-note embedding (GP feature kernel) |
 | `z, a, Φ(z), x, ε, A_i(t)` | Phase-3 positions, amplitudes, synth, audio, noise, amp envelope |
 
 Do **not** reuse `S` for a covariance, `σ` for a prior scale, `α` for the additive weight,

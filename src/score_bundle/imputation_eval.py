@@ -1,5 +1,9 @@
 """Held-out imputation comparison: prior mean source x graph residual.
 
+NOTE (GP-first): this module is the TWO-STAGE DEVELOPMENT harness — the nested
+special case and ablation chain of the thesis model (`score_bundle.gp`,
+`scripts/eval_graphgp.py`). It stays exactly as published for provenance.
+
 The Phase-0/1 question (design §6): does a score-graph *residual* prior on top of a learned
 LM mean improve recovery **and** calibration over the LM mean alone (and over hand-built
 baselines)?  This module runs the controlled comparison on aligned per-note targets:
