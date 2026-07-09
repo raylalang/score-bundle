@@ -168,7 +168,7 @@ def stage_precompute(args) -> None:
 
     # EXACTLY the published strict loop (scripts/eval_asap_maskaware.py): one rng per
     # seed, masks drawn per piece in eval order — identical masks to the headline run.
-    masks, mus = {}, {}
+    masks, mus, emb_dump = {}, {}, {}
     for s in range(args.seeds):
         seed_rng = np.random.default_rng(1000 + s)
         for pi, p in enumerate(ev):
@@ -176,7 +176,18 @@ def stage_precompute(args) -> None:
             emb_ma = maskaware_emb(p, mask)
             masks[(pi, s)] = mask
             mus[(pi, s)] = lmfeat.apply_prior_mean(eval_rep(p, emb_ma), W_lf)
+            if args.dump_embeddings:
+                emb_dump[(pi, s)] = np.asarray(emb_ma, dtype=np.float32)
         print(f"seed {s + 1}/{args.seeds} done", flush=True)
+
+    if args.dump_embeddings:
+        with open(args.dump_embeddings, "wb") as fh:
+            pickle.dump({"emb_ma": emb_dump, "meta": {
+                "arrays_cache": args.arrays_cache, "checkpoint": args.checkpoint,
+                "n_eval_pieces": len(ev), "seeds": args.seeds,
+                "observed_frac": args.observed_frac,
+                "placeholder_vel": args.placeholder_vel}}, fh)
+        print(f"dumped raw mask-aware embeddings -> {args.dump_embeddings}", flush=True)
 
     blob = {
         "masks": masks, "mu_lm": mus,
@@ -371,6 +382,9 @@ def main() -> None:
     ap.add_argument("--l2", type=float, default=10.0)
     ap.add_argument("--placeholder-vel", type=int, default=64)
     ap.add_argument("--noise-floor-frac", type=float, default=0.05)
+    ap.add_argument("--dump-embeddings", default=None,
+                    help="precompute: also write the raw mask-aware embeddings per "
+                         "(piece, seed) to this pickle (for the GP-first feature kernel)")
     ap.add_argument("--mean", default="lm", choices=["lm", "feat_lm"],
                     help="precompute: representation feeding the strict prior mean — "
                          "'lm' (published default) or 'feat_lm' (candidate-headline "
