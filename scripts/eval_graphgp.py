@@ -37,6 +37,7 @@ OUT_DIR = "results/graphgp"
 CHANNELS = ["tau", "log r", "v"]
 
 CONFIGS = ["a_diag", "a_icm", "a_icm_m2", "b_feat", "b_featlm",
+           "b_feat_nograph", "b_featlm_nograph",
            "c_graph", "c_harm", "c_harm_lm", "d_corpus", "d_hybrid"]
 
 BASELINES = {  # label -> (pickle path, mean-block name)
@@ -76,7 +77,7 @@ def piece_setup(p, config: str, emb=None):
     if config.startswith(("b_", "c_", "d_")):
         X = zscore_cols(rich_score_features(score, rff_dim=0))
         feats.append(np.concatenate([X, np.ones((len(X), 1))], axis=1))
-    if config in ("b_featlm", "c_harm_lm"):
+    if config in ("b_featlm", "b_featlm_nograph", "c_harm_lm"):
         assert emb is not None, "this config needs the mask-aware embedding dump"
         feats.append(zscore_cols(emb))
 
@@ -212,7 +213,8 @@ def stage_run(args) -> None:
     for config in [c.strip() for c in args.configs.split(",") if c.strip()]:
         if config not in CONFIGS:
             print(f"unknown config {config!r}; known: {CONFIGS}"); sys.exit(1)
-        kernel = "matern2" if config == "a_icm_m2" else "additive"
+        kernel = ("matern2" if config == "a_icm_m2"
+                  else "none" if config.endswith("_nograph") else "additive")
         print(f"=== {config}: kernel={kernel} shard {shard_k}/{shard_n}", flush=True)
 
         frozen = None
@@ -228,7 +230,8 @@ def stage_run(args) -> None:
                     continue
                 Y = np.asarray(p["y"], dtype=float)
                 mask = masks[(pi, s)]
-                emb = emb_dump[(pi, s)] if config in ("b_featlm", "c_harm_lm") else None
+                emb = emb_dump[(pi, s)] if config in (
+                    "b_featlm", "b_featlm_nograph", "c_harm_lm") else None
                 base_cfg = "b_feat" if config in ("d_corpus", "d_hybrid") else config
                 feats, graph_eig, n_graph, g0 = piece_setup(p, base_cfg, emb=emb)
                 if config == "a_diag":

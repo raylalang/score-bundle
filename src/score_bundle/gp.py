@@ -43,6 +43,9 @@ SHAPE_KERNELS = {
     "matern2": lambda nu, s: (s / (s + nu)) ** 2,
     "matern3": lambda nu, s: (s / (s + nu)) ** 3,
     "diffusion": lambda nu, s: np.exp(-s * nu),                    # heat kernel
+    # ablation: NO graph coupling (K_G = I); the shape parameter is inert.  Isolates
+    # the graph's marginal value inside the GP-first model.
+    "none": lambda nu, s: np.ones_like(nu),
 }
 _G_MIN, _G_MAX = 1e-12, 1e12
 

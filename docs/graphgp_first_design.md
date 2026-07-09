@@ -150,6 +150,17 @@ graph, no learned graph parameters, best NLL and coverage).
    proven on the shared precompute path, and the unit contract is in
    `tests/test_graphgp.py`).
 
+### Graph ablation inside the GP-first model (review-driven, 2026-07-09)
+
+Removing the graph term (K_G = I; `*_nograph` configs) from the winners, paired vs
+b_featlm: **b_featlm_nograph +0.0174* RMSE [+0.008,+0.028] and +0.0690* NLL
+[+0.055,+0.085]** (b_feat_nograph: +0.0177*/+0.0847*). The graph's marginal value
+survives — and its calibration contribution is the largest single effect measured in
+the model. Per-piece Bayesian features alone are strong on recovery (0.3755, still
+better than the old headline's 0.3795) but the graph is what makes the confidence
+honest. The thesis claim — *structure + calibration* — holds inside the orthodox
+formulation.
+
 ### GP-first candidate headline
 
 **One multi-output graph GP** (ICM over τ/log r/v; additive spectral graph kernel;
