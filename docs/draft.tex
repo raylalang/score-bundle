@@ -1085,40 +1085,68 @@ the leak is removed (RMSE $0.394$ vs.\ $0.394$, identical within noise) --- the
 earlier ``scaling'' gain was the loudness leak. Practical rule: judge the LM
 downstream, not by perplexity.
 
-\section{Kernel comparison (planned)}\label{sec:kernels}
+\section{Kernel comparison}\label{sec:kernels}
 The headline used the plainest graph GP, the additive Laplacian
-$\Qg = \lambda I + \eta\Lg$. A planned ablation sweeps the kernel from the simplest to
-more experimental forms, holding the prior mean ($\muLM$) and the whole protocol fixed
-so that \emph{only the kernel changes}, and scoring recovery \emph{and} calibration:
+$\Qg = \lambda I + \eta\Lg$. The ablation sweeps the kernel from the simplest to more
+experimental forms, holding the prior mean ($\muLM$, strict) and the whole protocol
+fixed --- identical mask realizations across every row --- so that \emph{only the
+kernel changes}, and scoring recovery \emph{and} calibration, paired per piece:
 (i) independent (diagonal) and temporal-chain baselines; (ii) the additive Laplacian
 (reference); (iii) the graph Mat\'ern GP $\sigma_g^{-2}(\kappa^2 I + \Lg)^{\alpha}$ for
-$\alpha = 1, 2$; (iv) a diffusion / heat kernel $K = \exp(-t\Lg)$ (the $\alpha\to\infty$
-limit); (v) normalized-Laplacian variants ($L_{\mathrm{sym}}$, $L_{\mathrm{rw}}$); and
-(vi) the more experimental \emph{music-theory-informed} graphs of
-\S\ref{sec:musictheory} (tonal-distance and harmonic/voice-leading edges). The test is
-whether any richer kernel beats the additive baseline on both axes, per piece, at
-justified extra cost. Full protocol and integration notes:
-\texttt{docs/kernel\_comparison\_experiment.md}.
+$\alpha = 1, 2, 3$; (iv) the diffusion / heat kernel $K = \exp(-t\Lg)$ (the
+$\alpha\to\infty$ limit); (v) the symmetric normalized Laplacian inside the additive
+form; and (vi) the more experimental \emph{music-theory-informed} graphs of
+\S\ref{sec:musictheory}: tonal-distance edges (circle-of-fifths pitch-class distance
+plus octave displacement, \emph{replacing} semitone distance) and harmonic edges
+(same-chord membership and stepwise voice-leading, \emph{added} to the plain graph).
+Every kernel is fit spectrally --- covariance eigenvalues $g(\nu)$ of the Laplacian
+spectrum, so the dense diffusion kernel costs one eigendecomposition per piece --- with
+the same empirical-Bayes machinery, noise floor, and guard as the headline; the
+$p$-step random walk $(I+\eta L)^p$ is the Mat\'ern family reparameterized and is
+therefore not a separate row. A $\mu = 0$ block (not shown) repeats every conclusion
+without the learned mean. Full protocol:
+\texttt{docs/kernel\_comparison\_experiment.md}; numbers:
+\texttt{docs/kernel\_comparison\_results.md}.
+
+Three findings (Table~\ref{tab:kernels}). \textbf{First, the additive Laplacian
+survives Tier B}: Mat\'ern at every $\alpha$, diffusion, and the normalized Laplacian
+are statistically indistinguishable from it on RMSE and do not improve NLL --- among
+classical graph-GP kernels the plainest one is the right default, and its extra-cost
+rivals buy nothing. \textbf{Second, structure beyond time adjacency is what buys
+calibration}: the temporal chain ties the full graph on RMSE ($-0.000$, ns) but is
+significantly worse-calibrated ($\Delta$NLL $+0.031^{*}$). \textbf{Third, music theory
+helps as extra edges, not as a replacement metric}: tonal distance in place of semitone
+distance is significantly \emph{worse} on both axes (expressive coupling follows
+register proximity, not tonal proximity), while \emph{adding} chord + voice-leading
+edges gives the only significant both-axes win over the baseline
+($\Delta$RMSE $-0.008^{*}$, $\Delta$NLL $-0.013^{*}$; chord edges carry the recovery
+gain, concentrated in articulation and loudness --- $\tau$ stays pinned at the warp
+floor). The harmonic graph with the plain network mean (RMSE $0.385$) even edges out
+the feature-stacked candidate on the plain graph (\rmseStack), and the two changes are
+orthogonal, so they can compose.
 
 \begin{table}[h]\centering
-\caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks). Numbers to
-be filled from the run; bold best per column, $*$ = significant vs the additive
-baseline.}
+\caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; guard on).
+Bold best per column; $*$ = paired per-piece bootstrap 95\% CI vs the additive baseline
+excludes 0. Mat\'ern $\alpha{=}1$'s $\Delta$RMSE is nominally significant but $+0.0002$
+--- no practical content.}
 \label{tab:kernels}
 \footnotesize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Kernel & RMSE & NLL & cov@.9 & cal-err \\
 \midrule
-Independent (diagonal)            & -- & -- & -- & -- \\
-Temporal chain (AR(1))            & -- & -- & -- & -- \\
-Additive Laplacian (baseline)     & -- & -- & -- & -- \\
-Graph Mat\'ern ($\alpha{=}1$)     & -- & -- & -- & -- \\
-Graph Mat\'ern ($\alpha{=}2$)     & -- & -- & -- & -- \\
-Diffusion / heat                  & -- & -- & -- & -- \\
-Normalized Laplacian              & -- & -- & -- & -- \\
-Tonal-distance edges              & -- & -- & -- & -- \\
-Harmonic + voice-leading edges    & -- & -- & -- & -- \\
+Independent (diagonal)            & 0.446$^{*}$ & $-0.190^{*}$ & 0.919 & 0.085 \\
+Temporal chain (AR(1))            & 0.392 & $-0.292^{*}$ & 0.916 & 0.063 \\
+Additive Laplacian (baseline)     & 0.393 & $-0.322$ & 0.921 & 0.067 \\
+Graph Mat\'ern ($\alpha{=}1$)     & 0.393$^{*}$ & $-0.321$ & 0.921 & 0.064 \\
+Graph Mat\'ern ($\alpha{=}2$)     & 0.392 & $-0.321$ & 0.919 & 0.064 \\
+Graph Mat\'ern ($\alpha{=}3$)     & 0.392 & $-0.318$ & 0.918 & 0.062 \\
+Diffusion / heat                  & 0.393 & $-0.312$ & 0.917 & 0.062 \\
+Normalized Laplacian (additive)   & 0.392 & $-0.326$ & 0.922 & 0.068 \\
+Tonal-distance edges              & 0.403$^{*}$ & $-0.300^{*}$ & 0.921 & 0.061 \\
+Harmonic (chord) edges            & \textbf{0.384}$^{*}$ & $-0.331$ & 0.923 & 0.066 \\
+Harmonic + voice-leading edges    & 0.385$^{*}$ & {\boldmath$-0.335$}$^{*}$ & 0.922 & 0.066 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1233,9 +1261,13 @@ harmonically close notes are graph-close even when far apart in pitch. Add edge
 families for \emph{harmonic function} (same chord, cadential relationships) and
 \emph{voice-leading} proximity, and weight by \emph{metrical hierarchy} and
 \emph{phrase} structure. Each changes $W_{ij}$, hence $\Lg$, hence the graph GP kernel,
-and drops straight into the existing closed-form posterior. This is exactly the
-experimental tier of the kernel comparison (\S\ref{sec:kernels},
-Table~\ref{tab:kernels}), where each edge family is ablated against the plain graph.
+and drops straight into the existing closed-form posterior. The first two of these are
+now measured --- the experimental tier of the kernel comparison (\S\ref{sec:kernels},
+Table~\ref{tab:kernels}): \emph{replacing} the pitch metric hurts, \emph{adding} chord
+and voice-leading edge families is the one significant both-axes win. Open here:
+cadential/functional edges (needs a harmonic analysis), metrical-hierarchy and phrase
+weights, and the connection-Laplacian gauge construction of
+\texttt{docs/geometry\_direction.md}.
 
 \paragraph{(B) In the prior mean --- the most incremental route.}
 Add music-theoretic \emph{score features} to the hand-built feature mean (and thus to

@@ -113,11 +113,6 @@ def stage_precompute(args) -> None:
     ev = ev[: args.n_eval_pieces]
     print(f"{len(head)} head + {len(ev)} eval pieces | device {device}", flush=True)
 
-    H_lf = np.concatenate([p["emb_leakfree"] for p in head])
-    Yh = np.concatenate([p["y"] for p in head])
-    W_lf = lmfeat.fit_prior_mean_head(H_lf, Yh, l2=args.l2)
-    print(f"head fit on emb_leakfree (l2={args.l2})", flush=True)
-
     def notes_of(p, vel):
         return [NoteEvent(int(pi), float(oi), float(di), int(np.clip(v, 1, 127)))
                 for pi, oi, di, v in zip(p["pitch"], p["onset"], p["duration"], vel)]
@@ -126,6 +121,33 @@ def stage_precompute(args) -> None:
         vel = np.where(mask, p["velocity"], float(args.placeholder_vel))
         return lmfeat.note_embeddings_long(model, tok, notes_of(p, vel),
                                            readout="pre_velocity")
+
+    # representation feeding the head: LM embeddings alone, or the candidate-headline
+    # concat of score-only features (feat-lin, rff_dim=0) + LM embeddings.  Features
+    # are score-only hence mask-independent; only the embedding side is mask-aware.
+    if args.mean == "feat_lm":
+        from score_bundle.baselines import rich_score_features
+        from score_bundle.downstream import piece_score
+
+        def feats(p):
+            return rich_score_features(piece_score(p), rff_dim=0)
+
+        def head_rep(p):
+            return np.concatenate([feats(p), p["emb_leakfree"]], axis=1)
+
+        def eval_rep(p, emb_ma):
+            return np.concatenate([feats(p), emb_ma], axis=1)
+    else:
+        def head_rep(p):
+            return p["emb_leakfree"]
+
+        def eval_rep(p, emb_ma):
+            return emb_ma
+
+    H = np.concatenate([head_rep(p) for p in head])
+    Yh = np.concatenate([p["y"] for p in head])
+    W_lf = lmfeat.fit_prior_mean_head(H, Yh, l2=args.l2)
+    print(f"head fit (mean={args.mean}, l2={args.l2})", flush=True)
 
     # EXACTLY the published strict loop (scripts/eval_asap_maskaware.py): one rng per
     # seed, masks drawn per piece in eval order — identical masks to the headline run.
@@ -136,7 +158,7 @@ def stage_precompute(args) -> None:
             mask = ie.random_mask(len(p["y"]), seed_rng, observed_frac=args.observed_frac)
             emb_ma = maskaware_emb(p, mask)
             masks[(pi, s)] = mask
-            mus[(pi, s)] = lmfeat.apply_prior_mean(emb_ma, W_lf)
+            mus[(pi, s)] = lmfeat.apply_prior_mean(eval_rep(p, emb_ma), W_lf)
         print(f"seed {s + 1}/{args.seeds} done", flush=True)
 
     blob = {
@@ -146,6 +168,7 @@ def stage_precompute(args) -> None:
             "n_eval_pieces": len(ev), "seeds": args.seeds,
             "observed_frac": args.observed_frac, "l2": args.l2,
             "placeholder_vel": args.placeholder_vel, "embeddings": "mask-aware strict",
+            "mean": args.mean,
         },
     }
     os.makedirs(os.path.dirname(args.inputs) or ".", exist_ok=True)
@@ -330,6 +353,10 @@ def main() -> None:
     ap.add_argument("--l2", type=float, default=10.0)
     ap.add_argument("--placeholder-vel", type=int, default=64)
     ap.add_argument("--noise-floor-frac", type=float, default=0.05)
+    ap.add_argument("--mean", default="lm", choices=["lm", "feat_lm"],
+                    help="precompute: representation feeding the strict prior mean — "
+                         "'lm' (published default) or 'feat_lm' (candidate-headline "
+                         "concat of feat-lin score features + LM embeddings)")
     ap.add_argument("--kernels", default=",".join(ROWS))
     ap.add_argument("--boot", type=int, default=2000)
     ap.add_argument("--device", default=None)
