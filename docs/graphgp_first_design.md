@@ -155,6 +155,32 @@ inflation, now quantified).
 (expected no-op) and on the confirmation pieces (does it tame piece 5?) are reported
 below when they land.
 
+## Downstream re-validation (2026-07-09, `logs/downstream_gpfirst_report.log`)
+
+All six tasks re-run with identical rng for old-pipeline and GP-first rows
+(`scripts/eval_downstream_gpfirst.py`; non-strict `emb_leakfree` for both sides,
+matching the original downstream condition).
+
+| Task | Old verdict | GP-first verdict |
+|---|---|---|
+| Anomaly | clear win | **stronger win** — best AUROC/AP on every channel (v 0.995, log r 0.986, τ 0.978; old best 0.992/0.979/0.975) |
+| Denoise (oracle noise) | win | **slightly better** (RMSE 0.182/0.276 vs 0.186/0.282; coverage 0.90) |
+| Denoise (blind) | failure | **still a failure for both** — structure does not identify the noise level in either parameterization |
+| Selective | qualified win | **transfers** (rmse@50% 0.076 vs 0.080; similar excess) |
+| Era | honest negative | **still negative** for both (raw 0.10, GP-denoised 0.20, majority 0.60) |
+| Completion (excerpt) | partial | **old pipeline more robust** — see boundary finding |
+
+**Boundary-of-validity finding (completion).** With only an opening excerpt observed
+(prefix 25%), GP-featlm produced one catastrophic extrapolation cell (RMSE 1.6e4):
+the per-piece Bayesian feature weights, fit on the excerpt alone, extrapolate the
+embedding features into unseen regions of the piece. The cross-piece head never
+does this (old LM prefix-25%: 0.414). The sharpened thesis boundary: **per-piece
+Bayesian adaptation needs observed coverage of the feature space — it wins at
+interpolation-style tasks (imputation, anomaly, denoising, selective) and is the
+wrong tool for excerpt extrapolation, where the cross-piece head stays the honest
+choice.** Note the guard cannot catch this mode: its screen is a split of the
+*observed* notes, i.e. it validates interpolation, not extrapolation.
+
 ## Decision framework (the user's call; this branch produces evidence)
 
 Paired vs the adopted headline (0.3795 / −0.3459 / 0.922 strict):
