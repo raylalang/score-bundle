@@ -100,6 +100,62 @@ better on both axes → GP-first becomes the thesis model, current work absorbed
 ablations; tie → likely still the preferable framing for a graph-GP audience; worse →
 keep the current headline and report this as the honest orthodoxy ablation.
 
-## Results
+## Results (2026-07-09, `logs/graphgp_final_report.log`)
 
-*(filled from `logs/graphgp_*.log` as runs land)*
+Identical strict protocol and masks; paired per-piece bootstrap vs the adopted
+headline (feat+LM+harmonic, 0.3795 / −0.3459 / 0.922). Gate passed first: `a_diag`
+reproduces the published zero+graph cell within noise (0.4036/−0.3062 vs
+0.4041/−0.3083; both deltas ns).
+
+| Config | RMSE | NLL | cov@.9 | ΔRMSE vs headline | ΔNLL vs headline |
+|---|---|---|---|---|---|
+| a_diag (nested special case) | 0.4036 | −0.306 | 0.923 | +0.0234* | +0.039 |
+| a_icm (+ coregionalization) | 0.4029 | −0.315 | 0.923 | +0.0224* | +0.031 |
+| a_icm_m2 (Matérn-2 shape) | 0.4032 | −0.302 | 0.920 | +0.0227* | +0.043* |
+| b_feat (features as kernel, no LM) | 0.3679 | −0.370 | 0.923 | **−0.0128*** | −0.025 |
+| **b_featlm (+ LM embeddings)** | **0.3590** | **−0.4051** | **0.927** | **−0.0218*** | **−0.0602*** |
+| c_graph (learned ℓ_b, ℓ_p) | 0.3647 | −0.384 | 0.918 | −0.0156* | −0.039 |
+| c_harm (harmonic, learned) | 0.3606 | −0.382 | 0.917 | −0.0196* | −0.037 |
+| c_harm_lm (everything) | 0.3561 | −0.396 | 0.920 | −0.0240* | −0.0506* |
+| d_corpus (frozen corpus params) | 0.3670 | −0.183 | 0.929 | −0.0135* | +0.163* |
+| d_hybrid (frozen + per-piece noise) | 0.3671 | −0.350 | 0.941 | −0.0135* | −0.004 |
+
+Head-to-head of the two leaders: c_harm_lm vs b_featlm ΔRMSE −0.0022 [−0.010,+0.006]
+ns, ΔNLL +0.0096 ns — statistically tied; **b_featlm wins by parsimony** (fixed plain
+graph, no learned graph parameters, best NLL and coverage).
+
+### Reading the ladder
+
+1. **Mean-as-kernel is the big effect.** Folding the score features into the kernel
+   (per-piece Bayesian weights under one evidence) is worth −0.036 RMSE vs the
+   equivalent plug-in system (b_feat 0.3679 vs feat-mean+graph ≈ 0.404/0.3879-tier) —
+   far larger than any kernel-family or edge-family effect measured before.
+2. **The LM survives inside the evidence.** Embeddings-as-kernel add −0.0090* RMSE
+   and −0.0354* NLL on top of features (paired b_featlm vs b_feat) — the LM's
+   calibration + loudness contribution (v RMSE 0.0749 → 0.0718) transfers into the
+   orthodox model.
+3. **Coregionalization alone is marginal** at zero mean (a_icm ≈ a_diag); its value
+   shows up combined with the feature kernels.
+4. **Learning the graph by evidence helps without the LM** (c_harm 0.3606) but adds
+   nothing once the LM embeddings are in (c_harm_lm ties b_featlm) — the embeddings
+   already carry the local-context information the extra edges encode.
+5. **What must be per-piece is the noise.** Corpus-frozen hyperparameters recover
+   well (0.3670) but blow up NLL on one atypical piece (+3.1 on piece 7); refitting
+   only the 3 noise parameters per piece recovers most calibration
+   (d_hybrid −0.350). Full per-piece evidence remains best.
+6. **Per-channel, b_featlm is the best measured on every channel**: τ 0.1518 (below
+   the previous "measurement floor" plateau of ~0.156), log r 0.5988, v 0.0718.
+7. **Zero-leak audit passed bitwise** on the real run path
+   (`scripts/audit_graphgp_leakfree.py`; embedding-side invariance was already
+   proven on the shared precompute path, and the unit contract is in
+   `tests/test_graphgp.py`).
+
+### GP-first candidate headline
+
+**One multi-output graph GP** (ICM over τ/log r/v; additive spectral graph kernel;
+score features + mask-aware LM embeddings as linear kernels = marginalized Bayesian
+linear mean; per-channel floored noise; everything by exact per-piece marginal
+likelihood): **RMSE 0.3590 / NLL −0.4051 / coverage 0.927 strict** — significantly
+better than the adopted two-stage headline on both axes, with a strictly simpler
+story (one model, one evidence, no plug-in head, no leak surface through a fitted
+read-out head). Decision on adopt/ditch/absorb: the user's.
