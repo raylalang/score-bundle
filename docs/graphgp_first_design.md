@@ -149,11 +149,21 @@ advantage does not (tie), pending the guard upgrade below. Note all systems' NLL
 worse on fresh pieces than on dev — the dev set flatters every model (reused-set
 inflation, now quantified).
 
-**Guard upgrade (separately reported, not part of the one-shot result):**
-`gp.fit_guarded` adds an overconfidence screen (calibration-split NLL vs mean-only
-+0.5 nats; fallbacks noise-floor ×5 → decoupled diagonal). Guarded A/B runs on dev
-(expected no-op) and on the confirmation pieces (does it tame piece 5?) are reported
-below when they land.
+**Guard upgrade — built, and an honest negative** (`logs/guarded_ab_verdict.log`):
+`gp.fit_guarded` (calibration-split screen incl. an overconfidence check; fallbacks
+noise-floor ×5 → decoupled diagonal) is a verified no-op on healthy fits — bitwise
+identical on the confirmation set (0/80 cells changed) — **and it does not catch the
+piece-5 tail**. Diagnosis of that tail: it is ONE cell (seed 0, τ), NLL +27.5 with
+*fine* RMSE (0.113) and *nominal* coverage (0.90) — a steady Schubert sonata gives τ
+a tiny scale, the evidence fits tight intervals, and a few held-out outlier notes
+land many σ out; the Gaussian likelihood's quadratic tail amplifies them. The
+failure is invisible from observed notes, so no observed-split screen can catch it.
+Documented remedies (future work, deliberately NOT applied post-hoc to the
+confirmation): a heavy-tailed (Student-t) observation model for τ; deploy-time
+predictive floors; and the already-reported per-piece median NLL, which is robust to
+it by construction. Incidental finding from the A/B: fits are deterministic given
+the BLAS thread count but drift in the 4th decimal across thread counts — v2 numbers
+are the OMP_NUM_THREADS=2 condition.
 
 ## Downstream re-validation (2026-07-09, `logs/downstream_gpfirst_report.log`)
 

@@ -189,7 +189,7 @@ The single pooled number above blends three channels that behave very differentl
 \toprule
 Channel & What the graph does \\
 \midrule
-Timing ($\tau$) & Already near the alignment's measurement floor; the graph adds little (RMSE $\approx 0.16$ either way). \\
+Timing ($\tau$) & The channel structure moves least (RMSE $\approx 0.15$--$0.16$ across all models measured); most of the remaining variance appears local to the note rather than shared along the graph. \\
 Articulation ($\log r$) & Fixes \emph{calibration} --- lifts 90\% coverage from $0.78$ to $0.91$ --- and cuts error ($0.96 \to 0.68$). \\
 Loudness ($v$) & Where \emph{recovery} improves most: the graph roughly halves the error ($0.12 \to 0.08$), and this is the one channel where the learned music-model mean carries signal the hand-built features lack. \\
 \bottomrule
@@ -1022,8 +1022,11 @@ edges improve every graph.}
 \section{Per-channel breakdown: where the graph earns its keep}\label{sec:perchannel}
 The pooled headline (Table~\ref{tab:headline-exec}) averages three normalised
 channels, but the effect is far from uniform (Table~\ref{tab:perchannel}). Timing
-($\tau$) is already near the alignment's measurement floor, so the graph barely
-moves it and it slightly over-covers --- not where the structure earns its keep.
+($\tau$) is the channel where structure moves least: the graph barely changes it and it
+slightly over-covers --- most of the remaining onset variance appears note-local
+rather than shared along the graph (we no longer call this a ``measurement floor'':
+richer models do inch below the earlier plateau) --- not where the structure earns
+its keep.
 Articulation ($\log r$) is where the graph most improves \emph{calibration}: a bare
 prior mean badly under-covers (coverage $0.78$), and the graph residual lifts every
 mean to $\approx$0.91 coverage while also cutting error ($0.96 \to 0.68$ for the zero
@@ -1146,8 +1149,8 @@ distance is significantly \emph{worse} on both axes (expressive coupling follows
 register proximity, not tonal proximity), while \emph{adding} chord + voice-leading
 edges gives the only significant both-axes win over the baseline
 ($\Delta$RMSE $-0.008^{*}$, $\Delta$NLL $-0.013^{*}$; chord edges carry the recovery
-gain, concentrated in articulation and loudness --- $\tau$ stays pinned at the warp
-floor). The harmonic graph with the plain network mean (RMSE $0.385$) even edges out
+gain, concentrated in articulation and loudness --- $\tau$ stays at its
+plateau). The harmonic graph with the plain network mean (RMSE $0.385$) even edges out
 the feature-stacked candidate on the plain graph (\rmseStack) --- and the two upgrades
 \emph{compose}: on the feat+LM mean the harmonic graphs still gain
 $\Delta$RMSE $-0.008^{*}$ / $\Delta$NLL $-0.013^{*}$, giving the best strict cells
@@ -1251,8 +1254,9 @@ note its own, and that is what brings coverage to the nominal level. Why is the
 LM's marginal edge concentrated in \emph{loudness}? Dynamics is the channel most
 predictable from learned performance conventions (phrase-level swells,
 metrical stress) that a sequence model captures but local hand-built features do
-not; timing is already near the measurement floor, and articulation is comparatively
-idiosyncratic, so the LM's extra information has least to add there.
+not; timing is the channel where every model's error plateaus (largely note-local
+variance), and articulation is comparatively idiosyncratic, so the LM's extra
+information has least to add there.
 
 \section{Limitations}
 The result is symbolic-only (no audio yet) and piano-only (no performer-controlled
