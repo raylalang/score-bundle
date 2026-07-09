@@ -37,7 +37,7 @@ OUT_DIR = "results/graphgp"
 CHANNELS = ["tau", "log r", "v"]
 
 CONFIGS = ["a_diag", "a_icm", "a_icm_m2", "b_feat", "b_featlm",
-           "b_feat_nograph", "b_featlm_nograph",
+           "b_feat_nograph", "b_featlm_nograph", "b_fixedmean",
            "c_graph", "c_harm", "c_harm_lm", "d_corpus", "d_hybrid"]
 
 BASELINES = {  # label -> (pickle path, mean-block name)
@@ -204,8 +204,16 @@ def stage_run(args) -> None:
     if os.path.exists(args.emb_dump):
         with open(args.emb_dump, "rb") as fh:
             emb_dump = pickle.load(fh)["emb_ma"]
+    fixed_mus = None
+    if "b_fixedmean" in args.configs:
+        # the disentangler: the published candidate's cross-piece strict mean (feat+LM
+        # head), used as a FIXED mean inside the ICM GP — isolates evidence integration
+        # (joint noise + coupling) from per-piece Bayesian feature adaptation
+        with open(args.fixed_mean_inputs, "rb") as fh:
+            fixed_mus = pickle.load(fh)["mu_lm"]
     head, ev, _ = load_piece_arrays(args.arrays_cache)
-    ev = ev[: imeta["n_eval_pieces"]]
+    start = args.eval_start
+    ev = ev[start: start + imeta["n_eval_pieces"]]
     seeds = imeta["seeds"]
     os.makedirs(args.out_dir, exist_ok=True)
     shard_k, shard_n = map(int, args.shard.split("/")) if "/" in args.shard else (0, 1)
@@ -232,7 +240,12 @@ def stage_run(args) -> None:
                 mask = masks[(pi, s)]
                 emb = emb_dump[(pi, s)] if config in (
                     "b_featlm", "b_featlm_nograph", "c_harm_lm") else None
-                base_cfg = "b_feat" if config in ("d_corpus", "d_hybrid") else config
+                base_cfg = ("b_feat" if config in ("d_corpus", "d_hybrid")
+                            else "a_icm" if config == "b_fixedmean" else config)
+                mu_fixed = None
+                if config == "b_fixedmean":
+                    mu_fixed = np.asarray(fixed_mus[(pi, s)], dtype=float)
+                    Y = Y - mu_fixed  # residual field; mean added back below
                 feats, graph_eig, n_graph, g0 = piece_setup(p, base_cfg, emb=emb)
                 if config == "a_diag":
                     # three single-channel fits through the same machinery
@@ -251,6 +264,10 @@ def stage_run(args) -> None:
                         frozen_x=frozen, refit_noise=(config == "d_hybrid"),
                         maxiter=args.maxiter)
                     infos.append(info)
+                if mu_fixed is not None:
+                    held = ~mask
+                    mu_h = np.concatenate([mu_fixed[held, c] for c in range(3)])
+                    cell = (cell[0] + mu_h, cell[1] + mu_h, cell[2], cell[3])
                 cells[("GP", pi, s)] = cell
             print(f"[{config}] seed {s + 1}/{seeds} done ({len(cells)} cells)", flush=True)
 
@@ -360,8 +377,8 @@ def stage_report(args) -> None:
     base_label = args.baseline
     base_pp = {f: per_piece(rows[base_label], f) for f in ("rmse", "nll")} \
         if base_label in rows else None
-    hdr = (f"{'row':26s} {'RMSE':>8s} {'NLL':>9s} {'cov@.9':>8s} {'med-cell':>9s} "
-           f"{'worst':>8s}  dRMSE vs {base_label} [95% CI]   dNLL [95% CI]")
+    hdr = (f"{'row':26s} {'RMSE':>8s} {'NLL':>9s} {'cov@.9':>8s} {'cal-err':>8s} "
+           f"{'med-cell':>9s} {'worst':>8s}  dRMSE vs {base_label} [95% CI]   dNLL [95% CI]")
     print(hdr)
     for label, cells in rows.items():
         m = pooled(cells).report(level=0.9)[("k", True)]
@@ -377,6 +394,7 @@ def stage_report(args) -> None:
             sig = "*" if (lo > 0) or (hi < 0) else " "
             txt[f] = f"{mu:+.4f} [{lo:+.4f},{hi:+.4f}]{sig}"
         print(f"{label:26s} {m['rmse']:8.4f} {m['nll']:9.4f} {m['coverage@0.90']:8.3f} "
+              f"{m['calibration_error']:8.3f} "
               f"{m['rmse_median_cell']:9.4f} {m['rmse_worst_cell']:8.4f}  "
               f"{txt['rmse']:>30s} {txt['nll']:>28s}")
 
@@ -403,6 +421,9 @@ def main() -> None:
     ap.add_argument("--shard", default="0/1", help="k/n shard of the (piece, seed) cells")
     ap.add_argument("--maxiter", type=int, default=200)
     ap.add_argument("--corpus-pieces", type=int, default=20)
+    ap.add_argument("--eval-start", type=int, default=0,
+                    help="offset into the cache's eval list (confirmation set = 30)")
+    ap.add_argument("--fixed-mean-inputs", default=".cache/kernel_sweep_inputs_featlm.pkl")
     ap.add_argument("--baseline", default="headline (feat+LM+harm)")
     args = ap.parse_args()
     {"run": stage_run, "report": stage_report}[args.stage](args)

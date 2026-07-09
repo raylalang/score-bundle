@@ -127,8 +127,9 @@ def stage_precompute(args) -> None:
     if meta.get("schema_version", 1) < 3:
         print("cache lacks raw velocities; regenerate with scripts/extract_asap_arrays.py")
         sys.exit(1)
-    ev = ev[: args.n_eval_pieces]
-    print(f"{len(head)} head + {len(ev)} eval pieces | device {device}", flush=True)
+    ev = ev[args.eval_start: args.eval_start + args.n_eval_pieces]
+    print(f"{len(head)} head + {len(ev)} eval pieces (start {args.eval_start}) "
+          f"| device {device}", flush=True)
 
     def notes_of(p, vel):
         return [NoteEvent(int(pi), float(oi), float(di), int(np.clip(v, 1, 127)))
@@ -170,7 +171,7 @@ def stage_precompute(args) -> None:
     # seed, masks drawn per piece in eval order — identical masks to the headline run.
     masks, mus, emb_dump = {}, {}, {}
     for s in range(args.seeds):
-        seed_rng = np.random.default_rng(1000 + s)
+        seed_rng = np.random.default_rng(args.mask_seed_base + s)
         for pi, p in enumerate(ev):
             mask = ie.random_mask(len(p["y"]), seed_rng, observed_frac=args.observed_frac)
             emb_ma = maskaware_emb(p, mask)
@@ -196,7 +197,8 @@ def stage_precompute(args) -> None:
             "n_eval_pieces": len(ev), "seeds": args.seeds,
             "observed_frac": args.observed_frac, "l2": args.l2,
             "placeholder_vel": args.placeholder_vel, "embeddings": "mask-aware strict",
-            "mean": args.mean,
+            "mean": args.mean, "eval_start": args.eval_start,
+            "mask_seed_base": args.mask_seed_base,
         },
     }
     os.makedirs(os.path.dirname(args.inputs) or ".", exist_ok=True)
@@ -215,7 +217,8 @@ def stage_run(args) -> None:
         inputs = pickle.load(fh)
     masks, mus, imeta = inputs["masks"], inputs["mu_lm"], inputs["meta"]
     _, ev, _ = load_piece_arrays(args.arrays_cache)
-    ev = ev[: imeta["n_eval_pieces"]]
+    start = imeta.get("eval_start", 0)
+    ev = ev[start: start + imeta["n_eval_pieces"]]
     seeds = imeta["seeds"]
     os.makedirs(args.out_dir, exist_ok=True)
 
@@ -382,6 +385,10 @@ def main() -> None:
     ap.add_argument("--l2", type=float, default=10.0)
     ap.add_argument("--placeholder-vel", type=int, default=64)
     ap.add_argument("--noise-floor-frac", type=float, default=0.05)
+    ap.add_argument("--eval-start", type=int, default=0,
+                    help="offset into the cache's eval list (confirmation set)")
+    ap.add_argument("--mask-seed-base", type=int, default=1000,
+                    help="rng base for mask seeds (confirmation uses a disjoint base)")
     ap.add_argument("--dump-embeddings", default=None,
                     help="precompute: also write the raw mask-aware embeddings per "
                          "(piece, seed) to this pickle (for the GP-first feature kernel)")
