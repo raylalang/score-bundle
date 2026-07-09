@@ -164,6 +164,37 @@ def test_heldout_targets_cannot_influence_gp_predictions():
     np.testing.assert_array_equal(Sa, Sb)
 
 
+def test_loo_predictive_matches_bruteforce_conditional():
+    nu, U, Y, _, _ = _setup(seed=6, n=12)
+    gp = MultiOutputGraphGP(nu, U, kernel="additive")
+    x = gp.x0(); x[0] = 0.2; x[1:4] = 0.1; x[4:7] = 0.3; x[-3:] = np.log(0.05)
+    loo_m, loo_v = gp.loo_predictive(Y, x)
+    # brute force: for each (note, channel) index, condition on all the others
+    p = gp.unpack(x)
+    allidx = np.arange(gp.N)
+    C = gp._blocks(p, allidx, allidx)
+    for c in range(3):
+        C[c * gp.N:(c + 1) * gp.N, c * gp.N:(c + 1) * gp.N] += p["noise"][c] * np.eye(gp.N)
+    y = np.concatenate([Y[:, c] for c in range(3)])
+    n = y.size
+    for i in (0, 7, 20, n - 1):
+        rest = np.array([j for j in range(n) if j != i])
+        Cro = C[np.ix_(rest, rest)]
+        m_i = C[i, rest] @ np.linalg.solve(Cro, y[rest])
+        v_i = C[i, i] - C[i, rest] @ np.linalg.solve(Cro, C[rest, i])
+        ci, ni = divmod(i, gp.N)
+        assert abs(loo_m[ni, ci] - m_i) < 1e-8
+        assert abs(loo_v[ni, ci] - v_i) < 1e-8
+
+
+def test_fit_with_fixed_noise_pins_noise_exactly():
+    nu, U, Y, mask, _ = _setup(seed=7)
+    gp = MultiOutputGraphGP(nu, U, kernel="additive")
+    nf = np.array([0.04, 0.09, 0.01])
+    x_hat, info = gp.fit(Y, mask, noise_fixed=nf, maxiter=40)
+    np.testing.assert_allclose(gp.unpack(x_hat)["noise"], nf, rtol=1e-12)
+
+
 def test_chol_to_B_is_psd_and_roundtrips_diag():
     theta = np.array([0.3, -0.2, 0.1, 0.5, -0.4, 0.2])
     B = chol_to_B(theta)

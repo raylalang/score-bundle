@@ -189,9 +189,34 @@ class MultiOutputGraphGP:
         std = np.sqrt(np.clip(var, 0.0, None)).reshape(self.k, self.N).T
         return m, std
 
+    def loo_predictive(self, Y: np.ndarray, x: np.ndarray
+                       ) -> Tuple[np.ndarray, np.ndarray]:
+        """Leave-one-out predictive N(mean, var) of each fully-observed observation.
+
+        Joint-GP version of :func:`downstream.loo_predictive`: with the full
+        observation covariance C (all notes, all channels, plus noise) and P = C^-1,
+        ``mean_i = y_i - (P r)_i / P_ii`` and ``var_i = 1 / P_ii`` (variance of the
+        noisy observation — no extra floor needed).  Returns (N, k) arrays.
+        """
+        p = self.unpack(x)
+        allidx = np.arange(self.N)
+        C = self._blocks(p, allidx, allidx)
+        for c in range(self.k):
+            C[c * self.N:(c + 1) * self.N, c * self.N:(c + 1) * self.N] += \
+                p["noise"][c] * np.eye(self.N)
+        P = np.linalg.inv(C)
+        y = np.concatenate([np.asarray(Y, dtype=float)[:, c] for c in range(self.k)])
+        Pr = P @ y  # zero prior mean
+        dii = np.clip(np.diag(P), 1e-12, None)
+        loo_mean = y - Pr / dii
+        loo_var = 1.0 / dii
+        return (loo_mean.reshape(self.k, self.N).T,
+                loo_var.reshape(self.k, self.N).T)
+
     # --- fitting -----------------------------------------------------------------
     def fit(self, Y: np.ndarray, mask: np.ndarray, x0: Optional[np.ndarray] = None,
-            noise_floor: Optional[np.ndarray] = None, maxiter: int = 300
+            noise_floor: Optional[np.ndarray] = None, maxiter: int = 300,
+            noise_fixed: Optional[np.ndarray] = None
             ) -> Tuple[np.ndarray, dict]:
         """Maximize the exact marginal likelihood over ALL parameters jointly.
 
@@ -205,12 +230,18 @@ class MultiOutputGraphGP:
         floor_log = None
         if noise_floor is not None:
             floor_log = np.log(np.maximum(np.asarray(noise_floor, dtype=float), 1e-12))
+        fixed_log = None
+        if noise_fixed is not None:
+            # oracle-noise setting (e.g. denoising with a known level): the noise
+            # coordinates are pinned, everything else is still learned by evidence
+            fixed_log = np.log(np.maximum(np.asarray(noise_fixed, dtype=float), 1e-12))
 
         def clamp(x: np.ndarray) -> np.ndarray:
-            if floor_log is None:
-                return x
             z = x.copy()
-            z[-self.k:] = np.maximum(z[-self.k:], floor_log)
+            if fixed_log is not None:
+                z[-self.k:] = fixed_log
+            elif floor_log is not None:
+                z[-self.k:] = np.maximum(z[-self.k:], floor_log)
             return z
 
         def neg(x: np.ndarray) -> float:
