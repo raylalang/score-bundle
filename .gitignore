@@ -30,5 +30,18 @@ logs/
 *.pkl
 *.pdf
 
+# LaTeX build artifacts (regenerable by pdflatex; do not commit)
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
 # OS
 .DS_Store
