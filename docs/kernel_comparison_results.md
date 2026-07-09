@@ -178,6 +178,30 @@ Requested before the headline decision; **every check passed**.
   published numbers — involves a piece-level constant that includes held-out notes. No
   predictor input contains held-out information.
 
+## Edge-weight sensitivity (2026-07-09, post-adoption hardening)
+
+The harmonic edge families use untuned defaults (`chord_weight=1`, `vl_weight=1`).
+Six variants (each weight ×3 and ÷3; `logs/kernels_sensitivity_report.log`, identical
+masks, μ_LM strict; paired vs additive / vs the (1,1) default):
+
+| (chord, vl) | RMSE | NLL | ΔRMSE vs additive | ΔNLL vs additive | vs (1,1) |
+|---|---|---|---|---|---|
+| (1, 1) — default | 0.3852 | −0.3352 | −0.0076* | −0.0130* | — |
+| (0.3, 0.3) | 0.3889 | −0.3306 | −0.0040* | −0.0083* | RMSE +0.0036* worse |
+| (0.3, 1) | 0.3892 | −0.3317 | −0.0035* | −0.0095* | RMSE +0.0041* worse |
+| (1, 0.3) | 0.3844 | −0.3331 | −0.0086* | −0.0108* | ns both |
+| (1, 3) | 0.3872 | −0.3338 | −0.0053* | −0.0116* | RMSE +0.0023* worse |
+| (3, 1) | 0.3820 | −0.3265 | −0.0112* | −0.0044 ns | RMSE −0.0036* better, NLL trend worse |
+| (3, 3) | 0.3843 | −0.3307 | −0.0085* | −0.0085 ns | ns both |
+
+**Verdict: no knife-edge.** Every variant beats the plain graph on RMSE, significantly;
+nothing reverses anywhere in the ×9 weight range. The weights trade off smoothly —
+heavier chord edges buy more recovery at some calibration cost (c=3 loses NLL
+significance), lighter ones attenuate the gain — and the untuned (1,1) default is the
+setting that keeps **both axes** significant, which is the adoption criterion. The
+adoption does not rest on a lucky weight; if one wanted pure RMSE, (3,1) is marginally
+better (0.3820) at a real calibration cost.
+
 ## Decision (delegated by the user, 2026-07-09)
 
 **Adopted headline: feature + network mean + harmonic (chord + voice-leading) graph —

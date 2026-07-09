@@ -55,6 +55,20 @@ ROWS = {
     "harmonic_vl":  ("harmonic_vl",   False, "additive"),
 }
 
+# sensitivity variants of the adopted harmonic+VL graph: same additive kernel, only
+# the (chord_weight, vl_weight) edge weights move around the untuned (1, 1) default —
+# the adoption is robust iff the gain is flat across these
+HARMONIC_SENSITIVITY = {
+    "harmonic_c03_v1": (0.3, 1.0),
+    "harmonic_c3_v1":  (3.0, 1.0),
+    "harmonic_c1_v03": (1.0, 0.3),
+    "harmonic_c1_v3":  (1.0, 3.0),
+    "harmonic_c03_v03": (0.3, 0.3),
+    "harmonic_c3_v3":  (3.0, 3.0),
+}
+for _name in HARMONIC_SENSITIVITY:
+    ROWS[_name] = (_name, False, "additive")
+
 
 def build_graph_laplacian(name: str, normalized: bool, score, p: dict) -> np.ndarray:
     from score_bundle.graph import (build_adjacency, build_adjacency_harmonic,
@@ -71,6 +85,9 @@ def build_graph_laplacian(name: str, normalized: bool, score, p: dict) -> np.nda
         W = build_adjacency_harmonic(score, chord_weight=1.0, vl_weight=0.0)
     elif name == "harmonic_vl":
         W = build_adjacency_harmonic(score, chord_weight=1.0, vl_weight=1.0)
+    elif name in HARMONIC_SENSITIVITY:
+        cw, vw = HARMONIC_SENSITIVITY[name]
+        W = build_adjacency_harmonic(score, chord_weight=cw, vl_weight=vw)
     else:
         raise ValueError(f"unknown graph {name!r}")
     return laplacian(W, normalized=normalized)
@@ -263,15 +280,16 @@ def stage_report(args) -> None:
     from score_bundle import imputation_eval as ie
     from score_bundle.metrics import evaluate
 
+    baseline = args.baseline
     rows = {}
     for row in ROWS:
         path = os.path.join(args.out_dir, f"{row}.pkl")
         if os.path.exists(path):
             with open(path, "rb") as fh:
                 rows[row] = pickle.load(fh)
-    if "additive" not in rows:
-        print("need the additive baseline row for paired tests"); sys.exit(1)
-    print(f"loaded rows: {list(rows)}\n")
+    if baseline not in rows:
+        print(f"need the {baseline!r} baseline row for paired tests"); sys.exit(1)
+    print(f"loaded rows: {list(rows)} | baseline: {baseline}\n")
 
     def pooled(blob, mean_name):
         acc = ie.MetricAccumulator()
@@ -293,10 +311,10 @@ def stage_report(args) -> None:
     boot_rng = np.random.default_rng(11)
     for mean_name in ("LM", "zero"):
         print(f"===== mu = {'mu_LM (strict mask-aware)' if mean_name == 'LM' else '0'} =====")
-        print(f"{'kernel':14s} {'RMSE':>8s} {'NLL':>9s} {'cov@.9':>8s} {'cal-err':>8s} "
-              f"{'med-cell':>9s} {'worst':>8s}  {'dRMSE vs additive [95% CI]':>30s} "
-              f"{'dNLL vs additive [95% CI]':>28s}  guard")
-        base = {f: per_piece_metric(rows["additive"], mean_name, f)
+        print(f"{'kernel':16s} {'RMSE':>8s} {'NLL':>9s} {'cov@.9':>8s} {'cal-err':>8s} "
+              f"{'med-cell':>9s} {'worst':>8s}  {'dRMSE vs ' + baseline + ' [95% CI]':>30s} "
+              f"{'dNLL vs ' + baseline + ' [95% CI]':>28s}  guard")
+        base = {f: per_piece_metric(rows[baseline], mean_name, f)
                 for f in ("rmse", "nll")}
         for row in ROWS:
             if row not in rows:
@@ -305,7 +323,7 @@ def stage_report(args) -> None:
             m = pooled(blob, mean_name).report(level=0.9)[("k", True)]
             diff_txt = {}
             for f in ("rmse", "nll"):
-                if row == "additive":
+                if row == baseline:
                     diff_txt[f] = f"{'—':>28s}"
                     continue
                 mine = per_piece_metric(blob, mean_name, f)
@@ -316,7 +334,7 @@ def stage_report(args) -> None:
                 diff_txt[f] = f"{mu:+8.4f} [{lo:+.4f},{hi:+.4f}]{sig}"
             g = blob["guard_counts"]
             gtxt = f"{g['calib']}c/{g['conservative']}x" if (g["calib"] or g["conservative"]) else "clean"
-            print(f"{row:14s} {m['rmse']:8.4f} {m['nll']:9.4f} {m['coverage@0.90']:8.3f} "
+            print(f"{row:16s} {m['rmse']:8.4f} {m['nll']:9.4f} {m['coverage@0.90']:8.3f} "
                   f"{m['calibration_error']:8.3f} {m['rmse_median_cell']:9.4f} "
                   f"{m['rmse_worst_cell']:8.4f}  {diff_txt['rmse']:>30s} "
                   f"{diff_txt['nll']:>28s}  {gtxt}")
@@ -325,13 +343,13 @@ def stage_report(args) -> None:
     print("===== per-channel appendix (RMSE / cov@.9) =====")
     for mean_name in ("LM", "zero"):
         print(f"-- mu = {mean_name}")
-        hdr = f"{'kernel':14s}" + "".join(f" {c + ' RMSE':>10s} {c + ' cov':>9s}" for c in CHANNELS)
+        hdr = f"{'kernel':16s}" + "".join(f" {c + ' RMSE':>10s} {c + ' cov':>9s}" for c in CHANNELS)
         print(hdr)
         for row in ROWS:
             if row not in rows:
                 continue
             rep = pooled(rows[row], mean_name).report_by_channel(CHANNELS, level=0.9)
-            line = f"{row:14s}"
+            line = f"{row:16s}"
             for c in CHANNELS:
                 m = rep.get(("k", True, c))
                 line += (f" {m['rmse']:10.4f} {m['coverage@0.90']:9.3f}" if m
@@ -359,6 +377,8 @@ def main() -> None:
                          "concat of feat-lin score features + LM embeddings)")
     ap.add_argument("--kernels", default=",".join(ROWS))
     ap.add_argument("--boot", type=int, default=2000)
+    ap.add_argument("--baseline", default="additive", choices=sorted(ROWS),
+                    help="report: reference row for the paired per-piece tests")
     ap.add_argument("--device", default=None)
     args = ap.parse_args()
     {"precompute": stage_precompute, "run": stage_run, "report": stage_report}[args.stage](args)

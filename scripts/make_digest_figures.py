@@ -79,31 +79,130 @@ def read_cells(path):
     return cells
 
 
-def fig_headline(grid_log):
-    pooled = read_pooled(grid_log)
-    means = ["zero", "feat", "LM", "feat+LM"]
-    labels = {"zero": "no prior mean", "feat": "score features",
-              "LM": "network (LM)", "feat+LM": "features + network"}
-    fig, ax = plt.subplots(figsize=(7.2, 3.0))
-    ys = np.arange(len(means))[::-1]
-    for y, mn in zip(ys, means):
-        off, on = pooled[(mn, "off")][0], pooled[(mn, "on")][0]
-        ax.plot([off, on], [y, y], color=GRID, lw=2, zorder=1)
+def read_ci_rows(path):
+    """{row name: rmse} from logs/headline_cis.log."""
+    out = {}
+    for line in open(path):
+        m = re.match(r"(.+?)\s{2,}([\d.]+) \[", line.rstrip())
+        if m:
+            out[m.group(1).strip()] = float(m.group(2))
+    return out
+
+
+def read_kernel_block(path, block):
+    """{kernel: (rmse, nll, drmse, dlo, dhi, dsig, dnll, nlo, nhi, nsig)} from a
+    kernel report log; ``block`` is 'mu_LM' or 'mu = 0'."""
+    txt = open(path).read()
+    key = "mu = mu_LM" if block == "mu_LM" else "mu = 0"
+    seg = txt.split(f"===== {key}")[1]
+    seg = seg.split("\n", 1)[1]          # drop the rest of the header line
+    seg = seg.split("\n=====")[0]        # stop at the next block
+    out = {}
+    pat = re.compile(
+        r"^(\w+)\s+([-\d.]+)\s+([-\d.]+)\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+"
+        r"([+-][\d.]+) \[([+-][\d.]+),([+-][\d.]+)\](\*?)\s+"
+        r"([+-][\d.]+) \[([+-][\d.]+),([+-][\d.]+)\](\*?)")
+    for line in seg.splitlines():
+        m = pat.match(line.strip())
+        if m:
+            g = m.groups()
+            out[g[0]] = (float(g[1]), float(g[2]), float(g[3]), float(g[4]),
+                         float(g[5]), g[6] == "*", float(g[7]), float(g[8]),
+                         float(g[9]), g[10] == "*")
+        elif re.match(r"^(additive)\s+([-\d.]+)\s+([-\d.]+)", line.strip()):
+            m2 = re.match(r"^additive\s+([-\d.]+)\s+([-\d.]+)", line.strip())
+            out["additive"] = (float(m2.group(1)), float(m2.group(2)),
+                               0.0, 0.0, 0.0, False, 0.0, 0.0, 0.0, False)
+    return out
+
+
+def fig_headline(ci_log, kernel_log, featlm_log, featlm_strict_log):
+    """Dumbbell per prior mean: graph off -> plain graph -> harmonic graph (strict)."""
+    ci = read_ci_rows(ci_log)
+    k_lm = read_kernel_block(kernel_log, "mu_LM")
+    k_zero = read_kernel_block(kernel_log, "mu = 0")
+    k_feat = read_kernel_block(featlm_log, "mu_LM")
+    # feat+LM graph-off is only in the strict feat log's pooled table
+    txt = open(featlm_strict_log).read()
+    feat_off = float(re.search(r"feat\+LM-ma\s+off\s+([\d.]+)", txt).group(1))
+
+    rows = [
+        ("no prior mean", ci["zero mean, graph off"],
+         k_zero["additive"][0], k_zero["harmonic_vl"][0]),
+        ("network (LM)", ci["LM mean, graph off"],
+         k_lm["additive"][0], k_lm["harmonic_vl"][0]),
+        ("features + network", feat_off,
+         k_feat["additive"][0], k_feat["harmonic_vl"][0]),
+    ]
+    fig, ax = plt.subplots(figsize=(7.6, 3.0))
+    ys = np.arange(len(rows))[::-1]
+    for y, (label, off, plain, harm) in zip(ys, rows):
+        ax.plot([harm, off], [y, y], color=GRID, lw=2, zorder=1)
         ax.scatter([off], [y], s=70, color=BLUE_LT, zorder=2)
-        ax.scatter([on], [y], s=70, color=BLUE_DK, zorder=3)
-        ax.annotate(f"{on:.3f}", (on, y), textcoords="offset points",
-                    xytext=(-6, -14), color=INK2, fontsize=9, ha="right")
+        ax.scatter([plain], [y], s=70, color=BLUE_DK, zorder=3)
+        ax.scatter([harm], [y], s=85, color=AQUA, marker="D", zorder=4)
+        ax.annotate(f"{harm:.3f}", (harm, y), textcoords="offset points",
+                    xytext=(-11, -3), color=INK2, fontsize=9, ha="right",
+                    va="center")
+    ax.set_xlim(0.335, 0.59)
     ax.set_yticks(ys)
-    ax.set_yticklabels([labels[m] for m in means], color=INK)
-    ax.set_xlabel("held-out error (pooled RMSE, lower is better)")
-    ax.scatter([], [], s=70, color=BLUE_LT, label="graph off")
-    ax.scatter([], [], s=70, color=BLUE_DK, label="graph on")
+    ax.set_yticklabels([r[0] for r in rows], color=INK)
+    ax.set_xlabel("held-out error (pooled RMSE, strict protocol — lower is better)")
+    ax.scatter([], [], s=70, color=BLUE_LT, label="no graph")
+    ax.scatter([], [], s=70, color=BLUE_DK, label="plain score graph")
+    ax.scatter([], [], s=85, color=AQUA, marker="D", label="+ chord/voice-leading edges")
     ax.legend(frameon=False, loc="lower right", fontsize=9)
-    ax.set_title("The graph helps every prior mean; features + network is best",
+    ax.set_title("Two orthogonal upgrades: a better guess, and a better graph",
                  color=INK, fontsize=12, loc="left", pad=12)
     _style(ax)
     fig.tight_layout()
     fig.savefig(f"{OUT}/digest_headline.png")
+    plt.close(fig)
+
+
+def fig_kernels(kernel_log):
+    """Dot + CI whisker per kernel: paired per-piece delta vs the plain additive graph."""
+    k = read_kernel_block(kernel_log, "mu_LM")
+    rows = [  # (key, display), simplest -> experimental; independent off scale (see note)
+        ("chain", "time-chain only"),
+        ("matern1", "graph Matérn α=1"),
+        ("matern2", "graph Matérn α=2"),
+        ("matern3", "graph Matérn α=3"),
+        ("diffusion", "diffusion / heat"),
+        ("norm_additive", "normalized Laplacian"),
+        ("tonal", "tonal pitch metric (replace)"),
+        ("harmonic", "chord edges (add)"),
+        ("harmonic_vl", "chord + voice-leading (add)"),
+    ]
+    panels = [("Δ error (RMSE) vs plain graph", 2, 3, 4, 5),
+              ("Δ confidence quality (NLL) vs plain graph", 6, 7, 8, 9)]
+    fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.6), sharey=True)
+    ys = np.arange(len(rows))[::-1]
+    for ax, (label, i_d, i_lo, i_hi, i_sig) in zip(axes, panels):
+        ax.axvline(0, color=BASE, lw=1, zorder=1)
+        for y, (key, _) in zip(ys, rows):
+            v = k[key]
+            d, lo, hi, sig = v[i_d], v[i_lo], v[i_hi], v[i_sig]
+            color = MUTED if not sig else (BLUE_DK if d < 0 else DIV_RED)
+            ax.plot([lo, hi], [y, y], color=color, lw=2, alpha=0.75, zorder=2)
+            ax.scatter([d], [y], s=48, color=color, zorder=3)
+        ax.set_xlabel(label)
+        _style(ax)
+    axes[0].set_yticks(ys)
+    axes[0].set_yticklabels([r[1] for r in rows], color=INK)
+    h = [axes[0].scatter([], [], s=48, color=BLUE_DK, label="significantly better"),
+         axes[0].scatter([], [], s=48, color=MUTED, label="tie (ns)"),
+         axes[0].scatter([], [], s=48, color=DIV_RED, label="significantly worse")]
+    fig.legend(handles=h, frameon=False, loc="upper right", fontsize=8,
+               ncol=3, bbox_to_anchor=(0.99, 1.0))
+    fig.suptitle("Only added music-theory edges beat the plain graph",
+                 color=INK, fontsize=12, x=0.01, ha="left")
+    fig.text(0.01, 0.015,
+             "paired per-piece 95% CIs vs the additive baseline; independent (no coupling) omitted: "
+             "+0.052 / +0.131, off scale",
+             color=MUTED, fontsize=8)
+    fig.tight_layout(rect=(0, 0.05, 1, 0.94))
+    fig.savefig(f"{OUT}/digest_kernels.png")
     plt.close(fig)
 
 
@@ -168,8 +267,10 @@ if __name__ == "__main__":
     import sys
     grid_log = "logs/feature_baseline_l2_10.log"
     if "--collapse-only" not in sys.argv:
-        fig_headline(grid_log)
+        fig_headline("logs/headline_cis.log", "logs/kernels_report.log",
+                     "logs/kernels_featlm_report.log", "logs/eval_featlm_strict_lin.log")
         fig_channels(grid_log)
-        print("headline + channels written")
+        fig_kernels("logs/kernels_report.log")
+        print("headline + channels + kernels written")
     fig_collapse("logs/diag_tau_s2x3.log", "logs/diag_tau_s2x3_guarded.log")
     print("collapse written")

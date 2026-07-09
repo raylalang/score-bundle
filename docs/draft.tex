@@ -60,9 +60,9 @@
 \newcommand{\covHead}{92\%}            % coverage of nominal-90\% intervals
 \newcommand{\nPieces}{30}
 \newcommand{\maskRate}{40\%}
-\newcommand{\rmseNetOff}{0.451}        % network mean, graph off
-\newcommand{\nllNetOff}{$-0.105$}
-\newcommand{\covNetOff}{89\%}
+\newcommand{\rmseNetOff}{0.446}        % network mean, graph off (strict: logs/maskaware.log LM-ma off; was stale 0.451)
+\newcommand{\nllNetOff}{$-0.164$}
+\newcommand{\covNetOff}{90\%}
 
 % --- notation (must match docs/formulation.tex and CLAUDE.md) ---------
 \newcommand{\R}{\mathbb{R}}
@@ -152,18 +152,22 @@ clearest single-channel improvement is note loudness.
 \begin{table}[h]\centering
 \caption{Held-out ASAP, strict protocol, \nPieces{} pieces $\times$ 4 mask seeds,
 \maskRate{} of notes hidden. Lower RMSE/NLL is better; coverage closer to the
-nominal 90\% is better.}
+nominal 90\% is better. Brackets: per-piece bootstrap 95\% CIs
+(\texttt{logs/headline\_cis.log}). These are per-system across-piece intervals ---
+they overlap because pieces vary far more than systems do; the significance claims
+in the text are \emph{paired} per-piece contrasts, which remove that variance.}
 \label{tab:headline-exec}
+\footnotesize
 \begin{tabular}{lccc}
 \toprule
 System & RMSE & NLL & 90\%-interval coverage \\
 \midrule
-Zero mean, graph off               & \rmseZero     & \nllZero    & \covZero \\
-Zero mean $+$ graph                & \rmseGraph    & \nllGraph   & \covHead \\
-Network mean, graph off            & \rmseNetOff   & \nllNetOff  & \covNetOff \\
-Network mean $+$ graph             & \rmseNetGraph & \nllNetGraph & \covHead \\
-Feature $+$ network mean $+$ graph & \rmseStack    & \nllStack   & \covHead \\
-\textbf{Feature $+$ network mean $+$ harmonic graph} (headline) & \textbf{\rmseHeadline} & {\boldmath\nllHeadline} & \covHead \\
+Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & \nllZero{} {\scriptsize[$-0.13$, $+0.12$]}   & \covZero \\
+Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{} {\scriptsize[$-0.40$, $-0.21$]}  & \covHead \\
+Network mean, graph off            & \rmseNetOff{} {\scriptsize[0.41, 0.47]}  & \nllNetOff{} {\scriptsize[$-0.26$, $-0.07$]} & \covNetOff \\
+Network mean $+$ graph             & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} {\scriptsize[$-0.41$, $-0.24$]} & \covHead \\
+Feature $+$ network mean $+$ graph & \rmseStack{} {\scriptsize[0.35, 0.41]}   & \nllStack{} {\scriptsize[$-0.41$, $-0.25$]}  & \covHead \\
+\textbf{Feature $+$ network mean $+$ harmonic graph} (headline) & \textbf{\rmseHeadline} {\scriptsize[0.34, 0.40]} & {\boldmath\nllHeadline} {\scriptsize[$-0.43$, $-0.26$]} & \covHead \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1005,12 +1009,15 @@ corpus (22 pianists $\times$ 4 shared excerpts) is used \cite{vienna4x22}.
 
 \section{Headline: recovery and calibration}
 On \nPieces{} held-out ASAP pieces with \maskRate{} of notes hidden, the full model
-(LM guess + score graph) attains the lowest error and best-calibrated confidence;
-the graph's contribution is significant on \emph{both} axes
+(feature-stacked LM guess + harmonic score graph) attains the lowest error and
+best-calibrated confidence; the graph's contribution --- and the harmonic edges' ---
+is significant on \emph{both} axes
 (Table~\ref{tab:headline-exec}, reproduced from Chapter~\ref{ch:exec}).
 
-\figph{digest_headline.png}{0.7}{The graph's contribution per prior mean.
-\TODO{final figure.}}
+\figph{digest_headline.png}{0.7}{Two orthogonal upgrades, strict protocol: per prior
+mean (rows), held-out RMSE with no graph, the plain score graph, and the
+chord/voice-leading-augmented graph. Every mean improves with the graph; the harmonic
+edges improve every graph.}
 
 \section{Per-channel breakdown: where the graph earns its keep}\label{sec:perchannel}
 The pooled headline (Table~\ref{tab:headline-exec}) averages three normalised
@@ -1082,7 +1089,8 @@ Against a rich 25-feature score baseline fit under the same protocol, the networ
 \emph{ties on average error}; its genuine, significant edge is calibration and
 loudness. Best of all, features and network \emph{stack}
 (RMSE $\rmseStack$ vs.\ $\rmseNetGraph$). \figph{digest_channels.png}{0.7}{Where the
-network earns its place (per channel). \TODO{final figure.}}
+network earns its place: mean-only error vs.\ the 25-feature baseline, per channel ---
+the network's genuine edge is loudness; timing and articulation tie.}
 
 \section{Stage-2: task-matched pretraining, an honest negative}
 A bidirectional, mask-aware retraining (matched exactly to the evaluation task) did
@@ -1146,7 +1154,10 @@ $\Delta$RMSE $-0.008^{*}$ / $\Delta$NLL $-0.013^{*}$, giving the best strict cel
 measured to date, RMSE $0.378$ (chord edges) and NLL $-0.346$ (chord + voice-leading).
 The chord + voice-leading configuration --- the variant significant on both axes ---
 was adopted as the headline system after a zero-leak audit
-(\S\ref{sec:open-decisions}).
+(\S\ref{sec:open-decisions}). The edge weights are untuned defaults, and a
+six-variant sensitivity sweep ($\times 3$ / $\div 3$ on each family) shows no
+knife-edge: every variant still beats the plain graph on RMSE, significantly; the
+default is the setting that keeps both axes significant.
 
 \begin{table}[h]\centering
 \caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; guard on).
@@ -1173,6 +1184,11 @@ Harmonic + voice-leading edges    & 0.385$^{*}$ & {\boldmath$-0.335$}$^{*}$ & 0.
 \bottomrule
 \end{tabular}
 \end{table}
+
+\figph{digest_kernels.png}{0.95}{Paired per-piece deltas vs.\ the additive baseline
+(95\% CIs; $\muLM$ strict). Standard kernels tie; replacing the pitch metric hurts;
+added chord/voice-leading edges are the only both-axes win. The independent
+(no-coupling) row is off scale ($+0.052$ / $+0.131$).}
 
 % =====================================================================
 \chapter{Downstream Tasks}\label{ch:downstream}
