@@ -42,7 +42,7 @@
   \begin{figure}[t]\centering
   \IfFileExists{figures/#1}{\includegraphics[width=#2\linewidth]{#1}}%
     {\IfFileExists{docs/figures/#1}{\includegraphics[width=#2\linewidth]{#1}}%
-      {\fbox{\parbox[c][0.28\linewidth][c]{#2\linewidth}{\centering\TODO{figure: #1}}}}}
+      {\fbox{\parbox[c][0.28\linewidth][c]{#2\linewidth}{\centering\TODO{missing figure: \texttt{\detokenize{#1}}}}}}}
   \caption{#3}\end{figure}}
 
 % --- headline numbers (UPDATE from docs/phase1_calibration_results.md) ---
