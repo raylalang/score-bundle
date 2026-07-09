@@ -212,9 +212,11 @@ class MultiOutputGraphGP:
 
         def neg(x: np.ndarray) -> float:
             try:
-                return -self.log_marginal_likelihood(Y, mask, clamp(x))
+                v = -self.log_marginal_likelihood(Y, mask, clamp(x))
             except (np.linalg.LinAlgError, ValueError):
                 return 1e12
+            # a NaN objective is not an exception but poisons L-BFGS line search
+            return v if np.isfinite(v) else 1e12
 
         used = "nelder_mead"
         best = None

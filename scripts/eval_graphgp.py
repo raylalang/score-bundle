@@ -137,9 +137,10 @@ def fit_and_predict(Y, mask, feats, graph_eig, n_graph, g0, kernel, x_init=None,
                 gp = make_gp(z[:n_graph])
                 xg = z[n_graph:].copy()
                 xg[-k:] = np.maximum(xg[-k:], floor_log)
-                return -gp.log_marginal_likelihood(Y, mask, xg)
+                v = -gp.log_marginal_likelihood(Y, mask, xg)
             except (np.linalg.LinAlgError, ValueError):
                 return 1e12
+            return v if np.isfinite(v) else 1e12
 
         best = None
         try:
