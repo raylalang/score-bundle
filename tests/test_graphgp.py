@@ -195,6 +195,37 @@ def test_fit_with_fixed_noise_pins_noise_exactly():
     np.testing.assert_allclose(gp.unpack(x_hat)["noise"], nf, rtol=1e-12)
 
 
+def test_fit_guarded_healthy_is_noop():
+    nu, U, Y, mask, _ = _setup(seed=8)
+    gp = MultiOutputGraphGP(nu, U, kernel="additive")
+    floor = np.full(3, 1e-4)
+    x_g, info_g = gp.fit_guarded(Y, mask, noise_floor=floor, maxiter=60,
+                                 rng=np.random.default_rng(0))
+    x_u, _ = gp.fit(Y, mask, noise_floor=floor, maxiter=60)
+    assert info_g["guard"] == "marglik"
+    np.testing.assert_array_equal(x_g, x_u)
+
+
+def test_fit_guarded_impossible_screen_bottoms_out_bounded():
+    nu, U, Y, mask, rng = _setup(seed=9)
+    n = nu.size
+    X = np.concatenate([rng.standard_normal((n, 3)), np.ones((n, 1))], axis=1)
+    gp = MultiOutputGraphGP(nu, U, kernel="matern2", features=[X])
+    x_c, info = gp.fit_guarded(Y, mask, noise_floor=np.full(3, 1e-4),
+                               guard_factor=1e-9, nll_margin=-1e9,
+                               maxiter=40, rng=np.random.default_rng(0))
+    assert info["guard"] == "conservative"
+    M, S = gp.posterior(Y, mask, x_c)
+    held = ~mask
+    # conservative contract: ~mean prediction with honest scale, decoupled graph
+    for c in range(3):
+        scale = float(np.std(Y[mask, c]))
+        assert np.sqrt(np.mean((Y[held, c] - M[held, c]) ** 2)) < 3.0 * scale
+        assert np.all(np.isfinite(S[:, c]))
+    # decoupled: posterior at held-out notes stays ~the prior (no coupling pull)
+    assert float(np.max(np.abs(M[held]))) < 3.0 * float(np.max(np.abs(Y[mask].mean(axis=0)))) + 1e-6
+
+
 def test_chol_to_B_is_psd_and_roundtrips_diag():
     theta = np.array([0.3, -0.2, 0.1, 0.5, -0.4, 0.2])
     B = chol_to_B(theta)

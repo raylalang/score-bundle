@@ -273,3 +273,87 @@ class MultiOutputGraphGP:
                       **{k2: (v.tolist() if isinstance(v, np.ndarray) else v)
                          for k2, v in self.unpack(best).items()
                          if k2 in ("s", "noise")}}
+
+    def fit_guarded(self, Y: np.ndarray, mask: np.ndarray,
+                    noise_floor: Optional[np.ndarray] = None,
+                    calib_frac: float = 0.3, guard_factor: float = 2.0,
+                    nll_margin: float = 0.5,
+                    rng: Optional[np.random.Generator] = None,
+                    maxiter: int = 300) -> Tuple[np.ndarray, dict]:
+        """Guarded evidence fit — the GP-first version of the published EB guard.
+
+        The demonstrated failure mode (one confirmation piece, NLL +2.2) is
+        *overconfidence*: the per-piece evidence picks a noise/scale regime whose
+        held-out intervals are far too tight, while RMSE stays unremarkable.  So the
+        screen checks BOTH: on a held-back calibration split of the observed notes,
+        the fitted GP must (i) not exceed ``guard_factor`` x the mean-only RMSE and
+        (ii) not exceed the mean-only homoscedastic NLL by more than ``nll_margin``
+        nats.  Ladder, recorded in ``info["guard"]``:
+
+            "marglik"       screen passed;
+            "floored"       refit with the noise floor raised x5 passed;
+            "conservative"  no-coupling, no-feature diagonal at the observed
+                            per-channel variance (predict ~the mean with honest
+                            scale — the same bottom rung as the published guard).
+        """
+        Y = np.asarray(Y, dtype=float)
+        mask = np.asarray(mask, dtype=bool)
+        if rng is None:
+            rng = np.random.default_rng(0)
+        obs = np.where(mask)[0]
+        floor = (np.asarray(noise_floor, dtype=float) if noise_floor is not None
+                 else np.full(self.k, 1e-12))
+
+        x_ml, info = self.fit(Y, mask, noise_floor=floor, maxiter=maxiter)
+        n_calib = int(round(calib_frac * obs.size))
+        if obs.size < 8 or n_calib < 2 or obs.size - n_calib < 2:
+            return x_ml, {**info, "guard": "marglik"}
+
+        perm = rng.permutation(obs)
+        calib = perm[:n_calib]
+        fit_mask = np.zeros(self.N, dtype=bool)
+        fit_mask[perm[n_calib:]] = True
+
+        # mean-only reference on the calibration subset: per-channel mean/std of the
+        # FIT subset (never the calibration targets themselves)
+        base_mu = Y[fit_mask].mean(axis=0)
+        base_sd = np.maximum(Y[fit_mask].std(axis=0), 1e-9)
+        r0 = Y[calib] - base_mu
+        base_rmse = float(np.sqrt(np.mean(r0 ** 2)))
+        base_nll = float(np.mean(0.5 * (_LOG2PI + 2 * np.log(base_sd)
+                                        + (r0 / base_sd) ** 2)))
+
+        def screen(x) -> bool:
+            try:
+                M, S = self.posterior(Y, fit_mask, x)
+            except (np.linalg.LinAlgError, ValueError):
+                return False
+            nv = self.unpack(x)["noise"]
+            r = Y[calib] - M[calib]
+            pv = S[calib] ** 2 + nv[None, :]
+            rmse = float(np.sqrt(np.mean(r ** 2)))
+            nll = float(np.mean(0.5 * (_LOG2PI + np.log(pv) + r ** 2 / pv)))
+            return (rmse <= guard_factor * max(base_rmse, 1e-12)
+                    and nll <= base_nll + nll_margin)
+
+        if screen(x_ml):
+            return x_ml, {**info, "guard": "marglik"}
+
+        x_fl, info_fl = self.fit(Y, mask, noise_floor=5.0 * floor, maxiter=maxiter)
+        if screen(x_fl):
+            return x_fl, {**info_fl, "guard": "floored"}
+
+        resid_var = np.maximum(Y[obs].var(axis=0), 1e-12)
+        x_c = self.x0()
+        # decouple the graph: g(nu) -> 1 for every nu.  The limit direction depends
+        # on the shape family: additive/diffusion decouple as s -> 0, Matern as
+        # s -> infinity ("none" is already decoupled).
+        x_c[0] = np.log(1e-8) if self.kernel in ("additive", "diffusion", "none") \
+            else np.log(1e8)
+        x_c[1:1 + self.k] = 0.5 * np.log(resid_var)     # B = diag(observed variance)
+        x_c[1 + self.k:1 + self._ntri] = 0.0
+        for i in range(len(self.features)):             # feature kernels off
+            base_i = 1 + self._ntri + i * self.k
+            x_c[base_i:base_i + self.k] = np.log(1e-8)
+        x_c[-self.k:] = np.log(np.maximum(0.05 * resid_var, floor))
+        return x_c, {"optimizer": "conservative", "guard": "conservative"}

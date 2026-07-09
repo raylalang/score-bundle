@@ -105,7 +105,7 @@ def piece_setup(p, config: str, emb=None):
 
 
 def fit_and_predict(Y, mask, feats, graph_eig, n_graph, g0, kernel, x_init=None,
-                    frozen_x=None, refit_noise=False, maxiter=200):
+                    frozen_x=None, refit_noise=False, guard=False, maxiter=200):
     """One joint fit (or frozen apply) + posterior; returns (yt, pr, sd, ch, info)."""
     from score_bundle.gp import MultiOutputGraphGP
 
@@ -119,6 +119,19 @@ def fit_and_predict(Y, mask, feats, graph_eig, n_graph, g0, kernel, x_init=None,
 
     if n_graph == 0:
         gp = make_gp(g0)
+        if guard and frozen_x is None:
+            x_hat, info = gp.fit_guarded(Y, mask, noise_floor=floor,
+                                         maxiter=maxiter,
+                                         rng=np.random.default_rng(0))
+            M, S = gp.posterior(Y, mask, x_hat)
+            nv = gp.unpack(x_hat)["noise"]
+            yt, pr, sd, ch = [], [], [], []
+            for c in range(Y.shape[1]):
+                yt.append(Y[held, c]); pr.append(M[held, c])
+                sd.append(np.sqrt(S[held, c] ** 2 + nv[c]))
+                ch.append(np.full(int(held.sum()), c, dtype=int))
+            return (np.concatenate(yt), np.concatenate(pr), np.concatenate(sd),
+                    np.concatenate(ch)), info
         if frozen_x is not None and refit_noise:
             # d_hybrid: corpus-frozen structure, per-piece noise by marglik (k params)
             from score_bundle.optimize import nelder_mead
@@ -253,7 +266,7 @@ def stage_run(args) -> None:
                     for c in range(3):
                         cell, info = fit_and_predict(
                             Y[:, c:c + 1], mask, feats, graph_eig, n_graph, g0,
-                            kernel, maxiter=args.maxiter)
+                            kernel, guard=args.guard, maxiter=args.maxiter)
                         yt.append(cell[0]); pr.append(cell[1]); sd.append(cell[2])
                         ch.append(np.full(len(cell[0]), c, dtype=int))
                     cell = (np.concatenate(yt), np.concatenate(pr),
@@ -262,7 +275,7 @@ def stage_run(args) -> None:
                     cell, info = fit_and_predict(
                         Y, mask, feats, graph_eig, n_graph, g0, kernel,
                         frozen_x=frozen, refit_noise=(config == "d_hybrid"),
-                        maxiter=args.maxiter)
+                        guard=args.guard, maxiter=args.maxiter)
                     infos.append(info)
                 if mu_fixed is not None:
                     held = ~mask
@@ -420,6 +433,9 @@ def main() -> None:
     ap.add_argument("--configs", default="a_diag")
     ap.add_argument("--shard", default="0/1", help="k/n shard of the (piece, seed) cells")
     ap.add_argument("--maxiter", type=int, default=200)
+    ap.add_argument("--guard", action="store_true",
+                    help="guarded evidence fits (calibration-split screen incl. the "
+                         "overconfidence check; default off = v2 provenance)")
     ap.add_argument("--corpus-pieces", type=int, default=20)
     ap.add_argument("--eval-start", type=int, default=0,
                     help="offset into the cache's eval list (confirmation set = 30)")
