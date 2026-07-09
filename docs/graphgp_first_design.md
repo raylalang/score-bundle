@@ -177,6 +177,19 @@ ingredient contributions stay significant on both axes — graph −0.0151* RMSE
 −0.0638* NLL; LM embeddings −0.0076* / −0.0356*. The dev ladder is not a seed
 artifact.
 
+## Student-t τ prototype — first measurement (2026-07-10, dev-only, PROTOTYPE)
+
+`gp_robust.py` (EM scale-mixture τ noise + t-predictive scoring; unit-tested; the
+per-note-noise machinery reduces exactly to the plain GP at unit weights). First
+no-harm check (10 dev pieces, seed 0, `logs/robust_tau_devcheck.log`): on tail-free
+dev data the t-variant costs a little (τ RMSE 0.2161 vs 0.2111; Gaussian-scored NLL
+−0.72 vs −1.09, its intervals being wider by design; coverage 0.936 vs 0.961 —
+actually nearer nominal). Verdict so far: **insurance with a small premium** — it
+can only pay off where tails exist (the confirmation-piece failure mode), and per
+the one-shot discipline it will NOT be evaluated there; a future second
+confirmation set would be the honest venue. Remains a prototype; no thesis number
+uses it.
+
 ## Downstream re-validation (2026-07-09, `logs/downstream_gpfirst_report.log`)
 
 All six tasks re-run with identical rng for old-pipeline and GP-first rows
