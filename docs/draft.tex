@@ -281,23 +281,22 @@ Harmonic amplitudes $a$, audio $x$ & Not started (scoped) \\
 \end{tabular}
 \end{table}
 
-\section{The headline decisions (a short history, all preserved)}
-Three decisions shaped the headline, each recorded rather than overwritten.
-\textbf{(1) 2026-07-09, two-stage era:} after the kernel comparison
+\section{How the final model was selected}
+Three steps, in order, produced the headline system. \textbf{(1) Development
+optimum of the two-stage pipeline:} after the kernel and edge-family study
 (\S\ref{sec:kernels}), \emph{feature + network mean + harmonic graph}
-(RMSE~\rmseHeadline{} dev) was adopted --- every ingredient significant on both
-axes. \textbf{(2) Same week, the reformulation:} reviewing the graph-GP literature
-showed the two-stage pipeline deviated from the orthodox treatment in three
-testable ways (independent channels; fixed graph parameters; a plug-in mean instead
-of a marginalized one); the GP-first model closed them, and the two-stage pipeline
-is provably its special case. \textbf{(3) The preregistered confirmation}
-(Table~\ref{tab:headline-conf}) then decided between them on untouched data:
-GP-first wins recovery significantly, ties pooled calibration, and its graph
-contribution is confirmed --- so \textbf{GP-first is the thesis model}, and the
-harmonic edge families, which are measured-redundant once the music-model
-embeddings enter the kernel, retire into the two-stage ablation record. Every
-previously reported number (\rmseNetGraph, \rmseStack, \rmseHeadline) remains a row
-in the development table.
+(RMSE~\rmseHeadline{} dev) was the strongest configuration --- every ingredient
+significant on both axes. \textbf{(2) Reformulation:} the graph-GP literature
+prescribes three things the pipeline lacked --- coupled outputs, evidence-learned
+kernel parameters, a marginalized rather than plug-in mean --- and closing them
+yields the single-GP model, of which the pipeline is provably a special case.
+\textbf{(3) Preregistered confirmation} (Table~\ref{tab:headline-conf}) decided
+between them on untouched data: the single GP wins recovery significantly, ties
+pooled calibration, and its graph contribution is confirmed --- so it is the
+thesis model. The harmonic edge families, measured-redundant once the music-model
+embeddings enter the kernel, remain in the development record, as does every
+previously examined system (\rmseNetGraph, \rmseStack, \rmseHeadline: rows of the
+development table).
 
 
 % =====================================================================
@@ -1201,9 +1200,8 @@ The pooled headline (Table~\ref{tab:headline-exec}) averages three normalised
 channels, but the effect is far from uniform (Table~\ref{tab:perchannel}). Timing
 ($\tau$) is the channel where structure moves least: the graph barely changes it and it
 slightly over-covers --- most of the remaining onset variance appears note-local
-rather than shared along the graph (we no longer call this a ``measurement floor'':
-richer models do inch below the earlier plateau) --- not where the structure earns
-its keep.
+rather than shared along the graph, a plateau that richer models edge below but do
+not break --- not where the structure earns its keep.
 Articulation ($\log r$) is where the graph most improves \emph{calibration}: a bare
 prior mean badly under-covers (coverage $0.78$), and the graph lifts every
 configuration to $\approx$0.91 coverage while the full GP cuts its error furthest
@@ -1360,14 +1358,14 @@ the feature-stacked candidate on the plain graph (\rmseStack) --- and the two up
 $\Delta$RMSE $-0.008^{*}$ / $\Delta$NLL $-0.013^{*}$, giving the best strict cells
 measured to date, RMSE $0.378$ (chord edges) and NLL $-0.346$ (chord + voice-leading).
 The chord + voice-leading configuration --- the variant significant on both axes ---
-briefly served as the two-stage-era headline after a zero-leak audit
-(\S\ref{sec:open-decisions}). The edge weights are untuned defaults, and a
+was the two-stage pipeline's strongest configuration (zero-leak audited,
+\S\ref{sec:open-decisions}). The edge weights are untuned defaults, and a
 six-variant sensitivity sweep ($\times 3$ / $\div 3$ on each family) shows no
-knife-edge. \textbf{Epilogue under the GP-first model:} once the music-model
+knife-edge. \textbf{Under the final model}, once the music-model
 embeddings enter the kernel as features, the harmonic edge families are
 measured-redundant (learned-graph and harmonic variants statistically tie the
 plain graph, dev) --- the embeddings already carry the local-context information
-the extra edges encode. The finding stands as stated \emph{for the two-stage
+the extra edges encode. The finding therefore holds \emph{for the two-stage
 regime}, and its deeper lesson (theory-as-extra-structure helps,
 theory-as-replacement-metric hurts) carried directly into the reformulation.
 
