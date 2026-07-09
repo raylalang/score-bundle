@@ -229,17 +229,24 @@ confidence honest.
 
 \section{Where the gain comes from (by channel)}
 The single pooled number above blends three channels that behave very differently
-(full numbers in \S\ref{sec:perchannel}). This is the sharper form of the claim:
+(full numbers in \S\ref{sec:perchannel}; development set). This is the sharper form
+of the claim, for the GP-first model:
 
 \begin{table}[h]\centering
 \footnotesize
 \begin{tabular}{@{}p{3.0cm}p{10.0cm}@{}}
 \toprule
-Channel & What the graph does \\
+Channel & What the model does (dev) \\
 \midrule
-Timing ($\tau$) & The channel structure moves least (RMSE $\approx 0.15$--$0.16$ across all models measured); most of the remaining variance appears local to the note rather than shared along the graph. \\
-Articulation ($\log r$) & Fixes \emph{calibration} --- lifts 90\% coverage from $0.78$ to $0.91$ --- and cuts error ($0.96 \to 0.68$). \\
-Loudness ($v$) & Where \emph{recovery} improves most: the graph roughly halves the error ($0.12 \to 0.08$), and this is the one channel where the learned music-model mean carries signal the hand-built features lack. \\
+Timing ($\tau$) & The channel the graph moves least ($0.154 \to 0.152$ inside the
+GP); most of the remaining variance appears local to the note rather than shared
+along the graph. \\
+Articulation ($\log r$) & The graph's biggest error cut inside the GP
+($0.627 \to 0.601$) and, across the development ladder, the channel whose
+\emph{calibration} the graph rescues (coverage $0.78 \to 0.91$ for a bare mean). \\
+Loudness ($v$) & Where the graph helps recovery most inside the GP
+($0.083 \to 0.072$), and the one channel where the music-model embeddings carry
+signal the hand-built features lack ($0.075 \to 0.072$ when added to the kernel). \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -312,10 +319,13 @@ The central empirical question is:
 baselines?
 \end{quote}
 The primary objective is to answer this question with a self-contained, validated
-Phase-1 result on piano. Secondary objectives: (i) establish a from-scratch music
-model as a learned prior mean and isolate its marginal value honestly; (ii) map the
-downstream reach of the structured prior across concrete tasks; and (iii) leave a
-clean path to audio (Phase~3) without depending on it for the core contribution.
+Phase-1 result on piano --- ultimately in the form of \emph{one} multi-output graph
+GP whose every ingredient is evidence-fitted and ablatable
+(\S\ref{sec:gpfirst}). Secondary objectives: (i) establish a from-scratch music
+model as a per-note representation and isolate its marginal value honestly;
+(ii) map the downstream reach of the structured model across concrete tasks; and
+(iii) leave a clean path to audio (Phase~3) without depending on it for the core
+contribution.
 
 \section{Scope and non-goals}\label{sec:scope}
 \textbf{In scope (Phase~1):} piano; symbolic (MIDI) performance variables ---
@@ -631,21 +641,31 @@ is out of scope; see \S\ref{sec:scope} and \S\ref{sec:future-amt}.
 
 \section{Contributions}
 \begin{enumerate}[leftmargin=*]
-  \item A \textbf{score-graph structured prior} (GMRF/SPDE) over per-note
-        expressive variables, giving a closed-form posterior with calibrated
-        per-note uncertainty, validated on held-out data against independent,
-        temporal-only, and feature-regression baselines.
-  \item An \textbf{honest characterisation of a learned prior mean}: a
-        from-scratch symbolic music LM contributes calibration- and
-        loudness-specific information; against a rich hand-built score-feature
-        baseline it \emph{ties on average error} and the two \emph{stack}.
-  \item A \textbf{map of where the structure helps}, via six downstream tasks with
-        objective metrics and honest baselines (three wins, two mixed, one
-        negative), yielding a single crisp boundary (\S\ref{sec:boundary}).
+  \item \textbf{A multi-output graph Gaussian process for expressive performance}
+        (\S\ref{sec:gpfirst}): channels coupled by coregionalization, a spectral
+        kernel of the score-graph Laplacian, and all side information ---
+        hand-built score features and learned music-model embeddings --- entering
+        as marginalized Bayesian linear means; every hyperparameter learned by the
+        exact per-piece evidence, posterior and calibration in closed form. Its
+        claims were \textbf{preregistered and confirmed once} on evaluation pieces
+        untouched by any modelling decision.
+  \item \textbf{Measured attribution} (\S\ref{sec:attribution}): per-piece Bayesian
+        weighting of informative features does the recovering; the graph makes the
+        confidence honest (its calibration contribution independently confirmed);
+        the from-scratch music LM earns its place as a feature provider inside the
+        kernel --- each claim isolated by nested ablations, including the entire
+        two-stage development pipeline as a provable special case.
+  \item \textbf{A map of where the structure helps}, via six downstream tasks with
+        objective metrics, re-validated under the final model, yielding two crisp
+        boundaries (\S\ref{sec:boundary}): structure helps note-level judgments,
+        not whole-performance summaries; per-piece adaptation helps interpolation,
+        not excerpt extrapolation.
   \item \textbf{Methodological rigour as a result in its own right}: a discovered
-        and fixed evaluation leak pinned by a structural test, a strict
-        leakage-free protocol, contamination filtering, and a self-validating
-        robustness guard for the hyperparameter fit.
+        and fixed evaluation leak pinned by structural tests and bitwise
+        end-to-end audits, a strict leakage-free protocol, contamination
+        filtering, self-validating robustness guards, and a
+        development/confirmation split that caught selection inflation in the act
+        (\S\ref{sec:hygiene}).
   \item \placeholder{(Planned / future)} A path to audio via a
         differentiable-synthesizer likelihood (Phase~3) and a geometric
         ``connection-Laplacian'' generalisation of the graph prior.
@@ -820,9 +840,13 @@ and length scales. Throughout, $\alpha$ is \emph{only} the Mat\'ern exponent, $\
 --- plain $\sigma$ is reserved for the posterior standard deviation
 (\S\ref{sec:posterior}).
 
-\section{The prior mean: zero, features, or the learned mean}\label{sec:prior-mean}
-The GMRF field is centred on a mean $\mu$, and a central question of the thesis is
-\emph{where that mean should come from}. We compare three sources:
+\section{The prior mean: zero, features, or the learned mean (development form)}
+\label{sec:prior-mean}
+During development the field was centred on a plug-in mean $\mu$, and the question
+\emph{where that mean should come from} drove the ablations; in the final model
+(\S\ref{sec:gpfirst}) the same information sources enter the kernel instead, as
+marginalized Bayesian linear means with per-piece weights. The three sources
+compared, which survive as the feature sets of the final model:
 \begin{enumerate}[leftmargin=*,noitemsep]
   \item \textbf{zero} --- $\mu = 0$: the model is a pure smoother, with no prior
         guess for each note;
@@ -1177,31 +1201,31 @@ rather than shared along the graph (we no longer call this a ``measurement floor
 richer models do inch below the earlier plateau) --- not where the structure earns
 its keep.
 Articulation ($\log r$) is where the graph most improves \emph{calibration}: a bare
-prior mean badly under-covers (coverage $0.78$), and the graph residual lifts every
-mean to $\approx$0.91 coverage while also cutting error ($0.96 \to 0.68$ for the zero
-mean). Loudness ($v$) is where \emph{recovery} improves most --- the graph roughly
-halves the error --- and it is the one channel where the learned mean carries signal
+prior mean badly under-covers (coverage $0.78$), and the graph lifts every
+configuration to $\approx$0.91 coverage while the full GP cuts its error furthest
+($0.96$ bare $\to 0.60$). Loudness ($v$) is where \emph{recovery} improves most,
+and it is the one channel where the music-model embeddings carry signal
 the hand-built features lack.
 
 \begin{table}[h]\centering
-\caption{Per-channel recovery (RMSE) and 90\%-interval coverage on held-out ASAP
-($\nPieces \times 4$ masks, noise-floored empirical Bayes). ``Graph off'' isolates
-the prior mean; ``graph on'' adds the GMRF residual. Timing and articulation are
-unchanged by the leak-free read-out; on loudness, the leak-free/strict read-out
-lowers the graph-on $v$ RMSE to $\approx$0.078, and the feature+network stack reaches
-$v$ RMSE $0.0755$ (the best loudness cell measured).}
+\caption{Per-channel recovery (RMSE) and 90\%-interval coverage, development set
+($\nPieces \times 4$ masks; \texttt{logs/graphgp\_v2\_report.log}). The GP-first
+ladder above the line; two-stage development rows below it for lineage.}
 \label{tab:perchannel}
 \footnotesize
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
  & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Articulation $\log r$} & \multicolumn{2}{c}{Loudness $v$} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-System & RMSE & cov & RMSE & cov & RMSE & cov \\
+System (development) & RMSE & cov & RMSE & cov & RMSE & cov \\
 \midrule
-Zero mean, graph off        & 0.163 & 0.95 & 0.960 & 0.78 & 0.119 & 0.88 \\
-Zero mean $+$ graph         & 0.156 & 0.95 & 0.678 & 0.91 & 0.080 & 0.92 \\
-Network mean, graph off     & 0.167 & 0.93 & 0.753 & 0.89 & 0.118 & 0.86 \\
-Network mean $+$ graph      & \textbf{0.158} & 0.94 & \textbf{0.659} & 0.91 & \textbf{0.083} & 0.91 \\
+ICM GP, zero mean                  & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 & 0.92 \\
+\ + features (no graph)            & 0.154 & 0.95 & 0.626 & 0.91 & 0.088 & 0.90 \\
+\ + features, full                 & 0.153 & 0.95 & 0.615 & 0.91 & 0.075 & 0.91 \\
+\textbf{\ + embeddings (GP-first)} & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
+\midrule
+Zero mean $+$ graph (two-stage)    & 0.156 & 0.95 & 0.678 & 0.91 & 0.080 & 0.92 \\
+Network mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0.91 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1221,7 +1245,10 @@ significant: on the loudness channel, the network's mean-only error was $0.057$
 \emph{with} the leak (the retracted claim), $0.118$ under a first band-aid fix that
 also destroyed neighbour context, and $0.090$ with the final leak-free read-out.
 This episode is reported as a methodological contribution, not an apology: the
-structural test now makes the leak impossible to reintroduce silently.
+structural test now makes the leak impossible to reintroduce silently, and the same
+mask-aware read-out is what feeds the GP-first feature kernel --- whose full
+pipeline was additionally audited bitwise (corrupting held-out targets or
+velocities changes no prediction by one bit).
 
 \section{Hyperparameter fragility and the guard}
 Two distinct failure modes were found and fixed. First, on a minority of mask
@@ -1254,13 +1281,16 @@ post hoc: the principled fixes are a heavy-tailed (Student-$t$) timing likelihoo
 or deploy-time predictive floors (\S\ref{ch:future}), and the per-piece median NLL
 --- reported throughout --- is robust to it by construction.
 
-\section{Do hand-built features suffice?}
+\section{Do hand-built features suffice? (development study)}
 Against a rich 25-feature score baseline fit under the same protocol, the network
 \emph{ties on average error}; its genuine, significant edge is calibration and
-loudness. Best of all, features and network \emph{stack}
-(RMSE $\rmseStack$ vs.\ $\rmseNetGraph$). \figph{digest_channels.png}{0.7}{Where the
+loudness. The two \emph{stack} --- in the two-stage regime as concatenated means
+(RMSE $\rmseStack$ vs.\ $\rmseNetGraph$, dev), and in the final model as two
+feature kernels, where the embeddings' marginal value is $-0.008$ RMSE / $-0.034$
+NLL (dev, paired, significant) and their removal cost is confirmed in direction on
+the confirmation set. \figph{digest_channels.png}{0.7}{Where the
 network earns its place: mean-only error vs.\ the 25-feature baseline, per channel ---
-the network's genuine edge is loudness; timing and articulation tie.}
+the network's genuine edge is loudness; timing and articulation tie (development).}
 
 \section{Stage-2: task-matched pretraining, an honest negative}
 A bidirectional, mask-aware retraining (matched exactly to the evaluation task) did
