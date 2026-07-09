@@ -120,6 +120,41 @@ exists and will not be edited after the run; the run happens exactly once.**
   otherwise keep the current headline and report GP-first as the orthodoxy ablation.
   Dev-set numbers stay labeled "development" in the thesis either way.
 
+## CONFIRMATION RESULTS (one-shot, 2026-07-09, `logs/confirmation_verdict.log`)
+
+*Run exactly once per the preregistration above; nothing here was iterated.*
+
+| System | RMSE | NLL | cov@.9 |
+|---|---|---|---|
+| **GP b_featlm** | **0.3755** | −0.3002 | 0.925 |
+| GP b_featlm_nograph | 0.4052 | −0.2261 | 0.922 |
+| GP b_feat | 0.3850 | −0.2639 | 0.923 |
+| old headline (feat+LM+harm) | 0.3928 | **−0.3108** | 0.922 |
+| old feat+LM+graph | 0.3987 | −0.2953 | 0.920 |
+| old LM+graph | 0.4012 | −0.2885 | 0.921 |
+
+- **C1 RMSE: CONFIRMED** — b_featlm − old headline = −0.0137* [−0.0246, −0.0040].
+- **C1 NLL: NOT confirmed** — +0.0109 ns [−0.129, +0.245]. The dev-set NLL advantage
+  did not replicate as a pooled number. Diagnosis: the *median* fresh piece is
+  better-calibrated under b_featlm (−0.353 vs −0.315) but ONE fresh piece has NLL
+  +2.19 (old headline's worst: +0.42) — the unguarded per-piece evidence
+  overconfidence mode, demonstrated in the wild.
+- **C2: CONFIRMED** — graph contribution inside GP-first, ΔNLL −0.0736* [−0.092, −0.057].
+- **C3: PASS** — coverage 0.925 ∈ [0.88, 0.95].
+
+**Preregistered decision rule → ADOPT** (C1-RMSE significant, NLL not significantly
+worse, C2 holds). Honest headline claims after confirmation: the recovery advantage
+and the graph's calibration contribution generalize; the pooled calibration
+advantage does not (tie), pending the guard upgrade below. Note all systems' NLL is
+worse on fresh pieces than on dev — the dev set flatters every model (reused-set
+inflation, now quantified).
+
+**Guard upgrade (separately reported, not part of the one-shot result):**
+`gp.fit_guarded` adds an overconfidence screen (calibration-split NLL vs mean-only
++0.5 nats; fallbacks noise-floor ×5 → decoupled diagonal). Guarded A/B runs on dev
+(expected no-op) and on the confirmation pieces (does it tame piece 5?) are reported
+below when they land.
+
 ## Decision framework (the user's call; this branch produces evidence)
 
 Paired vs the adopted headline (0.3795 / −0.3459 / 0.922 strict):
