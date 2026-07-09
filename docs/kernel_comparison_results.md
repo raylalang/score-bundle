@@ -1,5 +1,12 @@
 # Kernel comparison — results (2026-07-09)
 
+> **Status (2026-07-10):** headline superseded by the GP-first model
+> (`docs/graphgp_first_design.md`); this study stands as the two-stage-regime record
+> that (i) justifies the additive kernel shape used inside the GP-first covariance and
+> (ii) motivated the reformulation. Its harmonic-edge finding is regime-scoped: the
+> edges are significant on the plain graph, and measured-redundant once the LM
+> embeddings enter the kernel as features.
+
 The experiment the supervisor asked for (spec: `kernel_comparison_experiment.md`):
 compare graph-GP kernels on the held-out ASAP imputation task, simplest → experimental,
 on recovery **and** calibration, with **only the kernel changing** row to row.

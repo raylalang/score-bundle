@@ -248,6 +248,61 @@ def task_era(args, head, ev):
     return rows
 
 
+# ------------------------------------------------------------------------ performer
+def task_performer(args, head=None, ev=None):
+    """Vienna 4x22 performer-ID: raw vs two-stage graph-denoised vs GP-denoised.
+
+    Mirrors scripts/eval_vienna_performer.py exactly (max 250 notes, zero-mean blind
+    graph denoiser as the two-stage row, leave-one-piece-out nearest centroid); adds
+    the GP-first row: per-excerpt fully-observed GP-feat fit, style features on the
+    posterior mean. GP-featlm is infeasible here (no LM embeddings for Vienna).
+    """
+    from score_bundle import vienna
+    from score_bundle.baselines import rich_score_features
+    from score_bundle.downstream import (denoise_channel, grouped_nearest_centroid,
+                                         style_features)
+    from score_bundle.gp import MultiOutputGraphGP
+    from score_bundle.graph import build_adjacency, laplacian
+    from score_bundle.score import Score
+
+    recs = vienna.load_vienna_meta(args.vienna_root)
+    Xraw, Xgraph, Xgp, perf, piece = [], [], [], [], []
+    for r in recs:
+        try:
+            score, y = vienna.load_vienna_performance(r.match_path)
+        except Exception as exc:
+            print(f"  skip {r.piece} {r.performer}: {exc}"); continue
+        if len(score) > 250:
+            score = Score(score.notes[:250]); y = y[:250]
+        order = np.argsort(score.onset)
+        L = laplacian(build_adjacency(score))
+        y_dn = np.column_stack([
+            denoise_channel(L, y[:, c], np.zeros(len(y)),
+                            max(float(np.std(y[:, c])), 1e-6), "graph")[0]
+            for c in range(3)
+        ])
+        X = zscore_cols(rich_score_features(score, rff_dim=0))
+        feats = [np.concatenate([X, np.ones((len(X), 1))], axis=1)]
+        nu, U = np.linalg.eigh(L)
+        gp = MultiOutputGraphGP(nu, U, kernel="additive", features=feats)
+        floor = 0.05 * np.array([max(float(np.var(y[:, c])), 1e-10) for c in range(3)])
+        x_hat, _ = gp.fit(y, np.ones(len(y), dtype=bool), noise_floor=floor,
+                          maxiter=args.maxiter)
+        M, _ = gp.posterior(y, np.ones(len(y), dtype=bool), x_hat)
+        Xraw.append(style_features(y, order))
+        Xgraph.append(style_features(y_dn, order))
+        Xgp.append(style_features(M, order))
+        perf.append(r.performer); piece.append(r.piece)
+        print(f"[performer] {r.piece} {r.performer} done", flush=True)
+
+    rows = {}
+    for name, X in (("raw", Xraw), ("two-stage graph-denoised", Xgraph),
+                    ("GP-denoised (GP-feat)", Xgp)):
+        acc, n = grouped_nearest_centroid(np.array(X), perf, piece)
+        rows[("performer", name)] = (acc, n, 1.0 / len(set(perf)))
+    return rows
+
+
 # ------------------------------------------------------------------------ selective
 def task_selective(args):
     """Pure analysis of existing imputation cells — no new fits."""
@@ -331,9 +386,14 @@ def report(args):
         for key, (labels, feats) in sorted(r.items(), key=str):
             if len(labels) >= 8:
                 acc, per = loo_nearest_centroid(np.array(feats), labels)
-                maj = max(np.bincount([hash(l) % 97 for l in labels])) / len(labels)
                 print(f"  {key[1]:14s} acc {acc:.3f} (n={len(labels)}, "
                       f"majority~{max(labels.count(l) for l in set(labels))/len(labels):.3f})")
+
+    r = merged("performer")
+    if r:
+        print("\n=== PERFORMER-ID (Vienna 4x22, leave-one-piece-out) ===")
+        for key, (acc, n, chance) in sorted(r.items(), key=str):
+            print(f"  {key[1]:26s} acc {acc:.3f} (n={n}, chance {chance:.3f})")
 
     sel = task_selective(args)
     if sel:
@@ -347,7 +407,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--task", required=True,
                     choices=["anomaly", "denoise", "completion", "era",
-                             "selective", "report"])
+                             "performer", "selective", "report"])
+    ap.add_argument("--vienna-root", default="../data/vienna4x22")
     ap.add_argument("--arrays-cache", default=".cache/asap_arrays_named.pkl")
     ap.add_argument("--out-dir", default=OUT_DIR)
     ap.add_argument("--n-eval-pieces", type=int, default=30)
@@ -368,12 +429,15 @@ def main() -> None:
             print(name, m)
         return
 
-    from score_bundle.downstream import load_piece_arrays
-    head, ev, _ = load_piece_arrays(args.arrays_cache)
-    ev = ev[: args.n_eval_pieces]
     os.makedirs(args.out_dir, exist_ok=True)
-    rows = {"anomaly": task_anomaly, "denoise": task_denoise,
-            "completion": task_completion, "era": task_era}[args.task](args, head, ev)
+    if args.task == "performer":
+        rows = task_performer(args)
+    else:
+        from score_bundle.downstream import load_piece_arrays
+        head, ev, _ = load_piece_arrays(args.arrays_cache)
+        ev = ev[: args.n_eval_pieces]
+        rows = {"anomaly": task_anomaly, "denoise": task_denoise,
+                "completion": task_completion, "era": task_era}[args.task](args, head, ev)
     k = args.shard.replace("/", "_")
     path = os.path.join(args.out_dir, f"{args.task}.shard{k}.pkl")
     with open(path, "wb") as fh:

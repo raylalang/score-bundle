@@ -10,9 +10,9 @@
 %
 %  Prose is written wherever the result is known and honest.  \TODO{...}
 %  marks the few genuinely open items (final figures, personal/title
-%  details).  Exact figures live in docs/phase1_calibration_results.md and
-%  docs/downstream_tasks_results.md; the plain-language log is
-%  docs/status_2026-07-02.md.
+%  details).  Exact figures live in docs/graphgp_first_design.md (primary),
+%  docs/phase1_calibration_results.md and docs/downstream_tasks_results.md
+%  (two-stage development record).
 %
 %  Compiles with plain pdflatex (no bibtex — manual thebibliography).
 %  Headline numbers are centralised in the macros below: ONE place to edit.
@@ -45,24 +45,38 @@
       {\fbox{\parbox[c][0.28\linewidth][c]{#2\linewidth}{\centering\TODO{missing figure: \texttt{\detokenize{#1}}}}}}}
   \caption{#3}\end{figure}}
 
-% --- headline numbers (UPDATE from docs/phase1_calibration_results.md) ---
+% --- DEVELOPMENT-set numbers (30 pieces; used for all model selection) ----------
+% two-stage pipeline rows (docs/phase1_calibration_results.md, strict protocol)
 \newcommand{\rmseZero}{0.566}
 \newcommand{\rmseGraph}{0.404}
-\newcommand{\rmseNetGraph}{0.393}      % network + plain graph (strict protocol)
-\newcommand{\rmseStack}{0.388}         % features + network + plain graph (strict)
-\newcommand{\rmseHeadline}{0.379}      % ADOPTED headline: features + network + harmonic graph (strict, 2026-07-09)
-\newcommand{\nllHeadline}{$-0.346$}    % adopted headline NLL (strict)
+\newcommand{\rmseNetGraph}{0.393}      % network + plain graph (dev, strict)
+\newcommand{\rmseStack}{0.388}         % features + network + plain graph (dev, strict)
+\newcommand{\rmseHeadline}{0.379}      % two-stage-era headline: feat+net+harmonic graph (dev; superseded by \rmseGP)
+\newcommand{\nllHeadline}{$-0.346$}
 \newcommand{\nllZero}{$-0.007$}
 \newcommand{\nllGraph}{$-0.308$}
-\newcommand{\nllNetGraph}{$-0.322$}    % strict protocol
-\newcommand{\nllStack}{$-0.333$}       % strict protocol
+\newcommand{\nllNetGraph}{$-0.322$}
+\newcommand{\nllStack}{$-0.333$}
 \newcommand{\covZero}{87\%}
 \newcommand{\covHead}{92\%}            % coverage of nominal-90\% intervals
 \newcommand{\nPieces}{30}
 \newcommand{\maskRate}{40\%}
-\newcommand{\rmseNetOff}{0.446}        % network mean, graph off (strict: logs/maskaware.log LM-ma off; was stale 0.451)
+\newcommand{\rmseNetOff}{0.446}        % network mean, graph off (strict: logs/maskaware.log LM-ma off)
 \newcommand{\nllNetOff}{$-0.164$}
 \newcommand{\covNetOff}{90\%}
+% GP-first model, dev set (logs/graphgp_v2_report.log, one code state)
+\newcommand{\rmseGPdev}{0.360}
+\newcommand{\nllGPdev}{$-0.404$}
+% --- CONFIRMATION-set numbers (20 untouched pieces, preregistered, run ONCE) -----
+% logs/confirmation_verdict.log
+\newcommand{\nConfPieces}{20}
+\newcommand{\rmseGP}{0.376}            % THE headline: GP-first on confirmation
+\newcommand{\nllGP}{$-0.300$}
+\newcommand{\covGP}{92.5\%}
+\newcommand{\rmseConfOldHead}{0.393}   % two-stage-era headline on confirmation
+\newcommand{\nllConfOldHead}{$-0.311$}
+\newcommand{\dRmseConf}{$-0.014$}      % paired GP-first - old headline, RMSE (sig.)
+\newcommand{\dNllGraphConf}{$-0.074$}  % paired graph contribution inside GP-first, NLL (sig.)
 
 % --- notation (must match docs/formulation.tex and CLAUDE.md) ---------
 \newcommand{\R}{\mathbb{R}}
@@ -91,23 +105,25 @@
 \noindent Given a printed score and a recording of a performance (as piano MIDI in
 this work), we recover \emph{how} each written note was played --- its
 micro-timing, articulation, and dynamics --- together with a calibrated statement
-of confidence. The core idea is a \emph{score graph}: notes that are related in
-the score are modelled as related in performance, via a Gaussian process defined on
-that graph (a graph GP, computed as a Gaussian Markov random field) over per-note
-expressive variables. A small, from-scratch
-symbolic music language model supplies a learned prior mean, and the graph models
-the residual with structured, calibrated uncertainty. On held-out ASAP piano
-performances the full model --- hand-built score features stacked on the network
-mean, over a score graph augmented with chord and voice-leading edges --- recovers
-hidden notes with lower error than any per-note predictor
-(RMSE~$\approx\rmseHeadline$) and better-calibrated confidence (nominal-90\%
-intervals cover the truth $\approx\covHead$ of the time), with the graph's
-contribution, and separately the harmonic edges' contribution, statistically
-significant on both axes. Six downstream tasks
-map exactly where the structure helps (per-note recovery, confidence, error
-spotting) and where it does not (whole-performance summaries). Phases~2--3 extend
-the same prior to intonation/vibrato and to audio via a differentiable synthesizer;
-they are scoped but not yet built.
+of confidence. The model is \textbf{one multi-output Gaussian process on the score
+graph}: notes related in the score are related in performance (a graph GP in the
+sense of Borovitskiy et al.), the three expressive channels are coupled by a
+coregionalization matrix, and all side information --- hand-built score features
+and per-note embeddings from a small, from-scratch symbolic music language model
+--- enters as linear kernels, i.e.\ as a marginalized Bayesian linear mean. One
+exact marginal likelihood per piece learns every hyperparameter. Development used
+\nPieces{} held-out ASAP pieces; the headline claims were then \emph{preregistered
+and confirmed exactly once} on \nConfPieces{} further pieces untouched by any
+modelling decision: the model recovers hidden notes with lower error than the
+strongest two-stage pipeline it subsumes (RMSE~\rmseGP{} vs.\ \rmseConfOldHead,
+paired difference \dRmseConf{} significant), the graph's contribution to
+calibration is confirmed (paired NLL \dNllGraphConf), and nominal-90\% intervals
+cover $\approx\covGP$ of the truth. Six downstream tasks map where the structure
+helps (per-note recovery, confidence, error spotting) and where it does not
+(whole-performance summaries; extrapolation from a short excerpt, where a
+cross-piece head remains the honest tool). Phases~2--3 extend the same prior to
+intonation/vibrato and to audio via a differentiable synthesizer; they are scoped
+but not yet built.
 \end{abstract}
 
 \vspace{1em}
@@ -134,64 +150,107 @@ connect the two.
 \section{The project in one paragraph}
 We are building a system that takes a written score plus a recording of someone
 playing it and infers \emph{how} it was played --- each note's micro-timing,
-length, and loudness --- with a calibrated measure of confidence. Two ingredients
-carry the result, with distinct roles. A \textbf{score graph} (notes connected by
-adjacency in score-time, pitch, voice, and phrase) cuts prediction error
-substantially below any per-note predictor and makes the confidence intervals
-trustworthy. A small \textbf{music model} we train ourselves on piano performances
-adds specifically loudness knowledge and sharper calibration. Everything so far is
-symbolic (MIDI); working directly from audio is a later, and more novel, stage.
+length, and loudness --- with a calibrated measure of confidence. The model is
+\textbf{one Gaussian process on the score graph}: notes connected by adjacency in
+score-time, pitch, and voice share expressive behaviour; the three channels are
+coupled; and everything we know about a note --- 25 hand-built score features and
+the per-note representation of a small \textbf{music model} we train ourselves ---
+enters the same GP as extra kernels, so a single per-piece evidence learns every
+knob. The graph is what makes the confidence intervals trustworthy; the per-piece
+feature weighting is what wins accuracy; the music model contributes loudness
+knowledge and sharper calibration. Everything so far is symbolic (MIDI); working
+directly from audio is a later, and more novel, stage.
 
-\section{Headline result}
-On held-out ASAP piano performances the full model --- music-model guess plus
-score-graph prior --- is the best configuration on \emph{both} accuracy and
-calibrated confidence at once, and the graph's contribution is statistically
-significant on both axes, piece by piece (Table~\ref{tab:headline-exec}). The
-clearest single-channel improvement is note loudness.
+\section{Headline result (confirmation set --- preregistered, run once)}
+Development used \nPieces{} held-out pieces, which necessarily also served model
+selection. The final claims were therefore \emph{preregistered} (systems, metrics,
+decision rule fixed in advance) and evaluated \emph{exactly once} on \nConfPieces{}
+further ASAP pieces untouched by any decision
+(Table~\ref{tab:headline-conf}). The single-GP model beats the strongest two-stage
+pipeline on accuracy (paired per-piece \dRmseConf, significant), its intervals
+cover $\approx\covGP$ at the nominal 90\%, and the graph's contribution to
+confidence quality is confirmed inside the model (paired NLL \dNllGraphConf,
+significant). Pooled NLL between the new and old systems tied on the confirmation
+set: the median piece is better-calibrated under the GP, but one piece with a few
+extreme timing outliers dominates the pooled figure (diagnosed in
+\S\ref{sec:guard-gp}) --- reported, not hidden.
 
 \begin{table}[h]\centering
-\caption{Held-out ASAP, strict protocol, \nPieces{} pieces $\times$ 4 mask seeds,
-\maskRate{} of notes hidden. Lower RMSE/NLL is better; coverage closer to the
-nominal 90\% is better. Brackets: per-piece bootstrap 95\% CIs
-(\texttt{logs/headline\_cis.log}). These are per-system across-piece intervals ---
-they overlap because pieces vary far more than systems do; the significance claims
-in the text are \emph{paired} per-piece contrasts, which remove that variance.}
-\label{tab:headline-exec}
+\caption{CONFIRMATION set: \nConfPieces{} fresh pieces $\times$ 4 mask seeds,
+\maskRate{} hidden, strict protocol, preregistered and run once
+(\texttt{logs/confirmation\_verdict.log}). Lower RMSE/NLL better; coverage closer
+to 90\% better.}
+\label{tab:headline-conf}
 \footnotesize
 \begin{tabular}{lccc}
 \toprule
-System & RMSE & NLL & 90\%-interval coverage \\
+System & RMSE & NLL & cov@90\% \\
 \midrule
-Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & \nllZero{} {\scriptsize[$-0.13$, $+0.12$]}   & \covZero \\
-Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{} {\scriptsize[$-0.40$, $-0.21$]}  & \covHead \\
-Network mean, graph off            & \rmseNetOff{} {\scriptsize[0.41, 0.47]}  & \nllNetOff{} {\scriptsize[$-0.26$, $-0.07$]} & \covNetOff \\
-Network mean $+$ graph             & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} {\scriptsize[$-0.41$, $-0.24$]} & \covHead \\
-Feature $+$ network mean $+$ graph & \rmseStack{} {\scriptsize[0.35, 0.41]}   & \nllStack{} {\scriptsize[$-0.41$, $-0.25$]}  & \covHead \\
-\textbf{Feature $+$ network mean $+$ harmonic graph} (headline) & \textbf{\rmseHeadline} {\scriptsize[0.34, 0.40]} & {\boldmath\nllHeadline} {\scriptsize[$-0.43$, $-0.26$]} & \covHead \\
+\textbf{GP-first (graph + features + music model, one evidence)} & \textbf{\rmseGP} & \nllGP & \covGP \\
+\quad without the graph & 0.405 & $-0.226$ & 92\% \\
+\quad without the music model & 0.385 & $-0.264$ & 92\% \\
+two-stage pipeline, strongest (feat+net mean, harmonic graph) & \rmseConfOldHead & \nllConfOldHead & 92\% \\
+two-stage pipeline, plain (net mean, plain graph) & 0.401 & $-0.289$ & 92\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent The rows isolate each ingredient --- mean $\times$ graph on/off (split by
-channel in Table~\ref{tab:perchannel}), the 25 hand-built score features stacked on
-the network mean, and finally the chord + voice-leading edge families added to the
-score graph (\S\ref{sec:kernels}); each step's paired per-piece improvement is
-statistically significant. The headline system was adopted 2026-07-09 after the
-kernel comparison; the plain-graph rows remain the published ablation path.
+\figph{gpfirst_confirmation.png}{0.8}{The one-shot confirmation at a glance: the
+single-GP model against its own ablations and the two-stage pipeline, on pieces no
+modelling decision ever touched.}
+
+\begin{table}[h]\centering
+\caption{DEVELOPMENT set (\nPieces{} pieces $\times$ 4 seeds; used for all model
+selection, so these numbers flatter every system --- the confirmation table above
+is the headline). Nested ladder of the GP-first model; the two-stage pipeline rows
+are its special cases. Brackets: per-piece bootstrap 95\% CIs where computed
+(\texttt{logs/headline\_cis.log}, \texttt{logs/graphgp\_v2\_report.log}).}
+\label{tab:headline-exec}
+\footnotesize
+\begin{tabular}{lccc}
+\toprule
+System (development) & RMSE & NLL & cov@90\% \\
+\midrule
+Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & \nllZero{}   & \covZero \\
+Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{}  & \covHead \\
+Network mean $+$ graph (two-stage) & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} & \covHead \\
+Feat $+$ network mean $+$ graph (two-stage) & \rmseStack{}    & \nllStack{}   & \covHead \\
+Feat $+$ network $+$ harmonic graph (two-stage era headline) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
+ICM GP, zero mean                  & 0.403 & $-0.316$ & 92\% \\
+\ + features as kernel             & 0.368 & $-0.370$ & 92\% \\
+\textbf{\ + music-model embeddings as kernel (= GP-first)} & \textbf{\rmseGPdev} & \nllGPdev & 92.7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The development ladder isolates each ingredient. Two attribution facts
+matter: (i) fixing the two-stage pipeline's own mean inside the coupled GP changes
+almost nothing (0.390 dev) --- so the win comes from \emph{per-piece Bayesian
+weighting of the features under one evidence}, not from coupling or joint fitting
+per se; (ii) removing the graph from the full model costs $+0.017$ RMSE and
+$+0.067$ NLL (dev, paired, significant) --- the graph remains what keeps the
+confidence honest.
 
 \section{Where the gain comes from (by channel)}
 The single pooled number above blends three channels that behave very differently
-(full numbers in \S\ref{sec:perchannel}). This is the sharper form of the claim:
+(full numbers in \S\ref{sec:perchannel}; development set). This is the sharper form
+of the claim, for the GP-first model:
 
 \begin{table}[h]\centering
 \footnotesize
 \begin{tabular}{@{}p{3.0cm}p{10.0cm}@{}}
 \toprule
-Channel & What the graph does \\
+Channel & What the model does (dev) \\
 \midrule
-Timing ($\tau$) & The channel structure moves least (RMSE $\approx 0.15$--$0.16$ across all models measured); most of the remaining variance appears local to the note rather than shared along the graph. \\
-Articulation ($\log r$) & Fixes \emph{calibration} --- lifts 90\% coverage from $0.78$ to $0.91$ --- and cuts error ($0.96 \to 0.68$). \\
-Loudness ($v$) & Where \emph{recovery} improves most: the graph roughly halves the error ($0.12 \to 0.08$), and this is the one channel where the learned music-model mean carries signal the hand-built features lack. \\
+Timing ($\tau$) & The channel the graph moves least ($0.154 \to 0.152$ inside the
+GP); most of the remaining variance appears local to the note rather than shared
+along the graph. \\
+Articulation ($\log r$) & The graph's biggest error cut inside the GP
+($0.627 \to 0.601$) and, across the development ladder, the channel whose
+\emph{calibration} the graph rescues (coverage $0.78 \to 0.91$ for a bare mean). \\
+Loudness ($v$) & Where the graph helps recovery most inside the GP
+($0.083 \to 0.072$), and the one channel where the music-model embeddings carry
+signal the hand-built features lack ($0.075 \to 0.072$ when added to the kernel). \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -210,7 +269,7 @@ are scoped and parked (Table~\ref{tab:phases}).
 Phase & Scope & Adds & Status \\
 \midrule
 0 --- foundation & From-scratch symbolic music LM (backbone + representations) &
-Learned prior mean $\muLM$, per-note embeddings $h_i$ & \textbf{Done} \\
+Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; $\muLM$ in the development form) & \textbf{Done} \\
 1 --- core (piano) & Timing, articulation, dynamics from aligned score+performance &
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened; thesis write-up in progress \\
@@ -222,18 +281,22 @@ Harmonic amplitudes $a$, audio $x$ & Not started (scoped) \\
 \end{tabular}
 \end{table}
 
-\section{The headline decision (resolved 2026-07-09)}
-Both candidate systems were supported by the evidence and the contribution claim is
-identical either way; after the kernel comparison (\S\ref{sec:kernels}) the adopted
-headline is \textbf{feature + network mean + harmonic graph}
-(RMSE~\rmseHeadline, NLL~\nllHeadline): it is the only configuration whose every
-ingredient --- the graph itself, the feature-stacked mean, and the chord +
-voice-leading edges --- carries a paired per-piece improvement that is significant
-on \emph{both} recovery and calibration, and the added edge families are score
-structure, which is the thesis. The costs carried alongside the model are a
-25-feature hand-built regressor and two interpretable edge families. The cleaner
-single-model story (\emph{network mean + plain graph}, RMSE~\rmseNetGraph,
-NLL~\nllNetGraph) remains fully reported as the ablation path.
+\section{How the final model was selected}
+Three steps, in order, produced the headline system. \textbf{(1) Development
+optimum of the two-stage pipeline:} after the kernel and edge-family study
+(\S\ref{sec:kernels}), \emph{feature + network mean + harmonic graph}
+(RMSE~\rmseHeadline{} dev) was the strongest configuration --- every ingredient
+significant on both axes. \textbf{(2) Reformulation:} the graph-GP literature
+prescribes three things the pipeline lacked --- coupled outputs, evidence-learned
+kernel parameters, a marginalized rather than plug-in mean --- and closing them
+yields the single-GP model, of which the pipeline is provably a special case.
+\textbf{(3) Preregistered confirmation} (Table~\ref{tab:headline-conf}) decided
+between them on untouched data: the single GP wins recovery significantly, ties
+pooled calibration, and its graph contribution is confirmed --- so it is the
+thesis model. The harmonic edge families, measured-redundant once the music-model
+embeddings enter the kernel, remain in the development record, as does every
+previously examined system (\rmseNetGraph, \rmseStack, \rmseHeadline: rows of the
+development table).
 
 
 % =====================================================================
@@ -259,10 +322,13 @@ The central empirical question is:
 baselines?
 \end{quote}
 The primary objective is to answer this question with a self-contained, validated
-Phase-1 result on piano. Secondary objectives: (i) establish a from-scratch music
-model as a learned prior mean and isolate its marginal value honestly; (ii) map the
-downstream reach of the structured prior across concrete tasks; and (iii) leave a
-clean path to audio (Phase~3) without depending on it for the core contribution.
+Phase-1 result on piano --- ultimately in the form of \emph{one} multi-output graph
+GP whose every ingredient is evidence-fitted and ablatable
+(\S\ref{sec:gpfirst}). Secondary objectives: (i) establish a from-scratch music
+model as a per-note representation and isolate its marginal value honestly;
+(ii) map the downstream reach of the structured model across concrete tasks; and
+(iii) leave a clean path to audio (Phase~3) without depending on it for the core
+contribution.
 
 \section{Scope and non-goals}\label{sec:scope}
 \textbf{In scope (Phase~1):} piano; symbolic (MIDI) performance variables ---
@@ -425,9 +491,25 @@ Three gates govern the risky transitions:
 
 
 % =====================================================================
-\chapter{Current Status --- 2026-07-03}\label{ch:status}
+\chapter{Current Status}\label{ch:status}
 
-\section{Headline}
+\section{Update --- 2026-07-09/10: the GP-first reformulation}
+Everything below this section is the status as of 2026-07-03, kept as a dated
+record. Since then: the graph-GP literature review prompted a reformulation of the
+whole pipeline as \textbf{one multi-output graph GP} (\S\ref{sec:gpfirst}); its
+claims were \emph{preregistered and confirmed once} on \nConfPieces{} pieces
+untouched by any decision (Table~\ref{tab:headline-conf}: RMSE \rmseGP{} vs.\ the
+two-stage \rmseConfOldHead, paired \dRmseConf{} significant; graph calibration
+contribution \dNllGraphConf{} significant; coverage \covGP); all six downstream
+tasks were re-validated under the new model (anomaly stronger, denoising and
+selective transfer, era and performer-ID keep their verdicts, completion exposes
+the extrapolation boundary --- Table~\ref{tab:downstream-both}); and the
+evaluation gained a development/confirmation split, a GP-side
+zero-leak audit, and two precisely-diagnosed limitations (\S\ref{sec:guard-gp},
+\S\ref{sec:boundary}). GP-first is the thesis model; the two-stage systems below
+remain its nested ablations.
+
+\section{Status as of 2026-07-03: headline (two-stage era)}
 On \nPieces{} held-out ASAP pieces the model never saw, with \maskRate{} of notes
 hidden, the full model (feature-stacked music-model guess + score-graph prior with
 chord/voice-leading edges) is the best configuration on both accuracy
@@ -444,8 +526,8 @@ predictor and brings the nominal-90\% intervals to $\approx$92\% coverage. The
 calibration --- against a strong 25-feature hand-built baseline it \emph{ties on
 average error}, and the two \emph{stack}. The \textbf{harmonic edge families}
 (same-chord and stepwise voice-leading, \S\ref{sec:kernels}) add a further
-significant gain on both axes on top of any mean, giving the adopted headline
-(feature + network mean + harmonic graph, RMSE~\rmseHeadline). The honest framing
+significant gain on both axes on top of any mean, giving the then-adopted headline
+(feature + network mean + harmonic graph, RMSE~\rmseHeadline{} dev). The honest framing
 is that the network adds calibration and dynamics information the hand-built
 features lack, the harmonic edges add score structure the plain graph lacks, and
 the best system uses all three.
@@ -489,17 +571,16 @@ The evaluation is built to be hard to fool:
         reports the median, so no single bad cell hides in the mean.
 \end{itemize}
 
-\section{Open decisions for today's meeting}\label{sec:open-decisions}
+\section{Open decisions at the 2026-07-10 meeting}\label{sec:open-decisions}
 \begin{enumerate}[leftmargin=*]
-  \item \textbf{Headline system --- RESOLVED (2026-07-09).} Adopted \emph{feature +
-        network mean + harmonic graph} (RMSE~\rmseHeadline, NLL~\nllHeadline): after
-        the kernel comparison, every ingredient's paired per-piece gain is
-        significant on both axes, and the added chord/voice-leading edges are score
-        structure --- the thesis claim itself. \emph{Network mean + plain graph}
-        (RMSE~\rmseNetGraph) stays fully reported as the ablation path. A
-        pre-adoption audit re-verified zero target leakage end-to-end (bitwise
-        invariance of predictions to held-out targets and of the strict prior mean
-        to held-out velocities, on the real pipeline).
+  \item \textbf{Headline system --- resolved twice within the week.} On 2026-07-09,
+        \emph{feature + network mean + harmonic graph} (RMSE~\rmseHeadline{} dev)
+        was adopted as the strongest two-stage configuration, after the kernel
+        comparison and a bitwise zero-leak audit. Within the day, the GP-first
+        reformulation subsumed it (see the update at the head of this chapter):
+        the preregistered confirmation made the single-GP model the thesis model,
+        and this two-stage resolution stands as the endpoint of the development
+        regime, its systems the ablation rows of the final tables.
   \item \textbf{Next phase.} Begin Phase~3 (audio via a differentiable synthesizer,
         the most novel part) now, or spend the time hardening and writing up
         Phase~1 first?
@@ -563,21 +644,31 @@ is out of scope; see \S\ref{sec:scope} and \S\ref{sec:future-amt}.
 
 \section{Contributions}
 \begin{enumerate}[leftmargin=*]
-  \item A \textbf{score-graph structured prior} (GMRF/SPDE) over per-note
-        expressive variables, giving a closed-form posterior with calibrated
-        per-note uncertainty, validated on held-out data against independent,
-        temporal-only, and feature-regression baselines.
-  \item An \textbf{honest characterisation of a learned prior mean}: a
-        from-scratch symbolic music LM contributes calibration- and
-        loudness-specific information; against a rich hand-built score-feature
-        baseline it \emph{ties on average error} and the two \emph{stack}.
-  \item A \textbf{map of where the structure helps}, via six downstream tasks with
-        objective metrics and honest baselines (three wins, two mixed, one
-        negative), yielding a single crisp boundary (\S\ref{sec:boundary}).
+  \item \textbf{A multi-output graph Gaussian process for expressive performance}
+        (\S\ref{sec:gpfirst}): channels coupled by coregionalization, a spectral
+        kernel of the score-graph Laplacian, and all side information ---
+        hand-built score features and learned music-model embeddings --- entering
+        as marginalized Bayesian linear means; every hyperparameter learned by the
+        exact per-piece evidence, posterior and calibration in closed form. Its
+        claims were \textbf{preregistered and confirmed once} on evaluation pieces
+        untouched by any modelling decision.
+  \item \textbf{Measured attribution} (\S\ref{sec:attribution}): per-piece Bayesian
+        weighting of informative features does the recovering; the graph makes the
+        confidence honest (its calibration contribution independently confirmed);
+        the from-scratch music LM earns its place as a feature provider inside the
+        kernel --- each claim isolated by nested ablations, including the entire
+        two-stage development pipeline as a provable special case.
+  \item \textbf{A map of where the structure helps}, via six downstream tasks with
+        objective metrics, re-validated under the final model, yielding two crisp
+        boundaries (\S\ref{sec:boundary}): structure helps note-level judgments,
+        not whole-performance summaries; per-piece adaptation helps interpolation,
+        not excerpt extrapolation.
   \item \textbf{Methodological rigour as a result in its own right}: a discovered
-        and fixed evaluation leak pinned by a structural test, a strict
-        leakage-free protocol, contamination filtering, and a self-validating
-        robustness guard for the hyperparameter fit.
+        and fixed evaluation leak pinned by structural tests and bitwise
+        end-to-end audits, a strict leakage-free protocol, contamination
+        filtering, self-validating robustness guards, and a
+        development/confirmation split that caught selection inflation in the act
+        (\S\ref{sec:hygiene}).
   \item \placeholder{(Planned / future)} A path to audio via a
         differentiable-synthesizer likelihood (Phase~3) and a geometric
         ``connection-Laplacian'' generalisation of the graph prior.
@@ -626,10 +717,17 @@ Gaussian Markov random fields place a Gaussian prior whose sparse precision enco
 conditional-independence structure \cite{rueheld2005}. The SPDE approach links
 Gaussian fields to GMRFs and yields Mat\'ern-type priors with interpretable range
 and smoothness \cite{lindgren2011}; these constructions extend to graphs, giving
-Mat\'ern \emph{Gaussian processes on graph nodes} \cite{borovitskiy2021}. Our
-score-graph prior is exactly such a graph Gaussian process --- equivalently a graph
-GMRF, its sparse-precision computational form --- with the graph built from musical
-adjacency rather than physical space.
+Mat\'ern \emph{Gaussian processes on graph nodes} \cite{borovitskiy2021}. For
+vector-valued outputs, both the intrinsic-coregionalization construction of
+\cite{borovitskiy2021} and the Kronecker output-coupling of Gaussian processes over
+graphs \cite{venkitaraman2018} prescribe an explicit cross-output covariance;
+GPs on \emph{evolving} graphs \cite{blancomulero2021} address dynamic structure,
+which a fixed score does not need. Our model is exactly such a multi-output graph
+Gaussian process --- the graph kernel a spectral function of the score-graph
+Laplacian, channels coupled by a coregionalization matrix, side information
+marginalized into the kernel as Bayesian linear means, and every hyperparameter
+learned by the exact evidence --- with the graph built from musical adjacency
+rather than physical space.
 
 \section{Symbolic music language models}
 Transformer and RNN models over tokenised MIDI (Music Transformer, REMI,
@@ -745,9 +843,13 @@ and length scales. Throughout, $\alpha$ is \emph{only} the Mat\'ern exponent, $\
 --- plain $\sigma$ is reserved for the posterior standard deviation
 (\S\ref{sec:posterior}).
 
-\section{The prior mean: zero, features, or the learned mean}\label{sec:prior-mean}
-The GMRF field is centred on a mean $\mu$, and a central question of the thesis is
-\emph{where that mean should come from}. We compare three sources:
+\section{The prior mean: zero, features, or the learned mean (development form)}
+\label{sec:prior-mean}
+During development the field was centred on a plug-in mean $\mu$, and the question
+\emph{where that mean should come from} drove the ablations; in the final model
+(\S\ref{sec:gpfirst}) the same information sources enter the kernel instead, as
+marginalized Bayesian linear means with per-piece weights. The three sources
+compared, which survive as the feature sets of the final model:
 \begin{enumerate}[leftmargin=*,noitemsep]
   \item \textbf{zero} --- $\mu = 0$: the model is a pure smoother, with no prior
         guess for each note;
@@ -884,6 +986,49 @@ $\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$). On healthy fits
 screen never fires, so guarded and unguarded runs are identical except at the
 collapsed cells.
 
+\section{The full model: one multi-output graph GP}\label{sec:gpfirst}
+The sections above introduce the ingredients in their two-stage development form
+(a plug-in mean, one scalar GP per channel). The thesis model assembles them as
+\textbf{one Gaussian process over the $3N$ values $(\text{note}, \text{channel})$},
+with covariance
+\begin{equation}
+K \;=\; B \otimes K_G(s)\; +\; \sum_f \operatorname{diag}(c_f) \otimes X_f X_f^\top
+\;+\; \operatorname{diag}(\varsigma^2) \otimes I ,
+\label{eq:gpfirst}
+\end{equation}
+where
+\begin{itemize}[leftmargin=*]
+  \item $K_G(s) = U\, g(\nu; s)\, U^\top$ is a \emph{shape-normalized} spectral
+        kernel of the score-graph Laplacian ($g(0)=1$, a single shape parameter
+        $s$; additive/regularized-Laplacian by default --- the kernel comparison of
+        \S\ref{sec:kernels} showed the classical alternatives tie);
+  \item $B \in \mathbb{R}^{3\times 3}$ (PSD, log-Cholesky) is the intrinsic
+        coregionalization matrix coupling timing, articulation, and loudness, and
+        carries all scale;
+  \item each $X_f$ is a per-note feature matrix --- the 25 score-only features with
+        a bias column, and the music model's mask-aware per-note embeddings --- and
+        its linear kernel $X_f X_f^\top$ is exactly the \emph{marginalized Bayesian
+        linear mean}: a GP with mean $X\beta$, $\beta \sim \mathcal N(0, \Sigma_\beta)$
+        integrated out, is a zero-mean GP with $X \Sigma_\beta X^\top$ added to the
+        kernel. The plug-in read-out head of the development pipeline is thereby
+        replaced by per-piece Bayesian weights under the same evidence;
+  \item $\varsigma^2$ is per-channel observation noise, floored as before.
+\end{itemize}
+Every hyperparameter --- $s$, $B$, the feature scales $c_f$, and $\varsigma^2$ ---
+is learned jointly by the exact per-piece log marginal likelihood; inference is
+exact conjugate GP regression (per-note masks keep the observed block
+Kronecker-compatible). A guarded variant of the fit exists
+(\S\ref{sec:guard-gp}).
+
+\paragraph{Special cases (the development pipeline is nested).} Constraining $B$
+diagonal, dropping the feature kernels, and fixing the graph recovers the
+per-channel two-stage model exactly (the joint marginal likelihood equals the sum
+of the per-channel ones; pinned by a unit test). Re-inserting the two-stage
+pipeline's own cross-piece mean as a fixed mean inside \eqref{eq:gpfirst}
+reproduces its results almost unchanged --- which is how we know the GP-first gain
+comes from the per-piece Bayesian feature weighting, not from coupling or joint
+fitting per se (\S\ref{sec:attribution}).
+
 \section{Evaluation: recovery and calibration}
 Predictions on held-out notes are scored on both axes. With held-out values $y_i$,
 predictive means $m_i$, and floored predictive standard deviations
@@ -980,7 +1125,7 @@ reaches validation perplexity $10.85$.
 \section{Evaluation corpus (ASAP) and target extraction}
 ASAP \cite{asap} is the only corpus pairing written scores with performances; it
 supplies the targets $y = [\tau, \log r, v]$ via the score$\leftrightarrow$
-performance beat warp $T(\cdot)$ (\S\ref{eq:variables}). Because high-quality piano
+performance beat warp $T(\cdot)$ (Eq.~\ref{eq:variables}). Because high-quality piano
 MIDI yields these targets almost exactly ($\Sigma_e \approx 0$), the inference task
 is not denoising but \emph{structured prediction}: the graph prior is exercised by
 imputing masked notes from the rest.
@@ -993,6 +1138,21 @@ blanks every hidden note's loudness from the input; its measured cost is essenti
 nil on error ($+0.0003$ for the network system, $+0.0000$ for the feature--network
 stack) and a small, honest calibration price ($\approx +0.014$ NLL). The strict
 numbers are the ones quoted throughout.
+
+\section{Selection hygiene: development vs.\ confirmation}\label{sec:hygiene}
+The \nPieces{} development pieces adjudicated every modelling decision of the
+project --- the noise floor, the leak fix, the feature stack, the kernel and edge
+families, and finally the GP-first configuration itself. Individually each paired
+test is valid; collectively, a reused evaluation set flatters whatever survives
+selection. The protocol therefore ends with a \textbf{preregistered confirmation}:
+\nConfPieces{} further contamination-filtered pieces (the same corpus shuffle,
+verified untouched by any decision), disjoint mask seeds, the systems, claims, and
+decision rule committed to the repository \emph{before} the confirmation data
+existed, and a single evaluation run with all results reported. The inflation this
+guards against is real and now measured: \emph{every} system's calibration is worse
+on fresh pieces than on the development set, and one dev-set advantage
+(pooled NLL) did not replicate. Development numbers are labeled as such wherever
+they appear.
 
 \section{Metrics}
 Recovery: RMSE (per channel and pooled). Calibration: negative log predictive
@@ -1008,51 +1168,67 @@ corpus (22 pianists $\times$ 4 shared excerpts) is used \cite{vienna4x22}.
 \chapter{Phase-1 Results}\label{ch:results}
 
 \section{Headline: recovery and calibration}
-On \nPieces{} held-out ASAP pieces with \maskRate{} of notes hidden, the full model
-(feature-stacked LM guess + harmonic score graph) attains the lowest error and
-best-calibrated confidence; the graph's contribution --- and the harmonic edges' ---
-is significant on \emph{both} axes
-(Table~\ref{tab:headline-exec}, reproduced from Chapter~\ref{ch:exec}).
+The headline is the \textbf{confirmation table} (Table~\ref{tab:headline-conf},
+Chapter~\ref{ch:exec}): on \nConfPieces{} pieces untouched by any decision, the
+GP-first model beats the strongest two-stage pipeline on recovery
+(\rmseGP{} vs.\ \rmseConfOldHead, paired \dRmseConf{} significant), covers
+$\approx\covGP$ at nominal 90\%, and its graph's calibration contribution is
+confirmed (paired NLL \dNllGraphConf). The development ladder
+(Table~\ref{tab:headline-exec}) isolates every ingredient: the two-stage pipeline
+rows are the model's own special cases, so the project's earlier headline systems
+appear as ablations rather than as a competing narrative.
 
-\figph{digest_headline.png}{0.7}{Two orthogonal upgrades, strict protocol: per prior
-mean (rows), held-out RMSE with no graph, the plain score graph, and the
-chord/voice-leading-augmented graph. Every mean improves with the graph; the harmonic
-edges improve every graph.}
+\section{Attribution: what actually wins}\label{sec:attribution}
+Two development-set disentanglers pin the mechanism. (i) \emph{Fixed-mean control:}
+inserting the two-stage pipeline's cross-piece mean as a fixed mean inside the
+coupled GP scores 0.390 / $-0.327$ --- statistically at the two-stage pipeline's own
+level. Coregionalization and joint fitting per se contribute almost nothing.
+(ii) \emph{Component removal (paired, dev):} removing the graph from the full model
+costs $+0.017$ RMSE / $+0.067$ NLL; removing the music-model embeddings costs
+$+0.008$ / $+0.034$ --- both significant. The mechanism is therefore: \textbf{per-piece
+Bayesian weighting of informative per-note features under one evidence does the
+recovering; the graph makes the confidence honest}. The music model earns its place
+as a feature provider inside the kernel, not as an oracle mean.
+
+\figph{digest_headline.png}{0.7}{Two orthogonal upgrades, strict protocol,
+development set (two-stage era): per prior mean (rows), held-out RMSE with no
+graph, the plain score graph, and the chord/voice-leading-augmented graph.
+Historical development figure; the confirmation table is the headline.}
 
 \section{Per-channel breakdown: where the graph earns its keep}\label{sec:perchannel}
 The pooled headline (Table~\ref{tab:headline-exec}) averages three normalised
 channels, but the effect is far from uniform (Table~\ref{tab:perchannel}). Timing
 ($\tau$) is the channel where structure moves least: the graph barely changes it and it
 slightly over-covers --- most of the remaining onset variance appears note-local
-rather than shared along the graph (we no longer call this a ``measurement floor'':
-richer models do inch below the earlier plateau) --- not where the structure earns
-its keep.
+rather than shared along the graph, a plateau that richer models edge below but do
+not break --- not where the structure earns its keep.
 Articulation ($\log r$) is where the graph most improves \emph{calibration}: a bare
-prior mean badly under-covers (coverage $0.78$), and the graph residual lifts every
-mean to $\approx$0.91 coverage while also cutting error ($0.96 \to 0.68$ for the zero
-mean). Loudness ($v$) is where \emph{recovery} improves most --- the graph roughly
-halves the error --- and it is the one channel where the learned mean carries signal
+prior mean badly under-covers (coverage $0.784$, the zero-mean graph-off cell of
+the development record in \texttt{docs/phase1\_calibration\_results.md}), and the
+graph lifts every configuration to $\approx$0.91 coverage while the full GP cuts
+its error furthest ($0.96$ bare $\to 0.60$). Loudness ($v$) is where \emph{recovery} improves most,
+and it is the one channel where the music-model embeddings carry signal
 the hand-built features lack.
 
 \begin{table}[h]\centering
-\caption{Per-channel recovery (RMSE) and 90\%-interval coverage on held-out ASAP
-($\nPieces \times 4$ masks, noise-floored empirical Bayes). ``Graph off'' isolates
-the prior mean; ``graph on'' adds the GMRF residual. Timing and articulation are
-unchanged by the leak-free read-out; on loudness, the leak-free/strict read-out
-lowers the graph-on $v$ RMSE to $\approx$0.078, and the feature+network stack reaches
-$v$ RMSE $0.0755$ (the best loudness cell measured).}
+\caption{Per-channel recovery (RMSE) and 90\%-interval coverage, development set
+($\nPieces \times 4$ masks; \texttt{logs/graphgp\_v2\_report.log}). The GP-first
+ladder above the line; two-stage development rows below it for lineage.}
 \label{tab:perchannel}
 \footnotesize
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
  & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Articulation $\log r$} & \multicolumn{2}{c}{Loudness $v$} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-System & RMSE & cov & RMSE & cov & RMSE & cov \\
+System (development) & RMSE & cov & RMSE & cov & RMSE & cov \\
 \midrule
-Zero mean, graph off        & 0.163 & 0.95 & 0.960 & 0.78 & 0.119 & 0.88 \\
-Zero mean $+$ graph         & 0.156 & 0.95 & 0.678 & 0.91 & 0.080 & 0.92 \\
-Network mean, graph off     & 0.167 & 0.93 & 0.753 & 0.89 & 0.118 & 0.86 \\
-Network mean $+$ graph      & \textbf{0.158} & 0.94 & \textbf{0.659} & 0.91 & \textbf{0.083} & 0.91 \\
+ICM GP, zero mean                  & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 & 0.92 \\
+\ + features (no graph)            & 0.154 & 0.95 & 0.626 & 0.91 & 0.088 & 0.90 \\
+\ + features, full                 & 0.153 & 0.95 & 0.615 & 0.91 & 0.075 & 0.91 \\
+\textbf{\ + embeddings (GP-first)} & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
+\midrule
+Zero mean $+$ graph (two-stage)    & 0.156 & 0.95 & 0.678 & 0.91 & 0.080 & 0.92 \\
+Network mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0.91 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1072,7 +1248,10 @@ significant: on the loudness channel, the network's mean-only error was $0.057$
 \emph{with} the leak (the retracted claim), $0.118$ under a first band-aid fix that
 also destroyed neighbour context, and $0.090$ with the final leak-free read-out.
 This episode is reported as a methodological contribution, not an apology: the
-structural test now makes the leak impossible to reintroduce silently.
+structural test now makes the leak impossible to reintroduce silently, and the same
+mask-aware read-out is what feeds the GP-first feature kernel --- whose full
+pipeline was additionally audited bitwise (corrupting held-out targets or
+velocities changes no prediction by one bit).
 
 \section{Hyperparameter fragility and the guard}
 Two distinct failure modes were found and fixed. First, on a minority of mask
@@ -1087,13 +1266,34 @@ protocol --- it never fires on a healthy fit. Pooled tables additionally report 
 median and worst per-cell error, so any future collapse is visible by construction.
 \figph{digest_collapse.png}{0.7}{The 1-in-120 fit collapse, guard off vs.\ on.}
 
-\section{Do hand-built features suffice?}
+\subsection*{The GP-first tail, and a guard that honestly does not catch it}
+\label{sec:guard-gp}
+The GP-first model has its own rare tail, observed once on the confirmation set:
+one cell (one piece, one seed, the timing channel) with predictive NLL $+27.5$
+while its RMSE ($0.11$) and coverage ($0.90$) are unremarkable. Diagnosis: a very
+steady piece gives timing a tiny scale; the per-piece evidence fits accordingly
+tight intervals; a handful of held-out outlier notes then land many standard
+deviations out, and the Gaussian likelihood's quadratic tail amplifies them into
+the pooled average --- which is why the confirmation's pooled-NLL comparison tied
+while the \emph{median} piece is better calibrated under the GP. A guarded fit in
+the same spirit as the two-stage guard (calibration-split screen including an
+overconfidence check, fallback ladder) was built and validated: it is bitwise
+inert on healthy fits, \emph{and it cannot catch this tail}, because the failure
+is invisible from observed notes. We report the limitation instead of patching it
+post hoc: the principled fixes are a heavy-tailed (Student-$t$) timing likelihood
+or deploy-time predictive floors (\S\ref{ch:future}), and the per-piece median NLL
+--- reported throughout --- is robust to it by construction.
+
+\section{Do hand-built features suffice? (development study)}
 Against a rich 25-feature score baseline fit under the same protocol, the network
 \emph{ties on average error}; its genuine, significant edge is calibration and
-loudness. Best of all, features and network \emph{stack}
-(RMSE $\rmseStack$ vs.\ $\rmseNetGraph$). \figph{digest_channels.png}{0.7}{Where the
+loudness. The two \emph{stack} --- in the two-stage regime as concatenated means
+(RMSE $\rmseStack$ vs.\ $\rmseNetGraph$, dev), and in the final model as two
+feature kernels, where the embeddings' marginal value is $-0.008$ RMSE / $-0.034$
+NLL (dev, paired, significant) and their removal cost is confirmed in direction on
+the confirmation set. \figph{digest_channels.png}{0.7}{Where the
 network earns its place: mean-only error vs.\ the 25-feature baseline, per channel ---
-the network's genuine edge is loudness; timing and articulation tie.}
+the network's genuine edge is loudness; timing and articulation tie (development).}
 
 \section{Stage-2: task-matched pretraining, an honest negative}
 A bidirectional, mask-aware retraining (matched exactly to the evaluation task) did
@@ -1114,12 +1314,15 @@ the leak is removed (RMSE $0.394$ vs.\ $0.394$, identical within noise) --- the
 earlier ``scaling'' gain was the loudness leak. Practical rule: judge the LM
 downstream, not by perplexity.
 
-\section{Kernel comparison}\label{sec:kernels}
-The headline used the plainest graph GP, the additive Laplacian
-$\Qg = \lambda I + \eta\Lg$. The ablation sweeps the kernel from the simplest to more
-experimental forms, holding the prior mean ($\muLM$, strict) and the whole protocol
-fixed --- identical mask realizations across every row --- so that \emph{only the
-kernel changes}, and scoring recovery \emph{and} calibration, paired per piece:
+\section{Kernel comparison (development study, two-stage regime)}\label{sec:kernels}
+This study --- run in the two-stage regime before the reformulation, and one of the
+findings that motivated it --- justifies the kernel choice \emph{inside} the
+GP-first model: the additive/regularized-Laplacian shape used in
+\eqref{eq:gpfirst} survives every classical alternative. The ablation sweeps the
+kernel from the simplest to more experimental forms, holding the prior mean
+($\muLM$, strict) and the whole protocol fixed --- identical mask realizations
+across every row --- so that \emph{only the kernel changes}, and scoring recovery
+\emph{and} calibration, paired per piece:
 (i) independent (diagonal) and temporal-chain baselines; (ii) the additive Laplacian
 (reference); (iii) the graph Mat\'ern GP $\sigma_g^{-2}(\kappa^2 I + \Lg)^{\alpha}$ for
 $\alpha = 1, 2, 3$; (iv) the diffusion / heat kernel $K = \exp(-t\Lg)$ (the
@@ -1150,17 +1353,25 @@ register proximity, not tonal proximity), while \emph{adding} chord + voice-lead
 edges gives the only significant both-axes win over the baseline
 ($\Delta$RMSE $-0.008^{*}$, $\Delta$NLL $-0.013^{*}$; chord edges carry the recovery
 gain, concentrated in articulation and loudness --- $\tau$ stays at its
-plateau). The harmonic graph with the plain network mean (RMSE $0.385$) even edges out
+plateau). The harmonic graph with the plain network mean (chord+VL, RMSE $0.3852$)
+even edges out
 the feature-stacked candidate on the plain graph (\rmseStack) --- and the two upgrades
-\emph{compose}: on the feat+LM mean the harmonic graphs still gain
-$\Delta$RMSE $-0.008^{*}$ / $\Delta$NLL $-0.013^{*}$, giving the best strict cells
-measured to date, RMSE $0.378$ (chord edges) and NLL $-0.346$ (chord + voice-leading).
+\emph{compose}: on the feat+LM mean the harmonic graphs still gain, independently
+measured at $\Delta$RMSE $-0.0082^{*}$ / $\Delta$NLL $-0.0129^{*}$
+(coincidentally equal to the $\muLM$-mean deltas at three decimals), giving the
+strongest two-stage cells, RMSE $0.3784$ (chord edges) and NLL $-0.3459$
+(chord + voice-leading).
 The chord + voice-leading configuration --- the variant significant on both axes ---
-was adopted as the headline system after a zero-leak audit
-(\S\ref{sec:open-decisions}). The edge weights are untuned defaults, and a
+was the two-stage pipeline's strongest configuration (zero-leak audited,
+\S\ref{sec:open-decisions}). The edge weights are untuned defaults, and a
 six-variant sensitivity sweep ($\times 3$ / $\div 3$ on each family) shows no
-knife-edge: every variant still beats the plain graph on RMSE, significantly; the
-default is the setting that keeps both axes significant.
+knife-edge. \textbf{Under the final model}, once the music-model
+embeddings enter the kernel as features, the harmonic edge families are
+measured-redundant (learned-graph and harmonic variants statistically tie the
+plain graph, dev) --- the embeddings already carry the local-context information
+the extra edges encode. The finding therefore holds \emph{for the two-stage
+regime}, and its deeper lesson (theory-as-extra-structure helps,
+theory-as-replacement-metric hurts) carried directly into the reformulation.
 
 \begin{table}[h]\centering
 \caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; guard on).
@@ -1196,56 +1407,104 @@ added chord/voice-leading edges are the only both-axes win. The independent
 % =====================================================================
 \chapter{Downstream Tasks}\label{ch:downstream}
 Six tasks with objective metrics and honest baselines; all outcomes reported
-(summary in Table~\ref{tab:downstream-glance}).
+(summary in Table~\ref{tab:downstream-both}). Every task was run under the
+two-stage pipeline during development and \emph{re-validated under the GP-first
+model} --- with identical corruptions and masks where the task permits pairing;
+performer-ID uses the GP-feat variant, since Vienna provides no LM embeddings
+(\texttt{logs/downstream\_gpfirst\_report.log}). Both verdicts are given.
 
-\section{Error spotting (anomaly detection) --- clear win}
-Corrupt a small fraction of notes; rank by suspiciousness. The graph model ranks
-better on every channel (AUROC $0.94 \to 0.98$ at $3\sigma$ corruptions,
-$0.85 \to 0.94$ at $2\sigma$) and its edge \emph{grows} as errors get subtler.
+\begin{table}[h]\centering
+\caption{Downstream tasks: two-stage development verdict and GP-first
+re-validation.}\label{tab:downstream-both}
+\footnotesize
+\begin{tabular}{@{}p{4.1cm}p{4.3cm}p{4.6cm}@{}}
+\toprule
+Task & Two-stage (dev study) & GP-first re-run \\
+\midrule
+Error spotting (anomaly) & clear win (AUROC $\to$0.98) & \textbf{stronger}: best on all channels ($v$ 0.995) \\
+Denoising, known noise & win (8/8 contrasts) & slightly better (0.182/0.276, cov 0.90) \\
+Denoising, blind noise & failure & failure in both parameterizations \\
+Completion from excerpt & partial (interp.\ wins) & partial + \textbf{extrapolation boundary} (\S\ref{sec:boundary}) \\
+Selective prediction & qualified win & transfers (rmse@50\% 0.076) \\
+Era classification & honest negative (0.37 vs 0.49) & still negative (0.20 vs 0.60, n=30) \\
+Performer-ID (Vienna) & mixed (raw 0.14 $>$ denoised 0.08) & mixed, milder (GP-denoised 0.11) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\section{Denoising --- win at known noise level}
-Recover true values from added noise. With the noise level known, the graph beats
-per-note shrinkage on both error and calibration (all 8 contrasts significant, at
-matched $\approx$0.90 coverage). \emph{Honest negative}: estimating the noise level
-blind from a single piece is unreliable --- intervals collapse to $0.54$--$0.64$
-coverage --- so transcription noise must be treated as known per system.
+\section{Error spotting (anomaly detection) --- clear win, stronger under the GP}
+Corrupt a small fraction of notes; rank by suspiciousness. The two-stage graph
+model ranks better than every structure-free baseline on every channel (AUROC
+$0.94 \to 0.98$ at $3\sigma$, $0.85 \to 0.94$ at $2\sigma$), and the GP-first model
+--- scoring by its joint leave-one-out predictive surprise --- improves further on
+all three channels (loudness AUROC $0.995$, articulation $0.986$, timing $0.978$).
 
-\section{Completion / rendering from an excerpt --- partial}
+\section{Denoising --- win at known noise level, both regimes}
+Recover true values from added noise. With the noise level known, structure beats
+per-note shrinkage on both error and calibration (all 8 contrasts significant,
+$\approx$0.90 coverage); the GP-first oracle-noise variant is slightly better still
+(RMSE $0.182$/$0.276$ vs.\ $0.186$/$0.282$ at the two levels, coverage $0.90$).
+\emph{Honest negative, unchanged by the reformulation}: estimating the noise level
+blind from a single piece is unreliable in \emph{both} parameterizations ---
+intervals collapse --- so transcription noise must be treated as known per system.
+
+\section{Completion / rendering from an excerpt --- partial, and a boundary}
 Predict the expression of the rest of a piece from its opening. Interpolation
 (scattered hidden notes) is the clear win --- RMSE $0.450 \to 0.393$, NLL
 $0.21 \to 0.01$ at half the notes observed. Extrapolating far past the excerpt, the
-LM guess carries the prediction and the graph is neutral or slightly harmful: the
-graph helps only where hidden notes have nearby heard neighbours.
+LM guess carries the prediction and the graph is neutral or slightly harmful.
+\textbf{The GP-first model makes this boundary sharp}: its per-piece feature
+weights, fit on the opening excerpt alone, can extrapolate wildly (one prefix-25\%
+cell at RMSE $1.6\times 10^4$) --- the cross-piece read-out head, which never
+adapts to the piece, is the honest tool for excerpt extrapolation. Per-piece
+Bayesian adaptation needs observed coverage of the feature space; rendering from a
+short excerpt does not provide it.
 
-\section{Selective prediction --- qualified win}
+\section{Selective prediction --- qualified win, transfers}
 Discarding the least-confident predictions lowers error on the rest, most clearly
 for articulation (keeping the confident half cuts its RMSE $0.83 \to 0.54$) and for
 catching the model's own misfires (a timing blow-up at $0.61$ overall falls to
 $0.07$ on the confident half). Only the graph provides the per-note confidence this
-triage needs; the no-graph baselines rank at piece level only.
+triage needs; the no-graph baselines rank at piece level only. Under the GP-first
+model the triage is slightly better still (confident-half RMSE $0.076$ vs.\
+$0.080$, matched abstention).
 
-\section{Musical-era classification --- honest negative}
-Style statistics alone do not beat the majority-class baseline (accuracy
-$0.37$--$0.38$ vs.\ $0.489$ majority); the graph, a note-level tool, does not help
-whole-piece summaries.
+\section{Musical-era classification --- honest negative, both regimes}
+Style statistics alone do not beat the majority-class baseline in either regime:
+$0.37$--$0.38$ vs.\ $0.489$ majority in the two-stage study ($n{=}90$), and
+$0.10$ raw / $0.20$ GP-denoised vs.\ $0.60$ majority in the GP-first re-run
+(the 30-piece development subset; majorities differ because the subsets do). A note-level tool does not help whole-piece
+summaries, whichever model extracts the notes.
 
-\section{Performer identification (Vienna 4x22) --- mixed}
+\section{Performer identification (Vienna 4x22) --- mixed, both regimes}
 The extracted expression \emph{does} carry a pianist's identity --- accuracy
 $0.136$--$0.179$ against a 1-of-22 chance rate of $0.045$ ($3$--$4\times$ chance),
-validating the extraction. Graph smoothing \emph{hurts} this whole-performance
-summary ($0.080$): denoising toward the ensemble mean removes exactly the
-idiosyncrasy that identifies a performer.
+validating the extraction. Smoothing \emph{hurts} this whole-performance summary in
+both regimes: denoising toward an ensemble mean removes exactly the idiosyncrasy
+that identifies a performer. The GP-first re-run (its GP-feat variant; the corpus
+provides no LM embeddings) reproduces the pattern with a milder penalty --- raw
+$0.136$, GP-denoised $0.114$, two-stage-denoised $0.080$ --- consistent with the
+GP's evidence-fitted noise removing less of the per-note signal.
 
 \section{The boundary}\label{sec:boundary}
-Across all six: \textbf{the graph prior helps whenever notes are judged one by one
-for accuracy or confidence, and does not help when a performance is collapsed into a
-summary.} This is exactly the thesis claim, now bounded by evidence on both sides.
+Across all six, two boundaries emerge. \textbf{(1) The structure boundary} (both
+regimes): the graph prior helps whenever notes are judged one by one for accuracy
+or confidence, and does not help when a performance is collapsed into a summary.
+\textbf{(2) The adaptation boundary} (GP-first): per-piece Bayesian feature
+weighting wins every interpolation-style task and fails at excerpt extrapolation,
+where the cross-piece head remains the honest tool. Both boundaries are claims of
+the thesis, bounded by evidence on both sides.
 
 % =====================================================================
 \chapter{Discussion}\label{ch:discussion}
 
 \section{Interpretation}
-Why does structure help \emph{calibration} and not merely accuracy? Coupling
+The attribution study (\S\ref{sec:attribution}) splits the labour cleanly:
+\emph{recovery} is won by per-piece Bayesian weighting of informative per-note
+features under one evidence --- each piece decides for itself how much its timing,
+articulation, and loudness follow the score features and the music model's
+representation --- while \emph{calibration} is won by the graph. Why does structure
+help calibration and not merely accuracy? Coupling
 correlated notes lets each held-out note borrow statistical strength from its
 neighbours, which both sharpens the posterior mean and --- crucially --- produces a
 posterior variance that reflects how well-pinned a note actually is by its context.
@@ -1261,21 +1520,39 @@ information has least to add there.
 \section{Limitations}
 The result is symbolic-only (no audio yet) and piano-only (no performer-controlled
 intonation or vibrato). Targets depend on the quality of a single corpus's
-score$\leftrightarrow$performance alignment (ASAP), and the evaluation set, while
-held-out and contamination-filtered, is modest in size; the Vienna performer-ID
-corpus is small. Generalisation beyond this setting is untested.
+score$\leftrightarrow$performance alignment (ASAP), and the evaluation sets, while
+held-out and contamination-filtered, are modest in size (30 development + 20
+confirmation pieces); the Vienna performer-ID corpus is small. Two model-level
+limitations are measured rather than hypothetical: the Gaussian likelihood's
+quadratic tail can amplify a handful of timing outliers on a very steady piece into
+the pooled NLL (\S\ref{sec:guard-gp}), and per-piece feature weighting fails under
+excerpt extrapolation (\S\ref{sec:boundary}). Generalisation beyond this setting is
+untested.
 
 \section{Threats to validity}
 The main threats have been addressed explicitly rather than assumed away: target
-\emph{leakage} (found, fixed, and pinned by a structural test,
-\S\ref{ch:results}); train/test \emph{contamination} (filtered, \S\ref{sec:contam});
-hyperparameter \emph{fit collapse} (guarded and made visible by median-and-worst
-reporting, \S\ref{sec:eb}); and \emph{multiple-comparison} pressure across systems
-and mask seeds (mitigated by per-piece significance and median reporting). The
-remaining open threat is external validity beyond ASAP piano.
+\emph{leakage} (found, fixed, pinned by structural tests, and re-audited bitwise
+end-to-end for the GP-first pipeline, \S\ref{ch:results}); train/test
+\emph{contamination} (filtered, \S\ref{sec:contam}); hyperparameter \emph{fit
+collapse} (guarded and made visible by median-and-worst reporting,
+\S\ref{sec:eb}); \emph{multiple-comparison and selection} pressure (per-piece
+paired significance throughout, and --- decisively --- the preregistered one-shot
+confirmation set of \S\ref{sec:hygiene}, which caught one development-set advantage
+failing to replicate). The remaining open threat is external validity beyond ASAP
+piano.
 
 % =====================================================================
 \chapter{Future Work}\label{ch:future}
+
+\section{Model-level refinements (measured needs)}
+Three refinements follow directly from measured limitations. A
+\textbf{heavy-tailed (Student-$t$) observation model for timing} would defuse the
+one demonstrated NLL tail (\S\ref{sec:guard-gp}); it costs conjugacy, so inference
+becomes approximate for that channel. \textbf{Deploy-time predictive floors} are the
+cheap engineering alternative. And an \textbf{extrapolation-safe completion mode}
+--- fall back from per-piece Bayesian weights to the cross-piece read-out head when
+the observed excerpt does not cover the feature space (a Mahalanobis coverage test
+would do) --- would close the adaptation boundary of \S\ref{sec:boundary}.
 
 \section{Phase 2: intonation and vibrato}
 Extend the same graph prior to continuously pitched instruments, with cents and
@@ -1349,17 +1626,21 @@ performance model is solid.
 
 % =====================================================================
 \chapter{Conclusion}\label{ch:conclusion}
-On held-out piano performances, a score-graph structured prior improves both
-recovery and calibration over strong per-note baselines, with each ingredient's
-marginal value isolated: the graph supplies the structure and the honest
-uncertainty, and a small from-scratch music model adds loudness knowledge and
-sharper calibration, the two stacking into the best system measured. Six downstream
-tasks draw a single clean boundary --- structure helps note-by-note, not for
-whole-performance summaries --- and the evaluation is hardened against leakage,
-contamination, and fit collapse. The validated Phase-1 contribution stands on its
-own; the same prior is engineered to carry forward, unchanged in form, to intonation
-and to audio via a differentiable synthesizer, which is where the most novel work
-still lies.
+A single multi-output Gaussian process on the score graph --- channels coupled,
+side information marginalized into the kernel, every hyperparameter learned by the
+per-piece evidence --- recovers hidden expressive detail better than the strongest
+two-stage pipeline it provably subsumes, a claim preregistered and confirmed once
+on pieces no modelling decision ever touched. Each ingredient's marginal value is
+isolated: per-piece Bayesian weighting of score features and music-model
+embeddings does the recovering; the graph makes the confidence honest (its
+calibration contribution also confirmed); the music model earns its place as a
+feature provider inside the kernel. Six downstream tasks draw two clean boundaries
+--- structure helps note-by-note, not for whole-performance summaries; per-piece
+adaptation helps interpolation, not excerpt extrapolation --- and the evaluation is
+hardened against leakage, contamination, fit collapse, and selection inflation.
+The validated Phase-1 contribution stands on its own; the same prior is engineered
+to carry forward, unchanged in form, to intonation and to audio via a
+differentiable synthesizer, which is where the most novel work still lies.
 
 % =====================================================================
 \appendix
@@ -1385,6 +1666,9 @@ $\Qg$ & graph prior precision: $\lambda I + \eta \Lg$ or $\sigma_g^{-2}(\kappa^2
 $\lambda$, $\eta$ & additive ridge term, Laplacian weight \\
 $\sigma_g$, $\kappa$, $\alpha$ & Mat\'ern scale, inverse length, exponent \\
 $\mu$, $\muLM$, $h_i$ & prior mean; LM-predicted mean; LM per-note embedding \\
+$B$, $c_f$ & coregionalization matrix; per-channel feature-kernel scales \eqref{eq:gpfirst} \\
+$g(\nu; s)$, $s$ & shape-normalized spectral kernel of $\Lg$ ($g(0){=}1$); its shape parameter \\
+$X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
 $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
 $m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\
 $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
@@ -1399,11 +1683,70 @@ the additive weight ($\eta$ is); $A_i(t)$ (capital) is the amplitude envelope, n
 lowercase $a_i(t)$; $\Phi(z)$ is the synthesis operator, $\Phi_{\N}$ the normal CDF.
 
 \chapter{Additional results}\label{app:extra}
-Per-channel tables, ablations (graph construction; precision form; prior mean; with
-vs.\ without the global tempo layer), and reliability diagrams / PIT histograms live
-in \texttt{docs/phase1\_calibration\_results.md} and
-\texttt{docs/downstream\_tasks\_results.md}; they will be migrated here for the final
-version. \TODO{migrate final per-channel tables and PIT histograms.}
+
+\section{Calibration profile of the GP-first model}
+Figure~\ref{fig:gp-reliability} sweeps nominal coverage from 10\% to 95\%. The
+model is essentially at nominal at the 90\% operating point reported throughout
+(dev 92.7\%, confirmation \covGP) and \emph{conservative} at central levels
+(empirical coverage above nominal), which the mid-heavy PIT histograms
+(Fig.~\ref{fig:gp-pit}) restate: predictive distributions are somewhat
+wider-tailed than the realized errors. Two things matter for the thesis claims:
+the profile errs on the safe side (over- rather than under-confidence), and it is
+\textbf{indistinguishable between the development and confirmation sets} --- the
+calibration behaviour, unlike the pooled NLL comparison of
+Table~\ref{tab:headline-conf}, transfers to untouched pieces unchanged.
+
+\begin{figure}[h]\centering
+\includegraphics[width=0.62\linewidth]{figures/gpfirst_reliability.png}
+\caption{Reliability of the GP-first model, development vs.\ confirmation.}
+\label{fig:gp-reliability}
+\end{figure}
+
+\begin{figure}[h]\centering
+\includegraphics[width=0.9\linewidth]{figures/gpfirst_pit.png}
+\caption{PIT histograms, development vs.\ confirmation (dashed: uniform).}
+\label{fig:gp-pit}
+\end{figure}
+
+\section{Full development ladder, per channel}
+Table~\ref{tab:perchannel-full} extends Table~\ref{tab:perchannel} to every
+configuration evaluated on the development set under one code state
+(\texttt{logs/graphgp\_v2\_report.log}).
+
+\begin{table}[h]\centering
+\caption{Per-channel RMSE / coverage@0.9, development set, all v2 configurations.
+Bold marks the thesis model's row, not the column optimum (individual cells are
+edged by specialised variants, e.g.\ corpus-frozen $\tau$ 0.150, c\_harm $v$ 0.071).}
+\label{tab:perchannel-full}
+\footnotesize
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Artic.\ $\log r$} & \multicolumn{2}{c}{Loudness $v$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Configuration & RMSE & cov & RMSE & cov & RMSE & cov \\
+\midrule
+3 scalar GPs, zero mean (a\_diag)      & 0.156 & 0.95 & 0.677 & 0.91 & 0.081 & 0.92 \\
+ICM, zero mean (a\_icm)                & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 & 0.92 \\
+ICM, Mat\'ern-2 shape                  & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 & 0.91 \\
++ features, no graph                   & 0.154 & 0.95 & 0.626 & 0.91 & 0.088 & 0.90 \\
++ features (b\_feat)                   & 0.153 & 0.95 & 0.615 & 0.91 & 0.075 & 0.91 \\
++ embeddings, no graph                 & 0.154 & 0.95 & 0.627 & 0.91 & 0.083 & 0.92 \\
+\textbf{+ embeddings (GP-first)}       & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
+fixed two-stage mean inside the GP     & 0.158 & 0.94 & 0.652 & 0.91 & 0.080 & 0.91 \\
+learned graph (c\_graph)               & 0.153 & 0.94 & 0.609 & 0.91 & 0.074 & 0.90 \\
+harmonic learned graph (c\_harm)       & 0.152 & 0.94 & 0.601 & 0.90 & 0.071 & 0.90 \\
+everything (c\_harm\_lm)               & 0.153 & 0.95 & 0.593 & 0.91 & 0.075 & 0.91 \\
+corpus-frozen hyperparameters          & 0.150 & 0.96 & 0.613 & 0.91 & 0.074 & 0.91 \\
+frozen + per-piece noise (d\_hybrid)   & 0.151 & 0.97 & 0.613 & 0.91 & 0.075 & 0.94 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Further extended tables (the two-stage development record, the kernel
+study's $\mu=0$ block, downstream per-task detail) remain in
+\texttt{docs/phase1\_calibration\_results.md},
+\texttt{docs/kernel\_comparison\_results.md}, and
+\texttt{docs/downstream\_tasks\_results.md}.
 
 % =====================================================================
 \begin{thebibliography}{99}
@@ -1414,6 +1757,10 @@ version. \TODO{migrate final per-channel tables and PIT histograms.}
   \emph{Gaussian Markov Random Fields: Theory and Applications}. 2005.
 \bibitem{borovitskiy2021} V.~Borovitskiy et al.
   Mat\'ern Gaussian Processes on Graphs. \emph{AISTATS}, 2021.
+\bibitem{venkitaraman2018} A.~Venkitaraman, S.~Chatterjee, P.~H\"andel.
+  Gaussian Processes Over Graphs. arXiv:1803.05776, 2018.
+\bibitem{blancomulero2021} D.~Blanco-Mulero, M.~Heinonen, V.~Kyrki.
+  Evolving-Graph Gaussian Processes. \emph{ICML Time Series Workshop}, 2021.
 \bibitem{ddsp} J.~Engel, L.~Hantrakul, C.~Gu, A.~Roberts.
   DDSP: Differentiable Digital Signal Processing. \emph{ICLR}, 2020.
 \bibitem{musictransformer} C.-Z.~A.~Huang et al.

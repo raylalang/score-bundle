@@ -29,7 +29,7 @@ The editable diagram is `docs/architecture.excalidraw`.
 
 | Phase | Scope | Variables added | Inference | Data |
 |------:|-------|-----------------|-----------|------|
-| **0 — foundation** | from-scratch symbolic music LM (backbone + representations) | — (learned prior mean `μ_LM`, note embeddings `h_i`) | next-token (autoregressive) pretraining | MAESTRO/ATEPP, Lakh, GiantMIDI |
+| **0 — foundation** | from-scratch symbolic music LM (backbone + representations) | — (per-note embeddings `h_i`, a feature kernel of the Phase-1 GP; `μ_LM` in the development form) | next-token (autoregressive) pretraining | MAESTRO/ATEPP, Lakh, GiantMIDI |
 | **1 — core (piano)** | timing, articulation, dynamics | `y = [τ, log r, v]` | closed-form Gaussian posterior over the graph field | ASAP, MAESTRO |
 | **2 — extension (mono)** | intonation, vibrato | `c` (cents), `u(t)`, `f₀` | same prior, f0-derived targets | URMP, Vocadito/Opencpop |
 | **3 — extension (waveform)** | timbre | harmonic amplitudes `a` | marginalize `a` exactly, Laplace/VI over nonlinear `z` | + audio |
@@ -44,48 +44,45 @@ documented stubs for the open research steps (f0 extraction, position inference 
 
 **Phase 0 — music language model.** A decoder-only Transformer over note-structured MIDI
 tokens, built from the ground up (`src/score_bundle/lm/`). It is the generative backbone and
-a representation learner: per-note embeddings `h_i` map to a learned prior mean `μ_LM`, and
-the Phase-1 graph prior models the residual `y − μ_LM` with calibrated structured
-uncertainty. Design + rationale in [`docs/music_lm_design.md`](docs/music_lm_design.md).
+a representation learner: its per-note embeddings `h_i` enter the Phase-1 GP as a
+feature kernel (the marginalized Bayesian linear mean); in the two-stage development
+form they map to a plug-in mean `μ_LM` whose residual the graph models. Design + rationale in [`docs/music_lm_design.md`](docs/music_lm_design.md).
 
 ```bash
 python examples/phase0_pretrain_lm.py          # pretrain the LM (needs torch)
 python examples/phase0_lm_features_to_prior.py # LM embeddings → prior mean → graph posterior
 ```
 
-**Phase-1 result (held-out ASAP, corrected 2026-07-02, confirmed 2026-07-03).** With a
-MAESTRO-pretrained LM (val ppl 10.85), the **leak-free pre-velocity read-out**
-(`emb_leakfree` — a velocity-target leak in the original LM mean was found and fixed),
-an **EB noise floor**, and a **strict mask-aware protocol** (held-out notes' velocities
-never enter the LM input), `LM mean + graph residual` is the best single-representation
-cell on both recovery and calibration — RMSE 0.393, NLL −0.322, coverage 0.921 (target
-0.90) over 30 pieces × 4 seeds; the graph's paired advantage over mean-only baselines is
-significant on both RMSE and NLL. Stacking 25 hand-built score features with the LM
-improves it further (`feat+LM+graph` 0.388 / −0.333 strict), and the **adopted headline
-system** (2026-07-09, after the kernel comparison and a zero-leak audit) adds the
-harmonic edge families on top: `feat+LM + chord/voice-leading graph`
-**0.379 / −0.346 / 0.922 strict** — every ingredient's paired per-piece gain is
-significant on both axes; `LM + plain graph` remains the reported ablation path.
-Three honesty results are reported alongside: hand-built
-features **tie** the LM mean on RMSE (its real edge is calibration + dynamics); a
-task-aligned masked pretraining objective (Stage 2) does **not** beat the causal
-read-out at matched budget; and a guarded EB fit (`fit_laplacian_field_guarded`)
-removes a rare one-cell-in-120 fit collapse without touching healthy fits. A
-**kernel comparison** (2026-07-09) holds this protocol fixed and swaps only the kernel:
-Matérn (α=1–3), diffusion/heat, and normalized-Laplacian variants all tie the additive
-default, and the one significant both-axes improvement is **adding chord +
-voice-leading edges** to the score graph (0.385 / −0.335 strict; composes with feat+LM
-to 0.378 / −0.346), while *replacing* semitone distance with a circle-of-fifths metric
-hurts — see [`docs/kernel_comparison_results.md`](docs/kernel_comparison_results.md).
-Full tables
-and corrections in
-[`docs/phase1_calibration_results.md`](docs/phase1_calibration_results.md); reproduce
-with `scripts/eval_asap_robust.py --noise-floor-frac 0.05` (leak-free embeddings are the
-default). Downstream demonstrations (completion / anomaly detection / denoising /
-selective prediction / style / performer-ID) are in
-[`docs/downstream_tasks_results.md`](docs/downstream_tasks_results.md). The aria
-frozen-feature upper-bound baseline (`lm/aria_baseline.py`) is an import-guarded stub
-(aria not installed here).
+**Phase-1 result (GP-first model; confirmation run 2026-07-09, adopted 2026-07-10).** The thesis
+model is **one multi-output graph Gaussian process** over (note, channel)
+(`src/score_bundle/gp.py`): channels coupled by a coregionalization matrix, a
+shape-normalized spectral kernel of the score-graph Laplacian, and all side
+information — 25 score-only features and the LM's mask-aware per-note embeddings —
+entering as linear kernels (the marginalized Bayesian linear mean); every
+hyperparameter learned by the exact per-piece evidence. Development used 30 held-out
+ASAP pieces; the final claims were **preregistered and evaluated exactly once** on 20
+further pieces untouched by any decision: **RMSE 0.376 vs 0.393** for the strongest
+two-stage pipeline (paired −0.014, significant), coverage 0.925, and the graph's
+calibration contribution confirmed inside the model (paired NLL −0.074, significant);
+the pooled-NLL contrast tied (one diagnosed timing-outlier cell — see the limitations
+in [`docs/graphgp_first_design.md`](docs/graphgp_first_design.md), the primary
+methods+results document). Attribution is measured, not asserted: per-piece Bayesian
+feature weighting does the recovering; the graph makes the confidence honest; the
+two-stage pipeline (leak-free read-out, EB noise floor + guard, strict mask-aware
+protocol — RMSE 0.393/0.388/0.379 in its own era) is a **nested special case** and
+serves as the ablation chain, fully recorded in
+[`docs/phase1_calibration_results.md`](docs/phase1_calibration_results.md) and
+[`docs/kernel_comparison_results.md`](docs/kernel_comparison_results.md). Honest
+results reported alongside: features tie the LM mean on RMSE; Stage-2 masked
+pretraining doesn't beat the causal read-out; blind noise estimation fails in both
+parameterizations; per-piece adaptation fails under excerpt extrapolation (the
+cross-piece head remains the honest tool there). Reproduce:
+`scripts/eval_graphgp.py` (GP-first) and `scripts/eval_asap_robust.py` (two-stage).
+Downstream demonstrations (re-validated under the GP: anomaly stronger, denoising and
+selective transfer, era negative) are in
+[`docs/downstream_tasks_results.md`](docs/downstream_tasks_results.md) and
+`logs/downstream_gpfirst_report.log`. The aria frozen-feature upper-bound baseline
+(`lm/aria_baseline.py`) is an import-guarded stub (aria not installed here).
 
 ## Install
 
@@ -111,21 +108,36 @@ y_obs = field.sample(rng) + rng.normal(scale=0.1, size=len(score))
 mean, std = field.posterior(y_obs, noise_var=0.01)  # per-note estimate ± uncertainty
 ```
 
-Empirical-Bayes hyperparameters:
+Empirical-Bayes hyperparameters (per-channel development form):
 
 ```python
 from score_bundle import fit_laplacian_field
 field, hp = fit_laplacian_field(laplacian(W), y_obs)   # learns lam, eta, noise_var
 ```
 
+**The thesis model** — one multi-output graph GP over all three channels, features
+in the kernel, everything by evidence:
+
+```python
+from score_bundle.gp import MultiOutputGraphGP
+
+nu, U = np.linalg.eigh(laplacian(W))
+gp = MultiOutputGraphGP(nu, U, kernel="additive", features=[X])  # X: (N, d) score features
+x_hat, info = gp.fit(Y, mask, noise_floor=0.05 * Y[mask].var(axis=0))
+mean, std = gp.posterior(Y, mask, x_hat)     # (N, 3) each; per-note, per-channel
+```
+
 ## Examples
 
 ```bash
+python examples/phase1_graphgp.py              # THE THESIS MODEL: one multi-output graph GP
+                                               # vs its nested ablations (numpy-only)
 python examples/phase1_synthetic_recovery.py   # recovery + calibration on known latents
-python examples/phase1_imputation.py           # held-out imputation vs baselines
+python examples/phase1_imputation.py           # development form: imputation vs baselines
 ```
 
-The imputation example reproduces the core comparison — the score-graph prior beating the
+The GP example demonstrates the thesis model end to end; the imputation example
+reproduces the development-form comparison — the score-graph prior beating the
 independent, temporal-only, and ridge-feature baselines on held-out RMSE and NLL.
 
 ## Tests
@@ -148,6 +160,7 @@ src/score_bundle/
   variables.py    phased channel registry (τ, log r, v, c, ...)
   features.py     Phase-1 target extraction from aligned data (+ ASAP loader)
   model.py        GraphGaussianField: posterior, marginal likelihood, EB fit
+  gp.py           MultiOutputGraphGP — the GP-first thesis model (ICM + feature kernels)
   baselines.py    independent / temporal AR(1) / ridge / GBM
   metrics.py      RMSE, NLL, coverage, PIT, calibration error
   synthetic.py    known-ground-truth datasets for recovery/imputation
@@ -166,9 +179,23 @@ tests/            unit + behavioural tests
 ## Math (Phase 1)
 
 Known score `S = {s_i}`, `s_i = (p_i, b_i, d_i)`. Per-note variables
-`y_i = [τ_i, log r_i, v_i]`. Score graph `G=(V,E)` with Laplacian `L_G`. Prior
-`y ~ N(μ, Q_G⁻¹)` with `Q_G = λI + ηL_G` (or `σ_g⁻²(κ²I + L_G)^α`). Observation
-`ỹ = y + e`, `e ~ N(0, Σ_e)`. Posterior:
+`y_i = [τ_i, log r_i, v_i]`. Score graph `G=(V,E)` with Laplacian `L_G`.
+
+**The thesis model** is one GP over the `3N` values (note, channel):
+
+```
+K = B ⊗ K_G(s) + Σ_f diag(c_f) ⊗ X_f X_fᵀ + diag(ς²) ⊗ I
+```
+
+with `K_G(s) = U g(ν; s) Uᵀ` a shape-normalized spectral kernel of `L_G`, `B` the
+3×3 coregionalization matrix, `X_f` per-note feature matrices (score features; LM
+embeddings — the linear kernel is the marginalized Bayesian linear mean), and `ς²`
+per-channel noise; everything fit by the exact per-piece marginal likelihood
+(`score_bundle.gp.MultiOutputGraphGP`), exact conjugate inference.
+
+**The per-channel development form** (its nested special case) is a scalar field
+per channel: prior `y ~ N(μ, Q_G⁻¹)` with `Q_G = λI + ηL_G` (or
+`σ_g⁻²(κ²I + L_G)^α`), observation `ỹ = y + e`, `e ~ N(0, Σ_e)`, posterior
 
 ```
 Σ_y = (Q_G + Σ_e⁻¹)⁻¹,   m = Σ_y (Q_G μ + Σ_e⁻¹ ỹ)

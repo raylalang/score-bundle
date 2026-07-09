@@ -48,7 +48,8 @@ def args(cache, outdir):
     return types.SimpleNamespace(
         arrays_cache=cache, inputs=tin, emb_dump=temb, out_dir=outdir,
         configs="b_featlm", shard="0/1", maxiter=200, corpus_pieces=20,
-        baseline="")
+        baseline="", eval_start=0, guard=False,
+        fixed_mean_inputs=".cache/kernel_sweep_inputs_featlm.pkl")
 
 
 cells = {}

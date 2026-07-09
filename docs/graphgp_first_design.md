@@ -1,6 +1,9 @@
 # GP-first: reformulating Phase 1 as one orthodox graph Gaussian process
 
-*Branch `graph-gp-first`, started 2026-07-09. Internal until there are numbers.*
+*Started 2026-07-09 on branch `graph-gp-first`; continued on
+`thesis-gpfirst-restructure`. **Status: ADOPTED as the thesis model** per the
+preregistered decision rule below (confirmation 2026-07-09, adoption 2026-07-10).
+This is the primary methods + results document for Phase 1.*
 
 ## Why
 
@@ -165,6 +168,28 @@ it by construction. Incidental finding from the A/B: fits are deterministic give
 the BLAS thread count but drift in the 4th decimal across thread counts — v2 numbers
 are the OMP_NUM_THREADS=2 condition.
 
+## Seed robustness, development set (2026-07-10, `logs/dev12_report.log`)
+
+The 4-seed dev protocol re-run at 12 mask seeds (seeds 0–3 verified byte-identical
+to the originals; 360 cells/config): pooled RMSE moves ≤0.003 and NLL ≤0.007
+(b_featlm 0.3630/−0.4075/0.927 vs 0.3601/−0.4038/0.927), ordering unchanged, and both paired
+ingredient contributions stay significant on both axes — graph −0.0151* RMSE /
+−0.0638* NLL; LM embeddings −0.0076* / −0.0356*. The dev ladder is not a seed
+artifact.
+
+## Student-t τ prototype — first measurement (2026-07-10, dev-only, PROTOTYPE)
+
+`gp_robust.py` (EM scale-mixture τ noise + t-predictive scoring; unit-tested; the
+per-note-noise machinery reduces exactly to the plain GP at unit weights). First
+no-harm check (10 dev pieces, seed 0, `logs/robust_tau_devcheck.log`): on tail-free
+dev data the t-variant costs a little (τ RMSE 0.2161 vs 0.2111; Gaussian-scored NLL
+−0.72 vs −1.09, its intervals being wider by design; coverage 0.936 vs 0.961 —
+actually nearer nominal). Verdict so far: **insurance with a small premium** — it
+can only pay off where tails exist (the confirmation-piece failure mode), and per
+the one-shot discipline it will NOT be evaluated there; a future second
+confirmation set would be the honest venue. Remains a prototype; no thesis number
+uses it.
+
 ## Downstream re-validation (2026-07-09, `logs/downstream_gpfirst_report.log`)
 
 All six tasks re-run with identical rng for old-pipeline and GP-first rows
@@ -191,7 +216,11 @@ wrong tool for excerpt extrapolation, where the cross-piece head stays the hones
 choice.** Note the guard cannot catch this mode: its screen is a split of the
 *observed* notes, i.e. it validates interpolation, not extrapolation.
 
-## Decision framework (the user's call; this branch produces evidence)
+## Decision framework (written in advance; outcome recorded above)
+
+*Historical: this section predates the confirmation run and is kept as written.
+The confirmation triggered the first clause → GP-first was adopted; the two-stage
+pipeline is absorbed as its ablation chain.*
 
 Paired vs the adopted headline (0.3795 / −0.3459 / 0.922 strict):
 better on both axes → GP-first becomes the thesis model, current work absorbed as its
@@ -286,4 +315,5 @@ linear mean; per-channel floored noise; everything by exact per-piece marginal
 likelihood): **RMSE 0.3590 / NLL −0.4051 / coverage 0.927 strict** — significantly
 better than the adopted two-stage headline on both axes, with a strictly simpler
 story (one model, one evidence, no plug-in head, no leak surface through a fitted
-read-out head). Decision on adopt/ditch/absorb: the user's.
+read-out head). Decision outcome: **adopted** (2026-07-10, per the preregistered
+rule; the two-stage pipeline absorbed as the ablation chain).

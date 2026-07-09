@@ -1,5 +1,12 @@
 # Phase-1 calibration results — held-out ASAP imputation
 
+> **Superseded as the headline (2026-07-10):** the thesis model is now the GP-first
+> multi-output graph GP (`docs/graphgp_first_design.md` — preregistered confirmation:
+> RMSE 0.376 vs 0.393 for the strongest system below). Everything in this document
+> remains valid **as the two-stage-regime record**: those systems are nested special
+> cases of the GP-first model and serve as its ablations. All numbers here are
+> development-set numbers.
+
 First end-to-end evidence for the core thesis claim: a **score-graph residual prior on top
 of a learned LM mean** improves both recovery *and* calibration over hand-built baselines on
 real, held-out, contamination-filtered performances.
