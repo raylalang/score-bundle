@@ -127,7 +127,26 @@ better on both axes → GP-first becomes the thesis model, current work absorbed
 ablations; tie → likely still the preferable framing for a graph-GP audience; worse →
 keep the current headline and report this as the honest orthodoxy ablation.
 
-## Results (2026-07-09, `logs/graphgp_final_report.log`)
+## Results v2 — one code state (2026-07-09, `logs/graphgp_v2_report.log`)
+
+The entire ladder was re-run from a single commit (`6c280ed`) into
+`results/graphgp_v2/` (the original run mixed pre-/post-NaN-guard shards). v2
+reproduces v1 within optimizer noise everywhere (b_featlm 0.3601/−0.4038/0.927 vs
+v1 0.3590/−0.4051/0.927); **all thesis numbers use v2**.
+
+**Attribution correction from the disentangler.** `b_fixedmean` (the published
+candidate's cross-piece mean used as a FIXED mean inside the ICM GP) lands at
+0.3898/−0.3274 — statistically at the old two-stage pipeline's level (+0.0098*
+RMSE vs the old headline). So evidence-integration and channel coupling per se add
+approximately nothing; **the driver of the GP-first gain is the per-piece Bayesian
+feature adaptation under the joint evidence** (b_feat 0.3683). The honest claim is
+that, not "orthodoxy wins" in the abstract.
+
+v2 paired contrasts vs `b_featlm` (`logs/graphgp_v2_report_vsbfl.log`):
+graph removed +0.0165* RMSE / +0.0666* NLL; LM removed +0.0084* / +0.0344* — both
+ingredients significant on both axes inside the one-code-state rerun.
+
+## Results v1 (superseded by v2; kept for provenance — `logs/graphgp_final_report.log`)
 
 Identical strict protocol and masks; paired per-piece bootstrap vs the adopted
 headline (feat+LM+harmonic, 0.3795 / −0.3459 / 0.922). Gate passed first: `a_diag`
