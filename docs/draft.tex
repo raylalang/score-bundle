@@ -269,7 +269,7 @@ are scoped and parked (Table~\ref{tab:phases}).
 Phase & Scope & Adds & Status \\
 \midrule
 0 --- foundation & From-scratch symbolic music LM (backbone + representations) &
-Learned prior mean $\muLM$, per-note embeddings $h_i$ & \textbf{Done} \\
+Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; $\muLM$ in the development form) & \textbf{Done} \\
 1 --- core (piano) & Timing, articulation, dynamics from aligned score+performance &
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened; thesis write-up in progress \\
@@ -571,12 +571,12 @@ The evaluation is built to be hard to fool:
         reports the median, so no single bad cell hides in the mean.
 \end{itemize}
 
-\section{Open decisions for today's meeting}\label{sec:open-decisions}
+\section{Open decisions at the 2026-07-10 meeting}\label{sec:open-decisions}
 \begin{enumerate}[leftmargin=*]
   \item \textbf{Headline system --- resolved twice within the week.} On 2026-07-09,
         \emph{feature + network mean + harmonic graph} (RMSE~\rmseHeadline{} dev)
         was adopted as the strongest two-stage configuration, after the kernel
-        comparison and a bitwise zero-leak audit. Days later the GP-first
+        comparison and a bitwise zero-leak audit. Within the day, the GP-first
         reformulation subsumed it (see the update at the head of this chapter):
         the preregistered confirmation made the single-GP model the thesis model,
         and this two-stage resolution stands as the endpoint of the development
@@ -1472,8 +1472,8 @@ $0.080$, matched abstention).
 \section{Musical-era classification --- honest negative, both regimes}
 Style statistics alone do not beat the majority-class baseline in either regime:
 $0.37$--$0.38$ vs.\ $0.489$ majority in the two-stage study ($n{=}90$), and
-$0.10$ raw / $0.20$ GP-denoised vs.\ $0.60$ majority in the paired GP-first re-run
-(the 30-piece development subset). A note-level tool does not help whole-piece
+$0.10$ raw / $0.20$ GP-denoised vs.\ $0.60$ majority in the GP-first re-run
+(the 30-piece development subset; majorities differ because the subsets do). A note-level tool does not help whole-piece
 summaries, whichever model extracts the notes.
 
 \section{Performer identification (Vienna 4x22) --- mixed, both regimes}
@@ -1714,7 +1714,9 @@ configuration evaluated on the development set under one code state
 (\texttt{logs/graphgp\_v2\_report.log}).
 
 \begin{table}[h]\centering
-\caption{Per-channel RMSE / coverage@0.9, development set, all v2 configurations.}
+\caption{Per-channel RMSE / coverage@0.9, development set, all v2 configurations.
+Bold marks the thesis model's row, not the column optimum (individual cells are
+edged by specialised variants, e.g.\ corpus-frozen $\tau$ 0.150, c\_harm $v$ 0.071).}
 \label{tab:perchannel-full}
 \footnotesize
 \begin{tabular}{@{}lcccccc@{}}

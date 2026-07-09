@@ -38,7 +38,8 @@ def args(**kw):
         arrays_cache=None, inputs=None, out_dir=None,
         checkpoint="checkpoints/maestro_scaled/best.pt", n_eval_pieces=1, seeds=1,
         observed_frac=0.6, l2=10.0, placeholder_vel=64, noise_floor_frac=0.05,
-        mean="lm", kernels="harmonic_vl", boot=2000, device=None)
+        mean="lm", kernels="harmonic_vl", boot=2000, device=None,
+        eval_start=0, mask_seed_base=1000, dump_embeddings=None, baseline="additive")
     for k, v in kw.items():
         setattr(a, k, v)
     return a

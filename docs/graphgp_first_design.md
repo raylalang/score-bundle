@@ -171,8 +171,8 @@ are the OMP_NUM_THREADS=2 condition.
 ## Seed robustness, development set (2026-07-10, `logs/dev12_report.log`)
 
 The 4-seed dev protocol re-run at 12 mask seeds (seeds 0–3 verified byte-identical
-to the originals; 360 cells/config): pooled numbers move ≤0.003 (b_featlm
-0.3630/−0.4075/0.927 vs 0.3601/−0.4038/0.927), ordering unchanged, and both paired
+to the originals; 360 cells/config): pooled RMSE moves ≤0.003 and NLL ≤0.007
+(b_featlm 0.3630/−0.4075/0.927 vs 0.3601/−0.4038/0.927), ordering unchanged, and both paired
 ingredient contributions stay significant on both axes — graph −0.0151* RMSE /
 −0.0638* NLL; LM embeddings −0.0076* / −0.0356*. The dev ladder is not a seed
 artifact.
