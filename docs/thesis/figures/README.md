@@ -14,10 +14,11 @@ information).
 | **A — restrained schematic** | `pipeline_phase{1,2,3}.{tex,pdf,svg}` | Thin rules, near-monochrome, one accent. Dashed enclosure = shared prior. |
 | **B — architecture-diagram** | `arch_phase{1,2,3}.{tex,pdf,svg}` | Isometric volumes, Okabe–Ito colour, two colour-coded branches, circled operators, glyph outputs. |
 
-**The choice between A and B is Ray's; do not consolidate them unilaterally.**
-Neither style is referenced from `draft.tex` yet. Suggested placement once chosen:
-Phase 1 in the model chapter beside the joint-kernel equation; Phases 2 and 3 in
-Future Work.
+**Ray chose Style B (2026-07-10).** The `arch_phase*` figures are wired into
+`draft.tex`: Phase 1 in the model chapter beside the posterior
+(`fig:arch-phase1`), Phases 2 and 3 in Future Work (`fig:arch-phase2`,
+`fig:arch-phase3`). Style A is kept in this directory as the unused alternate;
+it is not referenced from the draft.
 
 ## Style B design language (do not shuffle)
 

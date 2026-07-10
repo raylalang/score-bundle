@@ -1042,6 +1042,24 @@ the observed ones through the conditional Gaussian --- the held-out
 \emph{imputation} task. The per-note posterior standard deviation is
 $\sigma_i = \sqrt{(\Sy)_{ii}}$.
 
+Figure~\ref{fig:arch-phase1} lays this assembly out as a computation graph: the
+graph-structure branch and the evidence branch are built independently from the
+score, fuse as a sum of Kronecker terms into the joint kernel
+\eqref{eq:gpfirst}, and meet the data only in the likelihood --- the one block
+that changes in the later phases (Chapter~\ref{ch:future}).
+
+\figph{arch_phase1.pdf}{1.0}{The proposed model as a computation graph
+(Phase~1, implemented). Blue: the graph-structure branch --- score graph
+$\to L_{\mathcal G} \to$ spectral shaping $g(\nu;s) \to K_G$. Amber: the
+evidence branch --- score features and music-model embeddings entering as
+linear kernels, the marginalized Bayesian linear means of
+\S\ref{sec:features}. Green: their Kronecker lifts sum with the noise term
+into the joint kernel $K$ of Eq.~\eqref{eq:gpfirst}. The likelihood block
+(vermillion) is the only element that differs between phases
+(cf.\ Figures~\ref{fig:arch-phase2} and~\ref{fig:arch-phase3}); the exact
+conjugate posterior returns per-note point estimates with calibrated error
+bars.\label{fig:arch-phase1}}
+
 \paragraph{Predictive variance for held-out observations (the variance floor).}
 A held-out \emph{observation} at entry $i$ is $\tilde y_i = y_i + e_i$, so its
 predictive variance must include the observation-noise variance of that entry ---
@@ -1754,14 +1772,37 @@ would do) --- would close the adaptation boundary of \S\ref{sec:boundary}.
 Extend the same graph prior to continuously pitched instruments, with cents and
 vibrato channels derived from $f_0$ extraction on monophonic audio (datasets: URMP,
 solo singing). The prior and posterior are unchanged; only targets and length scales
-differ.
+differ. Figure~\ref{fig:arch-phase2} makes the claim precise: relative to
+Figure~\ref{fig:arch-phase1}, the coregionalization grows from $3 \times 3$ to
+$k \times k$ as channels join the bundle, and the observation noise $\Sigma_e$
+becomes substantive because the targets are now estimates rather than symbolic
+MIDI values --- everything else, including the exact conjugate posterior, is
+untouched.
+
+\figph{arch_phase2.pdf}{1.0}{Phase 2 (not yet implemented; dashed). Audio enters
+only to \emph{derive} per-note targets ($c_i$ cents, vibrato). Exactly one block
+changed relative to Figure~\ref{fig:arch-phase1}: the likelihood, where
+$\Sigma_e$ is now substantive. The prior branches and the conjugate posterior
+head are reused unchanged.\label{fig:arch-phase2}}
 
 \section{Phase 3: a differentiable-synthesizer audio likelihood}
 The intended step to audio: $x = \Phi(z)\,a + \varepsilon$
 (\S\ref{sec:phase3-math}), with conditionally linear amplitudes marginalised
 analytically and the nonlinear positions $z$ inferred approximately (Laplace/VI,
 score-based initialisation). This is the most novel part of the programme and is not
-yet started.
+yet started. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
+the whole prior --- graph branch, evidence branch, joint kernel --- carries over
+as the structured component of $p(z)$, but with no performance MIDI there are no
+per-note observations and no visible/hidden split; every note's expression is
+latent, and the audio likelihood costs conjugacy.
+
+\figph{arch_phase3.pdf}{1.0}{Phase 3 (not yet implemented; dashed). The
+observation is the waveform itself: the same joint kernel now serves as the
+prior over $z$, the likelihood block becomes the marginalised audio likelihood
+$p(x \mid z) = \N\bigl(\Phi\mu_a,\ \Phi\Sigma_a\Phi^{\top} + K_n\bigr)$, and the
+head is the one non-conjugate element (Laplace/VI over $z$, amplitudes recovered
+in closed form). Again exactly one block moved relative to
+Figure~\ref{fig:arch-phase1}.\label{fig:arch-phase3}}
 
 \section{Incorporating music theory}\label{sec:musictheory}
 Music theory can inform the model in three distinct places --- the graph/kernel, the
