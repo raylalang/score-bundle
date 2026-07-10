@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-"""Render the three meeting-digest figures into docs/figures/.
+"""Render the three meeting-digest figures into docs/thesis/figures/.
 
 Reads numbers from the eval logs (never hard-code a metric that exists in a log):
 
   A  digest_headline.png   dumbbell, RMSE graph off -> on per prior mean
                            (logs/feature_baseline_l2_10.log pooled table)
-  B  digest_channels.png   diverging bars, LM vs feat per channel, mean-only RMSE
+  B  digest_channels.png   diverging bars, music model vs features per channel, mean-only RMSE
                            (same log, per-channel tables)
   C  digest_collapse.png   strip of 120 per-cell tau RMSE, unguarded vs guarded
                            (logs/diag_tau_s2x3.log, logs/diag_tau_s2x3_guarded.log)
@@ -25,7 +25,7 @@ INK = "#0b0b0b"; INK2 = "#52514e"; MUTED = "#898781"
 GRID = "#e1e0d9"; BASE = "#c3c2b7"; SURFACE = "#fcfcfb"
 BLUE = "#2a78d6"; BLUE_LT = "#86b6ef"; BLUE_DK = "#1c5cab"
 AQUA = "#1baf7a"; RED = "#d03b3b"; DIV_RED = "#e34948"
-OUT = "docs/figures"
+OUT = "docs/thesis/figures"
 os.makedirs(OUT, exist_ok=True)
 
 plt.rcParams.update({
@@ -129,7 +129,7 @@ def fig_headline(ci_log, kernel_log, featlm_log, featlm_strict_log):
     rows = [
         ("no prior mean", ci["zero mean, graph off"],
          k_zero["additive"][0], k_zero["harmonic_vl"][0]),
-        ("network (LM)", ci["LM mean, graph off"],
+        ("network (music model)", ci["LM mean, graph off"],
          k_lm["additive"][0], k_lm["harmonic_vl"][0]),
         ("features + network", feat_off,
          k_feat["additive"][0], k_feat["harmonic_vl"][0]),
@@ -278,9 +278,9 @@ def fig_confirmation(conf_log):
     """The thesis headline: one-shot confirmation RMSE, 20 untouched pieces."""
     conf = read_confirmation(conf_log)
     rows = [  # (log key, display, color)
-        ("GP b_featlm", "GP-first (full model)", BLUE_DK),
-        ("GP b_feat", "GP-first, no music model", MUTED),
-        ("GP b_featlm_nograph", "GP-first, no graph", MUTED),
+        ("GP b_featlm", "proposed model (full)", BLUE_DK),
+        ("GP b_feat", "proposed model, no music model", MUTED),
+        ("GP b_featlm_nograph", "proposed model, no graph", MUTED),
         ("old headline (feat+LM+harm)", "two-stage pipeline (strongest)", BLUE_LT),
         ("old LM+graph", "two-stage pipeline (plain)", MUTED),
     ]
@@ -314,7 +314,7 @@ def _load_gp_cells(pattern):
 
 
 def fig_gp_calibration(dev_pattern, conf_pattern):
-    """Reliability diagram + PIT histogram for the GP-first model (appendix)."""
+    """Reliability diagram + PIT histogram for the proposed model (appendix)."""
     import sys
     sys.path.insert(0, "src")
     from score_bundle.metrics import coverage as _coverage, pit_values as _pit
@@ -328,7 +328,7 @@ def fig_gp_calibration(dev_pattern, conf_pattern):
         emp = [_coverage(y, pr, sd, level=L) for L in levels]
         ax.plot(levels, emp, "o-", ms=3.5, lw=1.6, color=color, label=name)
     ax.set_xlabel("nominal coverage"); ax.set_ylabel("empirical coverage")
-    ax.set_title("Reliability — GP-first model", color=INK, fontsize=12,
+    ax.set_title("Reliability — proposed model", color=INK, fontsize=12,
                  loc="left", pad=10)
     ax.legend(frameon=False, fontsize=9, loc="upper left")
     ax.grid(color=GRID, lw=0.8); ax.set_axisbelow(True)

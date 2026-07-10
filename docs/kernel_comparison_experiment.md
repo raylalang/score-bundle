@@ -4,7 +4,7 @@
 on the held-out ASAP imputation task, **from the simplest to the more experimental**,
 on *both* recovery and calibration, holding everything else fixed so that **only the
 kernel changes**. Produce a master table + significance and a short write-up to drop
-into the thesis (`docs/draft.tex`, the `Kernel comparison` section already stubbed).
+into the thesis (`docs/thesis/draft.tex`, the `Kernel comparison` section already stubbed).
 
 This is a spec, not code. Implement it against the existing pipeline; keep the
 published protocol intact.
@@ -133,4 +133,4 @@ Plus a **per-channel** appendix (τ / log r / v × RMSE, cov) for the same rows,
   complexity (Matérn / diffusion / music-theory edges) worth it over the plain additive
   Laplacian?*
 - Then hand the numbers back to Cowork to fill the `Kernel comparison` table in
-  `docs/draft.tex`.
+  `docs/thesis/draft.tex`.

@@ -25,10 +25,11 @@ data/
 /.cache/
 /logs/
 /figures/
-!docs/figures/
+!docs/thesis/figures/
 *.pt
 *.pkl
 *.pdf
+*.zip
 
 # LaTeX build artifacts (regenerable by pdflatex; do not commit)
 *.aux
