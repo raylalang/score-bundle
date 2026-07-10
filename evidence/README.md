@@ -31,6 +31,17 @@ Hence: the primary artifacts live in version control.
 - `results/graphgp_conf/`, `results/kernels_conf_*/` — the raw per-cell
   confirmation outputs (held-out targets, predictions, predictive stds per
   (piece, seed)); every confirmation number is recomputable from these alone.
+- `results/graphgp_v2/` — the proposed-model (`b_featlm`) *development* cells.
+  Unlike the confirmation cells these are mechanically regenerable from code +
+  data + checkpoint (development artifacts carry no one-shot status); they are
+  archived because two thesis figures (the reliability diagram and PIT histogram
+  of the calibration appendix) are drawn from them, and
+  `scripts/make_digest_figures.py` reads every input from this archive so all
+  figures regenerate from a fresh clone. The remaining development cells
+  (`results/graphgp_v2/` on the workstation: ablation and two-stage rows) are not
+  archived; their pooled numbers are recorded in `logs/graphgp_v2_report*.log`
+  and they regenerate via `scripts/eval_graphgp.py` at the fixed BLAS thread
+  count (`OMP_NUM_THREADS=2`).
 - `inputs/conf_inputs_{lm,featlm}.pkl` — the confirmation masks and strict
   mask-aware means: with the ASAP data, the extraction script, and the Phase-0
   checkpoint, these make the confirmation run re-executable end to end.

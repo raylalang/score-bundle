@@ -255,7 +255,7 @@ def fig_collapse(unguarded_log, guarded_log):
     ax.set_yticklabels([r[0] for r in rows], color=INK)
     ax.set_ylim(-0.5, 1.5)
     ax.set_xlabel("per-evaluation-cell timing error (τ RMSE), 120 cells each")
-    ax.set_title("The 1-in-120 fit collapse, and the guard that removes it",
+    ax.set_title("The 1-in-120 fit collapse, and the safeguard that removes it",
                  color=INK, fontsize=12, loc="left", pad=12)
     _style(ax)
     fig.tight_layout()
@@ -277,6 +277,8 @@ def read_confirmation(path):
 def fig_confirmation(conf_log):
     """The thesis headline: one-shot confirmation RMSE, 20 untouched pieces."""
     conf = read_confirmation(conf_log)
+    # log keys are verbatim row names from the FROZEN confirmation log
+    # (evidence/logs/confirmation_verdict.log) — never "modernize" them
     rows = [  # (log key, display, color)
         ("GP b_featlm", "proposed model (full)", BLUE_DK),
         ("GP b_feat", "proposed model, no music model", MUTED),
@@ -296,11 +298,11 @@ def fig_confirmation(conf_log):
     ax.set_yticks(ys)
     ax.set_yticklabels([r[1] for r in rows], color=INK)
     ax.set_xlabel("pooled RMSE on 20 untouched pieces (lower is better)")
-    ax.set_title("Preregistered confirmation: the single GP wins",
+    ax.set_title("Preregistered confirmation: the proposed model wins",
                  color=INK, fontsize=12, loc="left", pad=12)
     _style(ax)
     fig.tight_layout()
-    fig.savefig(f"{OUT}/gpfirst_confirmation.png")
+    fig.savefig(f"{OUT}/proposed_confirmation.png")
     plt.close(fig)
 
 
@@ -335,7 +337,7 @@ def fig_gp_calibration(dev_pattern, conf_pattern):
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     fig.tight_layout()
-    fig.savefig(f"{OUT}/gpfirst_reliability.png")
+    fig.savefig(f"{OUT}/proposed_reliability.png")
     plt.close(fig)
 
     fig, axes = plt.subplots(1, 2, figsize=(8.6, 3.2), sharey=True)
@@ -347,21 +349,27 @@ def fig_gp_calibration(dev_pattern, conf_pattern):
         ax.set_xlabel("PIT value")
         _style(ax, xgrid=False)
     fig.tight_layout()
-    fig.savefig(f"{OUT}/gpfirst_pit.png")
+    fig.savefig(f"{OUT}/proposed_pit.png")
     plt.close(fig)
 
 
 if __name__ == "__main__":
     import sys
-    grid_log = "logs/feature_baseline_l2_10.log"
+    # all inputs read from the committed evidence archive (byte-identical copies
+    # of the original logs/ and results/ artifacts), so every figure regenerates
+    # from a fresh clone; see evidence/README.md
+    grid_log = "evidence/logs/feature_baseline_l2_10.log"
     if "--collapse-only" not in sys.argv:
-        fig_headline("logs/headline_cis.log", "logs/kernels_report.log",
-                     "logs/kernels_featlm_report.log", "logs/eval_featlm_strict_lin.log")
+        fig_headline("evidence/logs/headline_cis.log",
+                     "evidence/logs/kernels_report.log",
+                     "evidence/logs/kernels_featlm_report.log",
+                     "evidence/logs/eval_featlm_strict_lin.log")
         fig_channels(grid_log)
-        fig_kernels("logs/kernels_report.log")
-        fig_confirmation("logs/confirmation_verdict.log")
-        fig_gp_calibration("results/graphgp_v2/b_featlm.shard*.pkl",
-                           "results/graphgp_conf/b_featlm.shard*.pkl")
+        fig_kernels("evidence/logs/kernels_report.log")
+        fig_confirmation("evidence/logs/confirmation_verdict.log")
+        fig_gp_calibration("evidence/results/graphgp_v2/b_featlm.shard*.pkl",
+                           "evidence/results/graphgp_conf/b_featlm.shard*.pkl")
         print("headline + channels + kernels + confirmation + calibration written")
-    fig_collapse("logs/diag_tau_s2x3.log", "logs/diag_tau_s2x3_guarded.log")
+    fig_collapse("evidence/logs/diag_tau_s2x3.log",
+                 "evidence/logs/diag_tau_s2x3_guarded.log")
     print("collapse written")

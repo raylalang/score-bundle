@@ -74,7 +74,7 @@
 \newcommand{\covGP}{92.5\%}
 \newcommand{\rmseConfOldHead}{0.393}   % two-stage-era headline on confirmation
 \newcommand{\nllConfOldHead}{$-0.311$}
-\newcommand{\dRmseConf}{$-0.014$}      % paired proposed model - old headline, RMSE (sig.)
+\newcommand{\dRmseConf}{$-0.014$}      % paired, proposed model vs.\ strongest constrained configuration, RMSE (sig.)
 \newcommand{\dNllGraphConf}{$-0.074$}  % paired graph contribution inside proposed model, NLL (sig.)
 
 % --- notation (must match docs/formulation.tex and CLAUDE.md) ---------
@@ -159,7 +159,7 @@ the features and the music model --- followed by a \emph{separate} graph GP fitt
 the residual, one scalar GP per channel. Its numbers are the development record;
 formally it is a special case of the proposed model, recovered by fixing the
 coregionalization to be diagonal, the graph parameters to constants, and the mean to
-a plug-in estimate, and the equality is pinned by unit tests (\S\ref{sec:gpfirst}).
+a plug-in estimate, and the equality is pinned by unit tests (\S\ref{sec:special-cases}).
 
 \section{The project in one paragraph}
 We are building a system that takes a written score plus a recording of someone
@@ -209,7 +209,7 @@ two-stage pipeline, plain (net mean, plain graph) & 0.401 & $-0.289$ & 92\% \\
 \end{tabular}
 \end{table}
 
-\figph{gpfirst_confirmation.png}{0.8}{The one-shot confirmation at a glance: the
+\figph{proposed_confirmation.png}{0.8}{The one-shot confirmation at a glance: the
 proposed model against its own ablations and the two-stage pipeline, on pieces no
 modelling decision ever touched.}
 
@@ -229,7 +229,7 @@ Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & 
 Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{}  & \covHead \\
 Network mean $+$ graph (two-stage) & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} & \covHead \\
 Feat $+$ network mean $+$ graph (two-stage) & \rmseStack{}    & \nllStack{}   & \covHead \\
-Feat $+$ network $+$ harmonic graph (two-stage era headline) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
+Feat $+$ network $+$ harmonic graph (strongest constrained configuration) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
 Coregionalized GP, zero mean                  & 0.403 & $-0.316$ & 92\% \\
 \ + features as kernel             & 0.368 & $-0.370$ & 92\% \\
 \textbf{\ + music-model embeddings as kernel (= the proposed model)} & \textbf{\rmseGPdev} & \nllGPdev & 92.7\% \\
@@ -283,7 +283,7 @@ are scoped and parked (Table~\ref{tab:phases}).
 Phase & Scope & Adds & Status \\
 \midrule
 0 --- foundation & From-scratch symbolic music model (backbone + representations) &
-Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; $\muLM$ in the development form) & \textbf{Done} \\
+Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; the plug-in mean $\muLM$ of the two-stage baseline) & \textbf{Done} \\
 1 --- core (piano) & Timing, articulation, dynamics from aligned score+performance &
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened; thesis write-up in progress \\
@@ -523,7 +523,7 @@ zero-leak audit, and two precisely-diagnosed limitations (\S\ref{sec:guard-gp},
 \S\ref{sec:boundary}). This is the thesis model; the two-stage systems below
 remain its nested ablations.
 
-\section{Status as of 2026-07-03: headline (two-stage era)}
+\section{Status as of 2026-07-03: headline (two-stage plug-in baseline)}
 On \nPieces{} held-out ASAP pieces the model never saw, with \maskRate{} of notes
 hidden, the full model (feature-stacked music-model guess + score-graph prior with
 chord/voice-leading edges) is the best configuration on both accuracy
@@ -540,8 +540,9 @@ predictor and brings the nominal-90\% intervals to $\approx$92\% coverage. The
 calibration --- against a strong 25-feature hand-built baseline it \emph{ties on
 average error}, and the two \emph{stack}. The \textbf{harmonic edge families}
 (same-chord and stepwise voice-leading, \S\ref{sec:kernels}) add a further
-significant gain on both axes on top of any mean, giving the then-adopted headline
-(feature + network mean + harmonic graph, RMSE~\rmseHeadline{} development). The honest framing
+significant gain on both axes on top of any mean, giving the strongest constrained
+configuration (feature + network mean + harmonic graph, RMSE~\rmseHeadline{}
+development). The honest framing
 is that the network adds calibration and dynamics information the hand-built
 features lack, the harmonic edges add score structure the plain graph lacks, and
 the best system uses all three.
@@ -822,133 +823,287 @@ The \emph{temporal-only} baseline replaces $W$ by the chain adjacency of score-t
 order (each note coupled only to its temporal neighbours), an AR(1)-style smoother;
 the \emph{independent} baseline drops all edges ($\Lg = 0$).
 
-\section{The graph Gaussian process prior (development form)}\label{sec:graphgp}
-Each channel of $y$ (a scalar field over the $N$ notes) is given a \emph{Gaussian
-process on the score graph} --- a graph GP. It is a multivariate Gaussian
-$y \sim \N(\mu, K)$ over the notes whose covariance kernel $K$ is defined by the
-graph. This section states that prior in the \emph{per-channel} form used throughout
-development; the thesis model (\S\ref{sec:gpfirst}) keeps the same graph GP but
-couples the channels and specifies it directly by its covariance. Here we write it
-through its \emph{precision} (inverse covariance) $\Qg = K^{-1}$, in one of two forms:
+\section{The graph kernel}\label{sec:graphgp}
+Each expressive channel is a scalar field over the $N$ notes, and the graph turns
+it into a \emph{Gaussian process on the score graph} --- a graph GP: a multivariate
+Gaussian whose covariance is built from the graph. Let
+$\Lg = U \diag(\nu)\, U^\top$ be the Laplacian's eigendecomposition, with
+eigenvalues $0 = \nu_1 \le \nu_2 \le \dots$ playing the role of \emph{graph
+frequencies}. A graph kernel is obtained by shaping this spectrum,
+\begin{equation}
+  K_G(s) \;=\; U\, g(\nu;\, s)\, U^\top,
+  \label{eq:spectral}
+\end{equation}
+with a decreasing spectral profile $g$: components that vary smoothly along the
+graph (small $\nu$) keep their prior weight, rapidly varying components are
+suppressed, and a single \emph{shape} parameter $s$ sets how aggressively. We
+normalise $g(0) = 1$, so $K_G$ carries \emph{shape only} --- all scale lives in the
+coregionalization matrix of \S\ref{sec:coreg}. Three classical profiles are used:
+\begin{align}
+  \text{additive / regularized Laplacian:}\quad & g(\nu;\, s) = \frac{1}{1 + s\,\nu},
+  \label{eq:additive}\\[2pt]
+  \text{graph Mat\'ern:}\quad & g(\nu;\, s) = \Bigl(\frac{s}{\,s + \nu\,}\Bigr)^{\!\alpha},
+  \qquad \alpha \in \mathbb{Z}_{\ge 1},
+  \label{eq:matern}\\[2pt]
+  \text{diffusion / heat:}\quad & g(\nu;\, s) = e^{-s\,\nu}.
+  \label{eq:diffusion}
+\end{align}
+The Mat\'ern profile is the \emph{graph Mat\'ern Gaussian process} of Borovitskiy
+et al.\ \cite{borovitskiy2021} --- covariance eigenvalues
+$\sigma_g^{2}(\kappa^2 + \nu_j)^{-\alpha}$ on the Laplacian eigenvalue $\nu_j$, here
+with $s = \kappa^2$ and the scale $\sigma_g$ normalised out --- the graph analogue
+of a Euclidean Mat\'ern GP through the SPDE link of Lindgren et
+al.\ \cite{lindgren2011}; the diffusion kernel is its $\alpha \to \infty$ limit.
+Under any of these profiles, neighbouring notes are \emph{encouraged}, not forced,
+to share expressive behaviour, with distant notes coupled only weakly. The constant
+profile $g \equiv 1$ gives $K_G = I$ --- the graph switched off, notes a priori
+independent --- which is the ablation that isolates the graph's marginal value. The
+additive profile is the default throughout; the kernel comparison of
+\S\ref{sec:kernels} shows the classical alternatives tie it. Throughout, $\alpha$
+is \emph{only} the Mat\'ern exponent and $\sigma_g$ the Mat\'ern prior scale ---
+plain $\sigma$ is reserved for the posterior standard deviation
+(\S\ref{sec:posterior}).
+
+\section{Coupling the channels}\label{sec:coreg}
+Timing, articulation, and loudness are not independent: a stressed note tends to be
+louder, longer, and delayed together. The model therefore couples the channels with
+an \emph{intrinsic coregionalization} structure --- one latent field over the $3N$
+(note, channel) pairs with
+\begin{equation}
+  \operatorname{Cov}\bigl[\, y_{i,c},\; y_{j,c'} \bigr]
+  \;=\; B_{cc'}\; \bigl[K_G(s)\bigr]_{ij},
+  \qquad \text{i.e.} \qquad
+  \operatorname{Cov}[\, y \,] \;=\; B \otimes K_G(s),
+  \label{eq:icm}
+\end{equation}
+where $B \in \R^{3 \times 3}$ is a positive semidefinite matrix learned through its
+log-Cholesky factor. Because $g(0) = 1$, $B$ carries \emph{all} the scale: its
+diagonal entries are the per-channel prior variances, and its off-diagonal entries
+let an observed channel inform an unobserved one at a coupled note. Constraining
+$B$ to be diagonal severs exactly this coupling, making the three channels
+independent scalar graph GPs --- one of the constraint switches of
+\S\ref{sec:special-cases}.
+
+\section{Side information as kernels}\label{sec:features}\label{sec:prior-mean}
+Two per-note feature sets summarise what is known about each note beyond the graph:
+\begin{enumerate}[leftmargin=*,noitemsep]
+  \item \textbf{hand-built score features} $X_{\mathrm{feat}}$ --- $\sim$25
+        interpretable score-only columns plus a bias (metric position in the bar,
+        pitch and melodic interval, contour, local rhythm, chord/harmonic context,
+        note density, \dots);
+  \item \textbf{music-model embeddings} $X_{\mathrm{emb}}$ --- the per-note
+        embeddings $h_i \in \R^{d}$ of the Phase-0 music model.
+\end{enumerate}
+
+\paragraph{The read-out rule.}
+The embedding $h_i$ is read at the token \emph{preceding} note $i$'s velocity token
+(its duration token). A causal model's hidden state at position $t$ already contains
+token $t$, so reading at the velocity token would hand each note its own velocity
+--- the target. The general rule: \emph{a read-out used at observed notes must
+never contain its own target} (a bidirectional model instead needs a leave-one-out
+read-out, each note read at a masked copy of its own velocity position). Under the
+\emph{strict} protocol, held-out notes' velocities are also removed from the music
+model's \emph{input}, so the embedding of a held-out note depends only on the score
+and the \emph{observed} notes' performances.
+
+\medskip\noindent
+Each feature set enters the GP as a \emph{linear kernel} with per-channel scales
+$c_f \in \R^{3}_{\ge 0}$, contributing $\diag(c_f) \otimes X_f X_f^\top$ to the
+covariance. This is not a heuristic. A GP whose \emph{mean} is a linear model
+$X_f \beta$ with unknown weights $\beta \sim \N(0,\, c_f I)$ becomes, once $\beta$
+is integrated out, a zero-mean GP with $c_f\, X_f X_f^\top$ added to its kernel: a
+linear kernel \emph{is} the marginalized Bayesian linear mean. The regression
+weights are thereby re-inferred for every piece, jointly with everything else, and
+their uncertainty flows into the predictive variance.
+
+\paragraph{Marginalized versus plugged in.}
+The classical alternative fixes the weights once: fit a point estimate $\hat\beta$
+across pieces, subtract the resulting \emph{plug-in mean} $\mu = X_f \hat\beta$,
+and model the residual with the graph GP. That construction is one of the
+constraint switches of \S\ref{sec:special-cases}, and the attribution experiments
+(\S\ref{sec:attribution}) locate most of the proposed model's accuracy gain
+precisely here: per-piece Bayesian weighting adapts the same information sources to
+each piece, where a cross-piece point estimate cannot.
+
+\section{Observation model and posterior}
+\label{sec:gpfirst}\label{sec:posterior}
+Assembling \S\S\ref{sec:graphgp}--\ref{sec:features}: the latent field is observed
+through independent Gaussian noise,
+\begin{equation}
+  \tilde y \;=\; y + e, \qquad e \sim \N\bigl(0,\, \Sigma_e\bigr),
+  \qquad \Sigma_e = \diag(\varsigma^2) \otimes I,
+  \label{eq:obs}
+\end{equation}
+with one learned noise variance $\varsigma_c^2$ per channel, so the covariance of
+the stacked observation vector --- \textbf{the model in one equation} --- is
+\begin{equation}
+K \;=\;
+\underbrace{B \otimes K_G(s)}_{\text{coupled graph GP}}
+\;+\; \underbrace{\sum_f \operatorname{diag}(c_f) \otimes X_f X_f^\top}_{\text{marginalized linear means}}
+\;+\; \underbrace{\operatorname{diag}(\varsigma^2) \otimes I}_{\text{observation noise}} .
+\label{eq:gpfirst}
+\end{equation}
+Masked (held-out) notes contribute no likelihood term. Writing $o$ for the observed
+entries --- a held-out note hides all three of its channels, which keeps the
+observed block Kronecker-compatible --- exact conjugate GP regression gives the
+posterior over the whole field in closed form:
+\begin{equation}
+  p(y \mid \tilde y_o) = \N\bigl(m,\, \Sy\bigr), \qquad
+  m \;=\; C_{\cdot o}\, K_{oo}^{-1}\, \tilde y_o, \qquad
+  \Sy \;=\; C \,-\, C_{\cdot o}\, K_{oo}^{-1}\, C_{o \cdot},
+  \label{eq:posterior}
+\end{equation}
+where $C$ is the latent covariance (the first two terms of \eqref{eq:gpfirst}) and
+$K_{oo}$ the observed block of $K$, noise included. Masked notes are predicted from
+the observed ones through the conditional Gaussian --- the held-out
+\emph{imputation} task. The per-note posterior standard deviation is
+$\sigma_i = \sqrt{(\Sy)_{ii}}$.
+
+\paragraph{Predictive variance for held-out observations (the variance floor).}
+A held-out \emph{observation} at entry $i$ is $\tilde y_i = y_i + e_i$, so its
+predictive variance must include the observation-noise variance of that entry ---
+written $\sigma_e^2$ throughout (the channel's $\varsigma_c^2$ here; the per-note
+$(\Sigma_e)_{ii}$ in the per-channel form of \S\ref{sec:special-cases}):
+\begin{equation}
+  \operatorname{Var}\bigl[\tilde y_i \mid \tilde y_{o}\bigr]
+  \;=\; (\Sy)_{ii} + \sigma_e^2 .
+  \label{eq:floor}
+\end{equation}
+The latent variance $(\Sy)_{ii}$ collapses toward zero at well-pinned notes, so
+scoring held-out data against $(\Sy)_{ii}$ alone is catastrophically overconfident
+(NLL and coverage blow up); Eq.~\eqref{eq:floor} is required for all held-out
+evaluation.
+
+\section{Hyperparameters}
+\label{sec:eb}
+Every hyperparameter --- the graph shape $s$, the coregionalization $B$, the
+feature scales $c_f$, and the per-channel noise $\varsigma^2$ --- is learned
+\emph{jointly, per piece}, by maximising the exact log marginal likelihood
+(evidence) of the observed block,
+\begin{equation}
+  \log p(\tilde y_o \mid \theta)
+  \;=\; \log \N\bigl(\tilde y_o;\; 0,\; K_{oo}(\theta)\bigr),
+  \qquad \theta = \bigl(s,\, B,\, \{c_f\},\, \varsigma^2\bigr),
+  \label{eq:marginal likelihood}
+\end{equation}
+optimised in log space ($s$, $c_f$, $\varsigma^2$) and log-Cholesky space ($B$), so
+positivity and positive semidefiniteness hold by construction (quasi-Newton, with a
+derivative-free simplex polish and a simplex-only fallback). One evidence per piece
+decides every knob --- including how much to trust each information source, the
+choice a plug-in construction must make once, across pieces, by cross-validation. A
+\emph{calibration-split} alternative objective instead splits the observed notes
+and picks $\theta$ minimising the held-out predictive NLL of the calibration subset
+under the floored predictive variance \eqref{eq:floor}.
+
+\paragraph{Noise floor.}
+On a minority of mask realisations the unconstrained maximiser of
+\eqref{eq:marginal likelihood} degenerates ($\sigma_e^2 \to 0$), producing an
+overconfident posterior; the same principle as \eqref{eq:floor} applies to the
+\emph{fit}: constrain each noise variance above a small floor
+$\varepsilon_{\mathrm{nv}}$ (e.g.\ a fixed fraction of the observed residual
+variance) inside the optimisation.
+
+\paragraph{Safeguard (validating the fitted GP).}
+Rarely, the maximiser of \eqref{eq:marginal likelihood} lands on a degenerate
+configuration that the noise floor cannot catch --- the fitted field then
+extrapolates catastrophically, or reports far-too-tight intervals, on notes it did
+not fit. The safeguard screens the fit on data it did not use: hold back a
+calibration subset of the observed notes ($\sim$30\%), condition the fitted GP on
+the remainder, and reject the fit if, on the calibration subset, its RMSE exceeds a
+small multiple ($2\times$) of the mean-only RMSE \emph{or} its NLL exceeds the
+mean-only NLL by more than $0.5$ nats (the overconfidence check). On rejection,
+fall back through a fixed sequence: refit with the noise floor raised $5\times$,
+then a conservative decoupled fit (graph and feature kernels off, $B$ diagonal at
+the observed per-channel variance --- predict roughly the mean, with honest scale).
+On healthy fits the screen never fires, so safeguarded and unsafeguarded runs are
+identical except at the degenerate cells; its measured behaviour, including the one
+failure mode it provably cannot catch, is reported in \S\ref{sec:guard-gp}.
+
+\section{Constraints and special cases}\label{sec:special-cases}
+The model \eqref{eq:gpfirst} has a small set of independent \emph{constraint
+switches}, each of which turns one modelling decision off:
+\begin{enumerate}[leftmargin=*,noitemsep]
+  \item \textbf{decouple the channels} --- constrain $B$ to be diagonal
+        (\S\ref{sec:coreg});
+  \item \textbf{drop the side information} --- set the feature scales $c_f = 0$,
+        leaving a zero-mean graph smoother;
+  \item \textbf{plug the mean in} --- replace the marginalized per-piece weights by
+        a cross-piece point estimate $\hat\beta$ and model the residual
+        (\S\ref{sec:features});
+  \item \textbf{fix the graph} --- freeze the graph parameters to constants
+        per channel instead of learning them inside the joint evidence.
+\end{enumerate}
+Turning \emph{all} the switches on simultaneously yields the classical
+\textbf{two-stage plug-in baseline} --- a point-estimate trend plus per-channel
+residual kriging on the graph, the standard construction in the spatial-statistics
+and graph-GP literature. This corner of the constraint space is not kept for
+sentiment: it is the \emph{null} against which every claim of the form ``relaxing
+constraint X helps'' is tested; beating it makes the headline a claim about the
+standard construction rather than about our own history; and in one regime ---
+rendering from a short excerpt, where per-piece adaptation has too little to adapt
+to --- it remains the better tool (\S\ref{sec:boundary}).
+
+\paragraph{The per-channel form, precision-side.}
+With $B$ diagonal and the feature kernels off, the joint GP factorises into three
+scalar graph GPs, and each is more naturally written through its \emph{precision}
+(inverse covariance) $\Qg = K_G^{-1}$ scaled per channel:
 \begin{align}
   \text{additive:} \quad & \Qg = \lambda I + \eta\, \Lg,
       && \lambda > 0,\;\; \eta \ge 0;
-  \label{eq:additive}\\[2pt]
+  \label{eq:additive-prec}\\[2pt]
   \text{graph Mat\'ern / SPDE:} \quad & \Qg = \sigma_g^{-2}\,(\kappa^2 I + \Lg)^{\alpha},
       && \sigma_g > 0,\;\; \kappa > 0,\;\; \alpha \in \mathbb{Z}_{\ge 1},
-  \label{eq:matern}
+  \label{eq:matern-prec}
 \end{align}
-so the kernel is $K = \Qg^{-1}$. The second form is exactly the \emph{graph Mat\'ern
-Gaussian process} of Borovitskiy et al.\ \cite{borovitskiy2021}: its covariance
-shares the graph Laplacian's eigenvectors, with eigenvalue
-$\sigma_g^{2}(\kappa^2 + \nu_j)^{-\alpha}$ on the Laplacian eigenvalue $\nu_j$ --- the
-graph analogue of a Euclidean Mat\'ern GP obtained through the SPDE link of Lindgren
-et al.\ \cite{lindgren2011}. The additive form \eqref{eq:additive} is the plainest
-such graph GP and is the one used for the headline results; the Mat\'ern form is
-implemented and available as an ablation.
+the additive form matching \eqref{eq:additive} with shape $s = \eta / \lambda$ and
+scale $1/\lambda$ (carried by $B_{cc}$ in the normalised parameterisation), and the
+Mat\'ern form matching \eqref{eq:matern} likewise. Reading the additive precision:
+the $\eta\,\Lg$ term penalises differences between connected notes, while the
+$\lambda I$ ridge pulls the field toward its mean and sets the overall scale.
+Precision versus kernel is a computational choice, not a modelling one: $\Qg$ is
+\emph{sparse} --- each note couples only to its graph neighbours, precisely the
+Markov property of a \emph{Gaussian Markov random field} (GMRF) --- which makes the
+per-channel posterior below cheap, whereas the full model is naturally
+covariance-side (the coregionalization and feature kernels add dense terms) and is
+evaluated spectrally through \eqref{eq:spectral}, one eigendecomposition per piece.
 
-\paragraph{Precision or kernel --- a computational choice, not a modelling one.}
-Writing the prior through $\Qg = K^{-1}$ rather than through $K$ does not change the
-distribution, only how it is computed. In the per-channel development form $\Qg$ is
-\emph{sparse} --- each note couples only to its graph neighbours, which is precisely
-the Markov property of a \emph{Gaussian Markov random field} (GMRF) --- whereas the
-kernel $K = \Qg^{-1}$ is dense; that sparsity is what made the per-channel posterior
-(\S\ref{sec:posterior}) cheap. The thesis model makes the opposite choice for the
-opposite reason: it is specified \emph{by its covariance} \eqref{eq:gpfirst} and
-evaluated spectrally, $K_G = U\,g(\nu)\,U^\top$, because the coregionalization and
-the feature kernels are naturally covariance-side, and a per-piece graph is small
-enough that one eigendecomposition costs less than exploiting sparsity would save.
-Both routes describe the same graph GP; neither is a modelling commitment.
-
-Reading the additive form, the $\eta\,\Lg$ term penalises differences between
-connected notes (neighbours are \emph{encouraged}, not forced, to share expressive
-behaviour), while the $\lambda I$ ridge pulls the field toward its mean and sets the
-overall scale. In this development form the joint prior over the stacked field is
-\emph{block-diagonal across channels}, each with its own hyperparameters and length
-scales --- an assumption the thesis model drops, coupling the channels through the
-matrix $B$ of \eqref{eq:gpfirst}. Throughout, $\alpha$ is \emph{only} the Mat\'ern
-exponent, $\eta$ \emph{only} the additive Laplacian weight, and $\sigma_g$ the
-Mat\'ern prior scale --- plain $\sigma$ is reserved for the posterior standard
-deviation (\S\ref{sec:posterior}).
-
-\section{The prior mean: zero, features, or the learned mean (development form)}
-\label{sec:prior-mean}
-During development the field was centred on a plug-in mean $\mu$, and the question
-\emph{where that mean should come from} drove the ablations; in the final model
-(\S\ref{sec:gpfirst}) the same information sources enter the kernel instead, as
-marginalized Bayesian linear means with per-piece weights. The three sources
-compared, which survive as the feature sets of the final model:
-\begin{enumerate}[leftmargin=*,noitemsep]
-  \item \textbf{zero} --- $\mu = 0$: the model is a pure smoother, with no prior
-        guess for each note;
-  \item \textbf{hand-built features} --- a ridge regression that predicts each
-        note's expression from $\sim$25 interpretable score features (metric
-        position in the bar, pitch and melodic interval, contour, local rhythm,
-        chord/harmonic context, note density, \dots);
-  \item \textbf{the learned mean} $\muLM$ --- read from the Phase-0 music model.
-\end{enumerate}
-For the learned mean, the pretrained autoregressive model supplies a per-note
-embedding $h_i \in \R^{d}$, and a ridge head $W_{\mathrm{head}}$ (fit on a
-piece-disjoint split) maps it to the mean; the graph then models the \emph{residual}
-$y - \muLM$:
+With a plug-in mean $\mu$ and a diagonal observation precision $P$ ($1/\sigma_e^2$
+on observed notes, $0$ on masked notes), the per-channel posterior is
+\begin{equation}
+  \Sy \;=\; \bigl(\Qg + P\bigr)^{-1}, \qquad
+  m \;=\; \Sy \bigl(\Qg\, \mu + P\, \tilde y\bigr)
+  \label{eq:posterior-chan}
+\end{equation}
+--- the precision-side counterpart of \eqref{eq:posterior}, to which it reduces
+under the constraints. The plug-in mean itself is one of three choices: $\mu = 0$;
+a ridge regression on the hand-built features $X_{\mathrm{feat}}$; or the
+\emph{music-model mean} $\muLM$, a ridge head $W_{\mathrm{head}}$ (fit once, on a
+piece-disjoint split) applied to the embeddings of \S\ref{sec:features},
 \begin{equation}
   \mu_{\mathrm{LM},i} = W_{\mathrm{head}}^{\top}\,[\, h_i;\, 1\,],
   \qquad
-  y = \muLM + \xi, \qquad \xi \sim \N\!\bigl(0,\, \Qg^{-1}\bigr).
+  y = \muLM + \xi, \qquad \xi \sim \N\!\bigl(0,\, \Qg^{-1}\bigr),
   \label{eq:lm-mean}
 \end{equation}
+with the graph modelling the residual $y - \muLM$. Hyperparameters
+$\theta = (\lambda, \eta, \sigma_e^2)$ are fitted per channel by the same marginal
+likelihood \eqref{eq:marginal likelihood} restricted to that channel (with the
+plug-in mean subtracted from $\tilde y$), with the same noise floor, and with the
+safeguard of \S\ref{sec:eb} in its per-channel form
+(fallback sequence: marginal likelihood $\to$ the calibration-split objective
+$\to$ the conservative decoupled fit $\eta = 0$,
+$\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$).
 
-\paragraph{Leak-free read-out.}
-The embedding $h_i$ is read at the token \emph{preceding} note $i$'s velocity token
-(its duration token). A causal model's hidden state at position $t$ already contains
-token $t$, so reading at the velocity token would leak each note's own velocity ---
-the target --- into $\muLM$. The general rule: \emph{a read-out fit on observed
-notes must never contain its own target} (a bidirectional model instead needs a
-leave-one-out read-out, each note read at a masked copy of its own velocity
-position). Under the \emph{strict} protocol, held-out notes' velocities are also
-removed from the music model \emph{input}, so $\muLM$ at a held-out note depends only on the
-score and the \emph{observed} notes' performances.
-
-\medskip\noindent
-This reduces the central comparison to a single question: does a score-graph
-residual prior on top of a learned mean improve recovery \emph{and} calibration over
-the mean alone, and over the hand-built baselines?
-
-\section{Observation model and posterior (development form)}
-\label{sec:posterior}
-This section derives the \emph{per-channel} posterior used throughout development.
-The thesis model (\S\ref{sec:gpfirst}) replaces it with exact conjugate inference in
-the joint, channel-coupled GP; the observation model and the masking convention
-below carry over unchanged. Observations are the latent field plus independent
-Gaussian noise,
-\begin{equation}
-  \tilde y \;=\; y + e, \qquad e \sim \N(0,\, \Sigma_e),
-  \qquad \Sigma_e = \diag(\sigma_{e,1}^2, \dots, \sigma_{e,N}^2).
-  \label{eq:obs}
-\end{equation}
-Masked (held-out) notes contribute no likelihood term: writing $P = \Sigma_e^{-1}$
-on observed nodes and $0$ on masked nodes (a diagonal observation-precision matrix),
-the posterior over the whole field is closed-form Gaussian,
-\begin{equation}
-  p(y \mid \tilde y) = \N\bigl(m,\, \Sy\bigr), \qquad
-  \Sy \;=\; \bigl(\Qg + P\bigr)^{-1}, \qquad
-  m \;=\; \Sy \bigl(\Qg\, \mu + P\, \tilde y\bigr).
-  \label{eq:posterior}
-\end{equation}
-Masked notes are predicted from their graph neighbours through the conditional
-Gaussian --- the held-out \emph{imputation} task. The per-note posterior standard
-deviation is $\sigma_i = \sqrt{(\Sy)_{ii}}$.
-
-\paragraph{The four development systems as special cases.}
-The two-stage systems compared in Chapter~\ref{ch:results} are simply choices of the prior
-mean $\mu \in \{0,\ \muLM\}$ and of whether the graph coupling is on ($\eta > 0$) or
-off ($\eta = 0$, making $\Qg = \lambda I$ diagonal, so each note decouples). Writing
-$[\,\cdot\,]_h$ for the entries at held-out notes, the master posterior mean
-$m = \Sy(\Qg\,\mu + P\,\tilde y)$ specialises as in
+\paragraph{The constrained systems, by their switches.}
+The constrained systems compared in Chapter~\ref{ch:results} are choices of the
+plug-in mean $\mu \in \{0,\ \muLM\}$ and of whether the graph coupling is on
+($\eta > 0$) or off ($\eta = 0$, making $\Qg = \lambda I$ diagonal, so each note
+decouples). Writing $[\,\cdot\,]_h$ for the entries at held-out notes, the
+posterior mean \eqref{eq:posterior-chan} specialises as in
 Table~\ref{tab:system-posteriors}.
 
 \begin{table}[h]\centering
-\caption{The four systems as special cases of the posterior mean
+\caption{Constrained special cases of the posterior mean
 $m = \Sy(\Qg\,\mu + P\,\tilde y)$, $\Sy = (\Qg + P)^{-1}$, with
 $\Qg = \lambda I + \eta\Lg$ and $P$ the observation precision ($1/\sigma_e^2$ on
 observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the
@@ -958,113 +1113,28 @@ giving a per-note mean and per-note std $\sqrt{(\Sy)_{ii} + \sigma_e^2}$.}
 \label{tab:system-posteriors}
 \begin{tabular}{@{}llcl@{}}
 \toprule
-System & $\mu$ & $\eta$ & Prediction $m_h$ at held-out notes \\
+Constraints & $\mu$ & $\eta$ & Prediction $m_h$ at held-out notes \\
 \midrule
-Zero mean, graph off     & $0$     & $0$   & $0$ \\
-Zero mean $+$ graph      & $0$     & $>0$  & $\bigl[(\Qg+P)^{-1}P\,\tilde y\bigr]_h$ \\
-Network mean, graph off  & $\muLM$ & $0$   & $\mu_{\mathrm{LM},h}$ \\
-Network mean $+$ graph    & $\muLM$ & $>0$  & $\bigl[(\Qg+P)^{-1}(\Qg\,\muLM+P\,\tilde y)\bigr]_h$ \\
+Zero mean, graph off (fully constrained)     & $0$     & $0$   & $0$ \\
+Zero mean, graph on (pure graph smoother)      & $0$     & $>0$  & $\bigl[(\Qg+P)^{-1}P\,\tilde y\bigr]_h$ \\
+Plug-in mean, graph off (mean only)  & $\muLM$ & $0$   & $\mu_{\mathrm{LM},h}$ \\
+Plug-in mean, graph on (two-stage baseline)    & $\muLM$ & $>0$  & $\bigl[(\Qg+P)^{-1}(\Qg\,\muLM+P\,\tilde y)\bigr]_h$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Predictive variance for held-out observations (the variance floor).}
-A held-out \emph{observation} at node $i$ is $\tilde y_i = y_i + e_i$, so its
-predictive variance must include the observation noise:
-\begin{equation}
-  \operatorname{Var}\bigl[\tilde y_i \mid \tilde y_{\mathrm{obs}}\bigr]
-  \;=\; (\Sy)_{ii} + \sigma_e^2 .
-  \label{eq:floor}
-\end{equation}
-The latent variance $(\Sy)_{ii}$ collapses toward zero at well-pinned nodes, so
-scoring held-out data against $(\Sy)_{ii}$ alone is catastrophically overconfident
-(NLL and coverage blow up); Eq.~\eqref{eq:floor} is required for all held-out
-evaluation.
-
-\section{Hyperparameters (empirical Bayes, development form)}
-\label{sec:eb}
-The thesis model learns all of its hyperparameters --- the graph shape $s$, the
-coregionalization $B$, the feature scales, and the per-channel noise --- jointly, by
-one exact marginal likelihood per piece (\S\ref{sec:gpfirst}). The development
-pipeline instead fitted each channel separately, as follows; the noise floor and the
-safeguard introduced below carry over to the thesis model unchanged.
-With the additive form \eqref{eq:additive}, the per-piece, per-channel
-hyperparameters $\theta = (\lambda, \eta, \sigma_e^2)$ are chosen by maximising the
-marginal likelihood of the observed nodes (indices $o$),
-\begin{equation}
-  \log p(\tilde y_o \mid \theta)
-  \;=\; \log \N\bigl(\tilde y_o;\; \mu_o,\; K_{oo} + (\Sigma_e)_{oo}\bigr),
-  \qquad K = \Qg^{-1},
-  \label{eq:marginal likelihood}
-\end{equation}
-optimised in log-parameter space (positivity) with a derivative-free simplex
-method. A \emph{calibration-split} alternative instead splits the observed nodes and
-picks $\theta$ minimising the held-out predictive NLL of the calibration subset
-under the floored predictive variance \eqref{eq:floor}.
-
-\paragraph{Noise floor.}
-On a minority of mask realisations the unconstrained maximiser of \eqref{eq:marginal likelihood}
-degenerates ($\sigma_e^2 \to 0$), producing an overconfident posterior; the same
-principle as \eqref{eq:floor} applies to the \emph{fit}: constrain
-$\sigma_e^2 \ge \varepsilon_{\mathrm{nv}}$ (a small floor, e.g.\ a fixed fraction of
-the observed residual variance) inside the optimisation.
-
-\paragraph{Guard (validating the fitted field).}
-Rarely (empirically one evaluation cell in $\sim$120, always the same piece), the
-maximiser of \eqref{eq:marginal likelihood} lands on degenerate $(\lambda, \eta)$ that the noise
-floor cannot catch --- the fitted field then extrapolates catastrophically to the
-held-out nodes. The safeguard screens the fit on data it did not use: hold back a
-calibration subset of the observed nodes ($\sim$30\%), condition the fitted field on
-the remainder, and reject the fit if its calibration-subset RMSE exceeds a small
-multiple ($2\times$) of the mean-only RMSE on the same nodes. On rejection, fall
-back down a ablation sequence: marginal likelihood $\to$ the calibration-split objective $\to$ a
-conservative decoupled fit ($\eta = 0$,
-$\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$). On healthy fits the
-screen never fires, so safeguarded and unsafeguarded runs are identical except at the
-collapsed cells.
-
-\section{The full model: one multi-output graph GP}\label{sec:gpfirst}
-The sections above introduce the ingredients in their two-stage development form
-(a plug-in mean, one scalar GP per channel). The thesis model assembles them as
-\textbf{one Gaussian process over the $3N$ values $(\text{note}, \text{channel})$},
-with covariance
-\begin{equation}
-K \;=\; B \otimes K_G(s)\; +\; \sum_f \operatorname{diag}(c_f) \otimes X_f X_f^\top
-\;+\; \operatorname{diag}(\varsigma^2) \otimes I ,
-\label{eq:gpfirst}
-\end{equation}
-where
-\begin{itemize}[leftmargin=*]
-  \item $K_G(s) = U\, g(\nu; s)\, U^\top$ is a \emph{shape-normalized} spectral
-        kernel of the score-graph Laplacian ($g(0)=1$, a single shape parameter
-        $s$; additive/regularized-Laplacian by default --- the kernel comparison of
-        \S\ref{sec:kernels} showed the classical alternatives tie);
-  \item $B \in \mathbb{R}^{3\times 3}$ (PSD, log-Cholesky) is the intrinsic
-        coregionalization matrix coupling timing, articulation, and loudness, and
-        carries all scale;
-  \item each $X_f$ is a per-note feature matrix --- the 25 score-only features with
-        a bias column, and the music model's mask-aware per-note embeddings --- and
-        its linear kernel $X_f X_f^\top$ is exactly the \emph{marginalized Bayesian
-        linear mean}: a GP with mean $X\beta$, $\beta \sim \mathcal N(0, \Sigma_\beta)$
-        integrated out, is a zero-mean GP with $X \Sigma_\beta X^\top$ added to the
-        kernel. The plug-in read-out head of the development pipeline is thereby
-        replaced by per-piece Bayesian weights under the same evidence;
-  \item $\varsigma^2$ is per-channel observation noise, floored as before.
-\end{itemize}
-Every hyperparameter --- $s$, $B$, the feature scales $c_f$, and $\varsigma^2$ ---
-is learned jointly by the exact per-piece log marginal likelihood; inference is
-exact conjugate GP regression (per-note masks keep the observed block
-Kronecker-compatible). A safeguarded variant of the fit exists
-(\S\ref{sec:guard-gp}).
-
-\paragraph{Special cases (the development pipeline is nested).} Constraining $B$
-diagonal, dropping the feature kernels, and fixing the graph recovers the
-per-channel two-stage model exactly (the joint marginal likelihood equals the sum
-of the per-channel ones; pinned by a unit test). Re-inserting the two-stage
-pipeline's own cross-piece mean as a fixed mean inside \eqref{eq:gpfirst}
-reproduces its results almost unchanged --- which is how we know the proposed model's gain
-comes from the per-piece Bayesian feature weighting, not from coupling or joint
-fitting per se (\S\ref{sec:attribution}).
+\paragraph{Exact nesting.}
+Constraining $B$ diagonal, dropping the feature kernels, and fixing the graph
+recovers the per-channel model exactly --- the joint marginal likelihood
+\eqref{eq:marginal likelihood} equals the sum of the per-channel ones --- and the
+equality is pinned by a unit test. The constrained systems are therefore not
+merely \emph{analogous} baselines but points in the proposed model's own parameter
+space, which is what makes the ablation tables of Chapter~\ref{ch:results} an
+ablation of one model rather than a comparison of two. Re-inserting the two-stage
+baseline's own cross-piece mean as a fixed mean inside \eqref{eq:gpfirst}
+reproduces its results almost unchanged --- which is how we know the proposed
+model's gain comes from the per-piece Bayesian feature weighting, not from coupling
+or joint fitting per se (\S\ref{sec:attribution}).
 
 \section{Evaluation: recovery and calibration}
 Predictions on held-out notes are scored on both axes. With held-out values $y_i$,
@@ -1227,7 +1297,7 @@ recovering; the graph makes the confidence honest}. The music model earns its pl
 as a feature provider inside the kernel, not as an oracle mean.
 
 \figph{digest_headline.png}{0.7}{Two orthogonal upgrades, strict protocol,
-development set (two-stage era): per prior mean (rows), held-out RMSE with no
+development set (two-stage plug-in systems): per prior mean (rows), held-out RMSE with no
 graph, the plain score graph, and the chord/voice-leading-augmented graph.
 Historical development figure; the confirmation table is the headline.}
 
@@ -1312,7 +1382,7 @@ deviations out, and the Gaussian likelihood's quadratic tail amplifies them into
 the pooled average --- which is why the confirmation's pooled-NLL comparison tied
 while the \emph{median} piece is better calibrated under the GP. A safeguarded fit in
 the same spirit as the two-stage safeguard (calibration-split screen including an
-overconfidence check, fallback ablation sequence) was built and validated: it is bitwise
+overconfidence check, fixed fallback sequence) was built and validated: it is bitwise
 inert on healthy fits, \emph{and it cannot catch this tail}, because the failure
 is invisible from observed notes. We report the limitation instead of patching it
 post hoc: the principled fixes are a heavy-tailed (Student-$t$) timing likelihood
@@ -1330,7 +1400,7 @@ the confirmation set. \figph{digest_channels.png}{0.7}{Where the
 network earns its place: mean-only error vs.\ the 25-feature baseline, per channel ---
 the network's genuine edge is loudness; timing and articulation tie (development).}
 
-\section{task-matched pretraining: task-matched pretraining, an honest negative}
+\section{Task-matched pretraining: an honest negative}
 A bidirectional, mask-aware retraining (matched exactly to the evaluation task) did
 \emph{not} beat the original at matched compute: pooled error is slightly but
 significantly worse ($+0.011$), confidence quality ties strict-to-strict ($-0.325$
@@ -1725,13 +1795,13 @@ calibration behaviour, unlike the pooled NLL comparison of
 Table~\ref{tab:headline-conf}, transfers to untouched pieces unchanged.
 
 \begin{figure}[h]\centering
-\includegraphics[width=0.62\linewidth]{figures/gpfirst_reliability.png}
+\includegraphics[width=0.62\linewidth]{figures/proposed_reliability.png}
 \caption{Reliability of the proposed model, development vs.\ confirmation.}
 \label{fig:gp-reliability}
 \end{figure}
 
 \begin{figure}[h]\centering
-\includegraphics[width=0.9\linewidth]{figures/gpfirst_pit.png}
+\includegraphics[width=0.9\linewidth]{figures/proposed_pit.png}
 \caption{PIT histograms, development vs.\ confirmation (dashed: uniform).}
 \label{fig:gp-pit}
 \end{figure}
