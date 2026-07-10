@@ -784,8 +784,12 @@ to each score event a vector of continuous expressive variables; in Phase~1
   y_i \;=\; \bigl[\, \tau_i,\; \log r_i,\; v_i \,\bigr] \in \R^{3},
   \label{eq:variables}
 \end{equation}
-defined, relative to the monotone score-time warp $T(\cdot)$ (score beats $\to$
-performance seconds, estimated from the alignment's beat grids), as
+defined relative to the monotone score-time warp $T(\cdot)$ (score beats $\to$
+performance seconds). The warp is read off the alignment: the local tempo, in seconds
+per beat, is estimated by finite differences of performed time against score time
+along the aligned beat grid, and $T$ is its cumulative integral over score time, so
+that $T(b)$ is the tempo-implied arrival of beat $b$. Conditional on $T$, the three
+channels are
 \begin{align}
   \tau_i   &= t_i - T(b_i), \label{eq:tau}\\
   \log r_i &= \log \frac{\delta_i}{\,T(b_i + d_i) - T(b_i)\,}, \label{eq:logr}\\
@@ -822,6 +826,85 @@ bonus $w_v \ge 0$, and optional $k$-nearest-neighbour sparsification. The
 The \emph{temporal-only} baseline replaces $W$ by the chain adjacency of score-time
 order (each note coupled only to its temporal neighbours), an AR(1)-style smoother;
 the \emph{independent} baseline drops all edges ($\Lg = 0$).
+
+\paragraph{Sparsification.}
+Optionally each note keeps only its $k$ largest weights, and the result is symmetrised
+by $W \leftarrow \max(W, W^{\top})$, so an edge survives if it appears in
+\emph{either} endpoint's $k$-neighbourhood. All reported runs use the dense graph.
+
+\paragraph{Choice of Laplacian.}
+Alongside the combinatorial $\Lg = D - W$ we consider the symmetric normalized
+Laplacian
+\begin{equation}
+  \Lg^{\mathrm{sym}} \;=\; I - D^{-1/2} W D^{-1/2},
+  \label{eq:lapsym}
+\end{equation}
+which rescales each note by its degree. It matters in principle because the score
+graph is markedly irregular --- a note inside a dense chord has many more neighbours
+than one in a sparse melodic line --- so without normalisation the prior couples
+chordal notes far more tightly than melodic ones.
+
+\subsection*{Music-theoretic graph variants}\label{sec:graphvariants}
+The base adjacency \eqref{eq:adjacency} treats pitch as a ruler: proximity is measured
+in semitones. Music theory suggests two different, and logically distinct,
+interventions --- one \emph{replaces} that ruler, the other \emph{adds} relations on
+top of it. Both are evaluated in \S\ref{sec:kernels}, and the distinction is what makes
+that result interpretable.
+
+\paragraph{(i) A tonal pitch metric (replacement).}
+Write $\mathrm{pc}(p) = p \bmod 12$ for pitch class and place it on the circle of
+fifths via $\pi(p) = 7\,\mathrm{pc}(p) \bmod 12$. The circle-of-fifths distance is the
+shorter way around that ring,
+\begin{equation}
+  d_5(i,j) \;=\; \min\bigl(\,|\pi(p_i) - \pi(p_j)|,\; 12 - |\pi(p_i) - \pi(p_j)|\,\bigr)
+  \;\in\; \{0,\dots,6\},
+  \label{eq:fifths}
+\end{equation}
+so a perfect fifth is $1$ step, a major second $2$, and a semitone $5$: tonal
+proximity, deliberately unlike semitone proximity. Substituting it for the pitch term
+of \eqref{eq:adjacency} gives
+\begin{equation}
+  W^{\mathrm{tonal}}_{ij} \;=\; \exp\!\Bigl( -\tfrac{(b_i - b_j)^2}{2\ell_b^2}
+    \;-\; \tfrac{d_5(i,j)^2}{2\ell_5^2}
+    \;-\; \tfrac{\bigl((p_i - p_j)/12\bigr)^2}{2\ell_{\mathrm{oct}}^2} \Bigr),
+  \qquad W^{\mathrm{tonal}}_{ii} = 0 .
+  \label{eq:tonaladj}
+\end{equation}
+The third term is not decoration: $d_5$ is blind to register, so without an
+octave-displacement penalty (length scale $\ell_{\mathrm{oct}}$, in octaves) notes four
+octaves apart would be maximally close. The score-time term is unchanged.
+
+\paragraph{(ii) Harmonic and voice-leading edges (addition).}
+Here the base graph is kept and two edge families are added,
+\begin{equation}
+  W^{\mathrm{harm}}_{ij} \;=\; W_{ij}
+    \;+\; w_{\mathrm{ch}}\, \mathbf{1}\bigl[\, b_i = b_j \,\bigr]
+    \;+\; w_{\mathrm{vl}}\, \mathbf{1}\bigl[\, b_i \neq b_j,\;
+        |b_i - b_j| \le \Delta_{\mathrm{vl}},\;
+        1 \le |p_i - p_j| \le 2 \,\bigr],
+  \label{eq:harmadj}
+\end{equation}
+with $\Delta_{\mathrm{vl}} = 2$ beats. The first family links notes struck together;
+the second links notes a melodic step apart (one or two semitones) within a short
+window --- stepwise voice leading.
+
+\paragraph{What the chord edges actually are.}
+It must be said plainly: $\mathbf{1}[b_i = b_j]$ is \emph{onset simultaneity}, used as a
+proxy for same-chord membership. No harmonic analysis is performed, no chord is
+labelled, and no key is inferred. This is the strongest harmonic-simultaneity signal
+obtainable from the score alone, and it is deliberately the weakest possible
+music-theoretic commitment. Cadential and functional edges --- which would encode
+tonic/dominant relations --- do require a harmonic analysis and are \emph{not}
+implemented (\S\ref{sec:musictheory}). Each family ablates independently by setting its
+weight to zero.
+
+\paragraph{Two design axes.}
+Together with \S\ref{sec:graphgp} this fixes the graph kernel completely. It has two
+independent axes: the \emph{graph} $\Lg$ --- which edges exist, under which pitch
+metric, and which Laplacian --- fixed here; and the \emph{spectral profile} $g$ ---
+how sharply high graph frequencies are suppressed --- fixed in \S\ref{sec:graphgp}.
+The kernel comparison of \S\ref{sec:kernels} sweeps both, and finds them very
+differently consequential.
 
 \section{The graph kernel}\label{sec:graphgp}
 Each expressive channel is a scalar field over the $N$ notes, and the graph turns
@@ -987,8 +1070,11 @@ feature scales $c_f$, and the per-channel noise $\varsigma^2$ --- is learned
   \label{eq:marginal likelihood}
 \end{equation}
 optimised in log space ($s$, $c_f$, $\varsigma^2$) and log-Cholesky space ($B$), so
-positivity and positive semidefiniteness hold by construction (quasi-Newton, with a
-derivative-free simplex polish and a simplex-only fallback). One evidence per piece
+positivity and positive semidefiniteness hold by construction. The optimiser is
+L-BFGS-B on those unconstrained coordinates where SciPy is available, with a
+derivative-free Nelder--Mead polish, and a Nelder--Mead-only path otherwise; a
+non-finite objective is returned as $+\infty$ rather than raised, so a failed
+Cholesky cannot poison the line search. One evidence per piece
 decides every knob --- including how much to trust each information source, the
 choice a plug-in construction must make once, across pieces, by cross-validation. A
 \emph{calibration-split} alternative objective instead splits the observed notes
@@ -1159,6 +1245,17 @@ normal CDF, distinct from the Phase-3 synthesis operator $\Phi(z)$). A win for t
 structured prior requires improving \emph{both} recovery (RMSE) and calibration
 (NLL, coverage, cal-err) against the independent, temporal-only, ridge, and
 music-model-mean-only baselines, on held-out, contamination-filtered data.
+
+\paragraph{Uncertainty on the comparisons themselves.}
+Every contrast between two systems is \emph{paired at the level of the piece}: the two
+systems see identical pieces, identical masks and identical seeds, so their
+difference is computed per piece and only then aggregated. Confidence intervals come
+from a percentile bootstrap over pieces --- resample the per-piece differences with
+replacement, $B = 2000$ replicates, and report the $2.5$th and $97.5$th percentiles of
+the resampled mean. A contrast is called significant, and marked $^{*}$, when that
+interval excludes zero. Pairing matters here: piece difficulty varies far more than
+the gap between systems, so an unpaired test would drown every effect reported in this
+thesis.
 
 \section{Phase 2: intonation and vibrato (continuously pitched instruments)}
 For voice/strings/winds, new channels on the same support: intonation
@@ -1430,9 +1527,9 @@ across every row --- so that \emph{only the kernel changes}, and scoring recover
 (i) independent (diagonal) and temporal-chain baselines; (ii) the additive Laplacian
 (reference); (iii) the graph Mat\'ern GP $\sigma_g^{-2}(\kappa^2 I + \Lg)^{\alpha}$ for
 $\alpha = 1, 2, 3$; (iv) the diffusion / heat kernel $K = \exp(-t\Lg)$ (the
-$\alpha\to\infty$ limit); (v) the symmetric normalized Laplacian inside the additive
-form; and (vi) the more experimental \emph{music-theory-informed} graphs of
-\S\ref{sec:musictheory}: tonal-distance edges (circle-of-fifths pitch-class distance
+$\alpha\to\infty$ limit); (v) the symmetric normalized Laplacian \eqref{eq:lapsym}
+inside the additive form; and (vi) the more experimental \emph{music-theory-informed} graphs of
+\S\ref{sec:graphvariants}: tonal-distance edges (circle-of-fifths pitch-class distance
 plus octave displacement, \emph{replacing} semitone distance) and harmonic edges
 (same-chord membership and stepwise voice-leading, \emph{added} to the plain graph).
 Every kernel is fit spectrally --- covariance eigenvalues $g(\nu)$ of the Laplacian
@@ -1667,25 +1764,31 @@ score-based initialisation). This is the most novel part of the programme and is
 yet started.
 
 \section{Incorporating music theory}\label{sec:musictheory}
-A natural next step is to let \emph{music theory} inform the model rather than treating
-the score as bare pitch-and-time coordinates. There are three distinct places it can
-enter --- the graph/kernel, the prior mean, or the connection --- and they are not
-exclusive; each can be evaluated by the same held-out recovery-and-calibration test.
+Music theory can inform the model in three distinct places --- the graph/kernel, the
+prior mean, or the connection. They are not exclusive, and each is testable by the
+same held-out recovery-and-calibration criterion. The first route is partly done; the
+other two are open.
 
-\paragraph{(A) In the graph / kernel --- the most experimental route.}
-Replace or augment the plain edge weight \eqref{eq:adjacency}, which uses raw semitone
-distance $(p_i - p_j)^2$, with a \emph{music-theoretic} distance: circle-of-fifths or
-Tonnetz (neo-Riemannian) lattice distance, or a voice-leading distance, so that
-harmonically close notes are graph-close even when far apart in pitch. Add edge
-families for \emph{harmonic function} (same chord, cadential relationships) and
-\emph{voice-leading} proximity, and weight by \emph{metrical hierarchy} and
-\emph{phrase} structure. Each changes $W_{ij}$, hence $\Lg$, hence the graph GP kernel,
-and drops straight into the existing closed-form posterior. The first two of these are
-now measured --- the experimental tier of the kernel comparison (\S\ref{sec:kernels},
-Table~\ref{tab:kernels}): \emph{replacing} the pitch metric hurts, \emph{adding} chord
-and voice-leading edge families is the one significant both-axes win. Open here:
-cadential/functional edges (needs a harmonic analysis), metrical-hierarchy and phrase
-weights, and the connection-Laplacian gauge construction described in the accompanying notes.
+\paragraph{(A) In the graph / kernel --- done, and the result is instructive.}
+Two constructions in this route are implemented (\S\ref{sec:graphvariants}) and
+measured (\S\ref{sec:kernels}, Table~\ref{tab:kernels}), and they came apart cleanly.
+\emph{Replacing} the semitone ruler with a circle-of-fifths pitch metric
+\eqref{eq:tonaladj} makes both recovery and calibration significantly \emph{worse}:
+expressive behaviour travels with register proximity, not tonal proximity.
+\emph{Adding} same-onset (chord) and stepwise voice-leading edges \eqref{eq:harmadj}
+on top of the plain graph is the one intervention significant on both axes. The
+lesson is worth stating in general form: music theory earns its place in the kernel as
+\emph{extra relations}, not as a substitute geometry.
+
+What remains open in this route is the part the score alone cannot supply.
+\emph{Cadential and functional edges} (tonic/dominant relations) require a harmonic
+analysis --- recall that the implemented chord edges are onset simultaneity, not chord
+identity (\S\ref{sec:graphvariants}). Beyond those: \emph{metrical-hierarchy} and
+\emph{phrase} weights; a Tonnetz / neo-Riemannian lattice metric or a Tymoczko
+voice-leading distance as alternatives to \eqref{eq:fifths}; and learning the
+edge-family weights $w_{\mathrm{ch}}, w_{\mathrm{vl}}$ by evidence rather than fixing
+them, since the reported runs use untuned defaults. Each changes $W_{ij}$, hence
+$\Lg$, hence the kernel, and drops straight into the existing conjugate posterior.
 
 \paragraph{(B) In the prior mean --- the most incremental route.}
 Add music-theoretic \emph{score features} to the hand-built feature mean (and thus to
