@@ -13,13 +13,15 @@
 \begin{tikzpicture}[
   font=\scriptsize,
   box/.style   = {draw=ink, line width=0.35pt, align=center, inner sep=3.6pt,
+                  execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000},
                   text width=33mm, minimum height=9mm},
   io/.style    = {box, draw=rule, fill=black!2},
   new/.style   = {box, draw=ink, dashed, line width=0.35pt},
   newio/.style = {io, dashed},
   acc/.style   = {box, draw=accent, dashed, line width=0.6pt, fill=accent!4},
   arr/.style   = {-{Latex[length=1.8mm,width=1.2mm]}, draw=muted, line width=0.4pt},
-  note/.style  = {font=\scriptsize\itshape, text=muted, align=center},
+  note/.style  = {font=\scriptsize\itshape, text=muted, align=center,
+                  execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}},
   grouplab/.style = {font=\scriptsize\scshape, text=muted, fill=white, inner xsep=3pt, inner ysep=1pt},
 ]
 
