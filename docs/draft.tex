@@ -533,24 +533,29 @@ features lack, the harmonic edges add score structure the plain graph lacks, and
 the best system uses all three.
 
 \section{Downstream demonstrations at a glance}
-Six tasks map the reach of the structured prior (full write-ups in
-Chapter~\ref{ch:downstream}). A single boundary emerges: the graph helps whenever
-notes are judged one at a time, and does not help when a whole performance is
-collapsed into a summary.
+Six tasks map the reach of the structured prior; all six were \emph{re-run under the
+GP-first model}, with the two-stage comparison given side by side in
+Chapter~\ref{ch:downstream} (Table~\ref{tab:downstream-both}). Two boundaries
+emerge. First, the graph helps whenever notes are judged one at a time, and does not
+help when a whole performance is collapsed into a summary. Second, per-piece
+adaptation needs the piece to reveal enough of itself: it wins at interpolation-style
+tasks and is the wrong tool for extrapolating from a short excerpt, where the
+cross-piece predictor stays the honest choice (\S\ref{sec:boundary}).
 
 \begin{table}[h]\centering
-\caption{Downstream tasks and verdicts.}\label{tab:downstream-glance}
+\caption{Downstream tasks and verdicts under the GP-first model (re-validated).}
+\label{tab:downstream-glance}
 \footnotesize
 \begin{tabular}{@{}p{5.2cm}p{2.4cm}p{5.0cm}@{}}
 \toprule
 Task & Verdict & Key number \\
 \midrule
-Error spotting (anomaly detection) & \textbf{clear win} & AUROC $0.94\!\to\!0.98$ at $3\sigma$; edge grows as errors subtler \\
-Denoising at a known noise level & \textbf{win} & all 8 contrasts significant at matched coverage \\
-Completion from an excerpt & partial & interpolation RMSE $0.450\!\to\!0.393$; extrapolation neutral \\
-Knowing when to trust (selective prediction) & qualified win & articulation RMSE $0.83\!\to\!0.54$ on the confident half \\
-Musical-era classification & honest negative & $0.37$ vs.\ $0.489$ majority baseline \\
-Performer identification (Vienna 4x22) & mixed & $0.136$--$0.179$ vs.\ $0.045$ chance ($3$--$4\times$) \\
+Error spotting (anomaly detection) & \textbf{stronger win} & best on every channel ($v$ 0.995, $\log r$ 0.986, $\tau$ 0.978) \\
+Denoising & \textbf{win} (known noise) & $0.182$ / $0.276$ at coverage $0.90$; blind noise fails in both parameterisations \\
+Completion from an excerpt & partial & wins at interpolation; \textbf{extrapolation boundary} (\S\ref{sec:boundary}) \\
+Knowing when to trust (selective prediction) & transfers & rmse@50\% $0.076$ \\
+Musical-era classification & honest negative & $0.20$ vs.\ $0.60$ majority baseline \\
+Performer identification (Vienna 4x22) & mixed & raw expression carries identity; GP-denoised $0.11$ \\
 \bottomrule
 \end{tabular}
 \end{table}
