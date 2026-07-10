@@ -766,9 +766,8 @@ conditionally Gaussian, so they can be marginalised in closed form
 
 % =====================================================================
 \chapter{Model and Formulation}\label{ch:model}
-\emph{This chapter is the complete model derivation (previously maintained
-separately, now merged here as the single source
-of truth). Notation is summarised in Appendix~\ref{app:notation}.}
+\emph{This chapter gives the complete model derivation. Notation is summarised in
+Appendix~\ref{app:notation}.}
 
 \section{Setting}
 A \emph{score} is the known discrete support
@@ -896,7 +895,18 @@ obtainable from the score alone, and it is deliberately the weakest possible
 music-theoretic commitment. Cadential and functional edges --- which would encode
 tonic/dominant relations --- do require a harmonic analysis and are \emph{not}
 implemented (\S\ref{sec:musictheory}). Each family ablates independently by setting its
-weight to zero.
+weight to zero. The edge weights $w_{\mathrm{ch}}, w_{\mathrm{vl}}$ are untuned defaults;
+a six-variant sensitivity sweep ($\times 3$ / $\div 3$ on each family, \S\ref{sec:kernels})
+shows the resulting gain is not a knife-edge in either weight.
+
+\paragraph{A word on the word ``harmonic''.}
+We call the graph augmented by \eqref{eq:harmadj} the \emph{harmonic graph}, and its two
+families the \emph{chord} and \emph{voice-leading} edges. ``Harmonic'' here means
+\emph{of harmony} --- which notes sound together, and which move by step. It has nothing
+to do with the \emph{harmonic amplitudes} $a$ of the Phase-3 synthesiser
+(\S\ref{sec:phase3-math}), which are overtones of a single note's fundamental. The two
+senses are unrelated and never interact; where confusion is possible we prefer
+\emph{chord edges} to \emph{harmonic edges}.
 
 \paragraph{Two design axes.}
 Together with \S\ref{sec:graphgp} this fixes the graph kernel completely. It has two
@@ -1276,15 +1286,141 @@ the gap between systems, so an unpaired test would drown every effect reported i
 thesis.
 
 \section{Phase 2: intonation and vibrato (continuously pitched instruments)}
-For voice/strings/winds, new channels on the same support: intonation
+\label{sec:phase2}
+Phase 2 carries the model to voice, strings and winds, where the performer controls
+pitch. \emph{Nothing in the prior changes}: the kernel \eqref{eq:gpfirst}, its
+hyperparameter fit (\S\ref{sec:eb}) and the exact conjugate posterior
+(\S\ref{sec:posterior}) are reused verbatim. Three things do change, and this section
+specifies each: the \emph{channel set}, the way the targets are \emph{obtained}, and
+the \emph{observation noise}, which stops being negligible.
+
+\paragraph{The channel set.}
+A fixed-pitch keyboard affords no performer-controlled intonation, and its dynamics is
+a MIDI velocity. Neither holds here. The per-note vector becomes
 \begin{equation}
-  c_i \;=\; 1200 \, \log_2 \tfrac{f_0^{(i)}}{f_{\mathrm{ref}}\, 2^{\,p_i / 12}}
-  \qquad \text{(cents, relative to the equal-tempered target)},
+  y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ \delta_i \,\bigr]
+  \;\in\; \R^{k},
+  \label{eq:phase2-channels}
 \end{equation}
-plus vibrato descriptors (rate Hz, extent cents, onset delay) extracted from the
-per-note $f_0$ curve. These channels reuse the graph prior and posterior
-\eqref{eq:additive}--\eqref{eq:posterior} unchanged; only the targets and graph
-length scales differ.
+where $\tau_i$ and $\log r_i$ are unchanged; $\ell_i$ is a loudness channel replacing
+the MIDI velocity $v_i$ (the log RMS of the note's amplitude envelope $A_i(t)$); $c_i$
+is the static intonation offset; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i)$ are the
+vibrato rate, extent and onset delay defined below. Two decisions are genuinely open
+and should be settled before any number is quoted: whether $\delta_i$ is identifiable
+often enough to be worth a channel, and hence whether $k = 7$; and whether $\ell_i$,
+which is an amplitude rather than a keystroke, is commensurable enough with $v_i$ for
+the two to be discussed as one channel across phases. We do not assume they are.
+
+\paragraph{From an $f_0$ curve to per-note targets.}
+Let $f_0^{(i)}(t)$ be the fundamental estimated on the sounding interval of note $i$,
+restricted to the samples the tracker marks as voiced. Its deviation from the
+equal-tempered target, in cents, is
+\begin{equation}
+  c_i(t) \;=\; 1200\,\log_2 \frac{f_0^{(i)}(t)}{f_{\mathrm{ref}}\, 2^{\,p_i/12}} .
+  \label{eq:cents-curve}
+\end{equation}
+This curve is not itself a target: it mixes a static mistuning with an oscillation. We
+decompose it as
+\begin{equation}
+  c_i(t) \;=\; \underbrace{c_i}_{\text{intonation}} \;+\; u_i(t) \;+\; \epsilon_i(t),
+  \qquad
+  u_i(t) \;=\;
+  \begin{cases}
+    \gamma_i \sin\!\bigl(2\pi f_i^{\mathrm{vib}}\,(t - t_i - \delta_i)\bigr), & t \ge t_i + \delta_i,\\[2pt]
+    0, & \text{otherwise},
+  \end{cases}
+  \label{eq:vibrato}
+\end{equation}
+with $t_i$ the performed onset. So $c_i$ (cents) is the \emph{vibrato-free centre},
+$\gamma_i$ (cents) the vibrato extent, $f_i^{\mathrm{vib}}$ (Hz) its rate, and
+$\delta_i$ (s) the delay before it begins. Estimating $(c_i, f_i^{\mathrm{vib}},
+\gamma_i, \delta_i)$ is a small nonlinear least-squares fit per note on the voiced
+samples. Note that $c_i$ is \emph{not} the mean of $c_i(t)$: the mean coincides with
+the vibrato-free centre only over a whole number of cycles, which a note rarely
+supplies. Open choices, all consequential: a robust loss rather than least squares;
+the minimum voiced duration below which $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i)$ are
+not identifiable at all; and the treatment of notes that fall below it.
+
+\paragraph{An honest structural problem: per-channel missingness.}
+That last choice is not cosmetic. A short note may support $c_i$ but no vibrato
+parameters, so a target can be missing \emph{for some channels of a note and not
+others}. The conjugate posterior of \S\ref{sec:posterior} assumes \emph{per-note}
+masks, which is exactly what keeps the observed block Kronecker-compatible
+(\S\ref{sec:gpfirst}). Per-(note, channel) missingness breaks that structure and costs
+either the Kronecker factorisation or an imputation step upstream. It has no
+solution in the present formulation and must be resolved before Phase 2 is built.
+
+\paragraph{The observation noise becomes substantive --- and heteroscedastic.}
+In Phase 1 the targets are read from clean MIDI and $\Sigma_e \approx 0$. Here every
+target is an \emph{estimate}, and its uncertainty is both known and unequal across
+notes: the $f_0$ tracker reports a per-frame periodicity or confidence, and the
+per-note fit of \eqref{eq:vibrato} returns a parameter covariance. Writing
+$\sigma_{e,ij}^2$ for the variance of channel $j$ of note $i$,
+\begin{equation}
+  \tilde y \;=\; y + e, \qquad
+  e \sim \N\bigl(0,\ \Sigma_e\bigr), \qquad
+  \Sigma_e = \operatorname{diag}\bigl(\sigma_{e,ij}^2\bigr),
+  \label{eq:phase2-noise}
+\end{equation}
+which replaces the per-channel term $\operatorname{diag}(\varsigma^2)\otimes I$ of
+\eqref{eq:gpfirst} by a full diagonal over (note, channel). Conjugacy survives
+untouched --- a diagonal is a diagonal --- so the posterior and the marginal likelihood
+are unchanged in form. The noise floor and the safeguard of \S\ref{sec:eb} carry over.
+One decision remains: whether the estimator-supplied variances are used as given, or
+carry a per-channel learned scale, so that the evidence may discover the tracker is
+over- or under-confident. The second is the safer default.
+
+\paragraph{The warp, and where the alignment error goes.}
+Phase 1 obtained the score-time warp $T(\cdot)$ from an aligned beat grid supplied with
+the MIDI. There is no MIDI here. $T$ must come from audio-to-score alignment, and its
+error propagates \emph{directly} into $\tau_i$, since $\tau_i = t_i - T(b_i)$ by
+definition. Worse, alignment error is correlated along score time --- which is precisely
+the structure the graph prior expects expressive timing to have. A model fit naively
+will therefore absorb some alignment error as expressive timing and report it with
+confident error bars. Two defensible responses: fold the aligner's own uncertainty into
+the $\tau$ row of \eqref{eq:phase2-noise}, or withhold $\tau$ from Phase-2 claims
+entirely and report only the channels the audio measures directly. This is the single
+largest threat to validity in Phase 2 and it has no analogue in Phase 1.
+
+\paragraph{The graph is unchanged --- and Phase 2 makes one music-theoretic hypothesis testable.}
+The graph construction \eqref{eq:adjacency} and its variants (\S\ref{sec:graphvariants})
+carry over, with per-channel length scales. One result becomes newly interesting. The
+kernel comparison (\S\ref{sec:kernels}) found that \emph{replacing} the semitone metric
+by the circle-of-fifths metric \eqref{eq:tonaladj} made recovery and calibration
+significantly worse: expressive behaviour travels with register proximity, not tonal
+proximity. But that experiment measured timing, articulation and loudness --- none of
+which \emph{is} a pitch. Phase 2 introduces a channel whose target is pitch itself.
+It is therefore an open and cheap question whether the tonal metric that failed for
+expression succeeds for \emph{intonation}: whether notes a fifth apart share a mistuning
+that notes a semitone apart do not, as temperament and a fixed tuning reference would
+predict. The apparatus to test it already exists; only the channel is missing. A
+positive result would be the first evidence in this thesis that a music-theoretic
+geometry, rather than merely music-theoretic \emph{edges}, earns its place.
+
+\paragraph{Data, and what ``recovery'' can mean here.}
+Two corpora are plausible. \textbf{URMP} supplies multitrack chamber recordings with
+per-instrument audio and scores, so $f_0$ is derivable per track and a score exists to
+align against; alignment quality is moderate. Solo singing corpora (Vocadito, Opencpop)
+supply $f_0$ annotations but weaker or absent score alignment. Neither offers clean
+intonation ground truth. This must be said plainly, because it changes what a result
+means: the targets \emph{are} estimator outputs, so held-out recovery measures the
+model's ability to recover \emph{the estimator's} targets at masked notes, not
+agreement with a gold standard. The claim available in Phase 2 is therefore weaker in
+kind than the Phase-1 claim, and should not be reported as though it were the same.
+
+\paragraph{Evaluation and the discipline that carries over.}
+The protocol is unchanged: held-out imputation, both axes, paired per-piece bootstrap
+(\S\ref{ch:data}). Because the targets carry real noise, calibration --- not RMSE ---
+becomes the more informative axis, and the predictive variance floor is no longer a
+technicality but a first-order modelling term. Two rules carry over without exception.
+Development numbers stay labelled development. And the confirmation set of this thesis
+is \emph{spent}: any confirmed Phase-2 claim requires its own fresh, preregistered
+confirmation set, fixed before the data are seen.
+
+\paragraph{Gate.} Phase 2 is exploratory. It is scoped so that a negative result costs
+the thesis nothing: the Phase-1 contribution stands on its own, and Phase 2's value is
+the demonstration that the same prior, unchanged, extends to a channel it was never
+designed for.
 
 \section{Phase 3: waveform likelihood}\label{sec:phase3-math}
 The optional audio likelihood replaces $\tilde y$ with the waveform $x \in \R^{M}$:
@@ -1458,7 +1594,7 @@ almost entirely the articulation channel, and its recovery win is almost entirel
 loudness --- timing contributes little either way. The pooled RMSE improvement is
 therefore a blend of a large loudness gain diluted by a near-static timing channel.
 
-\section{The evaluation leak: discovery, fix, re-measurement}
+\section{Target leakage in the read-out, and the invariance that prevents it}
 An earlier read-out let the network see a note's own loudness --- the very target it
 was asked to predict --- inflating the apparent loudness advantage. We read the
 summary one position earlier (provably blind to the note's own loudness, pinned by
@@ -1507,7 +1643,7 @@ or deploy-time predictive floors (\S\ref{ch:future}), and the per-piece median N
 \section{Do hand-built features suffice? (development study)}
 Against a rich 25-feature score baseline fit under the same protocol, the network
 \emph{ties on average error}; its genuine, significant edge is calibration and
-loudness. The two \emph{stack} --- in the two-stage regime as concatenated means
+loudness. The two \emph{stack} --- under the two-stage plug-in baseline as concatenated means
 (RMSE $\rmseStack$ vs.\ $\rmseNetGraph$, development), and in the final model as two
 feature kernels, where the embeddings' marginal value is $-0.008$ RMSE / $-0.034$
 NLL (development, paired, significant) and their removal cost is confirmed in direction on
@@ -1534,22 +1670,49 @@ the leak is removed (RMSE $0.394$ vs.\ $0.394$, identical within noise) --- the
 earlier ``scaling'' gain was the loudness leak. Practical rule: judge the music model
 downstream, not by perplexity.
 
-\section{Kernel comparison (development study, two-stage regime)}\label{sec:kernels}
-This study --- run in the two-stage regime before the reformulation, and one of the
-findings that motivated it --- justifies the kernel choice \emph{inside} the proposed model: the additive/regularized-Laplacian shape used in
+\section{Kernel comparison (development study, under the two-stage plug-in baseline)}\label{sec:kernels}
+This study was run under the two-stage plug-in baseline --- a plug-in mean and one
+scalar GP per channel --- and it justifies the kernel choice \emph{inside} the proposed
+model: the additive/regularized-Laplacian shape used in
 \eqref{eq:gpfirst} survives every classical alternative. The ablation sweeps the
 kernel from the simplest to more experimental forms, holding the prior mean
 ($\muLM$, strict) and the whole protocol fixed --- identical mask realizations
 across every row --- so that \emph{only the kernel changes}, and scoring recovery
-\emph{and} calibration, paired per piece:
-(i) independent (diagonal) and temporal-chain baselines; (ii) the additive Laplacian
-(reference); (iii) the graph Mat\'ern GP $\sigma_g^{-2}(\kappa^2 I + \Lg)^{\alpha}$ for
-$\alpha = 1, 2, 3$; (iv) the diffusion / heat kernel $K = \exp(-t\Lg)$ (the
-$\alpha\to\infty$ limit); (v) the symmetric normalized Laplacian \eqref{eq:lapsym}
-inside the additive form; and (vi) the more experimental \emph{music-theory-informed} graphs of
-\S\ref{sec:graphvariants}: tonal-distance edges (circle-of-fifths pitch-class distance
-plus octave displacement, \emph{replacing} semitone distance) and harmonic edges
-(same-chord membership and stepwise voice-leading, \emph{added} to the plain graph).
+\emph{and} calibration, paired per piece. Every row of Table~\ref{tab:kernels} is defined
+in Table~\ref{tab:kernel-defs}, which also records \emph{which of the two design axes}
+(\S\ref{sec:graphvariants}) each row moves: the graph $\Lg$ --- which notes are connected,
+under what pitch metric, through which Laplacian --- or the spectral profile $g(\nu;s)$ ---
+how sharply high graph frequencies are suppressed. Reading the table by axis, rather than
+as a flat list of eleven rivals, is what makes the result legible.
+
+\begin{table}[h]\centering
+\caption{What each row of Table~\ref{tab:kernels} is. The graph kernel is
+$K_G(s) = U\,g(\nu;s)\,U^{\!\top}$, so a row changes either the Laplacian $\Lg$ that supplies
+the spectrum $\nu$, or the profile $g$ that reshapes it. ``Chord'' and ``voice-leading''
+edges are edges of \emph{harmony}; they are unrelated to the harmonic amplitudes of
+\S\ref{sec:phase3-math}.}
+\label{tab:kernel-defs}
+\footnotesize
+\begin{tabular}{@{}llp{62mm}l@{}}
+\toprule
+Row & Axis moved & Construction & Defined \\
+\midrule
+Additive Laplacian & --- (reference) & $g(\nu;s)=1/(1+s\nu)$ on the base graph \eqref{eq:adjacency} & \eqref{eq:additive} \\
+\addlinespace
+Graph Mat\'ern ($\alpha$) & profile & $g(\nu;s)=\bigl(s/(s+\nu)\bigr)^{\alpha}$; larger $\alpha$ suppresses high graph frequencies harder & \eqref{eq:matern} \\
+Diffusion / heat & profile & $g(\nu;s)=e^{-s\nu}$; the $\alpha\to\infty$ limit of Mat\'ern, the smoothest of the family & \eqref{eq:diffusion} \\
+\addlinespace
+Independent & graph & no edges at all: $\Lg=0$, so $K_G=I$ and notes are a priori independent & \S\ref{sec:graphgp} \\
+Temporal chain & graph & edges only between score-time neighbours: an AR(1)-style smoother along the piece & \S\ref{sec:graphgp} \\
+Normalized Laplacian & graph & the same edges, degree-normalised: $\Lg^{\mathrm{sym}} = I - D^{-1/2}WD^{-1/2}$ & \eqref{eq:lapsym} \\
+\addlinespace
+Tonal-distance edges & graph (\emph{metric replaced}) & the semitone term of \eqref{eq:adjacency} is \emph{swapped} for a circle-of-fifths pitch-class distance plus an octave-displacement term; a fifth becomes near, a semitone far & \eqref{eq:fifths}, \eqref{eq:tonaladj} \\
+Chord edges & graph (\emph{edges added}) & the base graph \emph{plus} $w_{\mathrm{ch}}\mathbf{1}[b_i=b_j]$: notes struck at the same score onset. Onset simultaneity as a proxy for chord membership --- no harmonic analysis & \eqref{eq:harmadj} \\
+Chord $+$ voice-leading & graph (\emph{edges added}) & additionally $w_{\mathrm{vl}}$ on pairs at \emph{different} onsets within 2 beats whose pitches differ by 1--2 semitones: stepwise melodic motion & \eqref{eq:harmadj} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 Every kernel is fit spectrally --- covariance eigenvalues $g(\nu)$ of the Laplacian
 spectrum, so the dense diffusion kernel costs one eigendecomposition per piece --- with
 the same empirical-Bayes machinery, noise floor, and safeguard as the headline; the
@@ -1586,32 +1749,38 @@ knife-edge. \textbf{Under the final model}, once the music-model
 embeddings enter the kernel as features, the harmonic edge families are
 measured-redundant (learned-graph and harmonic variants statistically tie the
 plain graph, development) --- the embeddings already carry the local-context information
-the extra edges encode. The finding therefore holds \emph{for the two-stage
-regime}, and its deeper lesson (theory-as-extra-structure helps,
-theory-as-replacement-metric hurts) carried directly into the reformulation.
+the extra edges encode. The finding therefore holds \emph{under the two-stage plug-in
+baseline}; its deeper lesson --- theory-as-extra-structure helps,
+theory-as-replacement-metric hurts --- carries over to the proposed model.
 
 \begin{table}[h]\centering
-\caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; safeguard on).
+\caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; safeguard on),
+grouped by the axis each row moves; every row is defined in Table~\ref{tab:kernel-defs}.
 Bold best per column; $*$ = paired per-piece bootstrap 95\% CI vs the additive baseline
 excludes 0. Mat\'ern $\alpha{=}1$'s $\Delta$RMSE is nominally significant but $+0.0002$
---- no practical content.}
+--- no practical content. Read down the two blocks: the profile is inert, the graph is not.}
 \label{tab:kernels}
 \footnotesize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Kernel & RMSE & NLL & cov@.9 & cal-err \\
 \midrule
-Independent (diagonal)            & 0.446$^{*}$ & $-0.190^{*}$ & 0.919 & 0.085 \\
-Temporal chain (AR(1))            & 0.392 & $-0.292^{*}$ & 0.916 & 0.063 \\
+\multicolumn{5}{@{}l}{\itshape Reference: base graph, additive profile}\\
 Additive Laplacian (baseline)     & 0.393 & $-0.322$ & 0.921 & 0.067 \\
+\addlinespace
+\multicolumn{5}{@{}l}{\itshape Vary the spectral profile $g(\nu;s)$ --- the graph held fixed}\\
 Graph Mat\'ern ($\alpha{=}1$)     & 0.393$^{*}$ & $-0.321$ & 0.921 & 0.064 \\
 Graph Mat\'ern ($\alpha{=}2$)     & 0.392 & $-0.321$ & 0.919 & 0.064 \\
 Graph Mat\'ern ($\alpha{=}3$)     & 0.392 & $-0.318$ & 0.918 & 0.062 \\
 Diffusion / heat                  & 0.393 & $-0.312$ & 0.917 & 0.062 \\
-Normalized Laplacian (additive)   & 0.392 & $-0.326$ & 0.922 & 0.068 \\
-Tonal-distance edges              & 0.403$^{*}$ & $-0.300^{*}$ & 0.921 & 0.061 \\
-Harmonic (chord) edges            & \textbf{0.384}$^{*}$ & $-0.331$ & 0.923 & 0.066 \\
-Harmonic + voice-leading edges    & 0.385$^{*}$ & {\boldmath$-0.335$}$^{*}$ & 0.922 & 0.066 \\
+\addlinespace
+\multicolumn{5}{@{}l}{\itshape Vary the graph $\Lg$ --- the spectral profile held fixed}\\
+Independent (no edges)            & 0.446$^{*}$ & $-0.190^{*}$ & 0.919 & 0.085 \\
+Temporal chain (AR(1))            & 0.392 & $-0.292^{*}$ & 0.916 & 0.063 \\
+Normalized Laplacian (same edges) & 0.392 & $-0.326$ & 0.922 & 0.068 \\
+Tonal-distance edges (metric \emph{replaced}) & 0.403$^{*}$ & $-0.300^{*}$ & 0.921 & 0.061 \\
+Chord edges (edges \emph{added}) & \textbf{0.384}$^{*}$ & $-0.331$ & 0.923 & 0.066 \\
+Chord $+$ voice-leading edges     & 0.385$^{*}$ & {\boldmath$-0.335$}$^{*}$ & 0.922 & 0.066 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1654,12 +1823,12 @@ $0.94 \to 0.98$ at $3\sigma$, $0.85 \to 0.94$ at $2\sigma$), and the proposed mo
 --- scoring by its joint leave-one-out predictive surprise --- improves further on
 all three channels (loudness AUROC $0.995$, articulation $0.986$, timing $0.978$).
 
-\section{Denoising --- win at known noise level, both regimes}
+\section{Denoising --- win at known noise level, both models}
 Recover true values from added noise. With the noise level known, structure beats
 per-note shrinkage on both error and calibration (all 8 contrasts significant,
 $\approx$0.90 coverage); the proposed model's oracle-noise variant is slightly better still
 (RMSE $0.182$/$0.276$ vs.\ $0.186$/$0.282$ at the two levels, coverage $0.90$).
-\emph{Honest negative, unchanged by the reformulation}: estimating the noise level
+\emph{Honest negative, unchanged across both models}: estimating the noise level
 blind from a single piece is unreliable in \emph{both} parameterizations ---
 intervals collapse --- so transcription noise must be treated as known per system.
 
@@ -1683,18 +1852,18 @@ $0.07$ on the confident half). Only the graph provides the per-note confidence t
 triage needs; the no-graph baselines rank at piece level only. Under the proposed model the triage is slightly better still (confident-half RMSE $0.076$ vs.\
 $0.080$, matched abstention).
 
-\section{Musical-era classification --- honest negative, both regimes}
-Style statistics alone do not beat the majority-class baseline in either regime:
+\section{Musical-era classification --- honest negative, both models}
+Style statistics alone do not beat the majority-class baseline under either model:
 $0.37$--$0.38$ vs.\ $0.489$ majority in the two-stage study ($n{=}90$), and
 $0.10$ raw / $0.20$ GP-denoised vs.\ $0.60$ majority in the proposed-model re-run
 (the 30-piece development subset; majorities differ because the subsets do). A note-level tool does not help whole-piece
 summaries, whichever model extracts the notes.
 
-\section{Performer identification (Vienna 4x22) --- mixed, both regimes}
+\section{Performer identification (Vienna 4x22) --- mixed, both models}
 The extracted expression \emph{does} carry a pianist's identity --- accuracy
 $0.136$--$0.179$ against a 1-of-22 chance rate of $0.045$ ($3$--$4\times$ chance),
 validating the extraction. Smoothing \emph{hurts} this whole-performance summary in
-both regimes: denoising toward an ensemble mean removes exactly the idiosyncrasy
+both models: denoising toward an ensemble mean removes exactly the idiosyncrasy
 that identifies a performer. The proposed-model re-run (its features-only variant; the corpus
 provides no music-model embeddings) reproduces the pattern with a milder penalty --- raw
 $0.136$, GP-denoised $0.114$, two-stage-denoised $0.080$ --- consistent with the
@@ -1702,7 +1871,7 @@ GP's evidence-fitted noise removing less of the per-note signal.
 
 \section{The boundary}\label{sec:boundary}
 Across all six, two boundaries emerge. \textbf{(1) The structure boundary} (both
-regimes): the graph prior helps whenever notes are judged one by one for accuracy
+models): the graph prior helps whenever notes are judged one by one for accuracy
 or confidence, and does not help when a performance is collapsed into a summary.
 \textbf{(2) The adaptation boundary} (proposed model): per-piece Bayesian feature
 weighting wins every interpolation-style task and fails at excerpt extrapolation,
@@ -1769,10 +1938,33 @@ the observed excerpt does not cover the feature space (a Mahalanobis coverage te
 would do) --- would close the adaptation boundary of \S\ref{sec:boundary}.
 
 \section{Phase 2: intonation and vibrato}
-Extend the same graph prior to continuously pitched instruments, with cents and
-vibrato channels derived from $f_0$ extraction on monophonic audio (datasets: URMP,
-solo singing). The prior and posterior are unchanged; only targets and length scales
-differ. Figure~\ref{fig:arch-phase2} makes the claim precise: relative to
+The formulation is given in full in \S\ref{sec:phase2}: the prior, its evidence fit and
+the conjugate posterior are reused verbatim, while the channel set grows
+\eqref{eq:phase2-channels}, the targets are estimated from an $f_0$ curve
+\eqref{eq:cents-curve}--\eqref{eq:vibrato}, and the observation noise becomes
+heteroscedastic \eqref{eq:phase2-noise}. What remains is not writing but deciding.
+Four questions must be settled before Phase 2 is built, and none of them is cosmetic:
+\begin{enumerate}[leftmargin=*,noitemsep]
+  \item \textbf{Per-channel missingness.} Short notes support an intonation offset but
+        not vibrato parameters, so targets go missing per (note, channel). The conjugate
+        posterior assumes \emph{per-note} masks. Either the Kronecker factorisation or an
+        upstream imputation must give way (\S\ref{sec:phase2}).
+  \item \textbf{Where alignment error goes.} Without MIDI the warp comes from
+        audio-to-score alignment, whose error enters $\tau$ directly and is correlated
+        along score time --- exactly the structure the prior expects expressive timing to
+        have. Fold it into the noise, or withhold $\tau$ from Phase-2 claims.
+  \item \textbf{The loudness channel.} $v_i$ was a MIDI velocity; its replacement
+        $\ell_i$ is an amplitude. Whether the two are commensurable across phases is a
+        claim, not a convention.
+  \item \textbf{What a result would mean.} The targets are estimator outputs, not ground
+        truth, so recovery measures agreement with the estimator. The Phase-2 claim is
+        weaker \emph{in kind} than the Phase-1 claim and must be reported as such.
+\end{enumerate}
+One experiment is worth doing first because it is nearly free (\S\ref{sec:phase2}):
+the circle-of-fifths metric \eqref{eq:tonaladj} that \emph{hurt} on piano expression may
+\emph{help} on intonation, whose target is pitch itself. That would be the first evidence
+here that a music-theoretic \emph{geometry}, and not only music-theoretic edges, earns
+its place. Figure~\ref{fig:arch-phase2} makes the claim precise: relative to
 Figure~\ref{fig:arch-phase1}, the coregionalization grows from $3 \times 3$ to
 $k \times k$ as channels join the bundle, and the observation noise $\Sigma_e$
 becomes substantive because the targets are now estimates rather than symbolic
