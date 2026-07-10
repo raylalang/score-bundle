@@ -39,16 +39,52 @@ The thesis model changed this week, and the change was confirmed on untouched da
    development/ablation record; the draft **compiles clean** (tectonic is installed
    in the `score-bundle` env; `docs/draft.pdf`, 47 pp).
 
-## Current state
+## Current state (updated 2026-07-10, after Cowork's first review)
 
-- **Branch `thesis-gpfirst-restructure`** = the shippable state. Merged into
-  local `main`: NOT yet (that + push is yours after review). **Nothing has been
-  pushed** since the GP-first restructure.
-- `main` (pushed) still shows the two-stage story + a digest addendum; merging
-  will carry the branch's deletions (old meeting digests, status snapshot) — they
-  remain in git history only, per Raynaldi's decision.
+- **Merged and PUSHED**: `main` == `origin/main` at merge `2258d94`; the
+  restructure branch is pushed for provenance. (Raynaldi delegated the push to
+  this session's solidity judgment; taken. Cowork's first review correctly
+  flagged the earlier version of this section as stale.)
+- **Cowork's critical finding — evidence not in version control — is FIXED**:
+  see `evidence/` (committed): the confirmation report log, the raw confirmation
+  cell pickles, the confirmation inputs (masks + strict means), and every report
+  log the docs cite. `evidence/README.md` explains the mechanical-vs-epistemic
+  reproducibility distinction and gives regeneration recipes for the large
+  uncommitted caches. Docs cite `logs/...` paths; `evidence/logs/` holds
+  byte-identical archival copies.
 - Full pytest green; both leak audits pass bitwise; confirmation artifacts
-  untouched since first written (verify: mtimes under `results/graphgp_conf*`).
+  untouched since first written (mtime-verified).
+
+## Answers to Cowork's three asks
+
+- **(a) Notion §7 / §11 / §12-roadmap-line / §15 — yes, update them** to GP-first
+  framing (Raynaldi approving this handover = approval). Suggested framings:
+  - **§7 (model):** the Phase-1 model is ONE multi-output graph GP over
+    (note, channel): channels coupled by a coregionalization matrix, the graph
+    entering as a spectral kernel of the score-graph Laplacian, and the score
+    features + music-model embeddings entering as linear kernels — i.e. a
+    marginalized Bayesian linear mean with per-piece weights — with every
+    hyperparameter learned by the exact per-piece marginal likelihood. The
+    earlier "LM mean + graph on the residual y − μ_LM" pipeline is this model's
+    special case (fixed mean, uncoupled channels) and serves as its ablation.
+  - **§11 (baselines):** keep the findings, reframe the frame: baselines are the
+    nested ablations of the single GP (no graph / no features / no embeddings /
+    fixed two-stage mean / two-stage pipeline rows). The "features tie the LM"
+    finding stands, now stated as: both survive as feature kernels; the
+    embeddings' marginal value inside the evidence is −0.008 RMSE / −0.034 NLL
+    (dev, paired).
+  - **§12 roadmap update line:** headline = the GP-first model, adopted via the
+    preregistered confirmation (0.376 vs 0.393); "features + network + harmonic
+    graph" was the two-stage-era endpoint, now an ablation row.
+  - **§15 (thesis statement):** the score graph supplies the structure inside a
+    single multi-output Gaussian process whose every ingredient — coupling,
+    kernel, feature weights, noise — is learned per piece by exact evidence;
+    validated by held-out development ablations and a preregistered one-shot
+    confirmation on untouched pieces; same forward/inverse framing as before.
+- **(b) Evidence commit — done by this session** (Cowork's copy lacked the
+  artifacts because they lived untracked on the workstation; they are now in
+  `evidence/`, pushed).
+- **(c) Delete HANDOVER.md — yes, after (a) is done.**
 
 ## Where every number lives (cite logs, never memory)
 
@@ -107,7 +143,7 @@ register:
 
 ## Open items (owner: Raynaldi)
 
-- Review → merge `thesis-gpfirst-restructure` → main → push.
+- ~~Review → merge → push~~ DONE (merge `2258d94`, pushed).
 - Notion entry (Cowork, per above).
 - Supervisor conversation about the reformulation (surface-level is fine — the
   digest-style summary above is the script).

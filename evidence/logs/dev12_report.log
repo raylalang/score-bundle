@@ -1,0 +1,9 @@
+DEV 12-SEED ROBUSTNESS (30 pieces x 12 seeds = 360 cells/config)
+config                 RMSE       NLL   cov@.9   (4-seed v2 reference)
+b_featlm             0.3630   -0.4075    0.927   (0.3601/-0.4038/0.927)
+b_feat               0.3708   -0.3719    0.924   (0.3683/-0.3696/0.923)
+b_featlm_nograph     0.3782   -0.3436    0.926   (0.3755/-0.3370/0.925)
+graph contribution RMSE: -0.0151 [-0.0243,-0.0069] SIG
+LM contribution    RMSE: -0.0076 [-0.0156,-0.0023] SIG
+graph contribution NLL : -0.0638 [-0.0805,-0.0477] SIG
+LM contribution    NLL : -0.0356 [-0.0608,-0.0181] SIG

@@ -21,9 +21,9 @@ data/
 *.midi
 
 # Run artifacts (regenerable; do not commit)
-checkpoints/
-.cache/
-logs/
+/checkpoints/
+/.cache/
+/logs/
 /figures/
 !docs/figures/
 *.pt
@@ -45,3 +45,9 @@ logs/
 
 # OS
 .DS_Store
+
+# EXCEPTION (must stay last — later rules win): primary evidence behind the
+# thesis claims (one-shot confirmation run + cited report logs). Deliberately
+# committed against the regenerable-artifacts rule; see evidence/README.md.
+!evidence/**/*.pkl
+!evidence/**/*.log

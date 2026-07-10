@@ -1,0 +1,29 @@
+piece 0 done (min weight 0.31)
+piece 1 done (min weight 0.17)
+piece 2 done (min weight 0.40)
+piece 3 done (min weight 0.18)
+piece 4 done (min weight 0.13)
+piece 5 done (min weight 0.19)
+piece 6 done (min weight 0.13)
+piece 7 done (min weight 0.18)
+piece 8 done (min weight 0.53)
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:67: RuntimeWarning: overflow encountered in exp
+  Lc[np.diag_indices(k)] = np.exp(theta[:k])
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:69: RuntimeWarning: invalid value encountered in matmul
+  return Lc @ Lc.T
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:111: RuntimeWarning: overflow encountered in exp
+  cs.append(np.exp(x[i:i + self.k])); i += self.k
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:112: RuntimeWarning: overflow encountered in exp
+  nv = np.exp(x[i:i + self.k])
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:127: RuntimeWarning: invalid value encountered in multiply
+  blk = p["B"][a, b] * Kg
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:130: RuntimeWarning: invalid value encountered in add
+  blk = blk + c[a] * XXt
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:148: RuntimeWarning: invalid value encountered in multiply
+  K[c * n_o:(c + 1) * n_o, c * n_o:(c + 1) * n_o] += p["noise"][c] * np.eye(n_o)
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/numpy/linalg/_linalg.py:2350: RuntimeWarning: invalid value encountered in slogdet
+  sign, logdet = _umath_linalg.slogdet(a, signature=signature)
+piece 9 done (min weight 0.13)
+tau gauss: RMSE 0.2111  gauss-NLL -1.0858  cov 0.961
+tau t    : RMSE 0.2161  gauss-NLL -0.7175  cov 0.936  t-NLL -1.6204
+ROBUST_CHECK_DONE

@@ -1,0 +1,27 @@
+loaded rows: ['additive', 'harmonic', 'harmonic_vl']
+
+===== mu = mu_LM (strict mask-aware) =====
+kernel             RMSE       NLL   cov@.9  cal-err  med-cell    worst      dRMSE vs additive [95% CI]    dNLL vs additive [95% CI]  guard
+additive         0.3879   -0.3330    0.921    0.065    0.3809   0.5835                               —                            —  clean
+harmonic         0.3784   -0.3418    0.923    0.065    0.3743   0.5779      -0.0095 [-0.0133,-0.0061]*   -0.0088 [-0.0176,+0.0012]   1c/0x
+harmonic_vl      0.3795   -0.3459    0.922    0.066    0.3765   0.5777      -0.0082 [-0.0117,-0.0053]*   -0.0129 [-0.0193,-0.0060]*  0c/1x
+
+===== mu = 0 =====
+kernel             RMSE       NLL   cov@.9  cal-err  med-cell    worst      dRMSE vs additive [95% CI]    dNLL vs additive [95% CI]  guard
+additive         0.4041   -0.3083    0.923    0.083    0.3972   0.6048                               —                            —  clean
+harmonic         0.3957   -0.3137    0.927    0.083    0.3915   0.6049      -0.0084 [-0.0125,-0.0048]*   -0.0056 [-0.0161,+0.0063]   1c/0x
+harmonic_vl      0.3953   -0.3209    0.927    0.083    0.3931   0.6051      -0.0085 [-0.0124,-0.0052]*   -0.0127 [-0.0213,-0.0028]*  0c/1x
+
+===== per-channel appendix (RMSE / cov@.9) =====
+-- mu = LM
+kernel           tau RMSE   tau cov log r RMSE log r cov     v RMSE     v cov
+additive           0.1581     0.941     0.6481     0.911     0.0792     0.911
+harmonic           0.1581     0.942     0.6313     0.914     0.0782     0.912
+harmonic_vl        0.1580     0.940     0.6332     0.913     0.0779     0.911
+
+-- mu = zero
+kernel           tau RMSE   tau cov log r RMSE log r cov     v RMSE     v cov
+additive           0.1559     0.945     0.6775     0.908     0.0803     0.917
+harmonic           0.1558     0.945     0.6626     0.911     0.0805     0.924
+harmonic_vl        0.1559     0.944     0.6619     0.912     0.0795     0.924
+

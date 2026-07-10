@@ -1,0 +1,56 @@
+
+=== ANOMALY (AUROC [95% CI] / AP), per channel ===
+  tau      GP-feat      0.978 [0.974,0.981]  AP 0.587
+  tau      GP-featlm    0.978 [0.974,0.982]  AP 0.592
+  tau      LM           0.934 [0.910,0.955]  AP 0.467
+  tau      LM+graph     0.961 [0.946,0.973]  AP 0.547
+  tau      zero         0.972 [0.968,0.976]  AP 0.530
+  tau      zero+graph   0.975 [0.969,0.980]  AP 0.586
+  log r    GP-feat      0.985 [0.981,0.989]  AP 0.818
+  log r    GP-featlm    0.986 [0.983,0.989]  AP 0.837
+  log r    LM           0.963 [0.955,0.970]  AP 0.717
+  log r    LM+graph     0.979 [0.974,0.983]  AP 0.780
+  log r    zero         0.908 [0.884,0.928]  AP 0.595
+  log r    zero+graph   0.977 [0.972,0.982]  AP 0.774
+  v        GP-feat      0.994 [0.991,0.995]  AP 0.908
+  v        GP-featlm    0.995 [0.994,0.997]  AP 0.917
+  v        LM           0.984 [0.978,0.989]  AP 0.852
+  v        LM+graph     0.992 [0.989,0.994]  AP 0.890
+  v        zero         0.959 [0.950,0.967]  AP 0.746
+  v        zero+graph   0.991 [0.988,0.993]  AP 0.882
+
+=== DENOISE (RMSE / NLL / cov@.9) ===
+  level 0.5 GP-feat blind      RMSE 0.2496  NLL +1239.149  cov 0.673
+  level 0.5 GP-feat oracle     RMSE 0.1818  NLL -1.116  cov 0.902
+  level 0.5 old LM graph       RMSE 0.2572  NLL +74.658  cov 0.615
+  level 0.5 old LM graph-oracle RMSE 0.1861  NLL -1.093  cov 0.900
+  level 1.0 GP-feat blind      RMSE 0.3163  NLL +564.281  cov 0.717
+  level 1.0 GP-feat oracle     RMSE 0.2756  NLL -0.688  cov 0.904
+  level 1.0 old LM graph       RMSE 0.3380  NLL +157068223429464227840.000  cov 0.486
+  level 1.0 old LM graph-oracle RMSE 0.2823  NLL +17.443  cov 0.869
+
+=== COMPLETION (RMSE / NLL) ===
+  block   frac 0.25 GP-feat        RMSE 0.4412  NLL +4.024
+  block   frac 0.25 GP-featlm      RMSE 0.4315  NLL +4.156
+  block   frac 0.25 old LM         RMSE 0.4133  NLL +0.263
+  block   frac 0.25 old LM+graph   RMSE 0.4020  NLL +0.413
+  block   frac 0.50 GP-feat        RMSE 0.3892  NLL -0.090
+  block   frac 0.50 GP-featlm      RMSE 0.3903  NLL -0.160
+  block   frac 0.50 old LM         RMSE 0.4086  NLL -0.159
+  block   frac 0.50 old LM+graph   RMSE 0.3851  NLL -0.197
+  prefix  frac 0.25 GP-feat        RMSE 0.4739  NLL +1.915
+  prefix  frac 0.25 GP-featlm      RMSE 16009.3437  NLL +30810342570511.504
+  prefix  frac 0.25 old LM         RMSE 0.4144  NLL +0.336
+  prefix  frac 0.25 old LM+graph   RMSE 1.0782  NLL +26.015
+  prefix  frac 0.50 GP-feat        RMSE 0.4346  NLL +4.026
+  prefix  frac 0.50 GP-featlm      RMSE 0.4451  NLL +3.190
+  prefix  frac 0.50 old LM         RMSE 0.4111  NLL +0.446
+  prefix  frac 0.50 old LM+graph   RMSE 0.3965  NLL +0.511
+
+=== ERA (LOO nearest-centroid accuracy) ===
+  GP-denoised    acc 0.200 (n=30, majority~0.600)
+  raw            acc 0.100 (n=30, majority~0.600)
+
+=== SELECTIVE (risk-coverage) ===
+  old headline         rmse 0.3795  aurc 0.1276  excess +0.2329  rmse@50% 0.0795
+  GP-first b_featlm    rmse 0.3679  aurc 0.1215  excess +0.2279  rmse@50% 0.0764

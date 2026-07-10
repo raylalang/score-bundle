@@ -1,0 +1,9 @@
+Headline-table rows, strict protocol, identical masks (30 pieces x 4 seeds); per-piece bootstrap 95% CIs
+
+system                                            RMSE [95% CI]               NLL [95% CI]   cov@.9
+zero mean, graph off                    0.5664 [0.504,0.596]   -0.0068 [-0.125,0.117]    0.869
+zero + graph                            0.4041 [0.363,0.424]   -0.3083 [-0.403,-0.214]    0.923
+LM mean, graph off                      0.4458 [0.405,0.469]   -0.1636 [-0.257,-0.067]    0.898
+LM + graph                              0.3930 [0.353,0.413]   -0.3223 [-0.405,-0.238]    0.921
+feat+LM + graph                         0.3879 [0.351,0.408]   -0.3330 [-0.412,-0.252]    0.921
+feat+LM + harmonic graph (headline)     0.3795 [0.343,0.400]   -0.3459 [-0.426,-0.260]    0.922

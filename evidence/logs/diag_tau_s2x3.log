@@ -1,0 +1,132 @@
+head fit
+  s0 p 0 tauRMSE   0.104    3.9s
+  s0 p 1 tauRMSE   0.119    5.8s
+  s0 p 2 tauRMSE   0.018    4.0s
+  s0 p 3 tauRMSE   0.118    3.8s
+  s0 p 4 tauRMSE   0.024    4.0s
+  s0 p 5 tauRMSE   0.043    4.8s
+  s0 p 6 tauRMSE   0.068    3.9s
+  s0 p 7 tauRMSE   0.620    5.3s
+  s0 p 8 tauRMSE   0.202    4.1s
+  s0 p 9 tauRMSE   0.077    5.1s
+  s0 p10 tauRMSE   0.136    4.1s
+  s0 p11 tauRMSE   0.118    3.9s
+  s0 p12 tauRMSE   0.116    4.0s
+  s0 p13 tauRMSE   0.232    3.7s
+  s0 p14 tauRMSE   0.042    3.9s
+  s0 p15 tauRMSE   0.088    5.9s
+  s0 p16 tauRMSE   0.099   10.3s
+  s0 p17 tauRMSE   0.112    4.5s
+  s0 p18 tauRMSE   0.037    4.4s
+  s0 p19 tauRMSE   0.147    6.6s
+  s0 p20 tauRMSE   0.047    4.6s
+  s0 p21 tauRMSE   0.059    5.0s
+  s0 p22 tauRMSE   0.043    7.0s
+  s0 p23 tauRMSE   0.050    6.0s
+  s0 p24 tauRMSE   0.040    4.0s
+  s0 p25 tauRMSE   0.127    4.0s
+  s0 p26 tauRMSE   0.140    5.2s
+  s0 p27 tauRMSE   0.037    5.4s
+  s0 p28 tauRMSE   0.213    5.5s
+  s0 p29 tauRMSE   0.168    5.2s
+seed 1/4 done
+  s1 p 0 tauRMSE   0.093    3.9s
+  s1 p 1 tauRMSE   0.136    5.4s
+  s1 p 2 tauRMSE   0.019    6.4s
+  s1 p 3 tauRMSE   0.188    3.7s
+  s1 p 4 tauRMSE   0.048    4.0s
+  s1 p 5 tauRMSE   0.068    3.6s
+  s1 p 6 tauRMSE   0.098    3.8s
+  s1 p 7 tauRMSE   0.565    4.6s
+  s1 p 8 tauRMSE   0.161    5.9s
+  s1 p 9 tauRMSE   0.095    3.9s
+  s1 p10 tauRMSE   0.112    5.1s
+  s1 p11 tauRMSE   0.098    3.7s
+  s1 p12 tauRMSE   0.095    6.5s
+  s1 p13 tauRMSE   0.243    5.4s
+  s1 p14 tauRMSE   0.046    7.5s
+  s1 p15 tauRMSE   0.099    4.4s
+  s1 p16 tauRMSE   0.179    3.8s
+  s1 p17 tauRMSE   0.123    8.5s
+  s1 p18 tauRMSE   0.031    9.6s
+  s1 p19 tauRMSE   0.144   13.4s
+  s1 p20 tauRMSE   0.117    4.0s
+  s1 p21 tauRMSE   0.067    4.3s
+  s1 p22 tauRMSE   0.059    4.0s
+  s1 p23 tauRMSE   0.052    5.8s
+  s1 p24 tauRMSE   0.045    4.1s
+  s1 p25 tauRMSE   0.074    3.8s
+  s1 p26 tauRMSE   0.076    4.1s
+  s1 p27 tauRMSE   0.036    4.0s
+  s1 p28 tauRMSE   0.178    5.0s
+  s1 p29 tauRMSE   0.102    4.5s
+seed 2/4 done
+  s2 p 0 tauRMSE   0.107    4.9s
+  s2 p 1 tauRMSE   0.121    4.5s
+  s2 p 2 tauRMSE   0.020    3.7s
+  s2 p 3 tauRMSE   0.164    4.0s
+  s2 p 4 tauRMSE   0.025    4.7s
+  s2 p 5 tauRMSE   0.097    4.2s
+  s2 p 6 tauRMSE   0.086    4.0s
+  s2 p 7 tauRMSE   0.587    5.0s
+  s2 p 8 tauRMSE   0.162    3.5s
+  s2 p 9 tauRMSE   0.101    3.5s
+  s2 p10 tauRMSE   0.109    4.9s
+  s2 p11 tauRMSE   0.062    4.0s
+  s2 p12 tauRMSE   0.063    4.2s
+  s2 p13 tauRMSE   0.300    4.3s
+  s2 p14 tauRMSE   0.052    3.6s
+  s2 p15 tauRMSE   0.090    5.7s
+  s2 p16 tauRMSE   0.146    4.1s
+  s2 p17 tauRMSE   0.116    3.9s
+  s2 p18 tauRMSE   0.030    4.0s
+  s2 p19 tauRMSE   0.117    6.8s
+  s2 p20 tauRMSE   0.059    7.1s
+  s2 p21 tauRMSE   0.058    3.7s
+  s2 p22 tauRMSE   0.054    4.8s
+  s2 p23 tauRMSE   0.063    5.7s
+  s2 p24 tauRMSE   0.054    8.1s
+  s2 p25 tauRMSE   0.072    9.6s
+  s2 p26 tauRMSE   0.103   10.1s
+  s2 p27 tauRMSE   0.061   11.1s
+  s2 p28 tauRMSE   0.175    9.1s
+  s2 p29 tauRMSE   0.167    4.2s
+seed 3/4 done
+  s3 p 0 tauRMSE   0.135    3.6s
+  s3 p 1 tauRMSE   0.111    5.6s
+  s3 p 2 tauRMSE   0.021    6.7s
+  s3 p 3 tauRMSE   0.185    3.8s
+  s3 p 4 tauRMSE   0.031    5.8s
+  s3 p 5 tauRMSE   0.063    4.8s
+  s3 p 6 tauRMSE   0.081    3.8s
+  s3 p 7 tauRMSE   0.586    4.6s
+  s3 p 8 tauRMSE   0.188    4.2s
+  s3 p 9 tauRMSE   0.082    4.0s
+  s3 p10 tauRMSE   0.128    3.6s
+  s3 p11 tauRMSE   0.105    5.7s
+  s3 p12 tauRMSE   0.127    3.6s
+  s3 p13 tauRMSE   0.291    6.1s
+  s3 p14 tauRMSE   0.051    5.3s
+  s3 p15 tauRMSE   0.086    5.9s
+  s3 p16 tauRMSE   0.202    3.9s
+  s3 p17 tauRMSE   0.104    4.2s
+  s3 p18 tauRMSE   0.028    4.0s
+  s3 p19 tauRMSE   0.123   10.0s
+  s3 p20 tauRMSE   0.115    4.2s
+  s3 p21 tauRMSE   0.058    4.0s
+  s3 p22 tauRMSE   0.040    5.5s
+  s3 p23 tauRMSE   0.050    5.5s
+  s3 p24 tauRMSE   0.036    4.1s
+  s3 p25 tauRMSE   0.071    3.8s
+  s3 p26 tauRMSE   0.110    3.9s
+  s3 p27 tauRMSE   0.061    3.8s
+  s3 p28 tauRMSE   4.508    5.1s
+  s3 p29 tauRMSE   0.159    5.0s
+seed 4/4 done
+
+pooled tau graph-on: RMSE 0.4185 NLL 0.3980 cov 0.936 | cells >0.5: 5/120
+    seed 3 piece 28  tau RMSE 4.508
+    seed 0 piece  7  tau RMSE 0.620
+    seed 2 piece  7  tau RMSE 0.587
+    seed 3 piece  7  tau RMSE 0.586
+    seed 1 piece  7  tau RMSE 0.565

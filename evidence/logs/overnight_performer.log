@@ -1,0 +1,107 @@
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/partitura/utils/music.py:804: UserWarning: Quarter duration 1.25 from 20/16 is a compositeduration but composite durations are not allowed. Returning empty symbolic duration.
+  warnings.warn(
+[performer] Chopin_op10_no3 p01 done
+[performer] Chopin_op10_no3 p02 done
+[performer] Chopin_op10_no3 p03 done
+[performer] Chopin_op10_no3 p04 done
+[performer] Chopin_op10_no3 p05 done
+[performer] Chopin_op10_no3 p06 done
+[performer] Chopin_op10_no3 p07 done
+[performer] Chopin_op10_no3 p08 done
+[performer] Chopin_op10_no3 p09 done
+[performer] Chopin_op10_no3 p10 done
+[performer] Chopin_op10_no3 p11 done
+[performer] Chopin_op10_no3 p12 done
+[performer] Chopin_op10_no3 p13 done
+[performer] Chopin_op10_no3 p14 done
+[performer] Chopin_op10_no3 p15 done
+[performer] Chopin_op10_no3 p16 done
+[performer] Chopin_op10_no3 p17 done
+[performer] Chopin_op10_no3 p18 done
+[performer] Chopin_op10_no3 p19 done
+[performer] Chopin_op10_no3 p20 done
+[performer] Chopin_op10_no3 p21 done
+[performer] Chopin_op10_no3 p22 done
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/partitura/io/importmatch.py:611: UserWarning: Calculated `onset_divs` does not match `OnsetInBeats` information!.
+  warnings.warn(
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/partitura/utils/music.py:804: UserWarning: Quarter duration 2.5 from 80/32 is a compositeduration but composite durations are not allowed. Returning empty symbolic duration.
+  warnings.warn(
+[performer] Chopin_op38 p01 done
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:69: RuntimeWarning: overflow encountered in matmul
+  return Lc @ Lc.T
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:127: RuntimeWarning: invalid value encountered in multiply
+  blk = p["B"][a, b] * Kg
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/numpy/linalg/_linalg.py:2350: RuntimeWarning: invalid value encountered in slogdet
+  sign, logdet = _umath_linalg.slogdet(a, signature=signature)
+[performer] Chopin_op38 p02 done
+[performer] Chopin_op38 p03 done
+[performer] Chopin_op38 p04 done
+[performer] Chopin_op38 p05 done
+[performer] Chopin_op38 p06 done
+[performer] Chopin_op38 p07 done
+[performer] Chopin_op38 p08 done
+[performer] Chopin_op38 p09 done
+[performer] Chopin_op38 p10 done
+[performer] Chopin_op38 p11 done
+[performer] Chopin_op38 p12 done
+[performer] Chopin_op38 p13 done
+[performer] Chopin_op38 p14 done
+[performer] Chopin_op38 p15 done
+[performer] Chopin_op38 p16 done
+[performer] Chopin_op38 p17 done
+[performer] Chopin_op38 p18 done
+[performer] Chopin_op38 p19 done
+[performer] Chopin_op38 p20 done
+[performer] Chopin_op38 p21 done
+[performer] Chopin_op38 p22 done
+[performer] Mozart_K331_1st-mov p01 done
+[performer] Mozart_K331_1st-mov p02 done
+[performer] Mozart_K331_1st-mov p03 done
+[performer] Mozart_K331_1st-mov p04 done
+[performer] Mozart_K331_1st-mov p05 done
+[performer] Mozart_K331_1st-mov p06 done
+[performer] Mozart_K331_1st-mov p07 done
+[performer] Mozart_K331_1st-mov p08 done
+[performer] Mozart_K331_1st-mov p09 done
+[performer] Mozart_K331_1st-mov p10 done
+[performer] Mozart_K331_1st-mov p11 done
+[performer] Mozart_K331_1st-mov p12 done
+[performer] Mozart_K331_1st-mov p13 done
+[performer] Mozart_K331_1st-mov p14 done
+[performer] Mozart_K331_1st-mov p15 done
+[performer] Mozart_K331_1st-mov p16 done
+[performer] Mozart_K331_1st-mov p17 done
+[performer] Mozart_K331_1st-mov p18 done
+[performer] Mozart_K331_1st-mov p19 done
+[performer] Mozart_K331_1st-mov p20 done
+[performer] Mozart_K331_1st-mov p21 done
+[performer] Mozart_K331_1st-mov p22 done
+[performer] Schubert_D783_no15 p01 done
+[performer] Schubert_D783_no15 p02 done
+[performer] Schubert_D783_no15 p03 done
+[performer] Schubert_D783_no15 p04 done
+[performer] Schubert_D783_no15 p05 done
+[performer] Schubert_D783_no15 p06 done
+[performer] Schubert_D783_no15 p07 done
+[performer] Schubert_D783_no15 p08 done
+[performer] Schubert_D783_no15 p09 done
+[performer] Schubert_D783_no15 p10 done
+[performer] Schubert_D783_no15 p11 done
+[performer] Schubert_D783_no15 p12 done
+[performer] Schubert_D783_no15 p13 done
+[performer] Schubert_D783_no15 p14 done
+[performer] Schubert_D783_no15 p15 done
+[performer] Schubert_D783_no15 p16 done
+[performer] Schubert_D783_no15 p17 done
+[performer] Schubert_D783_no15 p18 done
+[performer] Schubert_D783_no15 p19 done
+[performer] Schubert_D783_no15 p20 done
+[performer] Schubert_D783_no15 p21 done
+[performer] Schubert_D783_no15 p22 done
+wrote results/downstream_gpfirst/performer.shard0_1.pkl
+=== PERFORMER-ID (Vienna 4x22, leave-one-piece-out) ===
+  GP-denoised (GP-feat)      acc 0.114 (n=88, chance 0.045)
+  raw                        acc 0.136 (n=88, chance 0.045)
+  two-stage graph-denoised   acc 0.080 (n=88, chance 0.045)
+
+=== SELECTIVE (risk-coverage) ===

@@ -1,0 +1,17 @@
+40 head + 30 eval | l2=10.0 | guard=False | device cuda:0
+head fit (feat + emb_leakfree concat)
+seed 1/4 done
+seed 2/4 done
+seed 3/4 done
+seed 4/4 done
+
+Pooled (identical masks):
+variant      graph      RMSE       NLL   cov@.9
+feat+LM      off      0.4381   -0.1943    0.894
+feat+LM      on       0.3879   -0.3474    0.919
+feat+LM-ma   off      0.4383   -0.1778    0.900
+feat+LM-ma   on       0.3879   -0.3330    0.921
+
+Paired per-piece diff (strict - non-strict; positive = strictness costs):
+  RMSE  +0.0000 [-0.0005, +0.0006]  
+  NLL   +0.0143 [+0.0084, +0.0201] *

@@ -1,0 +1,53 @@
+40 head + 30 eval pieces | observed_frac=0.6 | noise_floor_frac=0.05 | device cuda
+heads fit (leak-free and mask-aware)
+seed 1/4 done
+seed 2/4 done
+seed 3/4 done
+seed 4/4 done
+
+Pooled (identical masks across variants):
+mean source    graph      RMSE      NLL   cov@.9  cal-err
+LM-lf          off      0.4451  -0.1825    0.893    0.072
+LM-lf          on       0.3928  -0.3357    0.918    0.066
+LM-ma          off      0.4458  -0.1636    0.898    0.079
+LM-ma          on       0.3930  -0.3223    0.921    0.067
+LM-ma-mh       off      0.4457  -0.1656    0.896    0.077
+LM-ma-mh       on       0.3924  -0.3264    0.921    0.066
+
+Per-channel breakdown:
+[tau]
+mean source    graph      RMSE      NLL   cov@.9  cal-err
+LM-lf          off      0.1669  -0.6932    0.926    0.172
+LM-lf          on       0.1585  -0.8140    0.942    0.156
+LM-ma          off      0.1664  -0.7079    0.928    0.163
+LM-ma          on       0.1581  -0.8137    0.943    0.159
+LM-ma-mh       off      0.1668  -0.7012    0.929    0.167
+LM-ma-mh       on       0.1582  -0.8173    0.942    0.159
+
+[log r]
+mean source    graph      RMSE      NLL   cov@.9  cal-err
+LM-lf          off      0.7473   1.1198    0.890    0.039
+LM-lf          on       0.6570   0.9444    0.910    0.038
+LM-ma          off      0.7474   1.1184    0.892    0.039
+LM-ma          on       0.6571   0.9447    0.910    0.040
+LM-ma-mh       off      0.7476   1.1179    0.891    0.040
+LM-ma-mh       on       0.6560   0.9431    0.912    0.039
+
+[v]
+mean source    graph      RMSE      NLL   cov@.9  cal-err
+LM-lf          off      0.0899  -0.9740    0.864    0.040
+LM-lf          on       0.0779  -1.1377    0.902    0.032
+LM-ma          off      0.0989  -0.9011    0.874    0.051
+LM-ma          on       0.0810  -1.0979    0.909    0.037
+LM-ma-mh       off      0.0964  -0.9135    0.869    0.046
+LM-ma-mh       on       0.0807  -1.1052    0.910    0.039
+
+Paired bootstrap, per-piece diff (negative = first better):
+  RMSE mask-aware vs leak-free   (graph on)      +0.0003 [-0.0003, +0.0008]  
+  NLL  mask-aware vs leak-free   (graph on)      +0.0135 [+0.0075, +0.0195] *
+  RMSE mask-aware+mh vs leak-free (graph on)     -0.0003 [-0.0010, +0.0004]  
+  NLL  mask-aware+mh vs leak-free (graph on)     +0.0093 [+0.0033, +0.0149] *
+  RMSE mask-aware vs leak-free   (mean only)     +0.0006 [-0.0006, +0.0018]  
+  NLL  mask-aware vs leak-free   (mean only)     +0.0190 [+0.0054, +0.0341] *
+  RMSE graph on vs off           (mask-aware)    -0.0523 [-0.0688, -0.0372] *
+  NLL  graph on vs off           (mask-aware)    -0.1581 [-0.1937, -0.1259] *

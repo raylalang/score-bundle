@@ -1,0 +1,14 @@
+CONFIRMATION SET (20 fresh pieces x 4 seeds, one-shot)
+system                             RMSE       NLL   cov@.9
+GP b_featlm                      0.3755   -0.3002    0.925
+GP b_featlm_nograph              0.4052   -0.2261    0.922
+GP b_feat                        0.3850   -0.2639    0.923
+old headline (feat+LM+harm)      0.3928   -0.3108    0.922
+old feat+LM+graph                0.3987   -0.2953    0.920
+old LM+graph                     0.4012   -0.2885    0.921
+
+PREREGISTERED CLAIMS:
+  C1 RMSE b_featlm - old headline: -0.0137 [-0.0246,-0.0040] SIG
+  C1 NLL  b_featlm - old headline: +0.0109 [-0.1289,+0.2452] ns
+  C2 NLL  b_featlm - nograph:      -0.0736 [-0.0918,-0.0574] SIG
+  C3 coverage 0.925 in [0.88, 0.95]: PASS
