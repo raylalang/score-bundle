@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 490" width="1240" height="490" font-family="Latin Modern Roman, Palatino, Georgia, serif">
+  <title>Score-Bundle Models — Phase 2: intonation and vibrato (not yet implemented)</title>
+  <desc>The prior and the conjugate posterior are unchanged; audio only derives new per-note targets.</desc>
+
+  <style>
+    .box  { fill:#ffffff; stroke:#1A1A1A; stroke-width:0.9; }
+    .io   { fill:#fafafa; stroke:#9CA3AF; stroke-width:0.9; }
+    .new  { fill:#ffffff; stroke:#1A1A1A; stroke-width:0.9; stroke-dasharray:5 3; }
+    .newio{ fill:#fafafa; stroke:#9CA3AF; stroke-width:0.9; stroke-dasharray:5 3; }
+    .acc  { fill:#fdf5f4; stroke:#9A3324; stroke-width:1.5; stroke-dasharray:5 3; }
+    .encl { fill:none; stroke:#9CA3AF; stroke-width:0.8; stroke-dasharray:5 3; }
+    .arr  { fill:none; stroke:#6B7280; stroke-width:1; marker-end:url(#head); }
+    text  { fill:#1A1A1A; font-size:13px; }
+    .t    { text-anchor:middle; }
+    .sm   { font-size:11.5px; }
+    .it   { font-style:italic; }
+    .sub  { font-size:8.5px; }
+    .lab  { font-size:10.5px; letter-spacing:.9px; fill:#6B7280; }
+    .labA { font-size:10.5px; letter-spacing:.9px; fill:#9A3324; }
+    .note { font-size:11.5px; font-style:italic; fill:#6B7280; text-anchor:middle; }
+    .cap  { font-size:12.5px; fill:#6B7280; text-anchor:middle; font-style:italic; }
+  </style>
+
+  <defs>
+    <marker id="head" markerWidth="7" markerHeight="7" refX="6.2" refY="2.6" orient="auto">
+      <path d="M0,0 L6.2,2.6 L0,5.2 z" fill="#6B7280"/>
+    </marker>
+  </defs>
+
+  <rect class="encl" x="232" y="18" width="556" height="288" rx="3"/>
+  <rect x="243" y="10" width="332" height="16" fill="#ffffff"/>
+  <text class="lab" x="247" y="22">PRIOR — SHARED, UNCHANGED ACROSS ALL PHASES</text>
+
+  <!-- inputs -->
+  <rect class="io" x="20" y="32" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="56">Score <tspan class="it">𝒮</tspan> = {(<tspan class="it">p</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, </tspan><tspan class="it">b</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, </tspan><tspan class="it">d</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">)}</tspan></text>
+  <text class="t sm" x="111" y="75">known in every phase</text>
+
+  <rect class="io" x="20" y="140" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="164">Music model (Phase 0)</text>
+  <text class="t sm" x="111" y="183">per-note embedding <tspan class="it">h</tspan><tspan class="sub" dy="3">i</tspan></text>
+
+  <rect class="newio" x="20" y="330" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="354">Monophonic audio</text>
+  <text class="t sm" x="111" y="373"><tspan class="it">f</tspan><tspan class="sub" dy="3">0</tspan><tspan dy="-3"> extraction</tspan></text>
+
+  <!-- prior components -->
+  <rect class="box" x="248" y="30" width="180" height="72" rx="2"/>
+  <text class="t sm" x="338" y="51">Score graph → <tspan class="it">L</tspan><tspan class="sub" dy="3">𝒢</tspan></text>
+  <text class="t sm" x="338" y="70">spectral kernel</text>
+  <text class="t sm it" x="338" y="90">K<tspan class="sub" dy="3">G</tspan><tspan dy="-3">(s) = U g(ν; s) U</tspan><tspan class="sub" dy="-4">⊤</tspan></text>
+
+  <rect class="box" x="248" y="132" width="180" height="72" rx="2"/>
+  <text class="t sm" x="338" y="153">Feature kernels</text>
+  <text class="t sm it" x="338" y="173">Σ<tspan class="sub" dy="3">f</tspan><tspan dy="-3"> diag(c</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">) ⊗ X</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">X</tspan><tspan class="sub" dy="3">f</tspan><tspan class="sub" dy="-8">⊤</tspan></text>
+  <text class="t sm" x="338" y="193">25 score features, <tspan class="it">h</tspan><tspan class="sub" dy="3">i</tspan></text>
+
+  <rect class="box" x="240" y="234" width="196" height="60" rx="2"/>
+  <text class="t sm" x="338" y="258">Coregionalization <tspan class="it">B</tspan></text>
+  <text class="t sm" x="338" y="278">now couples <tspan class="it">τ</tspan>, log <tspan class="it">r</tspan>, <tspan class="it">v</tspan>, <tspan class="it">c</tspan>, vibrato</text>
+
+  <!-- joint kernel -->
+  <rect class="box" x="452" y="96" width="328" height="72" rx="2"/>
+  <text class="t sm" x="616" y="119">Joint kernel</text>
+  <text class="t sm it" x="616" y="143">K = B ⊗ K<tspan class="sub" dy="3">G</tspan><tspan dy="-3"> + Σ</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3"> diag(c</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">) ⊗ X</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">X</tspan><tspan class="sub" dy="3">f</tspan><tspan class="sub" dy="-8">⊤</tspan></text>
+  <text class="t sm it" x="616" y="161">+ diag(ς²) ⊗ I</text>
+
+  <text class="note" x="616" y="196"><tspan class="it">θ</tspan> = (<tspan class="it">s</tspan>, <tspan class="it">B</tspan>, {<tspan class="it">c</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">}, ς²) learned jointly by one</tspan></text>
+  <text class="note" x="616" y="212">exact per-piece log marginal likelihood</text>
+
+  <!-- new derived targets -->
+  <rect class="new" x="248" y="322" width="180" height="74" rx="2"/>
+  <text class="t sm" x="338" y="344">Derived targets</text>
+  <text class="t sm" x="338" y="363">intonation <tspan class="it">c</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3"> (cents)</tspan></text>
+  <text class="t sm" x="338" y="383">vibrato (<tspan class="it">f</tspan><tspan class="sub" dy="3">i</tspan><tspan class="sub" dy="-7">vib</tspan><tspan dy="4">, </tspan><tspan class="it">γ</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">)</tspan></text>
+
+  <!-- likelihood -->
+  <rect x="450" y="304" width="292" height="16" fill="#ffffff"/>
+  <text class="labA" x="454" y="316">LIKELIHOOD — THE ONLY PART THAT CHANGES</text>
+  <rect class="acc" x="452" y="322" width="328" height="74" rx="2"/>
+  <text class="t sm" x="616" y="344" font-weight="600">Likelihood</text>
+  <text class="t sm" x="616" y="363"><tspan class="it">ỹ = y + e</tspan> on <tspan class="it">observed</tspan> notes</text>
+  <text class="t sm" x="616" y="383"><tspan class="it">Σ</tspan><tspan class="sub" dy="3">e</tspan><tspan dy="-3"> now </tspan><tspan class="it">substantive</tspan>: targets estimated</text>
+
+  <!-- inference + outputs -->
+  <rect class="box" x="826" y="188" width="150" height="76" rx="2"/>
+  <text class="t sm" x="901" y="210">Exact conjugate</text>
+  <text class="t sm" x="901" y="229">GP posterior</text>
+  <text class="t sm it" x="901" y="250">unchanged</text>
+
+  <rect class="newio" x="1010" y="184" width="212" height="84" rx="2"/>
+  <text class="t sm" x="1116" y="208">Per-note <tspan class="it">τ</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, log </tspan><tspan class="it">r</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, </tspan><tspan class="it">v</tspan><tspan class="sub" dy="3">i</tspan></text>
+  <text class="t sm" x="1116" y="230">+ <tspan class="it">c</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, vibrato</tspan></text>
+  <text class="t sm" x="1116" y="252">each with uncertainty</text>
+
+  <!-- arrows -->
+  <path class="arr" d="M202,61 H244"/>
+  <path class="arr" d="M202,78 H222 V168 H244"/>
+  <path class="arr" d="M202,169 H244"/>
+  <path class="arr" d="M428,66 L450,112"/>
+  <path class="arr" d="M428,168 H450"/>
+  <path class="arr" d="M436,264 L450,168"/>
+  <path class="arr" d="M202,359 H244"/>
+  <path class="arr" d="M428,359 H448"/>
+  <path class="arr" d="M780,142 L824,206"/>
+  <path class="arr" d="M780,356 L824,252"/>
+  <path class="arr" d="M976,226 H1006"/>
+
+  <!-- caption -->
+  <text class="cap" x="616" y="452"><tspan font-weight="600">Phase 2 (not yet implemented; dashed).</tspan> Audio enters only to <tspan font-style="italic">derive</tspan> per-note targets. The observation model,</text>
+  <text class="cap" x="616" y="470">the prior and the conjugate posterior are unchanged — what changes is the channel set, and that Σ<tspan class="sub" dy="3">e</tspan><tspan dy="-3"> is no longer near-zero.</tspan></text>
+</svg>

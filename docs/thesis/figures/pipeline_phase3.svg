@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1260 500" width="1260" height="500" font-family="Latin Modern Roman, Palatino, Georgia, serif">
+  <title>Score-Bundle Models — Phase 3: differentiable-synthesizer audio likelihood (not yet implemented)</title>
+  <desc>The observation is the waveform; there is no visible/hidden split and conjugacy is lost.</desc>
+
+  <style>
+    .box  { fill:#ffffff; stroke:#1A1A1A; stroke-width:0.9; }
+    .io   { fill:#fafafa; stroke:#9CA3AF; stroke-width:0.9; }
+    .new  { fill:#ffffff; stroke:#1A1A1A; stroke-width:0.9; stroke-dasharray:5 3; }
+    .newio{ fill:#fafafa; stroke:#9CA3AF; stroke-width:0.9; stroke-dasharray:5 3; }
+    .acc  { fill:#fdf5f4; stroke:#9A3324; stroke-width:1.5; stroke-dasharray:5 3; }
+    .encl { fill:none; stroke:#9CA3AF; stroke-width:0.8; stroke-dasharray:5 3; }
+    .arr  { fill:none; stroke:#6B7280; stroke-width:1; marker-end:url(#head); }
+    text  { fill:#1A1A1A; font-size:13px; }
+    .t    { text-anchor:middle; }
+    .sm   { font-size:11.5px; }
+    .it   { font-style:italic; }
+    .sub  { font-size:8.5px; }
+    .lab  { font-size:10.5px; letter-spacing:.9px; fill:#6B7280; }
+    .labA { font-size:10.5px; letter-spacing:.9px; fill:#9A3324; }
+    .note { font-size:11.5px; font-style:italic; fill:#6B7280; text-anchor:middle; }
+    .cap  { font-size:12.5px; fill:#6B7280; text-anchor:middle; font-style:italic; }
+  </style>
+
+  <defs>
+    <marker id="head" markerWidth="7" markerHeight="7" refX="6.2" refY="2.6" orient="auto">
+      <path d="M0,0 L6.2,2.6 L0,5.2 z" fill="#6B7280"/>
+    </marker>
+  </defs>
+
+  <rect class="encl" x="232" y="18" width="556" height="288" rx="3"/>
+  <rect x="243" y="10" width="332" height="16" fill="#ffffff"/>
+  <text class="lab" x="247" y="22">PRIOR — SHARED, UNCHANGED ACROSS ALL PHASES</text>
+
+  <!-- inputs -->
+  <rect class="io" x="20" y="32" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="56">Score <tspan class="it">𝒮</tspan> = {(<tspan class="it">p</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, </tspan><tspan class="it">b</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, </tspan><tspan class="it">d</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">)}</tspan></text>
+  <text class="t sm" x="111" y="75">known in every phase</text>
+
+  <rect class="io" x="20" y="140" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="164">Music model (Phase 0)</text>
+  <text class="t sm" x="111" y="183">per-note embedding <tspan class="it">h</tspan><tspan class="sub" dy="3">i</tspan></text>
+
+  <rect class="newio" x="20" y="336" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="360">Waveform <tspan class="it">x</tspan> ∈ ℝ<tspan class="sub" dy="-5">M</tspan></text>
+  <text class="t sm" x="111" y="381"><tspan class="it">no</tspan> performance MIDI</text>
+
+  <!-- prior components -->
+  <rect class="box" x="248" y="30" width="180" height="72" rx="2"/>
+  <text class="t sm" x="338" y="51">Score graph → <tspan class="it">L</tspan><tspan class="sub" dy="3">𝒢</tspan></text>
+  <text class="t sm" x="338" y="70">spectral kernel</text>
+  <text class="t sm it" x="338" y="90">K<tspan class="sub" dy="3">G</tspan><tspan dy="-3">(s) = U g(ν; s) U</tspan><tspan class="sub" dy="-4">⊤</tspan></text>
+
+  <rect class="box" x="248" y="132" width="180" height="72" rx="2"/>
+  <text class="t sm" x="338" y="153">Feature kernels</text>
+  <text class="t sm it" x="338" y="173">Σ<tspan class="sub" dy="3">f</tspan><tspan dy="-3"> diag(c</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">) ⊗ X</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">X</tspan><tspan class="sub" dy="3">f</tspan><tspan class="sub" dy="-8">⊤</tspan></text>
+  <text class="t sm" x="338" y="193">25 score features, <tspan class="it">h</tspan><tspan class="sub" dy="3">i</tspan></text>
+
+  <rect class="box" x="248" y="234" width="180" height="60" rx="2"/>
+  <text class="t sm" x="338" y="258">Coregionalization <tspan class="it">B</tspan></text>
+  <text class="t sm" x="338" y="278">couples the components of <tspan class="it">z</tspan></text>
+
+  <!-- joint kernel -->
+  <rect class="box" x="452" y="96" width="328" height="72" rx="2"/>
+  <text class="t sm" x="616" y="119">Joint kernel</text>
+  <text class="t sm it" x="616" y="143">K = B ⊗ K<tspan class="sub" dy="3">G</tspan><tspan dy="-3"> + Σ</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3"> diag(c</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">) ⊗ X</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">X</tspan><tspan class="sub" dy="3">f</tspan><tspan class="sub" dy="-8">⊤</tspan></text>
+  <text class="t sm it" x="616" y="161">+ diag(ς²) ⊗ I</text>
+
+  <text class="note" x="616" y="196">the same prior, now the structured</text>
+  <text class="note" x="616" y="212">component of <tspan class="it">p(z)</tspan></text>
+
+  <!-- audio likelihood -->
+  <rect x="450" y="310" width="292" height="16" fill="#ffffff"/>
+  <text class="labA" x="454" y="322">LIKELIHOOD — THE ONLY PART THAT CHANGES</text>
+  <rect class="acc" x="452" y="328" width="348" height="86" rx="2"/>
+  <text class="t sm" x="626" y="350" font-weight="600">Audio likelihood</text>
+  <text class="t sm it" x="626" y="369">x = Φ(z) a + ε,  ε ~ 𝒩(0, K<tspan class="sub" dy="3">n</tspan><tspan dy="-3">)</tspan></text>
+  <text class="t sm" x="626" y="388">amplitudes <tspan class="it">a</tspan> marginalised <tspan class="it">exactly</tspan>:</text>
+  <text class="t sm it" x="626" y="407">p(x | z) = 𝒩( Φμ<tspan class="sub" dy="3">a</tspan><tspan dy="-3">, ΦΣ</tspan><tspan class="sub" dy="3">a</tspan><tspan dy="-3">Φ</tspan><tspan class="sub" dy="-5">⊤</tspan><tspan dy="5"> + K</tspan><tspan class="sub" dy="3">n</tspan><tspan dy="-3"> )</tspan></text>
+
+  <!-- inference + outputs -->
+  <rect class="new" x="846" y="188" width="164" height="86" rx="2"/>
+  <text class="t sm" x="928" y="210"><tspan class="it">Non</tspan>-conjugate</text>
+  <text class="t sm" x="928" y="229">Laplace / VI over <tspan class="it">z</tspan></text>
+  <text class="t sm" x="928" y="248">score-based init;</text>
+  <text class="t sm" x="928" y="265"><tspan class="it">a</tspan> closed-form after</text>
+
+  <rect class="newio" x="1042" y="184" width="200" height="94" rx="2"/>
+  <text class="t sm" x="1142" y="208">Posterior over <tspan class="it">every</tspan></text>
+  <text class="t sm" x="1142" y="227">note’s <tspan class="it">z</tspan> + amplitudes</text>
+  <text class="t sm" x="1142" y="250">posterior-predictive</text>
+  <text class="t sm" x="1142" y="268">resynthesis</text>
+
+  <!-- arrows -->
+  <path class="arr" d="M202,61 H244"/>
+  <path class="arr" d="M202,78 H222 V168 H244"/>
+  <path class="arr" d="M202,169 H244"/>
+  <path class="arr" d="M428,66 L450,112"/>
+  <path class="arr" d="M428,168 H450"/>
+  <path class="arr" d="M428,264 L450,166"/>
+  <path class="arr" d="M202,365 H448"/>
+  <path class="arr" d="M780,142 L844,208"/>
+  <path class="arr" d="M800,370 L844,262"/>
+  <path class="arr" d="M1010,230 H1038"/>
+  <rect x="800" y="160" width="30" height="14" fill="#ffffff"/>
+  <text class="note" x="815" y="171"><tspan class="it">p(z)</tspan></text>
+
+  <!-- caption -->
+  <text class="cap" x="626" y="462"><tspan font-weight="600">Phase 3 (not yet implemented; dashed).</tspan> The observation is the waveform itself, so there are <tspan font-style="italic">no</tspan> per-note observations and</text>
+  <text class="cap" x="626" y="480"><tspan font-style="italic">no</tspan> visible/hidden split: given only the score and the audio, every note’s expression is latent and inferred jointly. Conjugacy is lost.</text>
+</svg>

@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 460" width="1240" height="460" font-family="Latin Modern Roman, Palatino, Georgia, serif">
+  <title>Score-Bundle Models — Phase 1 (implemented)</title>
+  <desc>A shared graph-GP prior; the likelihood is the only phase-dependent part.</desc>
+
+  <style>
+    .box  { fill:#ffffff; stroke:#1A1A1A; stroke-width:0.9; }
+    .io   { fill:#fafafa; stroke:#9CA3AF; stroke-width:0.9; }
+    .acc  { fill:#fdf5f4; stroke:#9A3324; stroke-width:1.5; }
+    .encl { fill:none; stroke:#9CA3AF; stroke-width:0.8; stroke-dasharray:5 3; }
+    .arr  { fill:none; stroke:#6B7280; stroke-width:1; marker-end:url(#head); }
+    text  { fill:#1A1A1A; font-size:13px; }
+    .t    { text-anchor:middle; }
+    .sm   { font-size:11.5px; }
+    .it   { font-style:italic; }
+    .sub  { font-size:8.5px; }
+    .lab  { font-size:10.5px; letter-spacing:.9px; fill:#6B7280; }
+    .labA { font-size:10.5px; letter-spacing:.9px; fill:#9A3324; }
+    .note { font-size:11.5px; font-style:italic; fill:#6B7280; text-anchor:middle; }
+    .cap  { font-size:12.5px; fill:#6B7280; text-anchor:middle; font-style:italic; }
+  </style>
+
+  <defs>
+    <marker id="head" markerWidth="7" markerHeight="7" refX="6.2" refY="2.6" orient="auto">
+      <path d="M0,0 L6.2,2.6 L0,5.2 z" fill="#6B7280"/>
+    </marker>
+  </defs>
+
+  <!-- ============ enclosure: the shared prior ============ -->
+  <rect class="encl" x="232" y="18" width="556" height="288" rx="3"/>
+  <rect x="243" y="10" width="332" height="16" fill="#ffffff"/>
+  <text class="lab" x="247" y="22">PRIOR — SHARED, UNCHANGED ACROSS ALL PHASES</text>
+
+  <!-- ============ inputs ============ -->
+  <rect class="io" x="20" y="32" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="56">Score <tspan class="it">𝒮</tspan> = {(<tspan class="it">p</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, </tspan><tspan class="it">b</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, </tspan><tspan class="it">d</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">)}</tspan></text>
+  <text class="t sm" x="111" y="75">known in every phase</text>
+
+  <rect class="io" x="20" y="140" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="164">Music model (Phase 0)</text>
+  <text class="t sm" x="111" y="183">per-note embedding <tspan class="it">h</tspan><tspan class="sub" dy="3">i</tspan></text>
+
+  <rect class="io" x="20" y="318" width="182" height="58" rx="2"/>
+  <text class="t sm" x="111" y="342">Performance MIDI</text>
+  <text class="t sm" x="111" y="361">per-note targets <tspan class="it">ỹ</tspan></text>
+
+  <!-- ============ prior components ============ -->
+  <rect class="box" x="248" y="30" width="180" height="72" rx="2"/>
+  <text class="t sm" x="338" y="51">Score graph → <tspan class="it">L</tspan><tspan class="sub" dy="3">𝒢</tspan></text>
+  <text class="t sm" x="338" y="70">spectral kernel</text>
+  <text class="t sm it" x="338" y="90">K<tspan class="sub" dy="3">G</tspan><tspan dy="-3">(s) = U g(ν; s) U</tspan><tspan class="sub" dy="-4">⊤</tspan></text>
+
+  <rect class="box" x="248" y="132" width="180" height="72" rx="2"/>
+  <text class="t sm" x="338" y="153">Feature kernels</text>
+  <text class="t sm it" x="338" y="173">Σ<tspan class="sub" dy="3">f</tspan><tspan dy="-3"> diag(c</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">) ⊗ X</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">X</tspan><tspan class="sub" dy="3">f</tspan><tspan class="sub" dy="-8">⊤</tspan></text>
+  <text class="t sm" x="338" y="193">25 score features, <tspan class="it">h</tspan><tspan class="sub" dy="3">i</tspan></text>
+
+  <rect class="box" x="248" y="234" width="180" height="60" rx="2"/>
+  <text class="t sm" x="338" y="258">Coregionalization <tspan class="it">B</tspan></text>
+  <text class="t sm" x="338" y="278">couples <tspan class="it">τ</tspan>, log <tspan class="it">r</tspan>, <tspan class="it">v</tspan></text>
+
+  <!-- ============ joint kernel ============ -->
+  <rect class="box" x="452" y="96" width="328" height="72" rx="2"/>
+  <text class="t sm" x="616" y="119">Joint kernel</text>
+  <text class="t sm it" x="616" y="143">K = B ⊗ K<tspan class="sub" dy="3">G</tspan><tspan dy="-3"> + Σ</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3"> diag(c</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">) ⊗ X</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">X</tspan><tspan class="sub" dy="3">f</tspan><tspan class="sub" dy="-8">⊤</tspan></text>
+  <text class="t sm it" x="616" y="161">+ diag(ς²) ⊗ I</text>
+
+  <text class="note" x="616" y="196"><tspan class="it">θ</tspan> = (<tspan class="it">s</tspan>, <tspan class="it">B</tspan>, {<tspan class="it">c</tspan><tspan class="sub" dy="3">f</tspan><tspan dy="-3">}, ς²) learned jointly by one</tspan></text>
+  <text class="note" x="616" y="212">exact per-piece log marginal likelihood</text>
+
+  <!-- ============ likelihood: the changing part ============ -->
+  <rect x="450" y="300" width="292" height="16" fill="#ffffff"/>
+  <text class="labA" x="454" y="312">LIKELIHOOD — THE ONLY PART THAT CHANGES</text>
+  <rect class="acc" x="452" y="318" width="328" height="70" rx="2"/>
+  <text class="t sm" x="616" y="341" font-weight="600">Likelihood</text>
+  <text class="t sm" x="616" y="360"><tspan class="it">ỹ = y + e</tspan> on <tspan class="it">observed</tspan> notes</text>
+  <text class="t sm" x="616" y="378">masked notes contribute no term</text>
+
+  <!-- ============ inference + outputs ============ -->
+  <rect class="box" x="826" y="196" width="150" height="60" rx="2"/>
+  <text class="t sm" x="901" y="220">Exact conjugate</text>
+  <text class="t sm" x="901" y="239">GP posterior</text>
+
+  <rect class="io" x="1010" y="190" width="212" height="72" rx="2"/>
+  <text class="t sm" x="1116" y="216">Per-note <tspan class="it">τ</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, log </tspan><tspan class="it">r</tspan><tspan class="sub" dy="3">i</tspan><tspan dy="-3">, </tspan><tspan class="it">v</tspan><tspan class="sub" dy="3">i</tspan></text>
+  <text class="t sm it" x="1116" y="242">± √( (Σ<tspan class="sub" dy="3">y</tspan><tspan dy="-3">)</tspan><tspan class="sub" dy="3">ii</tspan><tspan dy="-3"> + ς² )</tspan></text>
+
+  <!-- ============ arrows ============ -->
+  <path class="arr" d="M202,61 H244"/>
+  <path class="arr" d="M202,78 H222 V168 H244"/>
+  <path class="arr" d="M202,169 H244"/>
+  <path class="arr" d="M428,66 L450,112"/>
+  <path class="arr" d="M428,168 H450"/>
+  <path class="arr" d="M428,264 L450,166"/>
+  <path class="arr" d="M202,347 H448"/>
+  <path class="arr" d="M780,142 L824,210"/>
+  <path class="arr" d="M780,352 L824,246"/>
+  <path class="arr" d="M976,226 H1006"/>
+
+  <!-- ============ caption ============ -->
+  <text class="cap" x="616" y="428"><tspan font-weight="600">Phase 1 (implemented).</tspan> The visible/hidden split is an evaluation device, not part of the model:</text>
+  <text class="cap" x="616" y="446">held-out notes simply carry no likelihood term.</text>
+</svg>

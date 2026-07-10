@@ -1,0 +1,90 @@
+% pipeline_phase3.tex — Phase 3: differentiable-synthesizer audio likelihood (not yet implemented).
+% Standalone TikZ; compile with:  pdflatex pipeline_phase3.tex
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{amsmath,amssymb}
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds}
+
+\definecolor{ink}{HTML}{1A1A1A}
+\definecolor{muted}{HTML}{6B7280}
+\definecolor{rule}{HTML}{9CA3AF}
+\definecolor{accent}{HTML}{9A3324}
+
+\begin{document}
+\begin{tikzpicture}[
+  font=\scriptsize,
+  box/.style   = {draw=ink, line width=0.35pt, align=center, inner sep=3.6pt,
+                  text width=33mm, minimum height=9mm},
+  io/.style    = {box, draw=rule, fill=black!2},
+  new/.style   = {box, draw=ink, dashed, line width=0.35pt},
+  newio/.style = {io, dashed},
+  acc/.style   = {box, draw=accent, dashed, line width=0.6pt, fill=accent!4},
+  arr/.style   = {-{Latex[length=1.8mm,width=1.2mm]}, draw=muted, line width=0.4pt},
+  note/.style  = {font=\scriptsize\itshape, text=muted, align=center},
+  grouplab/.style = {font=\scriptsize\scshape, text=muted, fill=white, inner xsep=3pt, inner ysep=1pt},
+]
+
+% ---------- inputs ----------
+\node[io] (score) at (0,2.5)
+  {Score $\mathcal{S}=\{(p_i,b_i,d_i)\}$\\[1pt] known in every phase};
+\node[io] (mm) at (0,0.4)
+  {Music model (Phase 0)\\[1pt] per-note embedding $h_i$};
+\node[newio] (obs) at (0,-3.1)
+  {Waveform $x\in\mathbb{R}^{M}$\\[1pt] \emph{no} performance MIDI};
+
+% ---------- prior construction (unchanged; now a prior over z) ----------
+\node[box] (gk) at (4.7,2.5)
+  {Score graph $\to L_{\mathcal G}$\\[1pt] spectral kernel\\[1pt] $K_G(s)=U\,g(\nu;s)\,U^{\!\top}$};
+\node[box] (fk) at (4.7,0.4)
+  {Feature kernels\\[1pt] $\textstyle\sum_f \operatorname{diag}(c_f)\otimes X_fX_f^{\!\top}$\\[1pt] 25 score features, $h_i$};
+\node[box, text width=36mm] (cor) at (4.7,-1.3)
+  {Coregionalization $B$\\[1pt] couples the components of $z$};
+
+\node[box, text width=64mm] (K) at (9.9,0.9)
+  {Joint kernel\\[2pt]
+   $K=B\otimes K_G+\displaystyle\sum_f \operatorname{diag}(c_f)\otimes X_fX_f^{\!\top}+\operatorname{diag}(\varsigma^2)\otimes I$};
+
+% ---------- audio likelihood ----------
+\node[acc, text width=46mm] (lik) at (10.1,-3.3)
+  {\textbf{Audio likelihood}\\[2pt]
+   $x=\Phi(z)\,a+\varepsilon,\qquad \varepsilon\sim\mathcal N(0,K_n)$\\[2pt]
+   amplitudes $a$ marginalised \emph{exactly}:\\[1pt]
+   $p(x\mid z)=\mathcal N\!\bigl(\Phi\mu_a,\ \Phi\Sigma_a\Phi^{\!\top}+K_n\bigr)$};
+
+% ---------- inference + outputs ----------
+\node[new] (inf) at (15.4,-1.1)
+  {\emph{Non}-conjugate\\[1pt] Laplace / VI over $z$\\[1pt] score-based init; $a$ closed-form after};
+\node[newio] (out) at (19.8,-1.1)
+  {Posterior over \emph{every} note's $z$\\[1pt] $+$ amplitudes\\[1pt] posterior-predictive resynthesis};
+
+% ---------- arrows ----------
+\draw[arr] (score) -- (gk);
+\draw[arr] (score.east) -- ++(0.7,0) |- (fk.west);
+\draw[arr] (mm) -- (fk);
+\draw[arr] (gk) -- (K);
+\draw[arr] (fk) -- (K);
+\draw[arr] (cor) -- (K);
+\draw[arr] (obs) -- (lik);
+\draw[arr] (K) -- node[above, font=\scriptsize, text=muted, fill=white, inner sep=1pt, pos=0.82] {$p(z)$} (inf);
+\draw[arr] (lik) -- (inf);
+\draw[arr] (inf) -- (out);
+
+% ---------- annotations ----------
+\node[note, below=2.5mm of K, text width=52mm]
+  {the same prior, now the structured component of $p(z)$};
+
+\begin{scope}[on background layer]
+  \node[draw=rule, dashed, line width=0.3pt, rounded corners=1pt,
+        fit=(gk)(fk)(cor)(K), inner sep=6pt] (prior) {};
+\end{scope}
+\node[grouplab, above=1mm of prior.north west, anchor=west]
+  {Prior --- shared, unchanged across all phases};
+\node[grouplab, text=accent, above=1mm of lik.north west, anchor=west]
+  {Likelihood --- the only part that changes};
+
+\node[note, text width=155mm] at (9.9,-5.2)
+  {\textbf{Phase 3 (not yet implemented; dashed).} The observation is the waveform itself, so there are
+   \emph{no} per-note observations and \emph{no} visible/hidden split: given only the score and the audio,
+   every note's expression is latent and inferred jointly. Conjugacy is lost --- the price of the audio likelihood.};
+
+\end{tikzpicture}
+\end{document}

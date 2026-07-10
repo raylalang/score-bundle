@@ -29,6 +29,7 @@ data/
 *.pt
 *.pkl
 *.pdf
+!docs/thesis/figures/*.pdf
 *.zip
 
 # LaTeX build artifacts (regenerable by pdflatex; do not commit)
