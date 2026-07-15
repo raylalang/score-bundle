@@ -50,14 +50,14 @@ def loo_perch(c):
 
 
 def main() -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(10.6, 3.3), dpi=200)
+    fig, axes = plt.subplots(1, 3, figsize=(10.6, 3.7), dpi=200)
     xs = [50, 40, 30, 20, 10]
     x_loo = 3.0
     for c, ax in enumerate(axes):
         loo = loo_perch(c)
         for cfg, label, col, mark, ls in SYSTEMS:
             ys = [perch_rmse(load_cells(tag, cfg), c) for tag, _ in TAGS]
-            ax.plot(xs, ys, ls, color=col, lw=1.8, marker=mark, ms=4.5,
+            ax.plot(xs, ys, ls, color=col, lw=2.2, marker=mark, ms=6.0,
                     markerfacecolor=col, markeredgecolor="white",
                     markeredgewidth=0.7, label=label)
             ax.plot([x_loo], [loo[cfg]], marker=mark, ms=5.5, color=col,
@@ -66,18 +66,18 @@ def main() -> None:
         ax.axvline(6.5, color=MUTED, lw=0.6, ls=(0, (2, 3)))
         ax.set_xlim(54, 1.2)
         ax.set_xticks(xs + [x_loo])
-        ax.set_xticklabels(["50", "40", "30", "20", "10", "LOO"], fontsize=8)
-        ax.set_title(CH[c], fontsize=10, color=INK, loc="left")
-        ax.set_xlabel("% of notes hidden", fontsize=9, color=INK)
+        ax.set_xticklabels(["50", "40", "30", "20", "10", "LOO"], fontsize=10)
+        ax.set_title(CH[c], fontsize=13, color=INK, loc="left")
+        ax.set_xlabel("% of notes hidden", fontsize=11, color=INK)
         for side in ("top", "right"):
             ax.spines[side].set_visible(False)
         for side in ("left", "bottom"):
             ax.spines[side].set_color(MUTED)
-        ax.tick_params(colors=MUTED, labelsize=8)
-    axes[0].set_ylabel("held-out RMSE", fontsize=9, color=INK)
-    axes[0].legend(frameon=False, fontsize=8, loc="upper right")
+        ax.tick_params(colors=MUTED, labelsize=10)
+    axes[0].set_ylabel("held-out RMSE", fontsize=11, color=INK)
+    axes[0].legend(frameon=False, fontsize=10, loc="upper right")
     axes[2].annotate("open markers: leave-one-out", xy=(0.97, 0.04),
-                     xycoords="axes fraction", fontsize=7.5, color=MUTED,
+                     xycoords="axes fraction", fontsize=9.5, color=MUTED,
                      ha="right")
     fig.tight_layout()
     fig.savefig(OUT, bbox_inches="tight")

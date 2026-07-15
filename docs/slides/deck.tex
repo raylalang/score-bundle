@@ -49,6 +49,14 @@
     {\figslotbox{#1}{#2}{#3}}%
   \else\figslotbox{#1}{#2}{#3}\fi
   \end{center}}
+% \figslotw{file}{width-fraction}{note} — width-based variant
+\newcommand{\figslotw}[3]{%
+  \begin{center}
+  \if1\showfigures\IfFileExists{../thesis/figures/#1}%
+    {\includegraphics[width=#2\textwidth]{#1}}%
+    {\figslotbox{#1}{3cm}{#3}}%
+  \else\figslotbox{#1}{3cm}{#3}\fi
+  \end{center}}
 \newcommand{\figslotbox}[3]{%
   \begin{tikzpicture}
     \node[draw=muted, dashed, thick, minimum height=#2, text width=0.72\textwidth,
@@ -76,17 +84,12 @@
 % ================================================================ 2  BACKGROUND
 \begin{frame}{Expressive performance}
   The score specifies pitches and note values. Performers add everything else:
-  \begin{itemize}
-    \item timing: notes pushed and pulled around the beat;
-    \item articulation: held longer or shorter than written;
-    \item dynamics: shaped louder and softer across phrases.
-  \end{itemize}
-  \vspace{1mm}
-  These deviations are the expression. Modelling them matters for performance
-  analysis, pedagogy, and expressive rendering.
-  \figslot{deck_concept.png}{2.9cm}{one bar as a piano-roll, with the played
+  the timing, articulation, and dynamics of every note. These deviations are
+  the expression.
+  \vspace{-1mm}
+  \figslotw{deck_concept.png}{0.92}{one bar as a piano-roll, with the played
     timing / duration / loudness deviating from the written values}
-  \vspace{-2mm}
+  \vspace{-3mm}
   {\centering\scriptsize\color{muted} real excerpt; timing offsets drawn
   $2\times$ for visibility\par}
 \end{frame}
@@ -118,24 +121,9 @@
 \begin{frame}{Approach: one prior, three kinds of observation}
   One \textbf{Gaussian process (GP)} prior over per-note expressive fields, on
   a graph built from the score. Only the observation changes: per-note MIDI
-  values (Phase 1), noisy targets derived from the $f_0$ curve (Phase 2), or
-  the waveform itself (Phase 3). The Phase-0 music model supplies input
-  features to all of them.
-  \begin{center}
-  {\footnotesize
-  \begin{tabular}{@{}llll@{}}
-  \toprule
-  Phase & Observation & Channels & Status \\
-  \midrule
-  0 \; music model & MIDI corpora (MAESTRO) & --- & Done \\
-  1 \; piano & performance MIDI, per note & $\tau, \log r, v$ & \textbf{Done} \\
-  2 \; mono.\ pitched & $f_0$-derived targets, noisy & $+\,c$, vibrato & WIP \\
-  3 \; waveform & the audio itself & all latent & To Do \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \vspace{-1mm}
-  \figslot{deck_programme.png}{2.2cm}{the shared prior with three swappable
+  values (Phase 1), noisy $f_0$-derived targets (Phase 2), or the waveform
+  itself (Phase 3). A Phase-0 music model supplies input features to all.
+  \figslotw{deck_programme.png}{0.9}{the shared prior with three swappable
     likelihood blocks (MIDI / $f_0$ / waveform)}
 \end{frame}
 
@@ -172,21 +160,17 @@
 
 % ================================================================ 6  METHOD 1
 \begin{frame}{Method (1): the score graph}
-  Nodes are the written notes $(p_i, b_i, d_i)$: pitch, beat onset, duration.
-  Edges connect notes that are close in score time and pitch:
+  Nodes are the written notes $(p_i, b_i, d_i)$; edges connect notes close in
+  score time and pitch (neighbours should be played similarly):
+  \vspace{-1mm}
   \begin{equation*}
     W_{ij} \;=\; \exp\!\Bigl( -\tfrac{(b_i - b_j)^2}{2\,\ell_b^2}
                              \;-\; \tfrac{(p_i - p_j)^2}{2\,\ell_p^2} \Bigr),
     \qquad
-    \Lg \;=\; D - W, \quad D = \diag\Bigl(\textstyle\sum_j W_{ij}\Bigr).
+    \Lg \;=\; D - W .
   \end{equation*}
-  \begin{itemize}
-    \item $\ell_b$ (beats) and $\ell_p$ (semitones) are length scales; optional
-          same-voice, same-chord, and voice-leading edges.
-    \item Intuition: neighbouring notes should be played similarly. The
-          Laplacian $\Lg$ turns that into a prior.
-  \end{itemize}
-  \figslot{deck_scoregraph.png}{2.8cm}{NEW: a few bars of real score as nodes,
+  \vspace{-4mm}
+  \figslotw{deck_scoregraph.png}{0.84}{a few bars of real score as nodes,
     edges drawn by time / pitch / chord relation}
 \end{frame}
 
@@ -285,9 +269,16 @@
     \item The baselines are special cases: diagonal $B$, zero $c_f$, or a
           fixed cross-piece mean recover each simpler system exactly.
   \end{itemize}
-  \vspace{-2mm}
-  \figslot{arch_phase1_deck.png}{1.8cm}{architecture: graph branch (blue),
+\end{frame}
+
+% ================================================================ 10b  ARCHITECTURE
+\begin{frame}{Method (5): the model as a computation graph}
+  \figslotw{arch_phase1_deck.png}{0.98}{architecture: graph branch (blue),
     feature branch (amber), likelihood (vermillion)}
+  \vspace{-1mm}
+  \centering\small Blue: score graph $\to \Lg \to K_G$. Amber: features and
+  embeddings as linear kernels. They fuse into the joint kernel; the
+  likelihood (vermillion) is the only block that changes in later phases.
 \end{frame}
 
 % ================================================================ 11  SETUP
@@ -335,14 +326,13 @@
 
 % ================================================================ 13  RESULTS: OVERVIEW
 \begin{frame}{Results overview: every system, every masking level}
-  \figslot{masksweep_perchannel_dev.png}{3.6cm}{per channel: RMSE vs hidden
-    fraction, 50\% to 10\% plus leave-one-out, three systems (exists)}
+  \figslotw{masksweep_perchannel_dev.png}{0.99}{per channel: RMSE vs hidden
+    fraction, 50\% to 10\% plus leave-one-out, three systems}
   \begin{itemize}
-    \item All results are on the 30 validation pieces, at six masking levels.
-    \item Articulation and dynamics: the proposed model is best at every
-          level, and the gaps grow as more context is observed.
-    \item Timing: all systems are within noise of each other at every level.
-    \item Exact numbers per channel on the next three slides.
+    \item 30 validation pieces, six masking levels; exact numbers on the
+          next three slides.
+    \item Articulation and dynamics: best at every level, gaps growing with
+          observed context. Timing: all systems within noise.
   \end{itemize}
 \end{frame}
 
@@ -454,10 +444,10 @@
 
 % ================================================================ 15  RESULTS: EXAMPLE
 \begin{frame}{Results: posterior on one piece (validation set)}
-  \figslot{posterior_example_dev.png}{5.6cm}{one piece, 40\% hidden:
-    posterior mean, 90\% band, observed notes, hidden truths as open circles
-    (exists)}
   \vspace{-1mm}
+  \figslot{posterior_example_dev.png}{6.1cm}{one piece, 40\% hidden:
+    posterior mean, 90\% band, observed notes, hidden truths as open circles}
+  \vspace{-3mm}
   \centering\small Hidden true values fall inside the 90\% band at 49/50,
   49/50, 46/50 here.
 \end{frame}
