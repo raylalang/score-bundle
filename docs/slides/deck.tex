@@ -41,7 +41,7 @@
 \setbeamerfont{frametitle}{series=\bfseries,size=\large}
 
 % \figslot{file}{height}{what the graphic should show}
-\def\showfigures{0}
+\def\showfigures{1}
 \newcommand{\figslot}[3]{%
   \begin{center}
   \if1\showfigures\IfFileExists{../thesis/figures/#1}%
@@ -84,8 +84,11 @@
   \vspace{1mm}
   These deviations are the expression. Modelling them matters for performance
   analysis, pedagogy, and expressive rendering.
-  \figslot{deck_concept.png}{2.6cm}{one bar as a piano-roll, with the played
+  \figslot{deck_concept.png}{2.9cm}{one bar as a piano-roll, with the played
     timing / duration / loudness deviating from the written values}
+  \vspace{-2mm}
+  {\centering\scriptsize\color{muted} real excerpt; timing offsets drawn
+  $2\times$ for visibility\par}
 \end{frame}
 
 % ================================================================ 3  PROBLEM
