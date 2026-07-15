@@ -76,9 +76,6 @@ def main() -> None:
         ax.tick_params(colors=MUTED, labelsize=10)
     axes[0].set_ylabel("held-out RMSE", fontsize=11, color=INK)
     axes[0].legend(frameon=False, fontsize=10, loc="upper right")
-    axes[2].annotate("open markers: leave-one-out", xy=(0.97, 0.04),
-                     xycoords="axes fraction", fontsize=9.5, color=MUTED,
-                     ha="right")
     fig.tight_layout()
     fig.savefig(OUT, bbox_inches="tight")
     print(f"wrote {OUT}")

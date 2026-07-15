@@ -88,9 +88,6 @@
   \vspace{-2mm}
   \figslotw{deck_concept.png}{0.73}{the score, the same bars as a piano-roll
     (written vs played), and the three per-note deviation channels}
-  \vspace{-4mm}
-  {\centering\scriptsize\color{muted} real data; timing offsets drawn
-  $2\times$ for visibility\par}
 \end{frame}
 
 % ================================================================ 3  PROBLEM
@@ -304,24 +301,23 @@
   {\footnotesize
   \begin{tabular}{@{}lll@{}}
   \toprule
-  System & What changes & Question it answers \\
+  System & Change to the model & Tests \\
   \midrule
-  \textbf{proposed} & full covariance & \\
-  no graph & $K_G \to I$ & does the score graph matter? \\
-  no music model & embedding kernel removed & do learned features matter? \\
-  fixed mean & per-piece weighting $\to$ one & does per-piece adaptation \\
-   & cross-piece regression & matter? \\
-  mean + smoothing & regression mean, then residuals & does joint modelling beat \\
-  (plain / best) & graph-smoothed per channel & the standard two-step recipe? \\
-  NN with uncertainty & GP replaced by an MLP predicting & is the GP needed at all? \\
-  (single / ensemble) & mean and variance per note & \\
-  independent / temporal & no edges / time-only edges & are score-graph edges needed? \\
+  \textbf{proposed} & $K = B \otimes K_G + \sum_f \diag(c_f)\otimes X_fX_f^{\!\top} + \diag(\varsigma^2)\otimes I$ & \\
+  no graph & $K_G \to I$ & the score graph \\
+  no music model & $c_{\mathrm{emb}} \to 0$ & the learned features \\
+  fixed mean & $\beta \sim \N(0, cI) \;\to\; \beta = \hat\beta$ (one cross-piece fit) & per-piece adaptation \\
+  mean + smoothing & $\mu = X\hat\beta$, then per channel & the standard \\
+   & $y_c - \mu_c \sim \N\bigl(0,\; \sigma_g^2 K_G + \sigma_e^2 I\bigr)$ & two-step recipe \\
+  NN (single / ens.) & $y_{ic} \sim \N\bigl(\mu_c(x_i),\, \sigma_c^2(x_i)\bigr)$, an MLP; notes independent & the GP itself \\
+  independent & $K_G \to I$ and $c_f \to 0$ & any structure at all \\
+  temporal chain & $\Lg$ from time-adjacent edges only & score vs time edges \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \vspace{1mm}
-  Every system uses the same input features and the same protocol; all but
-  the NN are exact special cases of the proposed model.
+  Same input features and protocol for every system; all but the NN are exact
+  special cases of the proposed model.
 \end{frame}
 
 % ================================================================ 13  RESULTS: OVERVIEW

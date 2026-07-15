@@ -53,7 +53,7 @@ def main() -> None:
     for i in range(len(order)):
         ax.add_patch(Rectangle((b[i], pit[i] - 0.38), d[i], 0.76, fill=False,
                                edgecolor=MUTED, lw=1.1))
-        played_on = b[i] + y[i, 0] * 2.0          # tau exaggerated 2x to be visible
+        played_on = b[i] + y[i, 0]
         played_dur = d[i] * np.exp(y[i, 1])
         ax.add_patch(Rectangle((played_on, pit[i] - 0.30), played_dur, 0.60,
                                facecolor=BLUE, edgecolor="none", alpha=0.75))
