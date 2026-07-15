@@ -60,6 +60,30 @@ Either way the result is reported.
 40%-hidden anchor masks, 30 dev pieces × 4 seeds, paired per-piece bootstrap
 CIs. Confirmation set untouched.
 
-## Results
+## Results (2026-07-15; `results/graphgp_overlap/`)
 
-*(to be appended when `results/graphgp_overlap/` completes)*
+| row | RMSE | NLL | cov@.9 |
+|---|---|---|---|
+| `b_feat` (fixed default graph) | 0.3683 | −0.370 | 0.923 |
+| `c_graph` (learned ℓ_b, ℓ_p) | 0.3648 | −0.383 | 0.918 |
+| `c_overlap` (+ learned overlap weight) | 0.3630 | −0.391 | 0.917 |
+
+Paired per-piece contrasts (95% bootstrap CIs, 30 dev pieces):
+
+* **overlap vs learned base**: ΔRMSE −0.0016 [−0.0041, +0.0010],
+  ΔNLL −0.0079 [−0.0171, +0.0006] — a consistent trend on *both* axes that
+  **just misses significance** at n = 30.
+* learned base vs fixed graph: ΔRMSE −0.0030 [−0.0095, +0.0024] (ns) —
+  consistent with the v2 finding that learning the base length-scales alone
+  buys little.
+
+**Verdict (dev, feature-only regime):** the sustain-overlap relation shows a
+small, directionally consistent improvement, weaker than the chord +
+voice-leading families measured in the kernel study (−0.0089* there), and not
+significant at this sample size. Given that even the *significant* harmonic
+edges went measured-redundant once the LM embeddings entered the kernel, the
+honest call is: **keep the family implemented and ablatable, do not add it to
+the thesis graph** — the borrow is documented, the effect is real-looking but
+unproven, and the thesis model's graph stays the preregistered one. A larger
+dev replication (more seeds) is the cheap follow-up if the relation is ever
+needed.
