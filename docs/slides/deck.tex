@@ -484,35 +484,39 @@
 
 % ================================================================ 18  RESULTS: KERNEL/GRAPH VARIANTS
 \begin{frame}{Results: kernel and graph variants}
-  Vary the filter with the graph fixed, then vary the graph itself (study at
-  the 40\% level; the chosen configuration is the one shown at every level
-  in the main grids).
+  Vary the filter with the graph fixed (40\% level), then vary the graph
+  itself (every level). Pooled over the standardized channels.
   \begin{center}
-  {\footnotesize pooled over the three standardized channels
-  (the one table not per channel; per-channel in the thesis) \\[1mm]
+  {\scriptsize
   \begin{tabular}{@{}lcccl@{}}
   \toprule
-  Variant & RMSE & NLL & cov@.9 & \\
+  Variant (40\% level) & RMSE & NLL & cov@.9 & \\
   \midrule
   base graph, graph Mat\'ern $\alpha{=}1$ & 0.393 & $-0.322$ & 0.921 & reference \\
   \quad filter $\to$ Mat\'ern $\alpha \in \{2,3\}$, heat & 0.392--0.393 & $-0.312..{-0.321}$ & & all tie \\
   graph $\to$ no edges & $0.446^{*}$ & $-0.190^{*}$ & 0.919 & worst \\
   graph $\to$ time-only chain & 0.392 & $-0.292^{*}$ & 0.916 & calibration worse \\
-  pitch metric $\to$ circle of fifths & $0.403^{*}$ & $-0.300^{*}$ & 0.921 & \emph{worse} \\
-  + chord edges & $\bm{0.384^{*}}$ & $-0.331$ & 0.923 & accuracy win \\
-  + chord and voice-leading edges & $0.385^{*}$ & $\bm{-0.335^{*}}$ & 0.922 & both-axes win \\
+  \bottomrule
+  \end{tabular}\\[1.5mm]
+  \begin{tabular}{@{}llccccc@{}}
+  \toprule
+  Added edges & paired $\Delta$ vs base & 50\% & 40\% & 30\% & 20\% & 10\% \\
+  \midrule
+  + chord & $\Delta$RMSE & $-.009^{*}$ & $-.010^{*}$ & $-.011^{*}$ & $-.012^{*}$ & $-.014^{*}$ \\
+          & $\Delta$NLL  & $-.009^{*}$ & $-.009$ & $-.015^{*}$ & $-.014^{*}$ & $-.019^{*}$ \\
+  + chord, voice leading & $\Delta$RMSE & $-.008^{*}$ & $-.008^{*}$ & $-.010^{*}$ & $-.011^{*}$ & $-.011^{*}$ \\
+          & $\Delta$NLL  & $-.016^{*}$ & $-.013^{*}$ & $-.050^{*}$ & $-.015^{*}$ & $-.019^{*}$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \vspace{-1mm}
+  {\small
   \begin{itemize}
-    \item The filter shape is irrelevant; the \emph{edges} are not. The chord
-          and voice-leading gains sit in articulation and dynamics.
-    \item A sustain-overlap edge family (tested separately, learned
-          weights): small trend, not significant.
+    \item The filter shape is irrelevant; the \emph{edges} are not, at every
+          level. The gains sit in articulation and dynamics.
     \item In the full model (embeddings present) the added edge families
           become redundant.
-  \end{itemize}
+  \end{itemize}}
 \end{frame}
 
 % ================================================================ 19  RESULTS: THEORY FEATURES
@@ -523,7 +527,7 @@
   \begin{itemize}
     \item \textbf{tonality (6)}: local key (Krumhansl--Schmuckler profiles),
           key clarity, mode, scale degree (sin/cos), in-scale flag,
-          circle-of-fifths motion of the local key;
+          distance between successive local keys;
     \item \textbf{meter (1)}: metrical-weight hierarchy over five levels;
     \item \textbf{verticals (2)}: within-chord dissonance; bass flag;
     \item \textbf{phrase (2)}: boundary salience from timing and pitch gaps;
