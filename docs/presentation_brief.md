@@ -36,6 +36,10 @@ are the confirmation ones.
    graph ΔNLL −0.0736\* [−0.092, −0.057]; pooled-NLL tie disclosed and diagnosed
    (one τ-tail cell, NLL +27.5 with fine RMSE 0.113 and coverage 0.90).
    Fig: `figures/proposed_confirmation.png`. Source: logs/confirmation_verdict.log.
+5b. **What the posterior looks like** — one dev piece, hidden truths against
+   the 90% band (49/50, 49/50, 46/50 inside). The dynamics panel shows the
+   phrase structure the model exploits; the timing band is honest about how
+   little of τ is predictable. Fig: `figures/posterior_example_dev.png`.
 6. **Attribution (DEV)** — fixed-mean control 0.390/−0.327 ≈ two-stage level ⇒
    coupling/joint-fitting per se ≈ nothing; the win is **per-piece Bayesian
    feature weighting**; the graph is what keeps confidence honest (−0.017 RMSE /
@@ -63,6 +67,18 @@ are the confirmation ones.
     note-level judgments (anomaly AUROC ≤0.995), not whole-performance summaries
     (era honest negative); per-piece adaptation wins interpolation, fails excerpt
     extrapolation (cross-piece head stays the honest tool).
+10b. **The calibrated deep rival (DEV, new)** — heteroscedastic MLP + deep
+    ensemble on the same information set: 0.450–0.454 / −0.07..−0.10 vs GP
+    0.360/−0.404 (both axes, −0.090\*/−0.30\* paired). They land exactly at the
+    cross-piece-mean level: what they cannot imitate is per-piece adaptation +
+    the graph. Source: docs/deep_baseline_results.md.
+10c. **Fresh-pieces replication (new, post-hoc)** — the ladder re-run on 30
+    pieces never seen by any decision (positions 50–79 of the same shuffle,
+    identity-gated): ordering replicates; graph −0.0187\*/−0.0797\* and
+    embeddings −0.0102\*/−0.0334\* both significant on both axes; the graph's
+    fresh-pieces NLL contribution (−0.080) matches its confirmed value
+    (−0.074). Not preregistered — label it replication, not confirmation.
+    Source: docs/replication_set_results.md.
 11. **Statistical solidity (DEV recheck, 2026-07-15)** — the headline dev contrast
     is significant in EVERY channel separately; percentile/basic/BCa/Wilcoxon/sign
     all agree; all load-bearing stars survive Benjamini–Hochberg (q=0.05, 19
@@ -99,6 +115,9 @@ are the confirmation ones.
 | Anomaly AUROC (proposed) | v 0.995, log r 0.986, τ 0.978 | DEV | docs/downstream_tasks_results.md |
 | Calibrated deep baselines | hetero 0.454/−0.069; ensemble 0.450/−0.104; GP wins −0.090\*/−0.30\* paired | DEV | docs/deep_baseline_results.md |
 | Posterior example (piece 0) | hidden truths in 90% band: 49/50, 49/50, 46/50 | DEV | figures/posterior_example_dev.png |
+| Student-t on the dev tail cell | NLL +34.7 → −0.96 (t-predictive), RMSE/cov unchanged | DEV | results/robust_tail_piece28.pkl |
+| Replication set (30 fresh pieces) | ordering replicates; graph −0.019\*/−0.080\*, emb −0.010\*/−0.033\* | REPL | docs/replication_set_results.md |
+| Probes, nonlinear (RFF-2048) | tonal verdicts replicate: not encoded | DEV | results/probe_embeddings_rff.pkl |
 | Contamination filter | 1036 → 653 performances | — | draft §contam |
 | LM pretraining ppl | 10.85 (scaled 9.66: no downstream gain) | — | draft ch. results |
 
@@ -131,7 +150,11 @@ are the confirmation ones.
    ordering stable everywhere. "Arbitrary but not lucky."
 7. **"Student-t exists — why not applied?"** The confirmation set is spent;
    applying the fix post hoc and re-scoring is exactly the selection the protocol
-   forbids. Dev no-harm check done; it awaits its own preregistered confirmation.
+   forbids. Both halves are now measured on dev: no-harm on tail-free data
+   (small premium), and the payoff on the dev tail replica — the piece-28 cell
+   goes from Gaussian NLL +34.7 to −0.96 under the t-predictive with RMSE and
+   coverage unchanged, EM weights isolating the outlier notes. It awaits its
+   own preregistered confirmation before touching any thesis number.
 8. **"What did you learn about music?"** The tonality triangulation (slide 9) +
    the two boundaries + per-channel decomposition. The τ plateau is by
    construction: rubato lives in the warp.

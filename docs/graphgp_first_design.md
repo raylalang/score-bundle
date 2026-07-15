@@ -200,9 +200,12 @@ outlier notes (min weight 0.13). Scored under the *Gaussian* metric the t-fit
 is worse (+69) — the fix is the likelihood family, not the point fit. Verdict
 upgraded from "insurance with a small premium" to "insurance with a small
 premium **and a demonstrated payoff on the failure mode it targets**"
-(`scripts/eval_robust_tail.py`, `results/robust_tail_piece28.pkl`). Still not
-applied to any thesis number; a second preregistered confirmation remains the
-honest venue.
+(`scripts/eval_robust_tail.py`, `results/robust_tail_piece28.pkl`). An
+11-piece batch on the same fraction (`results/robust_tail_obs070.pkl`) bounds
+the picture: the t-variant's own-scored NLL stays in [−1.14, −0.22] on every
+piece while the Gaussian's worst is +34.7, with batch RMSE tied (0.337 vs
+0.342) and coverage similar (0.917 vs 0.928). Still not applied to any thesis
+number; a second preregistered confirmation remains the honest venue.
 
 ## Downstream re-validation (2026-07-09, `logs/downstream_gpfirst_report.log`)
 
