@@ -1,0 +1,537 @@
+% =====================================================================
+%  deck.tex — Score-Bundle Models: presentation slides (beamer, 16:9).
+%
+%  CONTENT-FIRST BUILD: all text, equations, and tables are final and match
+%  docs/presentation_brief.md (the verified-numbers table). Illustrations
+%  and graphs are \figslot placeholders: a dashed box naming the intended
+%  file and what it should show. Set \showfigures to 1 below to pull in any
+%  file that already exists in ../thesis/figures/ (most do).
+%
+%  Compile:  tectonic deck.tex
+% =====================================================================
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{default}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}{\textcolor{okblue}{\scriptsize$\blacksquare$}}
+\setbeamertemplate{footline}{%
+  \hfill\scriptsize\textcolor{muted}{\insertframenumber\,/\,\inserttotalframenumber}\hspace{2mm}\vspace{2mm}}
+
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\graphicspath{{../thesis/figures/}}
+
+% --- palette (Okabe–Ito, matches every figure) -----------------------
+\definecolor{okblue}{HTML}{0072B2}
+\definecolor{okverm}{HTML}{D55E00}
+\definecolor{okgreen}{HTML}{009E73}
+\definecolor{okamber}{HTML}{E69F00}
+\definecolor{muted}{HTML}{6B7280}
+\definecolor{ink}{HTML}{1A1A1A}
+\setbeamercolor{frametitle}{fg=ink}
+\setbeamercolor{normal text}{fg=ink}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+
+% --- provenance badges (keep on every number-bearing slide) ----------
+\newcommand{\badge}[2]{\colorbox{#1}{\textcolor{white}{\scriptsize\textbf{#2}}}}
+\newcommand{\CONF}{\badge{okblue}{CONFIRMATION — preregistered, run once}}
+\newcommand{\DEV}{\badge{muted}{DEVELOPMENT}}
+\newcommand{\REPL}{\badge{okgreen}{REPLICATION — fresh pieces, post-hoc}}
+\newcommand{\SYNTH}{\badge{okamber}{SYNTHETIC}}
+
+% --- figure slots -----------------------------------------------------
+% \figslot{file}{height}{what the graphic should show}
+% Shows the file if present AND \showfigures=1; otherwise a labeled box.
+\def\showfigures{0}
+\newcommand{\figslot}[3]{%
+  \begin{center}
+  \if1\showfigures\IfFileExists{../thesis/figures/#1}%
+    {\includegraphics[height=#2]{#1}}%
+    {\figslotbox{#1}{#2}{#3}}%
+  \else\figslotbox{#1}{#2}{#3}\fi
+  \end{center}}
+\newcommand{\figslotbox}[3]{%
+  \begin{tikzpicture}
+    \node[draw=muted, dashed, thick, minimum height=#2, text width=0.72\textwidth,
+          align=center, text=muted, inner sep=6pt]
+      {\texttt{\detokenize{#1}}\\[3pt]\footnotesize #3};
+  \end{tikzpicture}}
+
+% --- notation shortcuts (match the thesis) ----------------------------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\Lg}{L_{\mathcal G}}
+\newcommand{\diag}{\operatorname{diag}}
+
+\title{\textbf{Score-Bundle Models}\\[2mm]
+  \large Bayesian Score-Informed Performance Transcription\\
+  with Calibrated Uncertainty}
+\author{Raynaldi Lalang\\[1mm]{\small Supervisor: Prof.\ Kazuyoshi Yoshii}}
+\institute{Kyoto University}
+\date{July 16, 2026}
+
+\begin{document}
+
+% ================================================================ 1
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ================================================================ 2
+\begin{frame}{The problem: recover \emph{how} it was played --- with honest error bars}
+  A score fixes \emph{what} to play. A performance realises \emph{how}:
+  \begin{equation*}
+    y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{micro-timing}},\;\;
+      \underbrace{\log r_i}_{\text{articulation}},\;\;
+      \underbrace{v_i}_{\text{dynamics}}\;\bigr] \in \R^{3}
+    \qquad\text{per written note } i .
+  \end{equation*}
+  \vspace{-2mm}
+  \begin{itemize}
+    \item \textbf{Score-informed}: the score is known --- the inverse of expressive
+          synthesis, \emph{not} full transcription.
+    \item \textbf{Uncertainty is a primary output}: a per-note estimate is only
+          actionable with a calibrated error bar --- calibration is evaluated as
+          rigorously as accuracy.
+    \item Task instrument: hide 40\% of notes, infer them from the rest
+          (and we sweep that choice --- later).
+  \end{itemize}
+  \figslot{deck_concept.png}{2.1cm}{NEW illustration: one bar of score
+    $\to$ the three per-note deviation channels with error bars (to be drawn;
+    posterior\_example\_dev.png can stand in)}
+\end{frame}
+
+% ================================================================ 3
+\begin{frame}{The model in one equation}
+  One multi-output Gaussian process over all notes and channels:
+  \begin{equation*}
+    K \;=\;
+    \underbrace{\textcolor{okblue}{B \otimes K_G(s)}}_{\substack{\text{coupled graph GP}\\ \text{on the score graph}}}
+    \;+\; \underbrace{\textcolor{okamber}{\textstyle\sum_f \diag(c_f)\otimes X_f X_f^{\!\top}}}_{\substack{\text{score features + music-model}\\ \text{embeddings as linear kernels}\\ \text{(= marginalized Bayes.\ linear mean)}}}
+    \;+\; \underbrace{\textcolor{okverm}{\diag(\varsigma^2)\otimes I}}_{\text{observation noise}}
+  \end{equation*}
+  \begin{itemize}
+    \item $K_G(s) = U\,g(\nu;s)\,U^{\!\top}$: spectral filter of the score-graph
+          Laplacian $\Lg$ (edges: score-time, pitch, voice).
+    \item Every hyperparameter $(s, B, \{c_f\}, \varsigma^2)$ learned by the
+          \textbf{exact per-piece marginal likelihood}; posterior in closed form.
+    \item The earlier two-stage pipeline (plug-in mean + per-channel graph
+          residual) is a \textbf{provable special case} --- unit-pinned.
+  \end{itemize}
+  \vspace{-1mm}
+  \figslot{arch_phase1_deck.png}{2.2cm}{architecture: blue graph branch /
+    amber evidence branch / vermillion likelihood (exists)}
+\end{frame}
+
+% ================================================================ 4
+\begin{frame}{Nothing exotic: standard theory, assembled --- deviations only when forced}
+  \begin{columns}[T]
+  \column{0.58\textwidth}
+  {\footnotesize
+  \begin{tabular}{@{}ll@{}}
+  \toprule
+  Component & Source \\
+  \midrule
+  graph Mat\'ern / heat kernels & Borovitskiy et al.\ 2021 \\
+  \quad(our ``additive'' \emph{is} Mat\'ern $\alpha{=}1$) & (an identity) \\
+  ICM coregionalization $B \otimes K$ & Bonilla et al.\ 2008 \\
+  linear kernels = marginalized & Rasmussen \& Williams \\
+  \quad Bayesian linear mean & \S2.7 \\
+  exact evidence, conjugate posterior & textbook \\
+  \bottomrule
+  \end{tabular}}
+  \column{0.40\textwidth}
+  {\small The only deviations, each \textbf{forced}:
+  \begin{itemize}
+    \item $g(0)=1$, scale lives in $B$: the split in $B\otimes K_G$ is
+          \emph{unidentifiable} --- not a convention;
+    \item noise / predictive-variance floors: measured degeneracies
+          (EB collapse; $y = f + \varepsilon$).
+  \end{itemize}}
+  \end{columns}
+  \vspace{2mm}
+  \centering\textit{The contribution is the problem, the measurement standard,
+  and the findings --- not a new kernel.}
+\end{frame}
+
+% ================================================================ 5
+\begin{frame}{Evaluation discipline: the part that makes the numbers believable}
+  \begin{itemize}
+    \item \textbf{Contamination filtered}: ASAP reuses MAESTRO recordings ---
+          every pretraining twin removed ($1036 \to 653$ performances).
+    \item \textbf{Leakage}: a read-out leak was found, fixed, pinned by structural
+          tests, and the final pipeline audited \textbf{bitwise} end-to-end.
+    \item \textbf{Development / confirmation split}: 30 dev pieces adjudicated
+          every decision; final claims \textbf{preregistered} and evaluated
+          \textbf{exactly once} on 20 untouched pieces.
+    \item Preregistration is in git, verifiable:
+          \texttt{3681d90} (protocol, 17:24) $\to$ \texttt{b3d3389}
+          (results, 19:47) --- and the one failed claim is \emph{reported}.
+  \end{itemize}
+  \vspace{2mm}
+  \centering
+  \begin{tikzpicture}[x=1.05cm]
+    \draw[->, thick, muted] (0,0) -- (11.3,0);
+    \foreach \x/\lab in {0.6/{music model}, 2.6/{leak found+fixed},
+                         4.7/{feature stack}, 6.6/{kernel study},
+                         8.6/{\textbf{prereg}}, 10.4/{\textbf{one-shot conf.}}}
+      {\draw[muted] (\x,0.09) -- (\x,-0.09); \node[below, font=\scriptsize, text=ink] at (\x,-0.12) {\lab};}
+    \node[above, font=\scriptsize\itshape, text=muted] at (4.6,0.18)
+      {30 development pieces decide everything $\longrightarrow$};
+    \node[above, font=\scriptsize\itshape, text=okblue] at (9.9,0.18)
+      {20 fresh pieces, run once};
+  \end{tikzpicture}
+\end{frame}
+
+% ================================================================ 6
+\begin{frame}{Headline \hfill \CONF}
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lccc@{}}
+  \toprule
+  System & RMSE & NLL & cov@90\% \\
+  \midrule
+  \textbf{Proposed model (graph + features + music model)} & \textbf{0.376} & $-0.300$ & 92.5\% \\
+  \quad without the graph & 0.405 & $-0.226$ & 92\% \\
+  \quad without the music model & 0.385 & $-0.264$ & 92\% \\
+  two-stage pipeline, strongest & 0.393 & $-0.311$ & 92\% \\
+  two-stage pipeline, plain & 0.401 & $-0.289$ & 92\% \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \begin{itemize}
+    \item Paired per-piece $\Delta$RMSE vs the strongest two-stage:
+          $\bm{-0.0137^{*}}$; graph's calibration contribution inside the model:
+          $\Delta$NLL $\bm{-0.0736^{*}}$ $[-0.092, -0.057]$.
+    \item Disclosed: pooled NLL between systems \emph{tied} --- one piece, a few
+          extreme timing outliers, Gaussian tail (diagnosed; median piece is
+          better-calibrated).
+  \end{itemize}
+  \figslot{proposed_confirmation.png}{2.2cm}{confirmation-at-a-glance digest
+    (exists)}
+\end{frame}
+
+% ================================================================ 7
+\begin{frame}{What the posterior looks like \hfill \DEV}
+  \figslot{posterior_example_dev.png}{5.4cm}{one dev piece, 40\% hidden:
+    posterior mean + 90\% band, observed dots, hidden truths as open circles
+    (exists)}
+  \vspace{-1mm}
+  \centering\small Hidden truths inside the 90\% band: $49/50$, $49/50$,
+  $46/50$ across the three channels --- mildly conservative, never
+  over-confident. Dynamics shows the phrase structure the model exploits;
+  the timing band is honest about how little of $\tau$ is predictable.
+\end{frame}
+
+% ================================================================ 8
+\begin{frame}{Attribution: what actually wins \hfill \DEV}
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lcc@{}}
+  \toprule
+  Control & RMSE / NLL & Reading \\
+  \midrule
+  two-stage's own mean, fixed \emph{inside} the GP & $0.390$ / $-0.327$ &
+    coupling per se $\approx$ nothing \\
+  remove the graph & $+0.017^{*}$ / $+0.067^{*}$ & graph $=$ honest confidence \\
+  remove the embeddings & $+0.008^{*}$ / $+0.034^{*}$ & music model earns its seat \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \begin{block}{The mechanism}
+    \textbf{Per-piece Bayesian weighting of informative features does the
+    recovering; the graph makes the confidence honest.}
+  \end{block}
+  \begin{itemize}
+    \item Per channel: the graph's calibration win is \emph{articulation}
+          (coverage $0.784 \to 0.91$); its recovery win is \emph{loudness};
+          timing is a plateau \textbf{by construction} --- rubato lives in the
+          tempo warp $T$, not in $\tau = t - T(b)$.
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 9
+\begin{frame}{Is 40\% masking special? No --- swept to the leave-one-out limit \hfill \DEV}
+  \figslot{masksweep_dev.png}{4.6cm}{two panels: RMSE vs hidden fraction
+    (50\%$\to$LOO, three systems) + paired ingredient CIs per level (exists)}
+  \begin{itemize}
+    \item Ordering stable at \textbf{every} level incl.\ LOO; graph significant
+          at 50--20\% and LOO; embedding value grows with observation density
+          ($-0.005 \to -0.021$); coverage flat at 0.92--0.93.
+    \item ``Arbitrary but not lucky.''
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 10
+\begin{frame}{Why the kernel families tie \hfill \DEV}
+  \figslot{spectral_overlay_dev.png}{4.2cm}{evidence-fitted filters
+    $g(\nu;\hat s)$ per family, three dev pieces, overlaid (exists)}
+  \begin{itemize}
+    \item Mat\'ern $\alpha \in \{1,2,3\}$, heat, normalized Laplacian:
+          statistical ties ($\alpha{=}1$ is the additive kernel \emph{exactly} ---
+          a reparameterization, so that tie is an identity check).
+    \item The families agree where the evidence looks; \textbf{the information is
+          in the graph $\Lg$, not the filter shape} --- the one both-axes win in
+          the two-stage regime was changing \emph{connectivity} (chord +
+          voice-leading edges: $-0.008^{*}$/$-0.013^{*}$).
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 11
+\begin{frame}{What we learned about the \emph{music} \hfill \DEV}
+  Three independent measurements, one conclusion:
+  \begin{enumerate}
+    \item \textbf{Tonal metric as geometry}: circle-of-fifths distance
+          \emph{replacing} semitone distance $\to$ significantly \emph{worse}
+          ($+0.009^{*}$/$+0.022^{*}$).
+    \item \textbf{Explicit tonal features} (Krumhansl--Schmuckler key, scale
+          degree, in-scale, \dots) next to the kernel $\to$ nothing
+          ($-0.002$ ns / $+0.001$ ns).
+    \item \textbf{Probing the embeddings} (linear \emph{and} RFF-2048):
+          tonality is \emph{not encoded} (scale degree, mode, in-scale at
+          chance) --- but bass membership (AUC $0.99$), meter, phrase, and
+          register \emph{are}.
+  \end{enumerate}
+  \begin{block}{}
+    For piano timing / articulation / dynamics, \textbf{tonal structure carries
+    no measurable marginal signal}; the structure that matters is rhythm,
+    voicing, and register.
+  \end{block}
+\end{frame}
+
+% ================================================================ 12
+\begin{frame}{Where structure helps --- and where it honestly does not \hfill \DEV}
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}llc@{}}
+  \toprule
+  Task & Verdict & Key number \\
+  \midrule
+  error spotting (anomaly) & \textcolor{okgreen}{\textbf{win}} & AUROC $v$ 0.995, $\log r$ 0.986, $\tau$ 0.978 \\
+  denoising (known noise) & \textcolor{okgreen}{\textbf{win}} & 0.182 / 0.276, cov 0.90 \\
+  selective prediction & \textcolor{okgreen}{transfers} & confident-half RMSE 0.076 \\
+  completion from an excerpt & \textcolor{okamber}{partial} & interpolation wins; extrapolation fails \\
+  era classification & \textcolor{okverm}{honest negative} & 0.20 vs 0.60 majority \\
+  performer ID (Vienna 4x22) & \textcolor{okamber}{mixed} & smoothing removes identity \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \textbf{Two boundaries}, each with evidence on both sides:
+  \begin{itemize}
+    \item structure helps \emph{note-level} judgments, not whole-performance
+          summaries;
+    \item per-piece adaptation wins \emph{interpolation}, fails \emph{excerpt
+          extrapolation} --- the cross-piece head stays the honest tool there.
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 13
+\begin{frame}{``Why not a deep model with a variance head?'' --- we ran it \hfill \DEV}
+  \begin{center}
+  \begin{tabular}{@{}lccc@{}}
+  \toprule
+  System (same information set) & RMSE & NLL & cov@90\% \\
+  \midrule
+  \textbf{proposed model (GP)} & \textbf{0.360} & $\bm{-0.404}$ & 0.927 \\
+  deep ensemble ($5\times$ heteroscedastic MLP) & 0.450 & $-0.104$ & 0.923 \\
+  heteroscedastic MLP & 0.454 & $-0.069$ & 0.918 \\
+  \emph{(cross-piece plug-in mean, graph off)} & \emph{0.446} & \emph{$-0.164$} & \emph{0.90} \\
+  \bottomrule
+  \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item GP wins both axes, paired: $\Delta$RMSE $\bm{-0.090^{*}}$, $\Delta$NLL
+          $\bm{-0.30^{*}}$; ensembling five heads buys almost nothing.
+    \item The deep heads land \emph{exactly at the cross-piece-mean level}: what
+          they cannot imitate is \textbf{per-piece adaptation + the graph} ---
+          the attribution result, confirmed from the other side.
+    \item Scope: frozen-embedding read-out heads; a fine-tuned end-to-end deep
+          model remains untested.
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 14
+\begin{frame}{Does it replicate? \hfill \REPL\ \ \DEV}
+  \textbf{Fresh pieces} (30 pieces never seen by any decision, positions 50--79
+  of the same corpus shuffle):
+  \begin{itemize}
+    \item ordering replicates; graph $\bm{-0.019^{*}}$/$\bm{-0.080^{*}}$
+          (29/30 pieces), embeddings $\bm{-0.010^{*}}$/$\bm{-0.033^{*}}$;
+    \item the graph's fresh-pieces NLL contribution ($-0.080$) matches its
+          \emph{confirmed} value ($-0.074$) --- three independent piece sets
+          agree.
+  \end{itemize}
+  \textbf{Statistical solidity} (recheck battery):
+  \begin{itemize}
+    \item headline dev contrast significant in \emph{every channel separately}
+          ($\tau\ -0.009^{*}$, $\log r\ -0.036^{*}$, $v\ -0.006^{*}$);
+    \item percentile / basic / BCa / Wilcoxon / sign tests all agree; all
+          load-bearing stars survive Benjamini--Hochberg ($q{=}0.05$, 19
+          contrasts); composer-clustered bootstrap: still significant;
+          piece-level coverage never below $0.897$.
+    \item 12 mask seeds: pooled numbers move $\le 0.003$; every call unchanged.
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 15
+\begin{frame}{Phase 2: same prior, new likelihood --- and its blocker fell \hfill \SYNTH}
+  Channels grow to $[\,\tau, \log r, \ell, c, f^{\mathrm{vib}}, \gamma,
+  \delta^{\mathrm{vib}}\,]$; targets become \emph{estimates} with real noise.
+  \begin{itemize}
+    \item \textbf{Per-(note, channel) missingness --- resolved in code}: cell
+          masks, exact (pinned vs brute-force conditioning); the specified joint
+          NLLS vibrato estimator built, with parameter covariances.
+    \item \textbf{Synthetic pilot} (truth known): graph beats no-graph on every
+          channel; \emph{estimator-missing} vibrato cells recovered $\sim 4\times$
+          better than prior scale, coverage 0.87--0.93.
+    \item Measured design answer: estimator variances \textbf{as given} beat a
+          learned noise scale (which over-shrinks $\gamma$: cov 0.76 vs 0.86) ---
+          the draft's a-priori default, reversed by measurement.
+    \item Open and named: real audio ($f_0$ tracker), alignment error
+          (correlated exactly like the signal), estimator-output targets ---
+          any Phase-2 \emph{claim} needs its own preregistered confirmation.
+  \end{itemize}
+  \figslot{arch_phase2_deck.png}{2.4cm}{Phase-2 architecture: one block
+    (likelihood) changes (exists)}
+\end{frame}
+
+% ================================================================ 16
+\begin{frame}{Phase 3 and conclusion}
+  \begin{columns}[T]
+  \column{0.52\textwidth}
+  \textbf{Phase 3} (most novel, hardest):
+  \begin{itemize}
+    \item waveform likelihood $x = \Phi(z)a + \epsilon$; amplitudes marginalise
+          \emph{exactly} (helpers implemented + tested);
+    \item no per-note observations $\Rightarrow$ no visible/hidden split;
+          conjugacy is lost --- $z$-inference (Laplace/VI) is the open step.
+  \end{itemize}
+  \figslot{arch_phase3_deck.png}{2.2cm}{Phase-3 architecture (exists)}
+  \column{0.46\textwidth}
+  \textbf{The claim, in one breath:}
+  {\small standard graph-GP theory, assembled on a new problem, measured harder
+  than its sources --- preregistered one-shot confirmation, exact nesting of the
+  baseline, measured attribution, mapped boundaries, honest negatives kept ---
+  and the same prior carries forward unchanged, with Phase 2's machinery now
+  built and validated.}
+  \end{columns}
+\end{frame}
+
+% ================================================================ APPENDIX
+\appendix
+\begin{frame}[plain]
+  \centering\Large\textbf{Backup}
+\end{frame}
+
+% ---------------------------------------------------------------- A1
+\begin{frame}{Backup: per-channel breakdown \hfill \DEV}
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lcccccc@{}}
+  \toprule
+   & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Artic.\ $\log r$} & \multicolumn{2}{c}{Loudness $v$} \\
+  \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+  System & RMSE & cov & RMSE & cov & RMSE & cov \\
+  \midrule
+  coregionalized GP, zero mean & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 & 0.92 \\
+  + features (no graph) & 0.154 & 0.95 & 0.626 & 0.91 & 0.088 & 0.90 \\
+  + features, full & 0.153 & 0.95 & 0.615 & 0.91 & 0.075 & 0.91 \\
+  \textbf{+ embeddings (proposed)} & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \small The pooled gain is a blend: calibration win $\approx$ articulation,
+  recovery win $\approx$ loudness, timing near-static (rubato lives in the warp).
+\end{frame}
+
+% ---------------------------------------------------------------- A2
+\begin{frame}{Backup: kernel study \hfill \DEV}
+  \begin{center}
+  {\footnotesize
+  \begin{tabular}{@{}lcccc@{}}
+  \toprule
+  Kernel & RMSE & NLL & cov@.9 & cal-err \\
+  \midrule
+  additive Laplacian (baseline) & 0.393 & $-0.322$ & 0.921 & 0.067 \\
+  graph Mat\'ern $\alpha{=}1/2/3$ & 0.393/0.392/0.392 & $-0.321/-0.321/-0.318$ & & tie \\
+  diffusion / heat & 0.393 & $-0.312$ & 0.917 & tie \\
+  independent (no edges) & $0.446^{*}$ & $-0.190^{*}$ & 0.919 & worst \\
+  temporal chain & 0.392 & $-0.292^{*}$ & 0.916 & calib.\ worse \\
+  tonal-distance metric (replaced) & $0.403^{*}$ & $-0.300^{*}$ & 0.921 & worse \\
+  \textbf{chord + voice-leading (added)} & $\bm{0.385^{*}}$ & $\bm{-0.335^{*}}$ & 0.922 & only both-axes win \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \small Two-stage regime; under the final model the harmonic edges are
+  measured-redundant once embeddings enter the kernel.
+  \figslot{digest_kernels.png}{2.4cm}{paired deltas vs additive, 95\% CIs
+    (exists)}
+\end{frame}
+
+% ---------------------------------------------------------------- A3
+\begin{frame}{Backup: the Gaussian tail, and the measured fix \hfill \DEV}
+  \begin{itemize}
+    \item Failure mode (confirmation + a dev replica): a very steady piece
+          $\Rightarrow$ tiny fitted timing scale $\Rightarrow$ a few outlier
+          notes at huge $z$ $\Rightarrow$ pooled NLL explodes while RMSE and
+          coverage stay fine (dev replica: NLL $+34.7$, RMSE 0.113-level, cov 0.90).
+    \item Student-$t$ $\tau$ likelihood (EM prototype, unit-tested):
+          on the dev tail cell, NLL $+34.7 \to \bm{-0.96}$ under its own
+          predictive; RMSE/coverage unchanged; EM weights isolate the outliers.
+    \item On tail-free pieces: a small premium --- insurance.
+    \item \textbf{Not} applied to any thesis number: the confirmation set is
+          spent; the fix awaits its own preregistered confirmation.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------- A4
+\begin{frame}{Backup: probing the embeddings \hfill \DEV}
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lccl@{}}
+  \toprule
+  Theory column & $R^2$ (emb) & $R^2$ (25 feats) & verdict \\
+  \midrule
+  in-scale flag & $-0.06$ & $-0.00$ & not encoded (AUC 0.52) \\
+  scale degree & $-0.05$ & $-0.00$ & not encoded \\
+  mode (major/minor) & $-0.17$ & $-0.04$ & not encoded (AUC 0.48) \\
+  repetition count & $-0.05$ & $-0.00$ & not encoded \\
+  metrical weight & 0.14 & 0.43 & weakly encoded \\
+  phrase salience & 0.48 & 0.57 & encoded \\
+  bass flag & 0.73 & 0.86 & encoded (AUC 0.99) \\
+  register & 0.90 & 1.00 & encoded \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \small Cross-piece ridge probes, head $\to$ dev, out-of-sample; RFF-2048
+  nonlinear probes replicate every tonal verdict.
+\end{frame}
+
+% ---------------------------------------------------------------- A5
+\begin{frame}{Backup: Phase-2 synthetic pilot, per channel \hfill \SYNTH}
+  \begin{center}
+  {\footnotesize
+  \begin{tabular}{@{}llll@{}}
+  \toprule
+  Question / system & $c$ (cents) & $\log\gamma$ & $\log f$ \\
+  \midrule
+  \textbf{imputation} --- GP (as-given) & 3.51 / 0.89 & 0.094 / 0.86 & 0.026 / 0.90 \\
+  \quad no-graph & 4.11 / 0.88 & 0.103 / 0.85 & 0.030 / 0.89 \\
+  \quad estimator (oracle) & 1.34 / 0.93 & 0.041 / 0.90 & 0.007 / 0.93 \\
+  \addlinespace
+  \textbf{missing cells} --- GP (as-given) & --- & 0.085 / 0.87 & 0.025 / 0.93 \\
+  \quad no-graph & --- & 0.096 / 0.86 & 0.028 / 0.91 \\
+  \quad estimator & \multicolumn{3}{l}{\emph{undefined --- only the prior can answer}} \\
+  \addlinespace
+  \textbf{denoising} --- GP (as-given) & 1.41 / 0.90 & 0.039 / 0.86 & 0.008 / 0.87 \\
+  \quad raw estimator & 1.63 / 0.91 & 0.042 / 0.90 & 0.008 / 0.88 \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \small Cells: RMSE / cov@90 vs known truth. Prior scales: $\log\gamma$ 0.35,
+  $\log f$ 0.10. 926 genuinely missing vibrato cells across 20 pieces.
+\end{frame}
+
+\end{document}
