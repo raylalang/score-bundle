@@ -58,3 +58,34 @@ for K in $(seq 0 11); do OMP_NUM_THREADS=2 PYTHONPATH=src \
   --configs b_theoryfeat,b_theoryfeatlm \
   --out-dir results/graphgp_theoryfeat --shard $K/12 & done; wait
 ```
+
+## Follow-up: linear probes of the embeddings (2026-07-15)
+
+The Reading above originally attributed the negative to *subsumption* — "the
+embeddings already carry the tonal/metrical/repetition signal." A direct probe
+study (`scripts/probe_embeddings.py`; ridge probes fit on the head pieces,
+scored out-of-sample on the 30 dev pieces; results in
+`results/probe_embeddings*.pkl`) shows that is **only half true**:
+
+| theory column | R² emb | R² feat (control) | AUC emb | verdict |
+|---|---|---|---|---|
+| in-scale flag | −0.06 | −0.00 | 0.52 | **not encoded** |
+| scale degree (sin/cos) | −0.05 | −0.00 | — | **not encoded** |
+| mode (major/minor) | −0.17 | −0.04 | 0.48 | **not encoded** (also at piece level: 0.48) |
+| repetition count | −0.05 | −0.00 | — | not encoded (0.12 raw) |
+| metrical weight | 0.14 | 0.43 | — | weakly encoded |
+| phrase salience (IOI) | 0.48 | 0.57 | — | encoded |
+| bass flag | 0.73 | 0.86 | 0.99 | encoded |
+| register (voice pitch-z) | 0.90 | 1.00 | — | encoded |
+
+(The `--raw` variant, which keeps piece-level information the GP's
+per-piece-standardized kernel cannot use, does not change the tonal verdicts.)
+
+**Corrected reading (now in the thesis):** the embeddings encode voicing and
+rhythm — bass membership, meter, phrase, register — but **not tonality**. The
+theory columns' failure is therefore *not* tonal subsumption; combined with the
+tonal-metric kernel negative, the consistent conclusion is that **tonal
+structure carries no measurable marginal signal for these three expressive
+channels at this scale**, while the rhythmic/voicing structure the columns add
+genuinely is already in the kernel. The embeddings' value is rhythm, texture,
+and dynamics convention — not harmony.

@@ -92,10 +92,10 @@
 % ================= FUSION =================
 \node[circle, draw=ggreen, fill=ggreen!12, line width=1.1pt, inner sep=2.6pt] (plus) at (14.6,-0.1) {$+$};
 \node[dim, text=greenink, left=1.4mm of plus, align=right] {sum of\\ Kronecker\\ terms};
-\node[op=ggreen, text width=16mm, fill=ggreen!8] (noise) at (14.6,-3.6) {$\operatorname{diag}(\varsigma^2)\otimes I$\\ \tiny prior noise term};
+\node[op=ggreen, text width=16mm, fill=ggreen!8, dashed] (noise) at (14.6,-3.6) {no per-note noise\\ \tiny (no $\tilde y$ in Phase 3)};
 
 \cuboid{16.25}{-0.85}{1.15}{1.45}{0.34}{ggreen}{kk}
-\node[dim, below=1.5mm of kks] {prior $p(z)$\\[1pt] the same kernel $K$};
+\node[dim, below=1.5mm of kks] {prior $p(z)$: structured part\\[1pt] $B\otimes K_G+\textstyle\sum_f\operatorname{diag}(c_f)\otimes X_fX_f^{\!\top}$};
 
 % ================= HEAD =================
 \node[op=gpink, text width=24mm, text=pinkink, dashed] (head) at (19.55,-0.1)

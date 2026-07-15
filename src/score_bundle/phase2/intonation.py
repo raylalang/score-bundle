@@ -3,9 +3,16 @@
 `cents_from_f0` and `vibrato_from_f0` are implementable helpers; `extract_f0` is a
 stub to be backed by a pitch tracker (e.g. CREPE/pYIN) on monophonic audio.
 
-Once a per-note intonation field ``c`` (cents) is available, it plugs straight into
-the Phase-1 machinery: build a graph (with pitch-adjacency length scales), a
-:class:`score_bundle.model.GraphGaussianField`, and run the same posterior.
+NB `vibrato_from_f0` is a crude starting point and is NOT the estimator the thesis
+specifies (draft eq:vibrato): it mean-removes the cents curve (the thesis notes the
+vibrato-free centre is *not* the mean) and reads rate/extent from FFT/RMS with no
+onset delay; the specified estimator is a joint per-note nonlinear least-squares
+fit of (c_i, f_i^vib, gamma_i, delta_i^vib) on voiced samples.
+
+Once a per-note intonation field ``c`` (cents) is available, it plugs into the
+thesis model as an extra channel of :class:`score_bundle.gp.MultiOutputGraphGP`
+(the two-stage :class:`score_bundle.model.GraphGaussianField` route remains the
+per-channel special case).
 """
 from __future__ import annotations
 

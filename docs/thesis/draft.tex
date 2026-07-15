@@ -238,7 +238,7 @@ Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 2 --- extension (mono) & Intonation, vibrato on continuously pitched instruments &
 $f_0$-derived channels ($c_i$ cents, vibrato) & Not started (scoped) \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
-Harmonic amplitudes $a$, audio $x$ & Not started (scoped) \\
+Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested, inference not started \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -374,7 +374,8 @@ Velocity / dynamics & $v_i$ & norm.\ MIDI & 1 & keyboard reliable; others approx
 Pedal & --- & on/off or cont. & 1 (opt.) & piano only \\
 Intonation deviation & $c_i$ & cents & 2 & voice, strings, winds --- \emph{not} piano \\
 Instantaneous $f_0$ curve & $f_{0,i}(t)$ & Hz & 2 & monophonic pitched \\
-Vibrato (rate, extent, delay) & $f_i^{\mathrm{vib}}, \gamma_i$ & Hz, cents, s & 2 & voice, strings, winds \\
+Vibrato (rate, extent, delay) & $f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}}$ & Hz, cents, s & 2 & voice, strings, winds \\
+Loudness (audio) & $\ell_i$ & log RMS & 2 & monophonic pitched \\
 Amplitude envelope & $A_i(t)$ & normalised & 2--3 & monophonic \\
 Harmonic amplitudes / timbre & $\mathbf a_i$ & --- & 3 & narrow / monophonic only \\
 Posterior uncertainty & $\sigma_i$ / CI & same as variable & all & all \\
@@ -839,9 +840,11 @@ paired at the level of the piece.
 \section{Phase 2: intonation and vibrato (continuously pitched instruments)}
 \label{sec:phase2}
 Phase 2 carries the model to voice, strings and winds, where the performer controls
-pitch. \emph{Nothing in the prior changes}: the kernel \eqref{eq:gpfirst}, its
-hyperparameter fit (\S\ref{sec:eb}) and the exact conjugate posterior
-(\S\ref{sec:posterior}) are reused verbatim. Three things do change, and this section
+pitch. \emph{Nothing in the latent prior changes}: the graph and feature kernels
+of \eqref{eq:gpfirst} (its first two terms), the hyperparameter fit
+(\S\ref{sec:eb}) and the exact conjugate posterior (\S\ref{sec:posterior}) are
+reused; the observation-noise term belongs to the likelihood, and the likelihood is
+what changes. Three things do change, and this section
 specifies each: the \emph{channel set}, the way the targets are \emph{obtained}, and
 the \emph{observation noise}, which stops being negligible.
 
@@ -849,15 +852,16 @@ the \emph{observation noise}, which stops being negligible.
 A fixed-pitch keyboard affords no performer-controlled intonation, and its dynamics is
 a MIDI velocity. Neither holds here. The per-note vector becomes
 \begin{equation}
-  y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ \delta_i \,\bigr]
+  y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ \delta_i^{\mathrm{vib}} \,\bigr]
   \;\in\; \R^{k},
   \label{eq:phase2-channels}
 \end{equation}
 where $\tau_i$ and $\log r_i$ are unchanged; $\ell_i$ is a loudness channel replacing
 the MIDI velocity $v_i$ (the log RMS of the note's amplitude envelope $A_i(t)$); $c_i$
-is the static intonation offset; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i)$ are the
-vibrato rate, extent and onset delay defined below. Two decisions are genuinely open
-and should be settled before any number is quoted: whether $\delta_i$ is identifiable
+is the static intonation offset; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are the
+vibrato rate, extent and onset delay defined below (the superscript keeps the delay
+distinct from the performed duration $\delta_i$ of \eqref{eq:logr}). Two decisions are genuinely open
+and should be settled before any number is quoted: whether $\delta_i^{\mathrm{vib}}$ is identifiable
 often enough to be worth a channel, and hence whether $k = 7$; and whether $\ell_i$,
 which is an amplitude rather than a keystroke, is commensurable enough with $v_i$ for
 the two to be discussed as one channel across phases. We do not assume they are.
@@ -877,19 +881,19 @@ decompose it as
   \qquad
   u_i(t) \;=\;
   \begin{cases}
-    \gamma_i \sin\!\bigl(2\pi f_i^{\mathrm{vib}}\,(t - t_i - \delta_i)\bigr), & t \ge t_i + \delta_i,\\[2pt]
+    \gamma_i \sin\!\bigl(2\pi f_i^{\mathrm{vib}}\,(t - t_i - \delta_i^{\mathrm{vib}})\bigr), & t \ge t_i + \delta_i^{\mathrm{vib}},\\[2pt]
     0, & \text{otherwise},
   \end{cases}
   \label{eq:vibrato}
 \end{equation}
 with $t_i$ the performed onset. So $c_i$ (cents) is the \emph{vibrato-free centre},
 $\gamma_i$ (cents) the vibrato extent, $f_i^{\mathrm{vib}}$ (Hz) its rate, and
-$\delta_i$ (s) the delay before it begins. Estimating $(c_i, f_i^{\mathrm{vib}},
-\gamma_i, \delta_i)$ is a small nonlinear least-squares fit per note on the voiced
+$\delta_i^{\mathrm{vib}}$ (s) the delay before it begins. Estimating $(c_i, f_i^{\mathrm{vib}},
+\gamma_i, \delta_i^{\mathrm{vib}})$ is a small nonlinear least-squares fit per note on the voiced
 samples. Note that $c_i$ is \emph{not} the mean of $c_i(t)$: the mean coincides with
 the vibrato-free centre only over a whole number of cycles, which a note rarely
 supplies. Open choices, all consequential: a robust loss rather than least squares;
-the minimum voiced duration below which $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i)$ are
+the minimum voiced duration below which $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are
 not identifiable at all; and the treatment of notes that fall below it.
 
 \paragraph{An honest structural problem: per-channel missingness.}
@@ -897,9 +901,12 @@ That last choice is not cosmetic. A short note may support $c_i$ but no vibrato
 parameters, so a target can be missing \emph{for some channels of a note and not
 others}. The conjugate posterior of \S\ref{sec:posterior} assumes \emph{per-note}
 masks, which is exactly what keeps the observed block Kronecker-compatible
-(\S\ref{sec:gpfirst}). Per-(note, channel) missingness breaks that structure and costs
-either the Kronecker factorisation or an imputation step upstream. It has no
-solution in the present formulation and must be resolved before Phase 2 is built.
+(\S\ref{sec:gpfirst}). Per-(note, channel) missingness breaks that bookkeeping ---
+though not the exactness: the conjugate posterior conditions on an arbitrary
+observed index set, so what must give way is the per-note mask interface and any
+Kronecker-structured shortcut, not conjugacy. The mask must be generalised to
+per-(note, channel) index sets, or the gaps imputed upstream, before Phase 2 is
+built.
 
 \paragraph{The observation noise becomes substantive --- and heteroscedastic.}
 In Phase 1 the targets are read from clean MIDI and $\Sigma_e \approx 0$. Here every
@@ -929,8 +936,10 @@ definition. Worse, alignment error is correlated along score time --- which is p
 the structure the graph prior expects expressive timing to have. A model fit naively
 will therefore absorb some alignment error as expressive timing and report it with
 confident error bars. Two defensible responses: fold the aligner's own uncertainty into
-the $\tau$ row of \eqref{eq:phase2-noise}, or withhold $\tau$ from Phase-2 claims
-entirely and report only the channels the audio measures directly. This is the single
+the $\tau$ row of \eqref{eq:phase2-noise} --- noting honestly that
+\eqref{eq:phase2-noise} is diagonal, so this captures the error's \emph{scale} but
+cannot represent its correlation along score time --- or withhold $\tau$ from
+Phase-2 claims entirely and report only the channels the audio measures directly. This is the single
 largest threat to validity in Phase 2 and it has no analogue in Phase 1.
 
 \paragraph{The graph is unchanged --- and Phase 2 makes one music-theoretic hypothesis testable.}
@@ -980,12 +989,18 @@ The optional audio likelihood replaces $\tilde y$ with the waveform $x \in \R^{M
   \label{eq:waveform}
 \end{equation}
 where $z$ collects the \emph{nonlinear position variables} (tempo, timing,
-intonation, vibrato --- the Phase-1/2 fields), $\Phi(z) \in \R^{M \times 2K}$ is the
-deterministic harmonic synthesis basis (quadrature columns $\cos\phi_k(t),
-\sin\phi_k(t)$ with cumulative phase $\phi_k(t) = 2\pi k \int_0^t f_0(s)\, ds$
-determined by $z$), and $a \in \R^{2K}$ are the harmonic amplitudes. Per-note
-amplitudes are shaped in time by an amplitude envelope $A_i(t)$, which multiplies
-the columns of $\Phi(z)$ belonging to note $i$. With a Gaussian amplitude prior
+intonation, vibrato), $\Phi(z) \in \R^{M \times 2KN}$ is the deterministic harmonic
+synthesis basis --- the horizontal concatenation of one $M \times 2K$ block per note,
+quadrature columns $\cos\phi_k(t), \sin\phi_k(t)$ with cumulative phase
+$\phi_k(t) = 2\pi k \int_0^t f_0(s)\, ds$ determined by $z$ ($K$ counts harmonics
+here, distinct from the joint kernel of \eqref{eq:gpfirst}) --- and
+$a \in \R^{2KN}$ are the stacked per-note harmonic amplitudes. Per-note amplitudes
+are shaped in time by an amplitude envelope $A_i(t)$, which multiplies the columns
+of $\Phi(z)$ belonging to note $i$. An honest asymmetry must be recorded: in this
+sketch loudness lives in the amplitudes $a$ and articulation in the envelope
+supports, and \emph{neither is under the graph prior} --- assigning every Phase-1/2
+channel a home ($z$, $a$, or $A_i$) with its structure stated is part of designing
+Phase 3 in earnest, not a detail. With a Gaussian amplitude prior
 $a \sim \N(\mu_a, \Sigma_a)$, the amplitudes marginalise exactly:
 \begin{align}
   p(a \mid x, z) &= \N(m_a,\, S_a), \qquad
@@ -997,7 +1012,8 @@ $a \sim \N(\mu_a, \Sigma_a)$, the amplitudes marginalise exactly:
 \end{align}
 writing $\Phi = \Phi(z)$. Inference over the nonlinear $z$ (Laplace approximation or
 variational inference, initialised from the nominal score) is the open Phase-3 step;
-the graph prior \eqref{eq:additive} plays the role of $p(z)$'s structured component.
+the coupled graph prior --- the first two terms of \eqref{eq:gpfirst} --- plays the
+role of $p(z)$'s structured component.
 
 \paragraph{From imputation to audio: the task structure across phases.}
 It is worth being explicit that the \emph{visible/hidden partition of
@@ -1006,11 +1022,12 @@ In Phase 1 the performance is supplied as clean MIDI, so the per-note targets ar
 read off almost exactly ($\Sigma_e \approx 0$); there is nothing to infer unless we
 manufacture a prediction task, which is why we \emph{mask} a fraction of notes and
 impute them from the rest. The masking makes the structured prior testable; it is
-not intrinsic to score-informed transcription. In the audio phases the situation is
-the genuine one: the model is given \textbf{only the score and the audio} --- an
-$f_0$ curve in Phase 2, the waveform $x$ in Phase 3 --- and \textbf{no} per-note
-performance values at all. The observation is no longer at the note level, so there
-is \emph{no} visible/hidden split: \emph{every} note's expressive variables are
+not intrinsic to score-informed transcription. In Phase 2 the observation is
+still note-level --- audio enters only to \emph{derive} per-note targets, so the
+imputation protocol carries over, now with substantive noise. Phase 3 is where the
+situation becomes the genuine one: the model is given \textbf{only the score and
+the waveform}, there are \textbf{no} per-note observations of any kind, and hence
+\emph{no} visible/hidden split --- \emph{every} note's expressive variables are
 latent and inferred \emph{jointly} from the single audio observation through the
 likelihood (Eq.~\eqref{eq:waveform}). The unifying view across all three phases is
 that \textbf{only the likelihood changes} --- from per-note noisy targets with a mask
@@ -1081,6 +1098,16 @@ throughout --- calibration is insensitive to the masking level. One cell at 30\%
 hidden reproduces the Gaussian-tail NLL failure mode of \S\ref{sec:guard-gp} on a
 development piece, identically across all three systems --- consistent with it
 being a property of the likelihood's tail, not of any one model.
+Figure~\ref{fig:masksweep} shows both curves.
+
+\figph{masksweep_dev.png}{1.0}{Sensitivity to the masking level (development
+set). Left: pooled held-out RMSE as the hidden fraction falls from 50\% to 10\%
+and to the leave-one-out limit (open markers; its hyperparameters are fit on the
+full piece). Right: the paired per-piece contributions of the graph and of the
+music-model embeddings at each level, with bootstrap 95\% CIs. The ordering is
+stable everywhere; the embeddings' value grows with observation density; the
+graph's value is significant at every level except 10\% hidden, where only
+$\sim$10\% of notes are scored per piece.\label{fig:masksweep}}
 
 \section{Metrics: recovery and calibration}\label{sec:metrics}
 Predictions on held-out notes are scored on both axes. With held-out values $y_i$,
@@ -1403,7 +1430,8 @@ survives every classical alternative profile}: Mat\'ern at every $\alpha$, diffu
 and the normalized Laplacian
 are statistically indistinguishable from it on RMSE and do not improve NLL --- among
 classical graph-GP kernels the plainest one is the right default, and its extra-cost
-rivals buy nothing. \textbf{Second, structure beyond time adjacency is what buys
+rivals buy nothing (the evidence-fitted filters themselves are overlaid in
+Fig.~\ref{fig:spectral-overlay}, Appendix~\ref{app:extra}). \textbf{Second, structure beyond time adjacency is what buys
 calibration}: the temporal chain ties the full graph on RMSE ($-0.000$, ns) but is
 significantly worse-calibrated ($\Delta$NLL $+0.031^{*}$). \textbf{Third, music theory
 helps as extra edges, not as a replacement metric}: tonal distance in place of semitone
@@ -1645,23 +1673,27 @@ the circle-of-fifths metric \eqref{eq:tonaladj} that \emph{hurt} on piano expres
 here that a music-theoretic \emph{geometry}, and not only music-theoretic edges, earns
 its place. Figure~\ref{fig:arch-phase2} makes the claim precise: relative to
 Figure~\ref{fig:arch-phase1}, the coregionalization grows from $3 \times 3$ to
-$k \times k$ as channels join the bundle, and the observation noise $\Sigma_e$
-becomes substantive because the targets are now estimates rather than symbolic
-MIDI values --- everything else, including the exact conjugate posterior, is
-untouched.
+$k \times k$ as channels join the bundle (re-learned, not carried over), and the
+observation noise $\Sigma_e$ becomes substantive because the targets are now
+estimates rather than symbolic MIDI values --- the prior's structure and the exact
+conjugate posterior are untouched.
 
 \figph{arch_phase2.pdf}{1.0}{Phase 2 (not yet implemented; dashed). Audio enters
-only to \emph{derive} per-note targets ($c_i$ cents, vibrato). Exactly one block
-changed relative to Figure~\ref{fig:arch-phase1}: the likelihood, where
-$\Sigma_e$ is now substantive. The prior branches and the conjugate posterior
+only to \emph{derive} per-note targets ($c_i$ cents, vibrato). One structural
+block changed relative to Figure~\ref{fig:arch-phase1} --- the likelihood, where
+$\Sigma_e$ is now substantive and heteroscedastic --- while the coregionalization
+is re-learned at $k \times k$. The prior branches and the conjugate posterior
 head are reused unchanged.\label{fig:arch-phase2}}
 
 \section{Phase 3: a differentiable-synthesizer audio likelihood}
 The intended step to audio: $x = \Phi(z)\,a + \varepsilon$
 (\S\ref{sec:phase3-math}), with conditionally linear amplitudes marginalised
 analytically and the nonlinear positions $z$ inferred approximately (Laplace/VI,
-score-based initialisation). This is the most novel part of the programme and is not
-yet started. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
+score-based initialisation). This is the most novel part of the programme. Its
+conjugate inner blocks exist as tested helpers --- the synthesis basis $\Phi(z)$
+and the amplitude marginalisation \eqref{eq:amp-post}--\eqref{eq:collapsed} are
+implemented and unit-tested --- while the $z$-inference loop, the hard part, is not
+started. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
 the whole prior --- graph branch, evidence branch, joint kernel --- carries over
 as the structured component of $p(z)$, but with no performance MIDI there are no
 per-note observations and no visible/hidden split; every note's expression is
@@ -1672,8 +1704,9 @@ observation is the waveform itself: the same joint kernel now serves as the
 prior over $z$, the likelihood block becomes the marginalised audio likelihood
 $p(x \mid z) = \N\bigl(\Phi\mu_a,\ \Phi\Sigma_a\Phi^{\top} + K_n\bigr)$, and the
 head is the one non-conjugate element (Laplace/VI over $z$, amplitudes recovered
-in closed form). Again exactly one block moved relative to
-Figure~\ref{fig:arch-phase1}.\label{fig:arch-phase3}}
+in closed form). Relative to Figure~\ref{fig:arch-phase1} the likelihood moved
+and the inference head became approximate; the prior branches carry
+over.\label{fig:arch-phase3}}
 
 \section{Incorporating music theory}\label{sec:musictheory}
 Music theory can inform the model in three distinct places --- the graph/kernel, the
@@ -1720,12 +1753,24 @@ a metrical-weight hierarchy, within-chord dissonance and a bass flag,
 phrase-boundary salience, motif-repetition counts, and per-voice tessitura.
 On the development set they change nothing significant: $-0.002$ RMSE (CI touches
 zero) without the music-model embeddings, $+0.001$ (ns) beside them, and no single
-channel is significant in either regime. This replicates the route-(A) pattern at
-the feature level --- \textbf{the pretrained music model already carries the tonal,
-metrical, and repetition signal the hand-built theory columns encode} --- and it
-sharpens the attribution story of \S\ref{sec:attribution}: part of what the
-embeddings contribute demonstrably \emph{is} this structure. The columns remain in
-the codebase as an interpretable probe, off by default.
+channel is significant in either regime.
+
+A follow-up \emph{linear-probe} study sharpens the interpretation, and not in the
+obvious direction. Probing the embeddings directly (cross-piece ridge, fit on the
+head pieces, scored out-of-sample on the development pieces) shows they encode
+voicing and rhythm --- bass-note membership (AUC $0.99$), metrical weight,
+phrase-boundary salience, register --- but \emph{not} tonality: scale degree,
+in-scale membership, mode, and local key are all at chance from the embeddings
+($R^2 \approx 0$, AUC $\approx 0.5$), whether or not piece-level information is
+removed. So the theory columns' failure is \emph{not} explained by the embeddings
+already carrying the tonal signal. Taken together with the tonal-metric result of
+route (A), the consistent reading is that \textbf{tonal structure carries no
+measurable marginal signal for these three expressive channels at this scale},
+while the rhythmic and voicing structure the columns add genuinely is already in
+the kernel. This tightens the attribution story of \S\ref{sec:attribution} in an
+unexpected direction: the embeddings' value is rhythm, texture, and dynamics
+convention --- not harmony. The columns remain in the codebase as an interpretable
+probe, off by default.
 
 \paragraph{(C) In the connection --- the geometric route.}
 Encode musical transformations (transposition, tonal gauge) as edge transforms
@@ -1804,6 +1849,8 @@ $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
 $m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\
 $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
 $c_i$, $f_0$ & intonation (cents), fundamental frequency (Phase 2) \\
+$\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $\delta_i^{\mathrm{vib}}$ & Phase-2 loudness (log RMS); vibrato rate, extent, onset delay \\
+$\sigma_{e,ij}^2$ & per-(note, channel) observation-noise variance (Phase 2) \\
 $x$, $z$, $a$, $\Phi(z)$, $\epsilon$, $K_n$ & audio, nonlinear positions, amplitudes, synth basis, noise, noise cov (Phase 3) \\
 $A_i(t)$ & amplitude envelope of note $i$ (Phase 3) \\
 \end{longtable}
@@ -1871,6 +1918,25 @@ frozen + per-piece noise   & 0.151 & 0.97 & 0.613 & 0.91 & 0.075 & 0.94 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\section{Why the spectral families tie: the fitted filters}
+Figure~\ref{fig:spectral-overlay} makes the kernel-comparison ties
+(\S\ref{sec:kernels}) visible. For three development pieces, the full model was
+refit once per shape family --- graph Mat\'ern $\alpha \in \{1,2,3\}$ (the
+$\alpha{=}1$ member in its additive parameterization) and the heat kernel ---
+and the evidence-fitted filters $g(\nu;\hat s)$ overlaid. The families agree
+over the low-frequency components, where the prior mass and the smooth
+expressive structure live, and disagree only in the mid-tail --- exactly where
+the feature kernels and the noise term absorb the variance, so the evidence is
+insensitive to the difference. The information is in the graph $\Lg$, not in
+the fine shape of the filter.
+
+\figph{spectral_overlay_dev.png}{1.0}{Evidence-fitted spectral filters
+$g(\nu;\hat s)$ per kernel family, three development pieces (published anchor
+mask, seed 0). Ticks along the base mark each piece's Laplacian eigenvalues.
+The families coincide at the low-frequency end and differ only where the
+evidence is insensitive, matching the measured statistical
+ties.\label{fig:spectral-overlay}}
 
 \noindent Further extended tables (the two-stage development record, the kernel
 study's $\mu=0$ block, downstream per-task detail) remain in

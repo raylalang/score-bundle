@@ -92,7 +92,7 @@
 % ================= FUSION =================
 \node[circle, draw=ggreen, fill=ggreen!12, line width=1.1pt, inner sep=2.6pt] (plus) at (14.6,-0.1) {$+$};
 \node[dim, text=greenink, left=1.4mm of plus, align=right] {sum of\\ Kronecker\\ terms};
-\node[op=ggreen, text width=16mm, fill=ggreen!8] (noise) at (14.6,-3.6) {$\operatorname{diag}(\varsigma^2)\otimes I$\\ \tiny per-channel noise};
+\node[op=ggreen, text width=16mm, fill=ggreen!8] (noise) at (14.6,-3.6) {$\Sigma_e=\operatorname{diag}(\sigma^2_{e,ij})$\\ \tiny heteroscedastic noise};
 
 \cuboid{16.25}{-0.85}{1.15}{1.45}{0.34}{ggreen}{kk}
 \node[dim, below=1.5mm of kks] {joint kernel $K$\\[1pt] $kN\!\times\!kN$};
@@ -101,7 +101,7 @@
 \node[op=gpink, text width=22mm, text=pinkink] (head) at (19.55,-0.1)
   {\textbf{exact conjugate}\\[1pt] \textbf{GP posterior}\\[1pt] \tiny\itshape unchanged};
 \node[dim, above=1.6mm of head, text width=30mm]
-  {$\theta=(s,B,\{c_f\},\varsigma^2)$ learned by one\\ exact per-piece marginal likelihood};
+  {$\theta=(s,B,\{c_f\},\text{noise scale})$ learned by one\\ exact per-piece marginal likelihood};
 
 % ================= LIKELIHOOD (the changing part) =================
 \node[op=ggray, text width=17mm, dashed] (aud) at (13.75,-5.95) {monophonic audio\\ \tiny $f_0$ extraction};
@@ -123,7 +123,7 @@
   \draw[ggrey, line width=0.3pt, dashed] (-0.25,0) -- (1.30,0);
 \end{scope}
 \node[dim, text=gink] at (23.05,-1.35)
-  {per-note $\tau_i,\log r_i,v_i$\\[1pt] $+\ c_i$, vibrato\\[1pt] each with uncertainty};
+  {per-note $\tau_i,\log r_i,\ell_i$\\[1pt] $+\ c_i$, vibrato\\[1pt] each with uncertainty};
 
 % ================= ARROWS =================
 \draw[arr] (sce) .. controls +(0.7,0) and +(-0.7,0) .. (gop.west);
