@@ -190,6 +190,23 @@ are the confirmation ones.
   pipeline was the development path, the reformulation came from the literature
   review, and the confirmation adjudicated it. The selection story is a strength.
 
+## Deck-ready checklist
+
+Everything a deck needs, in one place:
+- **Narrative**: the ~16-slide arc above (1→13 with 5b, 10b, 10c inserted).
+- **Every number**: the verified table above — copy from there only, never from
+  memory; keep DEV/CONF/REPL/SYNTH labels on slides.
+- **Figures**: all PNG (format-agnostic); the architecture figures additionally
+  as `arch_phase{1,2,3}_deck.png` (200 dpi renders of the PDFs). Vector
+  originals (.pdf/.svg) sit beside them if the deck is LaTeX/beamer.
+- **Q&A**: the ten prepared answers + traps below; the prereg exhibit is the
+  two hashes (`3681d90` → `b3d3389`, both on origin/main).
+- **Slide-1 visual**: no bespoke illustration exists; `posterior_example_dev.png`
+  doubles as "what the task and output look like" if wanted.
+- **Title block**: Score-Bundle Models — Bayesian Score-Informed Performance
+  Transcription with Calibrated Uncertainty; Raynaldi Lalang; supervisor
+  Kazuyoshi Yoshii; Kyoto University.
+
 ## Deck figure inventory (all committed)
 
 - `docs/thesis/figures/arch_phase1.pdf` (+2,3) — model architecture, phase story
