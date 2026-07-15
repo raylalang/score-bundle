@@ -98,11 +98,122 @@ def _window_mean(x: np.ndarray, w: int) -> np.ndarray:
     return (c[hi] - c[lo]) / (hi - lo)
 
 
+# Krumhansl–Kessler tonal-hierarchy profiles (probe-tone ratings; Krumhansl 1990).
+_KK_MAJOR = np.array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09,
+                      2.52, 5.19, 2.39, 3.66, 2.29, 2.88])
+_KK_MINOR = np.array([6.33, 2.68, 3.52, 5.38, 2.60, 3.53,
+                      2.54, 4.75, 3.98, 2.69, 3.34, 3.17])
+_DIATONIC = {0: np.isin(np.arange(12), [0, 2, 4, 5, 7, 9, 11]),   # major
+             1: np.isin(np.arange(12), [0, 2, 3, 5, 7, 8, 10])}   # natural minor
+_DISSONANT_PC = np.isin(np.arange(12), [1, 2, 6, 10, 11])
+
+
+def _theory_block(ps: np.ndarray, bs: np.ndarray, ds: np.ndarray, vs: np.ndarray,
+                  key_window: int = 16) -> np.ndarray:
+    """Music-theory features on score-order arrays; returns (n, 14).
+
+    Columns: key clarity, mode (major=1), scale-degree sin/cos, in-scale flag,
+    circle-of-fifths motion of the local key, metrical weight, vertical
+    dissonance, bass flag, LBDM boundary salience (IOI / pitch, per voice),
+    motif-repetition count (per-voice interval+rhythm 4-grams), within-voice
+    pitch z, within-voice position.  Score-only by construction.
+    """
+    n = len(ps)
+    eps = 1e-9
+    pc = np.mod(ps.astype(int), 12)
+
+    # --- local key by Krumhansl–Schmuckler over a +-key_window note window ----
+    onehot = np.zeros((n, 12))
+    onehot[np.arange(n), pc] = np.maximum(ds, 0.25)  # duration-weighted, floored
+    c = np.concatenate([np.zeros((1, 12)), np.cumsum(onehot, axis=0)])
+    i = np.arange(n)
+    lo = np.maximum(i - key_window, 0)
+    hi = np.minimum(i + key_window + 1, n)
+    hist = c[hi] - c[lo]
+    profs = np.stack([np.roll(prof, t)                       # 24 = 12 tonics x 2 modes
+                      for prof in (_KK_MAJOR, _KK_MINOR) for t in range(12)])
+    hz = hist - hist.mean(axis=1, keepdims=True)
+    pz = profs - profs.mean(axis=1, keepdims=True)
+    r = (hz @ pz.T) / np.maximum(np.linalg.norm(hz, axis=1, keepdims=True)
+                                 * np.linalg.norm(pz, axis=1), eps)
+    best = np.argmax(r, axis=1)
+    tonic = best % 12
+    mode = best // 12                                        # 0 = major, 1 = minor
+    key_clarity = r[np.arange(n), best]
+    deg = np.mod(pc - tonic, 12)
+    deg_sin = np.sin(2 * np.pi * deg / 12.0)
+    deg_cos = np.cos(2 * np.pi * deg / 12.0)
+    in_scale = np.stack([_DIATONIC[0], _DIATONIC[1]])[mode, deg].astype(float)
+    cof = np.mod(7 * tonic, 12)                              # circle-of-fifths index
+    dcof = np.abs(np.diff(cof, prepend=cof[:1]))
+    fifths_motion = np.minimum(dcof, 12 - dcof) / 6.0
+
+    # --- metrical weight: how many metrical levels the onset sits on ----------
+    levels = (0.25, 0.5, 1.0, 2.0, 4.0)
+    metric_w = sum((np.abs(bs - lv * np.round(bs / lv)) < 1e-6).astype(float)
+                   for lv in levels) / len(levels)
+
+    # --- verticals: dissonance within the same-onset chord + bass flag --------
+    dissonance = np.zeros(n)
+    is_bass = np.zeros(n)
+    _, grp = np.unique(np.round(bs, 6), return_inverse=True)
+    for g in range(grp.max() + 1):
+        idx = np.flatnonzero(grp == g)
+        is_bass[idx[np.argmin(ps[idx])]] = 1.0
+        if len(idx) < 2:
+            continue
+        for j in idx:
+            ivl = np.mod(np.abs(pc[idx] - pc[j]), 12)
+            dissonance[j] = float(np.mean(_DISSONANT_PC[ivl[idx != j]]))
+
+    # --- per-voice sequences: LBDM salience, repetition, tessitura ------------
+    lbdm_ioi = np.zeros(n)
+    lbdm_pitch = np.zeros(n)
+    repeat_cnt = np.zeros(n)
+    v_pitch_z = np.zeros(n)
+    v_pos = np.zeros(n)
+    for v in np.unique(vs):
+        vi = np.flatnonzero(vs == v)
+        vp, vb = ps[vi], bs[vi]
+        m = len(vi)
+        v_pitch_z[vi] = (vp - vp.mean()) / (vp.std() + eps)
+        v_pos[vi] = np.arange(m) / max(m - 1, 1)
+        if m < 3:
+            continue
+        ioi = np.maximum(np.diff(vb), eps)                   # m-1 transitions
+        ivl = np.abs(np.diff(vp))
+        for x, out in ((ioi, lbdm_ioi), (ivl, lbdm_pitch)):
+            rch = np.abs(np.diff(x)) / (x[1:] + x[:-1] + eps)   # m-2 change ratios
+            sal = np.zeros(m)                                # note k <- boundary before it
+            sal[2:] = np.log1p(x[1:]) * rch
+            out[vi] = sal
+        if m >= 5:                                           # interval+rhythm 4-grams
+            q_ivl = np.clip(np.diff(vp).astype(int), -12, 12)
+            q_rhy = np.clip(np.round(2 * np.log2(ioi[1:] / ioi[:-1])) / 2, -3, 3)
+            grams: dict = {}
+            keys = [tuple(q_ivl[k:k + 4]) + tuple(q_rhy[k:k + 3])
+                    for k in range(m - 4)]
+            for key in keys:
+                grams[key] = grams.get(key, 0) + 1
+            cnt = np.zeros(m)
+            for k, key in enumerate(keys):                   # gram k covers notes k..k+4
+                cnt[k:k + 5] = np.maximum(cnt[k:k + 5], grams[key])
+            repeat_cnt[vi] = np.log1p(cnt - 1)
+
+    return np.stack(
+        [key_clarity, 1.0 - mode.astype(float), deg_sin, deg_cos, in_scale,
+         fifths_motion, metric_w, dissonance, is_bass,
+         lbdm_ioi, lbdm_pitch, repeat_cnt, v_pitch_z, v_pos],
+        axis=1,
+    )
+
+
 def rich_score_features(
     score: Score,
     window: int = 8,
     rff_dim: int = 0,
     rff_seed: int = 0,
+    theory: bool = False,
 ) -> np.ndarray:
     """Rich, score-only per-note features — the honest rival to the LM embedding.
 
@@ -122,6 +233,11 @@ def rich_score_features(
     proximity, voice.  With ``rff_dim > 0``, appends deterministic random Fourier
     features of the base features (seed ``rff_seed``) so a linear head can fit a
     smooth nonlinear function.
+
+    ``theory=True`` appends the 14 music-theory columns of :func:`_theory_block`
+    (local key / scale degree, metrical weight, vertical dissonance, phrase
+    boundaries, motif repetition, voice tessitura) — still score-only.  Default
+    off: every published result used the 25 base columns.
     """
     n = len(score)
     p = score.pitch.astype(float)
@@ -186,6 +302,8 @@ def rich_score_features(
          pos, edge_start, edge_end, voice_n],
         axis=1,
     )
+    if theory:
+        X = np.concatenate([X, _theory_block(ps, bs, ds, vs)], axis=1)
     if rff_dim > 0:
         rng = np.random.default_rng(rff_seed)
         G = rng.normal(0.0, 1.0, size=(X.shape[1], rff_dim))

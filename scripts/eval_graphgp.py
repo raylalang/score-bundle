@@ -11,6 +11,9 @@ comparisons against the current pipeline's cells are valid:
     a_icm_m2  same, Matern-2 shape
     b_feat    + linear kernel on score features (marginalized Bayesian linear mean)
     b_featlm  + linear kernel on mask-aware LM embeddings as well
+    b_theoryfeat[lm]  b_feat[lm] with 14 music-theory columns appended to the
+              score features (key/scale degree, meter, verticals, phrase,
+              repetition, voice — baselines.rich_score_features(theory=True))
     c_graph   b_feat with the graph's own (ell_b, ell_p) learned by evidence
     c_harm    b_feat on the harmonic graph with (ell_b, ell_p, chord, vl) learned
     d_corpus  b_feat with ONE corpus-level hyperparameter set fit on head pieces
@@ -38,6 +41,7 @@ CHANNELS = ["tau", "log r", "v"]
 
 CONFIGS = ["a_diag", "a_icm", "a_icm_m2", "b_feat", "b_featlm",
            "b_feat_nograph", "b_featlm_nograph", "b_fixedmean",
+           "b_theoryfeat", "b_theoryfeatlm",
            "c_graph", "c_harm", "c_harm_lm", "d_corpus", "d_hybrid"]
 
 BASELINES = {  # label -> (pickle path, mean-block name)
@@ -75,9 +79,12 @@ def piece_setup(p, config: str, emb=None):
     score = piece_score(p)
     feats = []
     if config.startswith(("b_", "c_", "d_")):
-        X = zscore_cols(rich_score_features(score, rff_dim=0))
+        # b_theory* appends the 14 music-theory columns (key/scale degree, meter,
+        # verticals, phrase, repetition, voice) — still score-only
+        X = zscore_cols(rich_score_features(score, rff_dim=0,
+                                            theory=config.startswith("b_theory")))
         feats.append(np.concatenate([X, np.ones((len(X), 1))], axis=1))
-    if config in ("b_featlm", "b_featlm_nograph", "c_harm_lm"):
+    if config in ("b_featlm", "b_featlm_nograph", "b_theoryfeatlm", "c_harm_lm"):
         assert emb is not None, "this config needs the mask-aware embedding dump"
         feats.append(zscore_cols(emb))
 
@@ -252,7 +259,8 @@ def stage_run(args) -> None:
                 Y = np.asarray(p["y"], dtype=float)
                 mask = masks[(pi, s)]
                 emb = emb_dump[(pi, s)] if config in (
-                    "b_featlm", "b_featlm_nograph", "c_harm_lm") else None
+                    "b_featlm", "b_featlm_nograph", "b_theoryfeatlm",
+                    "c_harm_lm") else None
                 base_cfg = ("b_feat" if config in ("d_corpus", "d_hybrid")
                             else "a_icm" if config == "b_fixedmean" else config)
                 mu_fixed = None
