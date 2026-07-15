@@ -85,10 +85,17 @@ are the confirmation ones.
     contrasts) — the non-survivors are exactly the ones already labeled unproven;
     piece-level coverage min 0.897, none <0.85; composer-clustered bootstrap keeps
     every key contrast significant. Source: logs/robustness_recheck.log.
-12. **Phases 2–3** — same prior, only the likelihood changes; Phase-2 pre-mortem
-    (missingness, alignment error, estimator targets) stated by the thesis itself;
-    Phase-3 conjugate helpers tested, z-inference open. Figs:
-    `figures/arch_phase2.pdf`, `figures/arch_phase3.pdf`.
+12. **Phases 2–3 — and Phase 2's blocker fell last night.** Per-(note,channel)
+    cell masks are implemented and unit-pinned exact; the specified vibrato NLLS
+    estimator (with covariances + identifiability rule) is built and tested; a
+    synthetic end-to-end pilot passed: graph beats no-graph on every channel,
+    estimator-missing vibrato cells recovered at ~4× better than prior scale
+    with 0.87–0.93 coverage, and the open noise-design decision got a measured
+    answer (variances-as-given > learned scale, reversing the draft's guess).
+    Honest scope: synthetic; real audio (tracker, alignment) untouched; Phase-2
+    claims need their own preregistered confirmation. Source:
+    docs/phase2_synthetic_pilot.md. Phase-3 conjugate helpers tested,
+    z-inference open. Figs: `figures/arch_phase2.pdf`, `figures/arch_phase3.pdf`.
 13. **Close** — contribution = standard theory, assembled, measured harder than
     its sources: preregistered one-shot confirmation, exact nesting of the
     baseline, measured attribution, mapped boundaries, and honest negatives kept.
@@ -117,6 +124,7 @@ are the confirmation ones.
 | Posterior example (piece 0) | hidden truths in 90% band: 49/50, 49/50, 46/50 | DEV | figures/posterior_example_dev.png |
 | Student-t on the dev tail cell | NLL +34.7 → −0.96 (t-predictive), RMSE/cov unchanged | DEV | results/robust_tail_piece28.pkl |
 | Replication set (30 fresh pieces) | ordering replicates; graph −0.019\*/−0.080\*, emb −0.010\*/−0.033\* | REPL | docs/replication_set_results.md |
+| Phase-2 pilot (synthetic) | missing vibrato cells recovered ~4× better than prior, cov 0.87–0.93; as-given noise > learned scale | SYNTH | docs/phase2_synthetic_pilot.md |
 | Probes, nonlinear (RFF-2048) | tonal verdicts replicate: not encoded | DEV | results/probe_embeddings_rff.pkl |
 | Contamination filter | 1036 → 653 performances | — | draft §contam |
 | LM pretraining ppl | 10.85 (scaled 9.66: no downstream gain) | — | draft ch. results |

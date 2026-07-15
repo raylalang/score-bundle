@@ -141,9 +141,18 @@ class MultiOutputGraphGP:
 
         ``Y`` is (N, k); ``mask`` boolean over notes (a masked note hides all its
         channels, which keeps the observed block in Kronecker-compatible form).
+        A 2-D boolean mask of shape (N, k) selects observed *(note, channel)
+        cells* instead — the Phase-2 missingness case (a short note may supply
+        intonation but no vibrato parameters).  On that path an optional
+        ``self.noise_scale`` (N, k) multiplies the per-channel noise per cell
+        (heteroscedastic estimator-supplied variances with a learned per-channel
+        scale).  The 1-D path is byte-identical to the published pipeline.
         """
+        mask = np.asarray(mask, dtype=bool)
+        if mask.ndim == 2:
+            return self._lml_cells(Y, mask, x)
         p = self.unpack(x)
-        obs = np.where(np.asarray(mask, dtype=bool))[0]
+        obs = np.where(mask)[0]
         if obs.size == 0:
             return 0.0
         K = self._blocks(p, obs, obs)
@@ -164,8 +173,10 @@ class MultiOutputGraphGP:
         Predictive std for a held-out observation is sqrt(std**2 + noise_c) — the
         caller adds the channel noise, mirroring the established pipeline.
         """
-        p = self.unpack(x)
         mask = np.asarray(mask, dtype=bool)
+        if mask.ndim == 2:
+            return self._posterior_cells(Y, mask, x)
+        p = self.unpack(x)
         obs = np.where(mask)[0]
         allidx = np.arange(self.N)
         if obs.size == 0:
@@ -192,6 +203,62 @@ class MultiOutputGraphGP:
         m = m.reshape(self.k, self.N).T
         std = np.sqrt(np.clip(var, 0.0, None)).reshape(self.k, self.N).T
         return m, std
+
+    # --- per-(note, channel) masks: the Phase-2 missingness case ---------------
+    def _cell_obs(self, mask2d: np.ndarray) -> np.ndarray:
+        """Channel-major stacked indices of the observed (note, channel) cells."""
+        assert mask2d.shape == (self.N, self.k), "cell mask must be (N, k)"
+        return np.concatenate([c * self.N + np.where(mask2d[:, c])[0]
+                               for c in range(self.k)])
+
+    def _cell_noise(self, p: dict) -> np.ndarray:
+        """Per-cell observation-noise variances, channel-major stacked (kN,)."""
+        scale = getattr(self, "noise_scale", None)
+        out = np.empty(self.k * self.N)
+        for c in range(self.k):
+            v = p["noise"][c] * (np.asarray(scale, dtype=float)[:, c]
+                                 if scale is not None else 1.0)
+            out[c * self.N:(c + 1) * self.N] = v
+        return out
+
+    def _lml_cells(self, Y: np.ndarray, mask2d: np.ndarray, x: np.ndarray) -> float:
+        p = self.unpack(x)
+        obs = self._cell_obs(mask2d)
+        if obs.size == 0:
+            return 0.0
+        allidx = np.arange(self.N)
+        C = self._blocks(p, allidx, allidx)
+        K = C[np.ix_(obs, obs)] + np.diag(self._cell_noise(p)[obs])
+        ystack = np.concatenate([np.asarray(Y, dtype=float)[:, c]
+                                 for c in range(self.k)])
+        y = ystack[obs]
+        sign, logdet = np.linalg.slogdet(K)
+        if sign <= 0:
+            raise np.linalg.LinAlgError("covariance not positive definite")
+        alpha = np.linalg.solve(K, y)
+        return float(-0.5 * (y @ alpha + logdet + y.size * _LOG2PI))
+
+    def _posterior_cells(self, Y: np.ndarray, mask2d: np.ndarray, x: np.ndarray
+                         ) -> Tuple[np.ndarray, np.ndarray]:
+        """Exact conjugate posterior under a (N, k) cell mask; (N, k) mean/std."""
+        p = self.unpack(x)
+        obs = self._cell_obs(mask2d)
+        allidx = np.arange(self.N)
+        C = self._blocks(p, allidx, allidx)
+        prior_var = np.clip(np.diag(C).copy(), 0.0, None)
+        if obs.size == 0:
+            return (np.zeros((self.N, self.k)),
+                    np.sqrt(prior_var).reshape(self.k, self.N).T)
+        K_oo = C[np.ix_(obs, obs)] + np.diag(self._cell_noise(p)[obs])
+        K_ao = C[:, obs]
+        ystack = np.concatenate([np.asarray(Y, dtype=float)[:, c]
+                                 for c in range(self.k)])
+        y = ystack[obs]
+        A = np.linalg.solve(K_oo, K_ao.T)
+        m = K_ao @ np.linalg.solve(K_oo, y)
+        var = prior_var - np.einsum("ij,ji->i", K_ao, A)
+        return (m.reshape(self.k, self.N).T,
+                np.sqrt(np.clip(var, 0.0, None)).reshape(self.k, self.N).T)
 
     def loo_predictive(self, Y: np.ndarray, x: np.ndarray
                        ) -> Tuple[np.ndarray, np.ndarray]:

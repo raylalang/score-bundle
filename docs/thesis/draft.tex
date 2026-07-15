@@ -236,7 +236,7 @@ Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; the plug-in mean 
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened \\
 2 --- extension (mono) & Intonation, vibrato on continuously pitched instruments &
-$f_0$-derived channels ($c_i$ cents, vibrato) & Not started (scoped) \\
+$f_0$-derived channels ($c_i$ cents, vibrato) & Machinery built (cell masks, estimator); synthetic pilot passed; real data open \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested, inference not started \\
 \bottomrule
@@ -904,9 +904,12 @@ masks, which is exactly what keeps the observed block Kronecker-compatible
 (\S\ref{sec:gpfirst}). Per-(note, channel) missingness breaks that bookkeeping ---
 though not the exactness: the conjugate posterior conditions on an arbitrary
 observed index set, so what must give way is the per-note mask interface and any
-Kronecker-structured shortcut, not conjugacy. The mask must be generalised to
-per-(note, channel) index sets, or the gaps imputed upstream, before Phase 2 is
-built.
+Kronecker-structured shortcut, not conjugacy. This generalisation is now
+\emph{implemented and unit-pinned}: the model accepts per-(note, channel)
+observation masks, exactness is verified against brute-force Gaussian
+conditioning, and the per-note case reproduces the published path; a synthetic
+end-to-end pilot exercises it with real estimator-induced missingness
+(\S\ref{sec:phase2-pilot}).
 
 \paragraph{The observation noise becomes substantive --- and heteroscedastic.}
 In Phase 1 the targets are read from clean MIDI and $\Sigma_e \approx 0$. Here every
@@ -926,7 +929,11 @@ untouched --- a diagonal is a diagonal --- so the posterior and the marginal lik
 are unchanged in form. The noise floor and the safeguard of \S\ref{sec:eb} carry over.
 One decision remains: whether the estimator-supplied variances are used as given, or
 carry a per-channel learned scale, so that the evidence may discover the tracker is
-over- or under-confident. The second is the safer default.
+over- or under-confident. A synthetic pilot (\S\ref{sec:phase2-pilot}) reverses
+the a-priori guess: with \emph{calibrated} estimator variances, as-given wins on
+every channel and the learned scale over-shrinks the vibrato-extent channel
+(coverage $0.76$--$0.81$ vs $0.86$--$0.87$); the learned scale is therefore the
+\emph{fallback} for a mis-calibrated real-world tracker, not the default.
 
 \paragraph{The warp, and where the alignment error goes.}
 Phase 1 obtained the score-time warp $T(\cdot)$ from an aligned beat grid supplied with
@@ -976,6 +983,26 @@ technicality but a first-order modelling term. Two rules carry over without exce
 Development numbers stay labelled development. And the confirmation set of this thesis
 is \emph{spent}: any confirmed Phase-2 claim requires its own fresh, preregistered
 confirmation set, fixed before the data are seen.
+
+\paragraph{A synthetic pilot: the machinery works end to end.}
+\label{sec:phase2-pilot}
+Before any real audio, the full specified pipeline was validated on synthetic
+monophonic pieces whose per-note truth is \emph{known} (sampled from the model's
+own generative process; 20 pieces $\times$ 120 notes; cents curves per
+\eqref{eq:vibrato} at $\sigma = 6$ cents; channels $[c, \log\gamma, \log f]$).
+The specified per-note NLLS estimator (implemented, with Gauss--Newton parameter
+covariances and the identifiability rule) produced 926 genuinely missing vibrato
+cells on visible notes; 30\% of notes were fully hidden. Findings, per channel
+against truth: the graph GP beats the no-graph ablation on every channel of
+imputation, missing-cell recovery, and denoising; missing vibrato parameters ---
+which no per-note method can even express --- are recovered at roughly $4\times$
+better than prior scale with $0.87$--$0.93$ coverage; and the posterior
+\emph{denoises the estimator's own observed cells} below the estimator's error
+($1.41$ vs $1.63$ cents on intonation). Residual honest gap: mild vibrato-extent
+under-coverage ($\approx 0.86$), with the delta-method log-transform and the
+unmodelled onset delay as candidate causes. This is a synthetic result --- it
+validates machinery and settles design defaults, and claims nothing about real
+audio.
 
 \paragraph{Gate.} Phase 2 is exploratory. It is scoped so that a negative result costs
 the thesis nothing: the Phase-1 contribution stands on its own, and Phase 2's value is
@@ -1691,10 +1718,11 @@ the conjugate posterior are reused verbatim, while the channel set grows
 heteroscedastic \eqref{eq:phase2-noise}. What remains is not writing but deciding.
 Four questions must be settled before Phase 2 is built, and none of them is cosmetic:
 \begin{enumerate}[leftmargin=*,noitemsep]
-  \item \textbf{Per-channel missingness.} Short notes support an intonation offset but
-        not vibrato parameters, so targets go missing per (note, channel). The conjugate
-        posterior assumes \emph{per-note} masks. Either the Kronecker factorisation or an
-        upstream imputation must give way (\S\ref{sec:phase2}).
+  \item \textbf{Per-channel missingness --- resolved in code.} Short notes support
+        an intonation offset but not vibrato parameters, so targets go missing per
+        (note, channel). The mask interface is now generalised to per-(note, channel)
+        index sets, unit-pinned exact, and validated in the synthetic pilot
+        (\S\ref{sec:phase2-pilot}).
   \item \textbf{Where alignment error goes.} Without MIDI the warp comes from
         audio-to-score alignment, whose error enters $\tau$ directly and is correlated
         along score time --- exactly the structure the prior expects expressive timing to
