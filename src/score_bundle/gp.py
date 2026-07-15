@@ -36,7 +36,11 @@ from .optimize import nelder_mead
 _LOG2PI = np.log(2.0 * np.pi)
 
 # shape-normalized spectral kernels: g(nu; s) with g(0) = 1 and ONE shape parameter s
-# (overall scale deliberately lives in the coregionalization matrix B)
+# (overall scale deliberately lives in the coregionalization matrix B — the scale
+# split between B and K_G in B (x) K_G is unidentifiable, so g(0)=1 pins it; this is
+# the graph-Matern family of Borovitskiy et al. 2021 under their own eq.-16 rescaling,
+# see docs/graphgp_theory_alignment.md).  NB "additive" IS "matern1" with s -> 1/s
+# (1/(1+s*nu) = s'/(s'+nu), s'=1/s): the same kernel, both keys kept for provenance.
 SHAPE_KERNELS = {
     "additive": lambda nu, s: 1.0 / (1.0 + s * nu),                # regularized Laplacian
     "matern1": lambda nu, s: (s / (s + nu)),                       # (kappa^2=s)
