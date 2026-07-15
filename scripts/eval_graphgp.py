@@ -16,6 +16,8 @@ comparisons against the current pipeline's cells are valid:
               repetition, voice — baselines.rich_score_features(theory=True))
     c_graph   b_feat with the graph's own (ell_b, ell_p) learned by evidence
     c_harm    b_feat on the harmonic graph with (ell_b, ell_p, chord, vl) learned
+    c_overlap b_feat with sustain-overlap edges, (ell_b, ell_p, overlap_w) learned
+              (the motif-discovery note graph's overlap relation)
     d_corpus  b_feat with ONE corpus-level hyperparameter set fit on head pieces
               (frozen for eval — canonical train/test, no per-piece fitting)
 
@@ -42,7 +44,7 @@ CHANNELS = ["tau", "log r", "v"]
 CONFIGS = ["a_diag", "a_icm", "a_icm_m2", "b_feat", "b_featlm",
            "b_feat_nograph", "b_featlm_nograph", "b_fixedmean",
            "b_theoryfeat", "b_theoryfeatlm",
-           "c_graph", "c_harm", "c_harm_lm", "d_corpus", "d_hybrid"]
+           "c_graph", "c_harm", "c_harm_lm", "c_overlap", "d_corpus", "d_hybrid"]
 
 BASELINES = {  # label -> (pickle path, mean-block name)
     "zero+graph": ("results/kernels/additive.pkl", "zero"),
@@ -101,6 +103,16 @@ def piece_setup(p, config: str, emb=None):
                 score, ell_b=eb, ell_p=ep, chord_weight=cw, vl_weight=vw)))
         n_graph = 4
         g0 = np.log([2.0, 4.0, 1.0, 1.0])
+    elif config == "c_overlap":
+        # sustain-overlap family alone (motif-graph borrow); paired against
+        # c_graph this isolates the relation's marginal value
+        def graph_eig(gp_params):  # [log ell_b, log ell_p, log overlap_w]
+            eb, ep, ow = np.exp(gp_params)
+            return np.linalg.eigh(laplacian(build_adjacency_harmonic(
+                score, ell_b=eb, ell_p=ep, chord_weight=0.0, vl_weight=0.0,
+                overlap_weight=ow)))
+        n_graph = 3
+        g0 = np.log([2.0, 4.0, 1.0])
     else:
         eig = np.linalg.eigh(laplacian(build_adjacency(score)))
 

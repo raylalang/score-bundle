@@ -131,6 +131,7 @@ def build_adjacency_harmonic(
     chord_weight: float = 1.0,
     vl_weight: float = 0.0,
     vl_window: float = 2.0,
+    overlap_weight: float = 0.0,
 ) -> np.ndarray:
     """Combinatorial base graph plus explicit harmonic / voice-leading edge families.
 
@@ -141,7 +142,12 @@ def build_adjacency_harmonic(
       without a harmonic analysis;
     - **voice-leading edges** (``vl_weight``): stepwise motion — pairs within
       ``vl_window`` beats, at *different* onsets, whose pitches differ by 1–2
-      semitones (melodic step), the voice-leading proximity family.
+      semitones (melodic step), the voice-leading proximity family;
+    - **sustain-overlap edges** (``overlap_weight``): pairs at different onsets
+      where the earlier note is still sounding at the later note's onset —
+      the "overlap" relation of the motif-discovery note graph (LPCC
+      ``graph_builder``), which the beat-distance kernel cannot express because
+      it never sees durations.
 
     Cadential/functional edges would need a harmonic analysis and are left as
     future work.  Each family ablates independently by setting its weight to 0.
@@ -157,6 +163,12 @@ def build_adjacency_harmonic(
         dp = np.abs(p[:, None] - p[None, :])
         step = (db > 1e-9) & (db <= vl_window) & (dp >= 1) & (dp <= 2)
         W = W + vl_weight * step.astype(float)
+    if overlap_weight:
+        end_i = (b + score.duration)[:, None]
+        later = b[None, :] > b[:, None] + 1e-9
+        ov = later & (b[None, :] < end_i - 1e-9)
+        ov = ov | ov.T
+        W = W + overlap_weight * ov.astype(float)
     np.fill_diagonal(W, 0.0)
     return W
 

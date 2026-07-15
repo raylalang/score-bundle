@@ -221,3 +221,23 @@ def test_harmonic_adjacency_edge_families():
     np.testing.assert_allclose(
         build_adjacency_harmonic(score, chord_weight=0.0, vl_weight=0.0), base
     )
+
+
+def test_harmonic_adjacency_overlap_family():
+    notes = [Note(60, 0.0, 2.0),                        # sounds through beat 1
+             Note(64, 1.0, 1.0),                        # onset under note 0's sustain
+             Note(67, 3.0, 1.0),                        # after note 0 has ended
+             Note(48, 3.0, 1.0)]                        # chord with note 2
+    score = Score(notes)
+    base = build_adjacency(score)
+    W = build_adjacency_harmonic(score, chord_weight=0.0, vl_weight=0.0,
+                                 overlap_weight=1.0)
+    assert np.allclose(W, W.T) and np.all(np.diag(W) == 0)
+    assert np.isclose(W[0, 1] - base[0, 1], 1.0)        # sustain-overlap pair
+    assert np.isclose(W[0, 2], base[0, 2])              # ended before onset: none
+    assert np.isclose(W[2, 3], base[2, 3])              # same onset: chord, not overlap
+    # weight zero reduces exactly to the combinatorial base
+    np.testing.assert_allclose(
+        build_adjacency_harmonic(score, chord_weight=0.0, vl_weight=0.0,
+                                 overlap_weight=0.0), base
+    )
