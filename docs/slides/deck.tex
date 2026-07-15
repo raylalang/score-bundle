@@ -1,20 +1,18 @@
 % =====================================================================
-%  deck.tex — presentation slides (beamer, 16:9).
+%  deck.tex — presentation slides (beamer, 16:9).  No appendix.
 %
-%  STRUCTURE (standard talk arc):
-%    background -> problem statement -> approach overview -> related work
-%    -> METHOD (4 math slides: score graph / GP on the graph + coupling /
-%    side information as kernels / full model + exact inference) ->
-%    experiment setup (data, split, task, metrics, baselines) -> results
-%    (main / example / ablations / deep baselines / replication /
-%    findings) -> future work (Phase 2 plan, Phase 3 plan) -> summary.
-%  Backup: robustness, per-channel, kernel comparison, Gaussian tail,
-%  probes, Phase-2 pilot, downstream tasks.
+%  STRUCTURE:
+%    background -> problem -> approach -> related work ->
+%    method (score graph / GP + coupling / side information / the 25
+%    features / full model + inference) -> experiment setup -> systems ->
+%    results (test set at 40% / masking rates / posterior example /
+%    ablations / NN baselines / kernel + graph variants / music-theory
+%    features / embedding probes / the failure case) ->
+%    future work (Phase 2 plan / Phase 2 pilot / Phase 3) -> summary.
 %
-%  Slide text is sparse: the speaker carries the narrative.
-%  All numbers match docs/presentation_brief.md.  Graphics are \figslot
-%  placeholders; set \showfigures to 1 to pull in files that exist in
-%  ../thesis/figures/.
+%  All numbers match docs/presentation_brief.md and the result pickles.
+%  Graphics are \figslot placeholders; set \showfigures to 1 to pull in
+%  files that exist in ../thesis/figures/.
 %
 %  Compile:  tectonic deck.tex
 % =====================================================================
@@ -32,7 +30,6 @@
 \usepackage{tikz}
 \graphicspath{{../thesis/figures/}}
 
-% --- palette (Okabe–Ito, matches every figure) -----------------------
 \definecolor{okblue}{HTML}{0072B2}
 \definecolor{okverm}{HTML}{D55E00}
 \definecolor{okgreen}{HTML}{009E73}
@@ -43,7 +40,6 @@
 \setbeamercolor{normal text}{fg=ink}
 \setbeamerfont{frametitle}{series=\bfseries,size=\large}
 
-% --- figure slots -----------------------------------------------------
 % \figslot{file}{height}{what the graphic should show}
 \def\showfigures{0}
 \newcommand{\figslot}[3]{%
@@ -60,7 +56,6 @@
       {\texttt{\detokenize{#1}}\\[3pt]\footnotesize #3};
   \end{tikzpicture}}
 
-% --- notation shortcuts (match the thesis) ----------------------------
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\N}{\mathcal{N}}
 \newcommand{\Lg}{L_{\mathcal G}}
@@ -116,7 +111,7 @@
   \end{itemize}
 \end{frame}
 
-% ================================================================ 4  APPROACH OVERVIEW
+% ================================================================ 4  APPROACH
 \begin{frame}{Approach: one prior, three kinds of observation}
   One \textbf{Gaussian process (GP)} prior over per-note expressive fields, on
   a graph built from the score. Only the observation changes: per-note MIDI
@@ -137,7 +132,7 @@
   \end{tabular}}
   \end{center}
   \vspace{-1mm}
-  \figslot{deck_programme.png}{2.4cm}{the shared prior with three swappable
+  \figslot{deck_programme.png}{2.2cm}{the shared prior with three swappable
     likelihood blocks (MIDI / $f_0$ / waveform)}
 \end{frame}
 
@@ -172,7 +167,7 @@
   side information, for calibrated performance inference.
 \end{frame}
 
-% ================================================================ 6  METHOD 1: SCORE GRAPH
+% ================================================================ 6  METHOD 1
 \begin{frame}{Method (1): the score graph}
   Nodes are the written notes $(p_i, b_i, d_i)$: pitch, beat onset, duration.
   Edges connect notes that are close in score time and pitch:
@@ -192,7 +187,7 @@
     edges drawn by time / pitch / chord relation}
 \end{frame}
 
-% ================================================================ 7  METHOD 2: GP + COUPLING
+% ================================================================ 7  METHOD 2
 \begin{frame}{Method (2): a GP on the graph, channels coupled}
   Eigendecompose the Laplacian, $\Lg = U \diag(\nu)\, U^{\!\top}$, and shape its
   spectrum with one parameter $s$:
@@ -217,7 +212,7 @@
   neighbouring notes.
 \end{frame}
 
-% ================================================================ 8  METHOD 3: SIDE INFORMATION
+% ================================================================ 8  METHOD 3
 \begin{frame}{Method (3): side information as kernels}
   Two per-note feature sets: hand-built score features
   $X_{\mathrm{feat}} \in \R^{N \times 26}$ and embeddings
@@ -240,7 +235,32 @@
   \end{itemize}
 \end{frame}
 
-% ================================================================ 9  METHOD 4: FULL MODEL + INFERENCE
+% ================================================================ 9  METHOD 3b: THE FEATURES
+\begin{frame}{Method (3b): the 25 hand-built score features}
+  {\small
+  \begin{itemize}
+    \item \textbf{Pitch (7)}: absolute pitch; piece-normalized pitch; local
+          deviation from the 8-note window mean; local spread; melodic
+          interval from the previous note; contour (sign of the interval);
+          local pitch-vs-time trend.
+    \item \textbf{Duration (3)}: log duration; piece-normalized; relative to
+          the local window.
+    \item \textbf{Meter (6)}: sine and cosine of the metrical phase at beat,
+          half-bar, and bar periods.
+    \item \textbf{Rhythm (3)}: inter-onset interval to the previous and to the
+          next note; local note density.
+    \item \textbf{Chords (2)}: chord size (notes sharing the onset); pitch
+          rank within the chord.
+    \item \textbf{Position (3)}: position in the piece; proximity to the
+          start; proximity to the end.
+    \item \textbf{Voice (1)}: normalized voice index.
+  \end{itemize}}
+  \small All computed from the score alone; a bias column is appended.
+  An additional set of 14 explicit music-theory features was also built and
+  tested (results).
+\end{frame}
+
+% ================================================================ 10  METHOD 4
 \begin{frame}{Method (4): full model and exact inference}
   \begin{equation*}
     K \;=\;
@@ -267,7 +287,7 @@
     feature branch (amber), likelihood (vermillion)}
 \end{frame}
 
-% ================================================================ 10  EXPERIMENT SETUP
+% ================================================================ 11  SETUP
 \begin{frame}{Experiment setup}
   \begin{itemize}
     \item \textbf{Data}: ASAP piano (aligned score + performance MIDI);
@@ -275,14 +295,16 @@
           ($1036 \to 653$).
     \item \textbf{Split}: 40 train / 30 validation / 20 test
           (test evaluated once, claims fixed beforehand).
-    \item \textbf{Task}: hide a fraction of notes, predict them from the
-          visible rest; the masking rate is itself varied (results).
-    \item \textbf{Metrics}, per channel: RMSE for accuracy; NLL and
-          coverage for the error bars. Comparisons are paired per piece.
+    \item \textbf{Task}: hide notes, predict them from the visible rest.
+          The test set is evaluated at the preregistered rate of
+          \textbf{40\% hidden}; on the validation set the rate is swept from
+          50\% hidden to leave-one-out (results).
+    \item \textbf{Metrics}, per channel: RMSE for accuracy; NLL and coverage
+          for the error bars. Comparisons are paired per piece.
   \end{itemize}
 \end{frame}
 
-% ================================================================ 10b  SYSTEMS
+% ================================================================ 12  SYSTEMS
 \begin{frame}{Systems compared, and what each one tests}
   \begin{center}
   {\footnotesize
@@ -308,32 +330,8 @@
   the NN are exact special cases of the proposed model.
 \end{frame}
 
-% ================================================================ 11a  EXPERIMENT OVERVIEW
-\begin{frame}{Experiments run}
-  \begin{center}
-  {\footnotesize
-  \begin{tabular}{@{}lll@{}}
-  \toprule
-  Experiment & Question & Where \\
-  \midrule
-  main comparison (5 systems) & does the joint model win? & next slide \\
-  masking-rate sweep, 50\% to leave-one-out & does the rate matter? & results \\
-  ablations (graph / embeddings / fixed mean) & where do gains come from? & results \\
-  neural-network baselines & is the GP needed? & results \\
-  kernel and graph variants (7 kernels, 4 graphs) & which structure matters? & results + backup \\
-  music-theory features + embedding probes & does tonality help? & results \\
-  seed robustness (12 mask seeds) & seed artifacts? & backup \\
-  replication on 30 further unseen pieces & does it hold on new data? & backup \\
-  statistical battery (5 test types, BH, clustering) & test-choice artifacts? & backup \\
-  downstream tasks (6) & what is it useful for? & backup \\
-  Phase-2 synthetic pilot & does the extension work? & future work \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-\end{frame}
-
-% ================================================================ 11  RESULTS: MAIN
-\begin{frame}{Results on the test set, per channel}
+% ================================================================ 13  RESULTS: TEST SET
+\begin{frame}{Results on the test set (40\% of notes hidden)}
   \begin{center}
   {\small RMSE / NLL per channel (coverage@90\% is 0.90--0.95 everywhere) \\[1mm]
   \begin{tabular}{@{}lccc@{}}
@@ -351,28 +349,45 @@
   \begin{itemize}
     \item Best RMSE in every channel; best NLL in articulation and dynamics.
     \item Timing NLL favours mean + smoothing here: traced to one piece with
-          extreme timing outliers under the Gaussian likelihood (backup).
+          extreme timing outliers (failure-case slide).
     \item Preregistered pooled claims: $\Delta$RMSE vs the best baseline
           $\bm{-0.0137^{*}}$; graph's calibration contribution
           $\Delta$NLL $\bm{-0.0736^{*}}$.
   \end{itemize}
 \end{frame}
 
-% ================================================================ 11b  MASKING RATES
-\begin{frame}{Results at different masking rates (validation set)}
-  \figslot{masksweep_perchannel_dev.png}{3.6cm}{per channel: RMSE vs hidden
+% ================================================================ 14  RESULTS: MASKING RATES
+\begin{frame}{Results at every masking rate (validation set)}
+  \begin{columns}[T,onlytextwidth]
+  \column{0.60\textwidth}
+  \figslot{masksweep_perchannel_dev.png}{3.2cm}{per channel: RMSE vs hidden
     fraction, 50\% to 10\% plus leave-one-out, three systems (exists)}
+  {\small
   \begin{itemize}
-    \item Articulation and dynamics: the proposed model is best at every
-          rate, and the gaps grow as more context is observed.
-    \item Timing: the three systems are within noise of each other at every
-          rate.
-    \item The leave-one-out limit agrees; conclusions do not depend on the
-          40\% operating point.
-  \end{itemize}
+    \item Articulation and dynamics: proposed is best at every rate; the
+          gaps grow with more observed context.
+    \item Timing: all systems within noise at every rate.
+  \end{itemize}}
+  \column{0.38\textwidth}
+  {\footnotesize proposed model, RMSE: \\[1mm]
+  \begin{tabular}{@{}lccc@{}}
+  \toprule
+  hidden & $\tau$ & $\log r$ & $v$ \\
+  \midrule
+  50\% & 0.162 & 0.618 & 0.074 \\
+  40\% & 0.152 & 0.601 & 0.072 \\
+  30\% & 0.157 & 0.592 & 0.070 \\
+  20\% & 0.149 & 0.587 & 0.068 \\
+  10\% & 0.154 & 0.577 & 0.068 \\
+  LOO  & 0.149 & 0.546 & 0.066 \\
+  \bottomrule
+  \end{tabular}}
+  \end{columns}
+  \vspace{2mm}
+  Conclusions do not depend on the 40\% operating point.
 \end{frame}
 
-% ================================================================ 12  RESULTS: EXAMPLE
+% ================================================================ 15  RESULTS: EXAMPLE
 \begin{frame}{Results: posterior on one piece (validation set)}
   \figslot{posterior_example_dev.png}{5.6cm}{one piece, 40\% hidden:
     posterior mean, 90\% band, observed notes, hidden truths as open circles
@@ -382,8 +397,8 @@
   49/50, 46/50 here.
 \end{frame}
 
-% ================================================================ 13  RESULTS: ABLATIONS
-\begin{frame}{Results: where the gains come from (validation set)}
+% ================================================================ 16  RESULTS: ABLATIONS
+\begin{frame}{Results: where the gains come from (validation set, 40\%)}
   Paired per-channel $\Delta$RMSE when an ingredient is removed
   (negative = the ingredient helps):
   \begin{center}
@@ -409,8 +424,8 @@
   \end{itemize}
 \end{frame}
 
-% ================================================================ 14  RESULTS: DEEP BASELINES
-\begin{frame}{Results: neural-network baselines (validation set)}
+% ================================================================ 17  RESULTS: NN BASELINES
+\begin{frame}{Results: neural-network baselines (validation set, 40\%)}
   An MLP that predicts a mean and a variance for every note and channel,
   trained with Gaussian likelihood on the training pieces; and an ensemble of
   five such MLPs. Same input features as the proposed model.
@@ -434,30 +449,112 @@
   \end{itemize}
 \end{frame}
 
-% ================================================================ 16  RESULTS: FINDINGS
-\begin{frame}{Results: music-theory experiments (validation set)}
-  What musical structure actually helps? Five experiments:
-  \begin{enumerate}
-    \item \textbf{Tonal pitch metric}: replace semitone distance in the graph
-          with a pitch-class metric based on the circle of fifths:
-          \emph{worse} ($+0.009^{*}$).
-    \item \textbf{Chord + voice-leading edges}: add same-onset and stepwise
-          edges: helps the standard construction ($-0.008^{*}$); redundant in
-          the full model once the embeddings are present.
-    \item \textbf{Sustain-overlap edges} (notes sounding through another's
-          onset): small consistent trend, not significant.
-    \item \textbf{14 music-theory features} (key and scale degree, metrical
-          weight, chord dissonance, phrase boundaries, motif repetition):
-          no measurable gain ($-0.002$ ns).
-    \item \textbf{Probes of the embeddings} (linear and nonlinear): no tonal
-          information; bass membership (AUC 0.99), meter, phrase, and
-          register are encoded.
-  \end{enumerate}
-  \vspace{1mm}
-  Tonality does not predict these channels; rhythm, voicing, and register do.
+% ================================================================ 18  RESULTS: KERNEL/GRAPH VARIANTS
+\begin{frame}{Results: kernel and graph variants (validation set, 40\%)}
+  Vary the spectral filter with the graph fixed, then vary the graph itself.
+  \begin{center}
+  {\footnotesize pooled over the three standardized channels
+  (the one table not per channel; per-channel in the thesis) \\[1mm]
+  \begin{tabular}{@{}lcccl@{}}
+  \toprule
+  Variant & RMSE & NLL & cov@.9 & \\
+  \midrule
+  base graph, graph Mat\'ern $\alpha{=}1$ & 0.393 & $-0.322$ & 0.921 & reference \\
+  \quad filter $\to$ Mat\'ern $\alpha \in \{2,3\}$, heat & 0.392--0.393 & $-0.312..{-0.321}$ & & all tie \\
+  graph $\to$ no edges & $0.446^{*}$ & $-0.190^{*}$ & 0.919 & worst \\
+  graph $\to$ time-only chain & 0.392 & $-0.292^{*}$ & 0.916 & calibration worse \\
+  pitch metric $\to$ circle of fifths & $0.403^{*}$ & $-0.300^{*}$ & 0.921 & \emph{worse} \\
+  + chord edges & $\bm{0.384^{*}}$ & $-0.331$ & 0.923 & accuracy win \\
+  + chord and voice-leading edges & $0.385^{*}$ & $\bm{-0.335^{*}}$ & 0.922 & both-axes win \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \begin{itemize}
+    \item The filter shape is irrelevant; the \emph{edges} are not. The chord
+          and voice-leading gains sit in articulation and dynamics.
+    \item A sustain-overlap edge family (notes sounding through another's
+          onset; tested separately with learned weights) shows a small trend,
+          not significant.
+    \item In the full model (embeddings present) the added edge families
+          become redundant.
+  \end{itemize}
 \end{frame}
 
-% ================================================================ 17  FUTURE: PHASE 2
+% ================================================================ 19  RESULTS: THEORY FEATURES
+\begin{frame}{Results: explicit music-theory features (validation set, 40\%)}
+  Fourteen additional score-only features were built and added to the kernel:
+  {\small
+  \begin{itemize}
+    \item \textbf{tonality (6)}: local key (Krumhansl--Schmuckler profiles),
+          key clarity, mode, scale degree (sin/cos), in-scale flag,
+          circle-of-fifths motion of the local key;
+    \item \textbf{meter (1)}: metrical-weight hierarchy over five levels;
+    \item \textbf{verticals (2)}: within-chord dissonance; bass flag;
+    \item \textbf{phrase (2)}: boundary salience from timing and pitch gaps;
+    \item \textbf{repetition (1)}: motif-repetition count
+          (interval + rhythm 4-grams);
+    \item \textbf{voice (2)}: within-voice tessitura and position.
+  \end{itemize}}
+  \begin{center}
+  {\small paired $\Delta$RMSE per channel when the 14 features are added \\[1mm]
+  \begin{tabular}{@{}lccc@{}}
+  \toprule
+   & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
+  \midrule
+  without embeddings & $-0.0001$ & $-0.0038$ & $-0.0002$ \\
+  with embeddings & $-0.0006$ & $+0.0013$ & $+0.0000$ \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  No significant gain in any channel, in either regime.
+\end{frame}
+
+% ================================================================ 20  RESULTS: PROBES
+\begin{frame}{Results: probing the embeddings for musical structure}
+  Ridge probes from the embeddings to each theory feature, fit on the
+  training pieces, scored out-of-sample; the 25 hand-built features as a
+  control. Nonlinear (random-features) probes give the same verdicts.
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lccl@{}}
+  \toprule
+  Theory feature & $R^2$ (embeddings) & $R^2$ (25 features) & verdict \\
+  \midrule
+  in-scale flag & $-0.06$ & $-0.00$ & not encoded (AUC 0.52) \\
+  scale degree & $-0.05$ & $-0.00$ & not encoded \\
+  mode (major/minor) & $-0.17$ & $-0.04$ & not encoded (AUC 0.48) \\
+  repetition count & $-0.05$ & $-0.00$ & not encoded \\
+  metrical weight & 0.14 & 0.43 & weakly encoded \\
+  phrase salience & 0.48 & 0.57 & encoded \\
+  bass flag & 0.73 & 0.86 & encoded (AUC 0.99) \\
+  register & 0.90 & 1.00 & encoded \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \small Together with the previous two slides: tonality does not predict
+  these channels, and the embeddings never learned it either; rhythm,
+  voicing, and register carry the signal.
+\end{frame}
+
+% ================================================================ 21  RESULTS: FAILURE CASE
+\begin{frame}{Results: the one failure case, and its fix}
+  \begin{itemize}
+    \item On one test piece (and one validation replica), timing NLL explodes
+          ($+34.7$) while RMSE and coverage stay normal: a very steady piece
+          gives a tiny fitted timing scale, and a few outlier notes land many
+          standard deviations out. The Gaussian likelihood squares them.
+    \item This single piece is why pooled test NLL tied between the top two
+          systems, and why the test-set timing NLL favours mean + smoothing.
+    \item A Student-$t$ timing likelihood (EM fit, same model otherwise)
+          resolves it on the validation replica: NLL $+34.7 \to \bm{-0.96}$,
+          with RMSE and coverage unchanged and the outlier notes explicitly
+          down-weighted.
+    \item It is applied to no reported number: the test set is spent, and the
+          fix would need its own preregistered test.
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 22  FUTURE: PHASE 2
 \begin{frame}{Future work: Phase 2, intonation and vibrato}
   Continuously pitched instruments; the channel set grows:
   \begin{equation*}
@@ -470,9 +567,9 @@
   least-squares fit (with parameter variances) $\to$ the same GP, now with
   per-(note, channel) masks and heteroscedastic noise.
   \begin{itemize}
-    \item Built and tested: the cell-mask posterior (exact), the estimator,
-          and a synthetic pilot; vibrato parameters of notes too short to
-          estimate are recovered from the graph (coverage 0.87 to 0.93).
+    \item Built and tested: the cell-mask posterior (exact) and the
+          estimator. Notes too short to estimate simply have missing vibrato
+          cells; the posterior handles that in closed form.
     \item Planned data: URMP (per-instrument audio + scores); solo vocal
           corpora as secondary.
     \item Planned evaluation: same held-out imputation, calibration primary;
@@ -483,7 +580,34 @@
   \end{itemize}
 \end{frame}
 
-% ================================================================ 18  FUTURE: PHASE 3
+% ================================================================ 23  FUTURE: PHASE 2 PILOT
+\begin{frame}{Phase 2: synthetic pilot results}
+  Full pipeline on synthetic pieces with known ground truth (20 pieces
+  $\times$ 120 notes; cents curves with $\sigma = 6$ cents noise; 926 vibrato
+  cells unidentifiable at the note level; 30\% of notes fully hidden).
+  \begin{center}
+  {\footnotesize RMSE / coverage@90 vs the known truth \\[1mm]
+  \begin{tabular}{@{}llll@{}}
+  \toprule
+  Question / system & $c$ (cents) & $\log\gamma$ & $\log f$ \\
+  \midrule
+  \textbf{hidden notes}: GP & 3.51 / 0.89 & 0.094 / 0.86 & 0.026 / 0.90 \\
+  \quad no-graph & 4.11 / 0.88 & 0.103 / 0.85 & 0.030 / 0.89 \\
+  \textbf{missing vibrato cells}: GP & --- & 0.085 / 0.87 & 0.025 / 0.93 \\
+  \quad no-graph & --- & 0.096 / 0.86 & 0.028 / 0.91 \\
+  \quad note-level estimator & \multicolumn{3}{l}{\emph{undefined; only the prior can answer}} \\
+  \textbf{observed cells}: GP & 1.41 / 0.90 & 0.039 / 0.86 & 0.008 / 0.87 \\
+  \quad raw estimator & 1.63 / 0.91 & 0.042 / 0.90 & 0.008 / 0.88 \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \small Prior scales: $\log\gamma$ 0.35, $\log f$ 0.10: missing vibrato
+  parameters are recovered about $4\times$ better than the prior. Design
+  finding: use the estimator's variances as given; a learned noise scale
+  over-shrinks $\gamma$ (coverage 0.76 vs 0.86).
+\end{frame}
+
+% ================================================================ 24  FUTURE: PHASE 3
 \begin{frame}{Future work: Phase 3, waveform likelihood}
   Replace per-note targets with the recorded audio itself:
   \begin{equation*}
@@ -508,222 +632,20 @@
   \end{itemize}
 \end{frame}
 
-% ================================================================ 19  SUMMARY
+% ================================================================ 25  SUMMARY
 \begin{frame}{Summary}
   \begin{itemize}
     \item One GP prior on the score graph covers the whole program; only the
           observation model changes between phases.
-    \item Phase 1: accuracy gain confirmed on a one-shot test with the
-          claims fixed beforehand; the graph's calibration role confirmed
-          (and stable on 30 further unseen pieces; backup).
+    \item Phase 1: best accuracy in every channel on a test set evaluated
+          once, with the claims fixed beforehand; the graph's calibration
+          role confirmed; conclusions independent of the masking rate.
     \item Where the gains come from is measured, not assumed: per-piece
           feature weighting for accuracy, the graph for calibration.
     \item Negative results are kept: tonality does not predict these
-          deviations.
+          deviations, in the graph, as features, or in the embeddings.
     \item Phase 2 machinery is built and validated on synthetic ground truth;
           Phase 3 is scoped with its conjugate core tested.
-  \end{itemize}
-\end{frame}
-
-% ================================================================ APPENDIX
-\appendix
-\begin{frame}[plain]
-  \centering\Large\textbf{Backup}
-\end{frame}
-
-% ---------------------------------------------------------------- A1
-\begin{frame}{Backup: statistical robustness (validation set)}
-  \begin{itemize}
-    \item Main contrast per channel: $\tau\ -0.009^{*}$,
-          $\log r\ -0.036^{*}$, $v\ -0.006^{*}$. Variance-standardized pooling
-          strengthens the result (27/30 pieces).
-    \item Percentile, basic, and BCa bootstrap, Wilcoxon signed-rank, and
-          exact sign tests agree on every key contrast.
-    \item All load-bearing starred contrasts survive Benjamini--Hochberg at
-          $q = 0.05$ over 19 development contrasts.
-    \item Composer-clustered bootstrap keeps every key contrast significant.
-          12 mask seeds move pooled numbers by at most 0.003 RMSE.
-          Piece-level coverage never falls below 0.897.
-  \end{itemize}
-\end{frame}
-
-% ---------------------------------------------------------------- A2
-\begin{frame}{Backup: per-channel ablation ladder (validation set)}
-  \begin{center}
-  {\small
-  \begin{tabular}{@{}lcccccc@{}}
-  \toprule
-   & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Artic.\ $\log r$} & \multicolumn{2}{c}{Loudness $v$} \\
-  \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-  System & RMSE & cov & RMSE & cov & RMSE & cov \\
-  \midrule
-  coregionalized GP, zero mean & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 & 0.92 \\
-  + features (no graph) & 0.154 & 0.95 & 0.626 & 0.91 & 0.088 & 0.90 \\
-  + features, full & 0.153 & 0.95 & 0.615 & 0.91 & 0.075 & 0.91 \\
-  \textbf{+ embeddings (proposed)} & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \small The calibration gain sits in articulation, the accuracy gain in
-  loudness. Timing is near-static; rubato is absorbed by the tempo warp.
-\end{frame}
-
-% ---------------------------------------------------------------- A3
-\begin{frame}{Backup: kernel comparison (validation set)}
-  \begin{center}
-  {\footnotesize
-  \begin{tabular}{@{}lcccc@{}}
-  \toprule
-  Kernel & RMSE & NLL & cov@.9 & \\
-  \midrule
-  additive Laplacian (baseline) & 0.393 & $-0.322$ & 0.921 & \\
-  graph Mat\'ern $\alpha \in \{1,2,3\}$ & 0.392--0.393 & $-0.318$..$-0.321$ & & tie \\
-  diffusion / heat & 0.393 & $-0.312$ & 0.917 & tie \\
-  independent (no edges) & $0.446^{*}$ & $-0.190^{*}$ & 0.919 & worst \\
-  temporal chain & 0.392 & $-0.292^{*}$ & 0.916 & calib.\ worse \\
-  tonal-distance metric (replaced) & $0.403^{*}$ & $-0.300^{*}$ & 0.921 & worse \\
-  \textbf{chord + voice-leading (added)} & $\bm{0.385^{*}}$ & $\bm{-0.335^{*}}$ & 0.922 & only both-axes win \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \figslot{spectral_overlay_dev.png}{2.2cm}{evidence-fitted filters
-    $g(\nu;\hat s)$ per family, overlaid (exists)}
-  \vspace{-2mm}
-  {\footnotesize Two-stage regime. Under the final model the added edge
-  families are redundant once the embeddings enter the kernel.}
-\end{frame}
-
-% ---------------------------------------------------------------- A4
-\begin{frame}{Backup: the Gaussian tail and the Student-$t$ fix}
-  \begin{itemize}
-    \item Failure mode (one test piece and one dev replica): a very steady
-          piece gives a tiny fitted timing scale; a few outlier notes then
-          explode the pooled NLL while RMSE and coverage stay normal
-          (dev replica: NLL $+34.7$, coverage 0.90).
-    \item Student-$t$ timing likelihood (EM prototype, unit-tested): on the dev
-          tail cell, NLL goes from $+34.7$ to $\bm{-0.96}$ under its own
-          predictive. RMSE and coverage are unchanged.
-    \item On tail-free pieces it costs a small premium.
-    \item It is applied to no thesis number: the test set is spent, so the fix
-          waits for its own preregistered confirmation.
-  \end{itemize}
-\end{frame}
-
-% ---------------------------------------------------------------- A5
-\begin{frame}{Backup: probing the embeddings}
-  \begin{center}
-  {\small
-  \begin{tabular}{@{}lccl@{}}
-  \toprule
-  Theory column & $R^2$ (emb) & $R^2$ (25 feats) & verdict \\
-  \midrule
-  in-scale flag & $-0.06$ & $-0.00$ & not encoded (AUC 0.52) \\
-  scale degree & $-0.05$ & $-0.00$ & not encoded \\
-  mode (major/minor) & $-0.17$ & $-0.04$ & not encoded (AUC 0.48) \\
-  repetition count & $-0.05$ & $-0.00$ & not encoded \\
-  metrical weight & 0.14 & 0.43 & weakly encoded \\
-  phrase salience & 0.48 & 0.57 & encoded \\
-  bass flag & 0.73 & 0.86 & encoded (AUC 0.99) \\
-  register & 0.90 & 1.00 & encoded \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \small Cross-piece ridge probes, fit on head pieces, scored out-of-sample on
-  dev pieces. RFF-2048 nonlinear probes give the same tonal verdicts.
-\end{frame}
-
-% ---------------------------------------------------------------- A6
-\begin{frame}{Backup: Phase-2 synthetic pilot, per channel}
-  \begin{center}
-  {\footnotesize
-  \begin{tabular}{@{}llll@{}}
-  \toprule
-  Question / system & $c$ (cents) & $\log\gamma$ & $\log f$ \\
-  \midrule
-  \textbf{imputation}: GP (as-given noise) & 3.51 / 0.89 & 0.094 / 0.86 & 0.026 / 0.90 \\
-  \quad no-graph & 4.11 / 0.88 & 0.103 / 0.85 & 0.030 / 0.89 \\
-  \quad estimator (oracle) & 1.34 / 0.93 & 0.041 / 0.90 & 0.007 / 0.93 \\
-  \addlinespace
-  \textbf{missing cells}: GP (as-given) & --- & 0.085 / 0.87 & 0.025 / 0.93 \\
-  \quad no-graph & --- & 0.096 / 0.86 & 0.028 / 0.91 \\
-  \quad estimator & \multicolumn{3}{l}{\emph{undefined; only the prior can answer}} \\
-  \addlinespace
-  \textbf{denoising}: GP (as-given) & 1.41 / 0.90 & 0.039 / 0.86 & 0.008 / 0.87 \\
-  \quad raw estimator & 1.63 / 0.91 & 0.042 / 0.90 & 0.008 / 0.88 \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \small Cells: RMSE / cov@90 vs known truth. Prior scales: $\log\gamma$ 0.35,
-  $\log f$ 0.10. 926 missing vibrato cells across 20 pieces.
-\end{frame}
-
-% ---------------------------------------------------------------- A7
-\begin{frame}{Backup: the 25 hand-built score features}
-  {\small
-  \begin{itemize}
-    \item \textbf{Pitch (7)}: absolute pitch; piece-normalized pitch; local
-          deviation from the 8-note window mean; local spread; melodic
-          interval from the previous note; contour (sign of the interval);
-          local pitch-vs-time trend.
-    \item \textbf{Duration (3)}: log duration; piece-normalized; relative to
-          the local window.
-    \item \textbf{Meter (6)}: sine and cosine of the metrical phase at beat,
-          half-bar, and bar periods.
-    \item \textbf{Rhythm (3)}: inter-onset interval to the previous and next
-          note; local note density.
-    \item \textbf{Chords (2)}: chord size (notes sharing the onset); pitch
-          rank within the chord.
-    \item \textbf{Position (3)}: position in the piece; proximity to the
-          start; proximity to the end.
-    \item \textbf{Voice (1)}: normalized voice index.
-  \end{itemize}}
-  \small All computed from the score alone; a bias column is appended.
-  The 14 optional music-theory columns (key, scale degree, dissonance,
-  phrase, repetition) are off: they add nothing measurable (findings slide).
-\end{frame}
-
-% ---------------------------------------------------------------- A8
-\begin{frame}{Backup: replication on 30 further unseen pieces}
-  After the test run, the ablation was repeated on 30 additional pieces that
-  no decision ever touched.
-  \begin{center}
-  {\small RMSE / coverage@90\% per channel \\[1mm]
-  \begin{tabular}{@{}lccc@{}}
-  \toprule
-  System & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
-  \midrule
-  \textbf{proposed model} & \textbf{0.232} / 0.96 & \textbf{0.614} / 0.91 & \textbf{0.070} / 0.92 \\
-  \quad no graph & 0.235 / 0.96 & 0.646 / 0.91 & 0.081 / 0.93 \\
-  \quad no music model & 0.233 / 0.96 & 0.634 / 0.91 & 0.074 / 0.92 \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \small Ordering and both ingredient effects replicate; the graph's
-  calibration contribution is stable across validation, test, and these
-  pieces ($-0.067$, $-0.074$, $-0.080$ NLL).
-\end{frame}
-
-% ---------------------------------------------------------------- A9
-\begin{frame}{Backup: downstream tasks (validation set)}
-  \begin{center}
-  {\small
-  \begin{tabular}{@{}llc@{}}
-  \toprule
-  Task & Verdict & Key number \\
-  \midrule
-  error spotting (anomaly) & \textcolor{okgreen}{\textbf{win}} & AUROC up to 0.995 \\
-  denoising (known noise) & \textcolor{okgreen}{\textbf{win}} & cov 0.90 \\
-  selective prediction & \textcolor{okgreen}{win} & confident-half RMSE 0.076 \\
-  completion from an excerpt & \textcolor{okamber}{partial} & interpolation only \\
-  era classification & \textcolor{okverm}{negative} & 0.20 vs 0.60 majority \\
-  performer ID & \textcolor{okamber}{mixed} & smoothing removes identity \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \begin{itemize}
-    \item The graph helps note-level decisions, not piece-level summaries.
-    \item Per-piece adaptation helps interpolation, fails extrapolation from
-          a short excerpt.
   \end{itemize}
 \end{frame}
 
