@@ -73,8 +73,7 @@
 \newcommand{\Lg}{L_{\mathcal G}}
 \newcommand{\diag}{\operatorname{diag}}
 
-\title{\textbf{Expressive Performance as a Gaussian Process\\ on the Score Graph}\\[2mm]
-  \large calibrated per-note timing, articulation, and dynamics}
+\title{\textbf{Expressive Performance as a Gaussian Process\\ on a Musical Score Graph}}
 \author{Raynaldi Lalang\\[1mm]{\small Supervisor: Prof.\ Kazuyoshi Yoshii}}
 \institute{Kyoto University}
 \date{July 16, 2026}
@@ -151,11 +150,12 @@
     \item typically predicts one rendering or aggregate statistics
   \end{itemize}
   \column{0.48\textwidth}
-  \textbf{Gaussian processes on graphs}
+  \textbf{Gaussian processes and graphs}
   \begin{itemize}
+    \item \textbf{Gaussian Processes over Graphs} (Venkitaraman et al.\ 2018):
+          outputs on graph nodes, Kronecker-coupled; the main foundation here
     \item graph Mat\'ern and heat kernels (Borovitskiy et al.\ 2021)
-    \item multi-output coupling via the intrinsic coregionalization model
-          (Bonilla et al.\ 2008)
+    \item multi-output coupling via ICM (Bonilla et al.\ 2008)
   \end{itemize}
   \end{columns}
   \vspace{3mm}
@@ -262,45 +262,54 @@
 \begin{frame}{Experiment setup}
   \begin{itemize}
     \item \textbf{Data}: ASAP piano (aligned score + performance MIDI),
-          filtered so no test performance appeared in pretraining
+          filtered so no evaluation performance appeared in pretraining
           ($1036 \to 653$).
-    \item \textbf{Split}: 40 pieces to fit cross-piece components; 30 for all
-          development; \textbf{20 test pieces evaluated exactly once}, with the
-          claims fixed beforehand; 30 more later as a replication set.
+    \item \textbf{Split}: train 40 pieces (cross-piece components) /
+          validation 30 (all model development) / \textbf{test 20, evaluated
+          exactly once} with the claims fixed beforehand.
     \item \textbf{Task}: hide a fraction of notes, predict them from the
           visible rest. Results are unchanged from 50\% hidden down to a
           single hidden note.
-    \item \textbf{Metrics}: RMSE; NLL, coverage, and PIT for the error bars.
-          A method must improve both to count as better. All comparisons are
-          paired per piece, with bootstrap CIs over pieces.
-    \item \textbf{Baselines}: independent notes, temporal smoothing, feature
-          and embedding regressors, and a \textbf{two-stage baseline}: fit a
-          mean predictor across pieces, then smooth its residuals with the
-          graph, one channel at a time.
+    \item \textbf{Metrics}: RMSE; NLL, coverage, and PIT for the error bars,
+          reported per channel. Comparisons are paired per piece, with
+          bootstrap CIs over pieces.
   \end{itemize}
+  \vspace{1mm}
+  \textbf{Systems compared} (each a special case of the proposed model):
+  {\footnotesize
+  \begin{itemize}
+    \item \emph{proposed}: full covariance (graph + features + embeddings);
+    \item \emph{no graph}: $K_G \to I$, notes a priori independent;
+    \item \emph{no music model}: the embedding kernel removed;
+    \item \emph{mean + smoothing (standard)}: a regression mean fit across
+          pieces, its residuals smoothed by the graph per channel; the
+          textbook two-step construction, plain or with chord and
+          voice-leading edges (best).
+  \end{itemize}}
 \end{frame}
 
 % ================================================================ 11  RESULTS: MAIN
-\begin{frame}{Results \hfill \CONF}
+\begin{frame}{Results, per channel \hfill \CONF}
   \begin{center}
-  {\small
+  {\small RMSE / coverage@90\% \\[1mm]
   \begin{tabular}{@{}lccc@{}}
   \toprule
-  System & RMSE & NLL & cov@90\% \\
+  System & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
   \midrule
-  \textbf{proposed model} & \textbf{0.376} & $-0.300$ & 92.5\% \\
-  \quad without the graph & 0.405 & $-0.226$ & 92\% \\
-  \quad without the music model & 0.385 & $-0.264$ & 92\% \\
-  two-stage baseline (best variant) & 0.393 & $-0.311$ & 92\% \\
-  two-stage baseline (plain) & 0.401 & $-0.289$ & 92\% \\
+  \textbf{proposed model} & \textbf{0.227} / 0.95 & \textbf{0.605} / 0.90 & \textbf{0.076} / 0.92 \\
+  \quad no graph & 0.236 / 0.95 & 0.656 / 0.90 & 0.084 / 0.91 \\
+  \quad no music model & 0.230 / 0.95 & 0.621 / 0.91 & 0.079 / 0.91 \\
+  mean + smoothing (best) & 0.237 / 0.95 & 0.632 / 0.91 & 0.082 / 0.91 \\
+  mean + smoothing (plain) & 0.237 / 0.95 & 0.648 / 0.91 & 0.084 / 0.91 \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \begin{itemize}
-    \item Accuracy: paired $\Delta$RMSE vs the best baseline
-          $\bm{-0.0137^{*}}$.
-    \item Calibration: the graph contributes $\Delta$NLL $\bm{-0.0736^{*}}$
-          $[-0.092, -0.057]$; coverage is on target.
+    \item The proposed model is best in every channel; the largest gains are
+          articulation and dynamics.
+    \item Preregistered (pooled) claims: $\Delta$RMSE vs the best baseline
+          $\bm{-0.0137^{*}}$; graph's calibration contribution
+          $\Delta$NLL $\bm{-0.0736^{*}}$ $[-0.092, -0.057]$.
     \item Pooled NLL between the top two systems tied; the cause is one piece
           with extreme timing outliers (backup slide).
   \end{itemize}
@@ -318,47 +327,48 @@
 
 % ================================================================ 13  RESULTS: ABLATIONS
 \begin{frame}{Results: where the gains come from \hfill \DEV}
+  Paired per-channel $\Delta$RMSE when an ingredient is removed
+  (negative = the ingredient helps):
   \begin{center}
   {\small
-  \begin{tabular}{@{}lcc@{}}
+  \begin{tabular}{@{}lccc@{}}
   \toprule
-  Control & RMSE / NLL & Reading \\
+  Ingredient removed & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
   \midrule
-  fix a cross-piece mean inside the GP & $0.390$ / $-0.327$ &
-    coupling alone adds little \\
-  remove the graph & $+0.017^{*}$ / $+0.067^{*}$ & graph carries calibration \\
-  remove the embeddings & $+0.008^{*}$ / $+0.034^{*}$ & music model adds signal \\
+  the graph & $-0.0015^{*}$ & $-0.0282^{*}$ & $-0.0104^{*}$ \\
+  the embeddings & $-0.0006$ & $-0.0147^{*}$ & $-0.0028^{*}$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \vspace{1mm}
-  Per-piece weighting of the features improves accuracy.
-  The graph makes the uncertainty calibrated.
   \begin{itemize}
-    \item The calibration gain is mostly articulation (coverage
-          $0.784 \to 0.91$); the accuracy gain is mostly dynamics.
-    \item Timing barely moves: rubato is absorbed by the tempo curve before
-          $\tau$ is even defined.
+    \item Fixing a cross-piece mean inside the GP loses almost nothing
+          ($0.390$ vs $0.388$ pooled): channel coupling alone adds little.
+          The accuracy gain comes from re-weighting the features per piece.
+    \item The graph's calibration gain is mostly articulation (coverage
+          $0.784 \to 0.91$ over a bare mean).
+    \item Timing barely moves anywhere: rubato is absorbed by the tempo curve
+          before $\tau$ is even defined.
   \end{itemize}
 \end{frame}
 
 % ================================================================ 14  RESULTS: DEEP BASELINES
 \begin{frame}{Results: calibrated deep baselines \hfill \DEV}
   \begin{center}
-  {\small
+  {\small RMSE / coverage@90\% \\[1mm]
   \begin{tabular}{@{}lccc@{}}
   \toprule
-  System (same input features) & RMSE & NLL & cov@90\% \\
+  System (same input features) & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
   \midrule
-  \textbf{proposed model (GP)} & \textbf{0.360} & $\bm{-0.404}$ & 0.927 \\
-  deep ensemble ($5\times$ heteroscedastic MLP) & 0.450 & $-0.104$ & 0.923 \\
-  heteroscedastic MLP & 0.454 & $-0.069$ & 0.918 \\
+  \textbf{proposed model (GP)} & \textbf{0.152} / 0.95 & \textbf{0.601} / 0.91 & \textbf{0.072} / 0.92 \\
+  deep ensemble ($5\times$ het.\ MLP) & 0.163 / 0.97 & 0.757 / 0.88 & 0.095 / 0.92 \\
+  heteroscedastic MLP & 0.164 / 0.97 & 0.762 / 0.87 & 0.096 / 0.91 \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \begin{itemize}
-    \item The GP is better on both axes: $\Delta$RMSE $\bm{-0.090^{*}}$,
-          $\Delta$NLL $\bm{-0.30^{*}}$ (paired).
+    \item The GP is better in every channel; pooled and paired:
+          $\Delta$RMSE $\bm{-0.090^{*}}$, $\Delta$NLL $\bm{-0.30^{*}}$.
     \item The deep heads cannot adapt to the individual piece and have no
           graph; that is exactly the gap.
     \item Caveat: frozen-embedding heads; end-to-end fine-tuning untested.
@@ -367,16 +377,27 @@
 
 % ================================================================ 15  RESULTS: REPLICATION
 \begin{frame}{Results: replication on 30 unseen pieces \hfill \REPL}
+  A check beyond the test set: after testing, the full ablation was re-run on
+  30 further pieces that no decision ever touched.
+  \begin{center}
+  {\small RMSE / coverage@90\% \\[1mm]
+  \begin{tabular}{@{}lccc@{}}
+  \toprule
+  System & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
+  \midrule
+  \textbf{proposed model} & \textbf{0.232} / 0.96 & \textbf{0.614} / 0.91 & \textbf{0.070} / 0.92 \\
+  \quad no graph & 0.235 / 0.96 & 0.646 / 0.91 & 0.081 / 0.93 \\
+  \quad no music model & 0.233 / 0.96 & 0.634 / 0.91 & 0.074 / 0.92 \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
   \begin{itemize}
-    \item The full ablation was re-run on 30 additional pieces never used in
-          development. The ordering and both ingredient effects replicate.
-    \item The graph's calibration contribution is stable across all three
-          piece sets: $-0.067$, $-0.074$, $-0.080$ NLL.
-    \item The effects hold in every channel separately and are robust to the
-          choice of statistical test (backup slide).
+    \item Ordering and both ingredient effects replicate; the graph's
+          calibration contribution is stable across development, test, and
+          replication sets ($-0.067$, $-0.074$, $-0.080$ NLL).
   \end{itemize}
   \vspace{-1mm}
-  \figslot{deck_threesets.png}{2.8cm}{chart: the graph's NLL contribution with
+  \figslot{deck_threesets.png}{2.0cm}{chart: the graph's NLL contribution with
     CIs on the development, test, and replication sets}
 \end{frame}
 
@@ -597,6 +618,31 @@
 \end{frame}
 
 % ---------------------------------------------------------------- A7
+\begin{frame}{Backup: the 25 hand-built score features}
+  {\small
+  \begin{itemize}
+    \item \textbf{Pitch (7)}: absolute pitch; piece-normalized pitch; local
+          deviation from the 8-note window mean; local spread; melodic
+          interval from the previous note; contour (sign of the interval);
+          local pitch-vs-time trend.
+    \item \textbf{Duration (3)}: log duration; piece-normalized; relative to
+          the local window.
+    \item \textbf{Meter (6)}: sine and cosine of the metrical phase at beat,
+          half-bar, and bar periods.
+    \item \textbf{Rhythm (3)}: inter-onset interval to the previous and next
+          note; local note density.
+    \item \textbf{Chords (2)}: chord size (notes sharing the onset); pitch
+          rank within the chord.
+    \item \textbf{Position (3)}: position in the piece; proximity to the
+          start; proximity to the end.
+    \item \textbf{Voice (1)}: normalized voice index.
+  \end{itemize}}
+  \small All computed from the score alone; a bias column is appended.
+  The 14 optional music-theory columns (key, scale degree, dissonance,
+  phrase, repetition) are off: they add nothing measurable (findings slide).
+\end{frame}
+
+% ---------------------------------------------------------------- A8
 \begin{frame}{Backup: downstream tasks \hfill \DEV}
   \begin{center}
   {\small
