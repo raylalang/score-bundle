@@ -2,10 +2,12 @@
 %  deck.tex — Score-Bundle Models: presentation slides (beamer, 16:9).
 %
 %  STRUCTURE (argument order, not chronological):
-%    problem -> the instrument (protocol, settled once, incl. masking-level
-%    robustness) -> the model -> why believe the numbers -> headline ->
-%    what it looks like -> what wins -> rivals -> it replicates ->
-%    findings about the music -> boundaries -> Phase 2 -> Phase 3 + close.
+%    problem -> THE PROGRAMME (the whole idea + phase map, up front) ->
+%    the instrument (protocol, settled once, incl. masking-level robustness)
+%    -> the model -> why believe the numbers -> headline -> what it looks
+%    like -> what wins -> rivals -> it replicates -> findings about the
+%    music -> boundaries -> back to the map: Phase 2 -> where the programme
+%    stands (Phase 3 + close).
 %  Backup: per-channel, kernel table + spectral overlay, Gaussian tail,
 %    probes, Phase-2 pilot.
 %
@@ -106,6 +108,33 @@
 \end{frame}
 
 % ================================================================ 3
+\begin{frame}{The idea: one generative model of expressive performance}
+  A single prior over per-note expressive fields on the \textbf{score graph} ---
+  run \emph{forward} it synthesises a performance; run \emph{inverse} it
+  transcribes one. Across the whole programme, \textbf{only the observation
+  changes}; the prior carries over unchanged:
+  \begin{center}
+  {\footnotesize
+  \begin{tabular}{@{}llll@{}}
+  \toprule
+  Phase & Observation & Channels & Status \\
+  \midrule
+  0 \; music model & MIDI corpora (MAESTRO) & --- & \textbf{done}: feature provider \\
+  1 \; piano & performance MIDI, per note & $\tau, \log r, v$ & \textbf{done + confirmed} \\
+  2 \; mono.\ pitched & $f_0$-derived targets, noisy & $+\,c$, vibrato & machinery built, pilot passed \\
+  3 \; waveform & the audio itself (no notes!) & all latent & scoped; conjugate parts tested \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \textbf{Today}: the Phase-1 result and what it taught us --- then where
+  Phases 2--3 stand on this map.
+  \vspace{-1mm}
+  \figslot{deck_programme.png}{1.7cm}{NEW: the shared prior with three
+    swappable likelihood blocks (MIDI / $f_0$ / waveform) --- the programme in
+    one picture}
+\end{frame}
+
+% ================================================================ 4
 \begin{frame}{The instrument: held-out imputation, on both axes \hfill \DEV}
   Clean MIDI gives the targets almost exactly --- so we \textbf{hide notes and
   infer them from the rest}, on held-out, contamination-filtered ASAP pieces:
@@ -149,7 +178,7 @@
 
 % ================================================================ 5
 \begin{frame}{Nothing exotic: standard theory, assembled --- deviations only when forced}
-  \begin{columns}[T]
+  \begin{columns}[T,onlytextwidth]
   \column{0.58\textwidth}
   {\footnotesize
   \begin{tabular}{@{}ll@{}}
@@ -174,8 +203,8 @@
   \end{itemize}}
   \end{columns}
   \vspace{2mm}
-  \centering{\small\textit{The contribution: the problem, the measurement
-  standard, the findings --- not a new kernel.}}
+  \centering{\footnotesize\textit{The contribution: the problem, the
+  measurement standard, the findings --- not a new kernel.}}
 \end{frame}
 
 % ================================================================ 6
@@ -366,7 +395,7 @@
 \end{frame}
 
 % ================================================================ 14
-\begin{frame}{Phase 2: same prior, new likelihood --- and its blocker fell \hfill \SYNTH}
+\begin{frame}{Back to the map: Phase 2 --- its blocker fell \hfill \SYNTH}
   Channels grow to $[\,\tau, \log r, \ell, c, f^{\mathrm{vib}}, \gamma,
   \delta^{\mathrm{vib}}\,]$; targets become \emph{estimates} with real noise.
   \begin{itemize}
@@ -389,7 +418,7 @@
 \end{frame}
 
 % ================================================================ 15
-\begin{frame}{Phase 3 and conclusion}
+\begin{frame}{Where the programme stands}
   \begin{columns}[T]
   \column{0.52\textwidth}
   \textbf{Phase 3} (most novel, hardest):
@@ -401,12 +430,12 @@
   \end{itemize}
   \figslot{arch_phase3_deck.png}{2.0cm}{Phase-3 architecture (exists)}
   \column{0.46\textwidth}
-  \textbf{The claim, in one breath:}
-  {\small standard graph-GP theory, assembled on a new problem, measured harder
-  than its sources --- preregistered one-shot confirmation, exact nesting of the
-  baseline, measured attribution, mapped boundaries, honest negatives kept ---
-  and the same prior carries forward unchanged, with Phase 2's machinery now
-  built and validated.}
+  \textbf{The programme, in one breath:}
+  {\small one generative model of expressive performance; Phase 1 delivered
+  with a preregistered one-shot confirmation, measured attribution, and mapped
+  boundaries; Phase 2's machinery built and validated on synthetic ground
+  truth; Phase 3 scoped with its conjugate core already tested --- the same
+  prior, unchanged, at every step.}
   \end{columns}
 \end{frame}
 
