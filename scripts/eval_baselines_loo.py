@@ -25,8 +25,10 @@ def perch(y, m, sd):
     out = []
     for c in range(3):
         e = y[:, c] - m[:, c]
+        v = sd[:, c] ** 2
+        nll = float(np.mean(0.5 * (np.log(2.0 * np.pi * v) + e ** 2 / v)))
         out.append((float(np.sqrt(np.mean(e ** 2))),
-                    float(np.mean(np.abs(e) <= _Z90 * sd[:, c]))))
+                    float(np.mean(np.abs(e) <= _Z90 * sd[:, c])), nll))
     return out
 
 
@@ -51,6 +53,7 @@ def main() -> None:
     W_lf = lmfeat.fit_prior_mean_head(H, Yh, l2=10.0)
 
     names = ["tau", "logr", "v"]
+    dump = {}
 
     # ---- mean + smoothing (best): scalar LOO identity per channel ----------
     ys, ms, sds = [], [], []
@@ -80,7 +83,10 @@ def main() -> None:
             print(f"mean+smoothing: {pi + 1}/30 pieces", flush=True)
     r = perch(np.concatenate(ys), np.concatenate(ms), np.concatenate(sds))
     print("mean+smoothing LOO  " + "  ".join(
-        f"{names[c]}: {r[c][0]:.3f}/{r[c][1]:.2f}" for c in range(3)))
+        f"{names[c]}: {r[c][0]:.3f}/{r[c][1]:.2f}/nll {r[c][2]:+.3f}"
+        for c in range(3)))
+    dump["mean_smoothing"] = (np.concatenate(ys), np.concatenate(ms),
+                              np.concatenate(sds))
 
     # ---- MLP ensemble: pointwise predictor, LOO = full evaluation ----------
     import sys, os
@@ -105,7 +111,14 @@ def main() -> None:
         sds.append(np.sqrt(np.maximum(var, floor[None, :])))
     r = perch(np.concatenate(ys), np.concatenate(ms), np.concatenate(sds))
     print("MLP ensemble LOO    " + "  ".join(
-        f"{names[c]}: {r[c][0]:.3f}/{r[c][1]:.2f}" for c in range(3)))
+        f"{names[c]}: {r[c][0]:.3f}/{r[c][1]:.2f}/nll {r[c][2]:+.3f}"
+        for c in range(3)))
+    dump["mlp_ensemble"] = (np.concatenate(ys), np.concatenate(ms),
+                            np.concatenate(sds))
+    import pickle
+    with open("results/baselines_loo.pkl", "wb") as fh:
+        pickle.dump(dump, fh)
+    print("wrote results/baselines_loo.pkl")
 
 
 if __name__ == "__main__":

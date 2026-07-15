@@ -309,15 +309,19 @@
   fixed mean & $\beta \sim \N(0, cI) \;\to\; \beta = \hat\beta$ (one cross-piece fit) & per-piece adaptation \\
   mean + smoothing & $\mu = X\hat\beta$, then per channel & the standard \\
    & $y_c - \mu_c \sim \N\bigl(0,\; \sigma_g^2 K_G + \sigma_e^2 I\bigr)$ & two-step recipe \\
-  NN (single / ens.) & $y_{ic} \sim \N\bigl(\mu_c(x_i),\, \sigma_c^2(x_i)\bigr)$, an MLP; notes independent & the GP itself \\
+  MLP (single / ens.) & $y_{ic} \sim \N\bigl(\mu_c(x_i),\, \sigma_c^2(x_i)\bigr)$; notes independent & the GP itself \\
   independent & $K_G \to I$ and $c_f \to 0$ & any structure at all \\
   temporal chain & $\Lg$ from time-adjacent edges only & score vs time edges \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \vspace{1mm}
-  Same input features and protocol for every system; all but the NN are exact
-  special cases of the proposed model.
+  {\small Same input features and protocol for every system; all but the MLP
+  are exact special cases of the proposed model. The MLP is a neural network
+  predicting each note's mean and variance from its own features; the
+  ensemble trains five from different random initializations and merges
+  their predictions (deep ensembles) --- the standard recipe for calibrated
+  networks.}
 \end{frame}
 
 % ================================================================ 13  RESULTS: OVERVIEW
@@ -409,22 +413,35 @@
 \end{frame}
 
 % ================================================================ 13d  CALIBRATION
-\begin{frame}{Results: calibration (NLL per channel; coverage 0.90--0.95 throughout)}
+\begin{frame}{Results: calibration (NLL per channel, by masking level)}
+  \noindent{\small NLL of held-out notes (lower = better-calibrated uncertainty;
+  per system: $\tau$ / $r$ / $v$); coverage stays 0.90--0.95 throughout.}
   \begin{center}
-  {\small NLL at 40\% hidden \\[1mm]
-  \begin{tabular}{@{}lccc@{}}
+  {\scriptsize\setlength{\tabcolsep}{1.9pt}
+  \begin{tabular}{@{}lccc ccc ccc ccc ccc@{}}
   \toprule
-  System & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
+  & \multicolumn{3}{c}{proposed} & \multicolumn{3}{c}{no graph}
+  & \multicolumn{3}{c}{no music model} & \multicolumn{3}{c}{mean + smoothing}
+  & \multicolumn{3}{c}{MLP ens.} \\
+  \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-13}\cmidrule(lr){14-16}
+  hidden & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$
+  & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ \\
   \midrule
-  \textbf{proposed model} & $\bm{-0.82}$ & $\bm{+0.84}$ & $\bm{-1.23}$ \\
-  MLP ensemble & $-0.53$ & $+1.10$ & $-0.89$ \\
+  50\% & $-.65$ & $\bm{+.87}$ & $\bm{-1.21}$ & $-.64$ & $+.91$ & $-1.09$ & $-.60$ & $+.88$ & $-1.17$ & $\bm{-.77}$ & $+.93$ & $-1.12$ & $-.48$ & $+1.11$ & $-.87$ \\
+  40\% & $\bm{-.82}$ & $\bm{+.84}$ & $\bm{-1.23}$ & $-.82$ & $+.90$ & $-1.10$ & $-.78$ & $+.86$ & $-1.19$ & $-.81$ & $+.91$ & $-1.14$ & $-.53$ & $+1.10$ & $-.89$ \\
+  30\% & $+.03^{\dagger}$ & $\bm{+.82}$ & $\bm{-1.27}$ & $-.24$ & $+.89$ & $-1.14$ & $-.16$ & $+.85$ & $-1.22$ & $-.44$ & $+.90$ & $-1.17$ & $\bm{-.47}$ & $+1.10$ & $-.92$ \\
+  20\% & $\bm{-.86}$ & $\bm{+.82}$ & $\bm{-1.29}$ & $-.67$ & $+.86$ & $-1.21$ & $-.81$ & $+.87$ & $-1.24$ & $-.84$ & $+.91$ & $-1.20$ & $-.46$ & $+1.12$ & $-.95$ \\
+  10\% & $-.77$ & $\bm{+.80}$ & $\bm{-1.28}$ & $-.78$ & $+.83$ & $-1.25$ & $-.72$ & $+.86$ & $-1.22$ & $\bm{-.81}$ & $+.90$ & $-1.20$ & $-.59$ & $+1.11$ & $-.95$ \\
+  LOO  & $\bm{-1.12}$ & $\bm{+.73}$ & $\bm{-1.33}$ & $-1.10$ & $+.79$ & $-1.29$ & $-1.09$ & $+.79$ & $-1.28$ & $-.95$ & $+.86$ & $-1.21$ & $-.50$ & $+1.10$ & $-.98$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
-  The graph's pooled calibration contribution, by masking level
-  (paired $\Delta$NLL, negative = graph helps):
+  \vspace{-2mm}
+  {\footnotesize The graph's pooled calibration contribution, by masking
+  level (paired $\Delta$NLL, negative = graph helps):}
   \begin{center}
-  {\small
+  \vspace{-1mm}
+  {\footnotesize
   \begin{tabular}{@{}lcccccc@{}}
   \toprule
    & 50\% & 40\% & 30\% & 20\% & 10\% & LOO \\
@@ -433,11 +450,12 @@
   \bottomrule
   \end{tabular}}
   \end{center}
+  \vspace{-1mm}
   {\footnotesize Significant at every level except 10\% (few scored notes
   per piece). $\dagger$ one steady piece puts a few timing outliers far into
-  the Gaussian tail, inflating this pooled NLL while RMSE and coverage stay
-  normal; a Student-$t$ timing likelihood resolves it. The RMSE contribution
-  at 30\% is $-0.017^{*}$.}
+  the Gaussian tail; a Student-$t$ timing likelihood resolves it. Pooled
+  timing NLL is outlier-dominated everywhere; in articulation and dynamics
+  the proposed model wins at every level.}
 \end{frame}
 
 % ================================================================ 15  RESULTS: EXAMPLE
