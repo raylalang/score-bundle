@@ -190,6 +190,20 @@ the one-shot discipline it will NOT be evaluated there; a future second
 confirmation set would be the honest venue. Remains a prototype; no thesis number
 uses it.
 
+**Follow-up — the payoff case, measured (2026-07-16, dev-only).** The masking
+sweep produced a DEV replica of the confirmation tail (obs0.70, piece 28, seed
+2: four τ notes at ~3 beats, Gaussian NLL +34.7 with fine RMSE/coverage —
+`docs/masking_sweep_results.md`). On that cell the t-variant does exactly what
+it exists for: **NLL +34.7 → −0.96** under its own t-predictive, RMSE 0.347 →
+0.356 and coverage ~0.92 essentially unchanged, EM weights isolating the
+outlier notes (min weight 0.13). Scored under the *Gaussian* metric the t-fit
+is worse (+69) — the fix is the likelihood family, not the point fit. Verdict
+upgraded from "insurance with a small premium" to "insurance with a small
+premium **and a demonstrated payoff on the failure mode it targets**"
+(`scripts/eval_robust_tail.py`, `results/robust_tail_piece28.pkl`). Still not
+applied to any thesis number; a second preregistered confirmation remains the
+honest venue.
+
 ## Downstream re-validation (2026-07-09, `logs/downstream_gpfirst_report.log`)
 
 All six tasks re-run with identical rng for old-pipeline and GP-first rows

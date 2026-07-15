@@ -71,6 +71,22 @@ note conceptually in sync.
   (selection-reused; every model's NLL flatters there). GP path leak-audited bitwise
   (`scripts/audit_graphgp_leakfree.py`). Fits deterministic per BLAS thread count
   only (v2 = OMP_NUM_THREADS=2).
+  Post-adoption dev studies (2026-07-13..16, all dev-only, confirmation untouched):
+  masking-level sweep 50%→LOO (`scripts/run_mask_sweep.sh`, `eval_gp_loo.py`,
+  `docs/masking_sweep_results.md`) — ordering stable at every level; theory-alignment
+  audit (`docs/graphgp_theory_alignment.md`) — no unforced deviation from the graph-GP
+  literature, "additive" ≡ graph Matérn ν=1; music-theory feature block
+  (`rich_score_features(theory=True)`, 14 cols, default OFF) — honest negative, and
+  embedding probes (`scripts/probe_embeddings.py`, linear + RFF) show the embeddings
+  encode rhythm/voicing/register but NOT tonality; sustain-overlap edge family
+  (`build_adjacency_harmonic(overlap_weight=)`, config `c_overlap`) — trend, ns,
+  not adopted; calibrated deep baselines (`scripts/eval_deep_baseline.py`,
+  `docs/deep_baseline_results.md`) — hetero-MLP + 5-ensemble lose to the GP on both
+  axes (−0.090*/−0.30* paired); statistical recheck (`scripts/robustness_recheck.py`)
+  — per-channel significance, BCa/Wilcoxon/sign agreement, BH-surviving stars,
+  composer-clustered CIs; 30-piece fresh replication set (positions 50–79 of the
+  same shuffle, `.cache/asap_arrays_named80.pkl`, identity-gated;
+  `scripts/run_replication_set.sh`).
   Aria frozen-feature upper-bound baseline is an import-guarded stub (`lm/aria_baseline.py`).
 - **Phase 2 — intonation/vibrato (stubs + helpers).** `src/score_bundle/phase2/`.
 - **Phase 3 — waveform likelihood (stubs + helpers).** `src/score_bundle/phase3/`.

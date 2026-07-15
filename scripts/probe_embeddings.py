@@ -32,6 +32,13 @@ THEORY_COLS = ["key_clarity", "mode_major", "deg_sin", "deg_cos", "in_scale",
 BINARY = {"mode_major", "in_scale", "is_bass"}
 
 
+def _rff(X, dim, seed):
+    rng = np.random.default_rng(seed)
+    G = rng.normal(0.0, 1.0 / np.sqrt(X.shape[1]), size=(X.shape[1], dim))
+    phase = rng.uniform(0.0, 2 * np.pi, size=dim)
+    return np.sqrt(2.0 / dim) * np.cos(X @ G + phase)
+
+
 def zscore_cols(X):
     mu = X.mean(axis=0, keepdims=True)
     sd = X.std(axis=0, keepdims=True)
@@ -58,6 +65,10 @@ def main() -> None:
     ap.add_argument("--arrays-cache", default=".cache/asap_arrays_named.pkl")
     ap.add_argument("--n-eval-pieces", type=int, default=30)
     ap.add_argument("--l2", type=float, default=10.0)
+    ap.add_argument("--rff-dim", type=int, default=0,
+                    help="apply deterministic random Fourier features of this "
+                         "dimension to the inputs before the ridge probe "
+                         "(a nonlinear probe; 0 = linear)")
     ap.add_argument("--raw", action="store_true",
                     help="skip per-piece z-scoring of inputs (probes piece-level "
                          "information the GP's per-piece-standardized kernel cannot use)")
@@ -82,6 +93,8 @@ def main() -> None:
         feat = rich_score_features(score, rff_dim=0)
         if not args.raw:
             emb, feat = zscore_cols(emb), zscore_cols(feat)
+        if args.rff_dim > 0:
+            emb, feat = _rff(emb, args.rff_dim, 0), _rff(feat, args.rff_dim, 1)
         one = np.ones((len(T), 1))
         return (np.concatenate([emb, one], axis=1),
                 np.concatenate([feat, one], axis=1), T)

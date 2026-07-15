@@ -45,6 +45,12 @@ def cell_metrics(yt, pr, sd):
 
 
 def main() -> None:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pieces", default="",
+                    help="comma list of piece indices (default: all 30)")
+    ap.add_argument("--out", default=OUT)
+    args = ap.parse_args()
     from score_bundle.downstream import load_piece_arrays
     from score_bundle.gp import MultiOutputGraphGP
     from score_bundle.gp_robust import fit_robust_tau, t_predictive_nll
@@ -56,8 +62,12 @@ def main() -> None:
     with open(EMB, "rb") as fh:
         emb_dump = pickle.load(fh)["emb_ma"]
 
+    want = ([int(x) for x in args.pieces.split(",") if x.strip()]
+            if args.pieces else list(range(len(ev))))
     rows = []
     for pi, p in enumerate(ev):
+        if pi not in want:
+            continue
         Y = np.asarray(p["y"], dtype=float)
         mask = masks[(pi, SEED)]
         emb = emb_dump[(pi, SEED)]
@@ -111,6 +121,7 @@ def main() -> None:
               f"  |  t: rmse {t_rmse:.3f} gnll {t_gnll:+7.3f} own {t_ownnll:+7.3f}"
               f" cov {t_cov:.3f}  min_w {w.min():.3f}{flag}", flush=True)
 
+    by_piece = {r["piece"]: r for r in rows}
     g_nlls = np.array([r["gauss"][1] for r in rows])
     t_gnlls = np.array([r["t_gaussscored"][1] for r in rows])
     t_own = np.array([r["t_own_nll"] for r in rows])
@@ -125,19 +136,20 @@ def main() -> None:
           f"  t {np.mean([r['t_gaussscored'][0] for r in rows]):.4f}")
     print(f"cov:  G {np.mean([r['gauss'][2] for r in rows]):.3f}"
           f"  t {np.mean([r['t_gaussscored'][2] for r in rows]):.3f}")
-    tail = rows[28]
-    print(f"\nTAIL CELL piece 28: Gaussian NLL {tail['gauss'][1]:+.3f} -> "
-          f"t own-scored {tail['t_own_nll']:+.3f} "
-          f"(G-scored {tail['t_gaussscored'][1]:+.3f}); min weight {tail['min_w']:.3f}")
+    tail = by_piece.get(28)
+    if tail is not None:
+        print(f"\nTAIL CELL piece 28: Gaussian NLL {tail['gauss'][1]:+.3f} -> "
+              f"t own-scored {tail['t_own_nll']:+.3f} "
+              f"(G-scored {tail['t_gaussscored'][1]:+.3f}); min weight {tail['min_w']:.3f}")
 
     os.makedirs("results", exist_ok=True)
-    with open(OUT, "wb") as fh:
+    with open(args.out, "wb") as fh:
         pickle.dump({"rows": rows, "meta": {
             "protocol": "obs0.70 seed 2, b_featlm info set, DEV only",
             "nu_t": 4.0, "em_iters": 3,
             "scoring": "Gaussian NLL for both + t-on-tau own scoring for the t fit",
         }}, fh)
-    print(f"wrote {OUT}")
+    print(f"wrote {args.out}")
 
 
 if __name__ == "__main__":

@@ -1087,7 +1087,12 @@ the development pieces only: the hidden fraction was swept from 50\% down to 10\
 --- with the leak-free mask-aware embeddings recomputed per fraction, since
 leak-freeness requires blanking exactly each mask's hidden notes --- and to the
 leave-one-out limit, where every note is predicted from all the others via the
-closed-form GP identity. The findings, all development-labeled: the model ordering
+closed-form GP identity (two disclosed protocol relaxations at that limit only:
+hyperparameters are fit on the full piece, the textbook LOO-CV estimator, and
+the embeddings are the leak-free pre-velocity readout rather than per-mask
+re-embeddings; both apply identically to all three systems, so the ordering
+claim is a fair paired comparison, but the LOO row's absolute numbers are not
+strict-protocol values). The findings, all development-labeled: the model ordering
 (proposed $<$ no-graph ablation $<$ features-only) is \textbf{stable at every
 level including leave-one-out}, so the operating point is arbitrary but not lucky;
 the graph's paired contribution is significant from 50\% down to 20\% hidden and
@@ -1298,6 +1303,18 @@ Music-model mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0
 almost entirely the articulation channel, and its recovery win is almost entirely
 loudness --- timing contributes little either way. The pooled RMSE improvement is
 therefore a blend of a large loudness gain diluted by a near-static timing channel.
+Figure~\ref{fig:posterior-example} shows what the numbers summarise: the
+posterior on one development piece, with the hidden notes' true values plotted
+against the 90\% predictive band.
+
+\figph{posterior_example_dev.png}{1.0}{The proposed model's posterior on one
+development piece (40\% hidden, anchor mask): posterior mean, 90\% predictive
+band, observed notes (dots) and the \emph{true values of hidden notes} (open
+circles). Hidden truths fall inside the band at 49/50, 49/50 and 46/50 across
+the three channels in this window --- the mild conservatism the calibration
+profile of Appendix~\ref{app:extra} quantifies. The dynamics panel shows the
+phrase-level structure the model exploits; the timing band is honest about how
+little of $\tau$ is predictable.\label{fig:posterior-example}}
 
 \section{Target leakage in the read-out, and the invariance that prevents it}
 An earlier read-out let the music model see a note's own loudness --- the very target it
@@ -1355,6 +1372,28 @@ NLL (development, paired, significant) and their removal cost is confirmed in di
 the confirmation set. \figph{digest_channels.png}{0.7}{Where the
 music model earns its place: mean-only error vs.\ the 25-feature baseline, per channel ---
 its genuine edge is loudness; timing and articulation tie (development).}
+
+\section{Calibrated deep baselines (development study)}
+The comparisons above give the deep model a single shared predictive scale,
+which undersells it as a rival on the calibration axis. Two deep baselines that
+produce their \emph{own} per-note uncertainty were therefore run under the
+identical strict protocol and information set (the 25 features plus the
+music-model embeddings, per-piece standardized, strict mask-aware embeddings at
+evaluation, the same per-piece variance floor): a heteroscedastic MLP head
+($\mu_c(x), \log\sigma_c^2(x)$ per channel, Gaussian-NLL trained on the head
+pieces) and a five-member deep ensemble of such heads. On the development set
+the proposed model beats both on \emph{both} axes by wide, significant paired
+margins --- RMSE $0.360$ vs.\ $0.450$--$0.454$ ($\Delta$ $-0.090$
+$[-0.115, -0.067]$*), NLL $-0.404$ vs.\ $-0.069$ to $-0.104$
+($\Delta$ $-0.30$ $[-0.40, -0.21]$*) --- and ensembling five heads buys almost
+nothing over one. The instructive part is \emph{where} the deep heads land:
+at $\approx 0.45$, the level of the cross-piece plug-in mean without a graph.
+Their coverage is respectable ($0.92$, the variance head works), but their NLL
+is far behind because ranking \emph{which} notes are uncertain requires
+per-piece adaptation and the graph --- the attribution result confirmed from
+the other side. Scope stated honestly: these are frozen-embedding read-out
+heads, the natural deep comparator at matched information and training data;
+a fine-tuned end-to-end deep model remains untested.
 
 \section{Task-matched pretraining: an honest negative}
 A bidirectional, mask-aware retraining (matched exactly to the evaluation task) did
@@ -1762,7 +1801,9 @@ voicing and rhythm --- bass-note membership (AUC $0.99$), metrical weight,
 phrase-boundary salience, register --- but \emph{not} tonality: scale degree,
 in-scale membership, mode, and local key are all at chance from the embeddings
 ($R^2 \approx 0$, AUC $\approx 0.5$), whether or not piece-level information is
-removed. So the theory columns' failure is \emph{not} explained by the embeddings
+removed --- and a 2048-dimensional random-features probe replicates every tonal
+verdict, so this is not an artifact of probe linearity. The theory columns'
+failure is therefore \emph{not} explained by the embeddings
 already carrying the tonal signal. Taken together with the tonal-metric result of
 route (A), the consistent reading is that \textbf{tonal structure carries no
 measurable marginal signal for these three expressive channels at this scale},

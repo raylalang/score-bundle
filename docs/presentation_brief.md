@@ -97,16 +97,21 @@ are the confirmation ones.
 | Probe: tonality in embeddings | R²≈0, AUC≈0.5 (not encoded) | DEV | results/probe_embeddings*.pkl |
 | Probe: bass/meter/phrase | AUC 0.99 / R² 0.14–0.35 / 0.48 | DEV | same |
 | Anomaly AUROC (proposed) | v 0.995, log r 0.986, τ 0.978 | DEV | docs/downstream_tasks_results.md |
+| Calibrated deep baselines | hetero 0.454/−0.069; ensemble 0.450/−0.104; GP wins −0.090\*/−0.30\* paired | DEV | docs/deep_baseline_results.md |
+| Posterior example (piece 0) | hidden truths in 90% band: 49/50, 49/50, 46/50 | DEV | figures/posterior_example_dev.png |
 | Contamination filter | 1036 → 653 performances | — | draft §contam |
 | LM pretraining ppl | 10.85 (scaled 9.66: no downstream gain) | — | draft ch. results |
 
 ## The ten questions most likely to come, with the prepared line
 
-1. **"Why not a deep model with a variance head?"** The deep model is *inside*
-   the GP as a feature kernel, where its marginal value is measured; alone
-   ("music-model mean, graph off") it is worse on both axes (0.446/−0.164 DEV).
-   CONCEDE: no calibrated deep baseline (ensemble/heteroscedastic head) was run —
-   it is the top pre-submission to-do. Do not claim it can't be done.
+1. **"Why not a deep model with a variance head?"** NOW MEASURED (2026-07-16):
+   a heteroscedastic MLP head and a 5-member deep ensemble on the identical
+   information set land at 0.450–0.454 RMSE / −0.07 to −0.10 NLL vs the GP's
+   0.360/−0.404 — GP wins both axes, −0.090\*/−0.30\* paired. They sit exactly
+   at the cross-piece-mean level: coverage fine, note-ranking of uncertainty
+   far behind — per-piece adaptation + graph is what they cannot imitate.
+   Residual honest scope: frozen-embedding heads; a fine-tuned end-to-end deep
+   model remains untested.
 2. **"What is novel vs Borovitskiy?"** Nothing in the kernel algebra — say it
    first. The novelty: the domain instantiation, the measurement standard
    (calibration + preregistration + bitwise audits, beyond the source papers),
@@ -164,4 +169,6 @@ are the confirmation ones.
   `digest_channels.png`, `digest_collapse.png` — development-era digests
 - `docs/thesis/figures/proposed_reliability.png`, `proposed_pit.png` —
   calibration profile, dev vs conf
+- `docs/thesis/figures/posterior_example_dev.png` — what the posterior looks
+  like on one piece (NEW; hidden truths inside the band)
 - `docs/thesis/draft.pdf` — the full draft (45 pp), compiled clean tonight

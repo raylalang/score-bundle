@@ -89,3 +89,9 @@ structure carries no measurable marginal signal for these three expressive
 channels at this scale**, while the rhythmic/voicing structure the columns add
 genuinely is already in the kernel. The embeddings' value is rhythm, texture,
 and dynamics convention — not harmony.
+
+**Nonlinearity check (2026-07-16):** a 2048-dimensional random-Fourier-features
+probe (`--rff-dim 2048`, `results/probe_embeddings_rff.pkl`) replicates every
+tonal verdict — in-scale AUC 0.55, mode 0.47, scale degree R² ≈ 0 — so "not
+encoded" is not an artifact of probe linearity. The rhythmic/voicing verdicts
+also replicate (bass AUC 0.98, meter 0.23, phrase 0.44).
