@@ -434,8 +434,11 @@
   \end{tabular}}
   \end{center}
   \small Significant at every level except 10\% (few scored notes per piece).
-  $\dagger$ 30\% contains the failure-case piece (next slides); with it, the
-  CI is inflated; the RMSE contribution at 30\% is $-0.017^{*}$.
+  $\dagger$ one very steady piece at the 30\% level puts a few timing
+  outliers many standard deviations out; the Gaussian likelihood squares
+  them, inflating this one pooled NLL while RMSE and coverage stay normal
+  (a Student-$t$ timing likelihood resolves it; the RMSE contribution at
+  30\% is $-0.017^{*}$).
 \end{frame}
 
 % ================================================================ 15  RESULTS: EXAMPLE
@@ -540,52 +543,12 @@
   \bottomrule
   \end{tabular}}
   \end{center}
-  No significant gain in any channel, in either regime.
+  No significant gain in any channel, in either regime. Probing the
+  embeddings directly confirms the reading: they contain no tonal
+  information, while rhythm, voicing, and register are encoded.
 \end{frame}
 
-% ================================================================ 20  RESULTS: PROBES
-\begin{frame}{Results: probing the embeddings for musical structure}
-  Ridge probes from the embeddings to each theory feature, fit on the
-  training pieces, scored out-of-sample; the 25 hand-built features as a
-  control. Nonlinear (random-features) probes give the same verdicts.
-  \begin{center}
-  {\small
-  \begin{tabular}{@{}lccl@{}}
-  \toprule
-  Theory feature & $R^2$ (embeddings) & $R^2$ (25 features) & verdict \\
-  \midrule
-  in-scale flag & $-0.06$ & $-0.00$ & not encoded (AUC 0.52) \\
-  scale degree & $-0.05$ & $-0.00$ & not encoded \\
-  mode (major/minor) & $-0.17$ & $-0.04$ & not encoded (AUC 0.48) \\
-  repetition count & $-0.05$ & $-0.00$ & not encoded \\
-  metrical weight & 0.14 & 0.43 & weakly encoded \\
-  phrase salience & 0.48 & 0.57 & encoded \\
-  bass flag & 0.73 & 0.86 & encoded (AUC 0.99) \\
-  register & 0.90 & 1.00 & encoded \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \small Together with the previous two slides: tonality does not predict
-  these channels, and the embeddings never learned it either; rhythm,
-  voicing, and register carry the signal.
-\end{frame}
 
-% ================================================================ 21  RESULTS: FAILURE CASE
-\begin{frame}{Results: the one failure case, and its fix}
-  \begin{itemize}
-    \item On one validation piece (at the 30\% level), timing NLL explodes
-          ($+34.7$) while RMSE and coverage stay normal: a very steady piece
-          gives a tiny fitted timing scale, and a few outlier notes land many
-          standard deviations out. The Gaussian likelihood squares them.
-    \item This is the $\dagger$ in the calibration table: one cell can
-          dominate a pooled NLL while every distributional metric stays fine.
-    \item A Student-$t$ timing likelihood (EM fit, same model otherwise)
-          resolves it: NLL $+34.7 \to \bm{-0.96}$, with RMSE and coverage
-          unchanged and the outlier notes explicitly down-weighted.
-    \item It is applied to no reported number yet; adopting it is future
-          work.
-  \end{itemize}
-\end{frame}
 
 % ================================================================ 22  FUTURE: PHASE 2
 \begin{frame}{Future work: Phase 2, intonation and vibrato}
@@ -601,8 +564,9 @@
   per-(note, channel) masks and heteroscedastic noise.
   \begin{itemize}
     \item Built and tested: the cell-mask posterior (exact) and the
-          estimator. Notes too short to estimate simply have missing vibrato
-          cells; the posterior handles that in closed form.
+          estimator, validated end-to-end on synthetic data with known ground
+          truth. Notes too short to estimate get their vibrato from the
+          graph, with sensible coverage.
     \item Planned data: URMP (per-instrument audio + scores); solo vocal
           corpora as secondary.
     \item Planned evaluation: same held-out imputation, calibration primary;
@@ -613,32 +577,6 @@
   \end{itemize}
 \end{frame}
 
-% ================================================================ 23  FUTURE: PHASE 2 PILOT
-\begin{frame}{Phase 2: synthetic pilot results}
-  Full pipeline on synthetic pieces with known ground truth (20 pieces
-  $\times$ 120 notes; cents curves with $\sigma = 6$ cents noise; 926 vibrato
-  cells unidentifiable at the note level; 30\% of notes fully hidden).
-  \begin{center}
-  {\footnotesize RMSE / coverage@90 vs the known truth \\[1mm]
-  \begin{tabular}{@{}llll@{}}
-  \toprule
-  Question / system & $c$ (cents) & $\log\gamma$ & $\log f$ \\
-  \midrule
-  \textbf{hidden notes}: GP & 3.51 / 0.89 & 0.094 / 0.86 & 0.026 / 0.90 \\
-  \quad no-graph & 4.11 / 0.88 & 0.103 / 0.85 & 0.030 / 0.89 \\
-  \textbf{missing vibrato cells}: GP & --- & 0.085 / 0.87 & 0.025 / 0.93 \\
-  \quad no-graph & --- & 0.096 / 0.86 & 0.028 / 0.91 \\
-  \quad note-level estimator & \multicolumn{3}{l}{\emph{undefined; only the prior can answer}} \\
-  \textbf{observed cells}: GP & 1.41 / 0.90 & 0.039 / 0.86 & 0.008 / 0.87 \\
-  \quad raw estimator & 1.63 / 0.91 & 0.042 / 0.90 & 0.008 / 0.88 \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \small Prior scales: $\log\gamma$ 0.35, $\log f$ 0.10: missing vibrato
-  parameters are recovered about $4\times$ better than the prior. Design
-  finding: use the estimator's variances as given; a learned noise scale
-  over-shrinks $\gamma$ (coverage 0.76 vs 0.86).
-\end{frame}
 
 % ================================================================ 24  FUTURE: PHASE 3
 \begin{frame}{Future work: Phase 3, waveform likelihood}

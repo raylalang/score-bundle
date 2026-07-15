@@ -46,8 +46,8 @@ def main() -> None:
     notation = plt.imread("docs/thesis/figures/deck_notation.png")
     axn.imshow(notation)
     axn.axis("off")
-    axn.set_title("the score (Schumann, Kreisleriana No. 2, first system)",
-                  fontsize=10, color=INK, loc="left")
+    axn.set_title("Schumann, Kreisleriana No. 2", fontsize=10, color=INK,
+                  loc="left")
 
     ax = fig.add_subplot(gs[1])
     for i in range(len(order)):
@@ -60,8 +60,7 @@ def main() -> None:
     ax.set_xlim(-0.3, (b + d).max() + 0.4)
     ax.set_ylim(pit.min() - 1.5, pit.max() + 1.5)
     ax.set_ylabel("pitch", fontsize=9, color=INK)
-    ax.set_title("the same bars as a piano-roll: written (outline) vs played (filled)",
-                 fontsize=10, color=INK, loc="left")
+
     ax.tick_params(colors=MUTED, labelsize=8)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
