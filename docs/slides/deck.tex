@@ -83,14 +83,13 @@
 
 % ================================================================ 2  BACKGROUND
 \begin{frame}{Expressive performance}
-  The score specifies pitches and note values. Performers add everything else:
-  the timing, articulation, and dynamics of every note. These deviations are
-  the expression.
-  \vspace{-1mm}
-  \figslotw{deck_concept.png}{0.92}{one bar as a piano-roll, with the played
-    timing / duration / loudness deviating from the written values}
-  \vspace{-3mm}
-  {\centering\scriptsize\color{muted} real excerpt; timing offsets drawn
+  The score specifies pitches and note values; performers add the timing,
+  articulation, and dynamics of every note. These deviations are the expression.
+  \vspace{-2mm}
+  \figslotw{deck_concept.png}{0.73}{the score, the same bars as a piano-roll
+    (written vs played), and the three per-note deviation channels}
+  \vspace{-4mm}
+  {\centering\scriptsize\color{muted} real data; timing offsets drawn
   $2\times$ for visibility\par}
 \end{frame}
 
@@ -224,27 +223,31 @@
 
 % ================================================================ 9  METHOD 3b: THE FEATURES
 \begin{frame}{Method (3b): the 25 hand-built score features}
-  {\small
-  \begin{itemize}
-    \item \textbf{Pitch (7)}: absolute pitch; piece-normalized pitch; local
-          deviation from the 8-note window mean; local spread; melodic
-          interval from the previous note; contour (sign of the interval);
-          local pitch-vs-time trend.
-    \item \textbf{Duration (3)}: log duration; piece-normalized; relative to
-          the local window.
-    \item \textbf{Meter (6)}: sine and cosine of the metrical phase at beat,
-          half-bar, and bar periods.
-    \item \textbf{Rhythm (3)}: inter-onset interval to the previous and to the
-          next note; local note density.
-    \item \textbf{Chords (2)}: chord size (notes sharing the onset); pitch
-          rank within the chord.
-    \item \textbf{Position (3)}: position in the piece; proximity to the
-          start; proximity to the end.
-    \item \textbf{Voice (1)}: normalized voice index.
-  \end{itemize}}
-  \small All computed from the score alone; a bias column is appended.
-  An additional set of 14 explicit music-theory features was also built and
-  tested (results).
+  \begin{center}
+  {\footnotesize
+  \begin{tabular}{@{}lp{100mm}@{}}
+  \toprule
+  Group & Features \\
+  \midrule
+  pitch (7) & absolute; piece-normalized; local deviation from the 8-note
+              window mean; local spread; melodic interval; contour;
+              local pitch-vs-time trend \\
+  duration (3) & log duration; piece-normalized; relative to the local window \\
+  meter (6) & sine and cosine of the metrical phase at beat, half-bar, and
+              bar periods \\
+  rhythm (3) & inter-onset interval to the previous and to the next note;
+               local note density \\
+  chords (2) & chord size (notes sharing the onset); pitch rank within the
+               chord \\
+  position (3) & position in the piece; proximity to the start; proximity to
+                 the end \\
+  voice (1) & normalized voice index \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \vspace{1mm}
+  All computed from the score alone; a bias column is appended. An additional
+  set of 14 explicit music-theory features was also built and tested (results).
 \end{frame}
 
 % ================================================================ 10  METHOD 4
