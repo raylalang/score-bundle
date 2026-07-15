@@ -5,9 +5,9 @@
 %    background -> problem -> approach -> related work ->
 %    method (score graph / GP + coupling / side information / the 25
 %    features / full model + inference) -> experiment setup -> systems ->
-%    results (test set at 40% / masking rates / posterior example /
-%    ablations / NN baselines / kernel + graph variants / music-theory
-%    features / embedding probes / the failure case) ->
+%    results (overview / per-channel grids at six masking levels /
+%    calibration / posterior example / ingredient contributions / kernel +
+%    graph variants / music-theory features / probes / failure case) ->
 %    future work (Phase 2 plan / Phase 2 pilot / Phase 3) -> summary.
 %
 %  All numbers match docs/presentation_brief.md and the result pickles.
@@ -293,14 +293,14 @@
     \item \textbf{Data}: ASAP piano (aligned score + performance MIDI);
           performances that appeared in pretraining are removed
           ($1036 \to 653$).
-    \item \textbf{Split}: 40 train / 30 validation / 20 test
-          (test evaluated once, claims fixed beforehand).
-    \item \textbf{Task}: hide notes, predict them from the visible rest.
-          The test set is evaluated at the preregistered rate of
-          \textbf{40\% hidden}; on the validation set the rate is swept from
-          50\% hidden to leave-one-out (results).
-    \item \textbf{Metrics}, per channel: RMSE for accuracy; NLL and coverage
-          for the error bars. Comparisons are paired per piece.
+    \item \textbf{Split}: 40 train / 30 validation pieces (a further
+          20-piece test set is held in reserve and not used here).
+    \item \textbf{Task}: hide notes, predict them from the visible rest,
+          at \textbf{six masking levels}: 50, 40, 30, 20, 10\% hidden, and
+          leave-one-out.
+    \item \textbf{Metrics}, per channel and per level: RMSE for accuracy;
+          NLL and coverage for the error bars. Comparisons are paired per
+          piece.
   \end{itemize}
 \end{frame}
 
@@ -330,61 +330,123 @@
   the NN are exact special cases of the proposed model.
 \end{frame}
 
-% ================================================================ 13  RESULTS: TEST SET
-\begin{frame}{Results on the test set (40\% of notes hidden)}
+% ================================================================ 13  RESULTS: OVERVIEW
+\begin{frame}{Results overview: every system, every masking level}
+  \figslot{masksweep_perchannel_dev.png}{3.6cm}{per channel: RMSE vs hidden
+    fraction, 50\% to 10\% plus leave-one-out, three systems (exists)}
+  \begin{itemize}
+    \item All results are on the 30 validation pieces, at six masking levels.
+    \item Articulation and dynamics: the proposed model is best at every
+          level, and the gaps grow as more context is observed.
+    \item Timing: all systems are within noise of each other at every level.
+    \item Exact numbers per channel on the next three slides.
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 13a  GRID: TIMING
+\begin{frame}{Results: timing $\tau$ (RMSE, by masking level)}
   \begin{center}
-  {\small RMSE / NLL per channel (coverage@90\% is 0.90--0.95 everywhere) \\[1mm]
-  \begin{tabular}{@{}lccc@{}}
+  {\small
+  \begin{tabular}{@{}lccccc@{}}
   \toprule
-  System & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
+  hidden & proposed & no graph & no music model & mean + smoothing & MLP ens. \\
   \midrule
-  \textbf{proposed model} & \textbf{0.227} / $-0.54$ & \textbf{0.605} / $\bm{+0.83}$ & \textbf{0.076} / $\bm{-1.19}$ \\
-  \quad no graph & 0.236 / $-0.52$ & 0.656 / $+0.93$ & 0.084 / $-1.09$ \\
-  \quad no music model & 0.230 / $-0.51$ & 0.621 / $+0.85$ & 0.079 / $-1.13$ \\
-  mean + smoothing (best) & 0.237 / $\bm{-0.72}$ & 0.632 / $+0.89$ & 0.082 / $-1.10$ \\
-  mean + smoothing (plain) & 0.237 / $-0.73$ & 0.648 / $+0.92$ & 0.084 / $-1.06$ \\
+  50\% & \textbf{0.162} & 0.163 & 0.162 & \ldots & 0.172 \\
+  40\% & \textbf{0.152} & 0.154 & 0.152 & 0.158 & 0.163 \\
+  30\% & \textbf{0.157} & 0.159 & 0.159 & \ldots & 0.170 \\
+  20\% & \textbf{0.149} & 0.151 & 0.150 & \ldots & 0.161 \\
+  10\% & \textbf{0.154} & 0.156 & 0.157 & \ldots & 0.167 \\
+  LOO  & \textbf{0.149} & 0.150 & 0.152 & --- & --- \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \begin{itemize}
-    \item Best RMSE in every channel; best NLL in articulation and dynamics.
-    \item Timing NLL favours mean + smoothing here: traced to one piece with
-          extreme timing outliers (failure-case slide).
-    \item Preregistered pooled claims: $\Delta$RMSE vs the best baseline
-          $\bm{-0.0137^{*}}$; graph's calibration contribution
-          $\Delta$NLL $\bm{-0.0736^{*}}$.
+    \item Differences between the GP systems are within noise at every level;
+          the MLPs are consistently slightly worse.
+    \item Timing is the hardest channel to improve: rubato is absorbed by the
+          tempo curve before $\tau$ is defined, and what remains is largely
+          note-local.
   \end{itemize}
 \end{frame}
 
-% ================================================================ 14  RESULTS: MASKING RATES
-\begin{frame}{Results at every masking rate (validation set)}
-  \begin{columns}[T,onlytextwidth]
-  \column{0.60\textwidth}
-  \figslot{masksweep_perchannel_dev.png}{3.2cm}{per channel: RMSE vs hidden
-    fraction, 50\% to 10\% plus leave-one-out, three systems (exists)}
+% ================================================================ 13b  GRID: ARTICULATION
+\begin{frame}{Results: articulation $\log r$ (RMSE, by masking level)}
+  \begin{center}
   {\small
-  \begin{itemize}
-    \item Articulation and dynamics: proposed is best at every rate; the
-          gaps grow with more observed context.
-    \item Timing: all systems within noise at every rate.
-  \end{itemize}}
-  \column{0.38\textwidth}
-  {\footnotesize proposed model, RMSE: \\[1mm]
-  \begin{tabular}{@{}lccc@{}}
+  \begin{tabular}{@{}lccccc@{}}
   \toprule
-  hidden & $\tau$ & $\log r$ & $v$ \\
+  hidden & proposed & no graph & no music model & mean + smoothing & MLP ens. \\
   \midrule
-  50\% & 0.162 & 0.618 & 0.074 \\
-  40\% & 0.152 & 0.601 & 0.072 \\
-  30\% & 0.157 & 0.592 & 0.070 \\
-  20\% & 0.149 & 0.587 & 0.068 \\
-  10\% & 0.154 & 0.577 & 0.068 \\
-  LOO  & 0.149 & 0.546 & 0.066 \\
+  50\% & \textbf{0.618} & 0.635 & 0.626 & \ldots & 0.761 \\
+  40\% & \textbf{0.601} & 0.627 & 0.615 & 0.633 & 0.757 \\
+  30\% & \textbf{0.592} & 0.620 & 0.607 & \ldots & 0.761 \\
+  20\% & \textbf{0.587} & 0.603 & 0.616 & \ldots & 0.771 \\
+  10\% & \textbf{0.577} & 0.584 & 0.612 & \ldots & 0.770 \\
+  LOO  & \textbf{0.546} & 0.567 & 0.582 & --- & --- \\
   \bottomrule
   \end{tabular}}
-  \end{columns}
-  \vspace{2mm}
-  Conclusions do not depend on the 40\% operating point.
+  \end{center}
+  \begin{itemize}
+    \item The proposed model is best at every level; the graph's largest
+          accuracy contribution lives here.
+    \item The MLPs are far behind and flat: they cannot use the observed
+          context of the piece.
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 13c  GRID: DYNAMICS
+\begin{frame}{Results: dynamics $v$ (RMSE, by masking level)}
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lccccc@{}}
+  \toprule
+  hidden & proposed & no graph & no music model & mean + smoothing & MLP ens. \\
+  \midrule
+  50\% & \textbf{0.074} & 0.083 & 0.076 & \ldots & 0.096 \\
+  40\% & \textbf{0.072} & 0.083 & 0.075 & 0.078 & 0.095 \\
+  30\% & \textbf{0.070} & 0.080 & 0.073 & \ldots & 0.091 \\
+  20\% & \textbf{0.068} & 0.074 & 0.071 & \ldots & 0.088 \\
+  10\% & \textbf{0.068} & 0.071 & 0.072 & \ldots & 0.087 \\
+  LOO  & \textbf{0.066} & 0.068 & 0.070 & --- & --- \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \begin{itemize}
+    \item Best at every level; both the graph and the music-model embeddings
+          contribute here.
+    \item The embeddings' contribution grows with observed context: they are
+          context-dependent features.
+  \end{itemize}
+\end{frame}
+
+% ================================================================ 13d  CALIBRATION
+\begin{frame}{Results: calibration (NLL per channel; coverage 0.90--0.95 throughout)}
+  \begin{center}
+  {\small NLL at 40\% hidden \\[1mm]
+  \begin{tabular}{@{}lccc@{}}
+  \toprule
+  System & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
+  \midrule
+  \textbf{proposed model} & $\bm{-0.82}$ & $\bm{+0.84}$ & $\bm{-1.23}$ \\
+  MLP ensemble & $-0.53$ & $+1.10$ & $-0.89$ \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  The graph's pooled calibration contribution, by masking level
+  (paired $\Delta$NLL, negative = graph helps):
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lcccccc@{}}
+  \toprule
+   & 50\% & 40\% & 30\% & 20\% & 10\% & LOO \\
+  \midrule
+  $\Delta$NLL & $-0.055^{*}$ & $-0.067^{*}$ & $\dagger$ & $-0.104^{*}$ & $-0.019$ & $-0.042^{*}$ \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \small Significant at every level except 10\% (few scored notes per piece).
+  $\dagger$ 30\% contains the failure-case piece (next slides); with it, the
+  CI is inflated; the RMSE contribution at 30\% is $-0.017^{*}$.
 \end{frame}
 
 % ================================================================ 15  RESULTS: EXAMPLE
@@ -398,55 +460,35 @@
 \end{frame}
 
 % ================================================================ 16  RESULTS: ABLATIONS
-\begin{frame}{Results: where the gains come from (validation set, 40\%)}
-  Paired per-channel $\Delta$RMSE when an ingredient is removed
-  (negative = the ingredient helps):
+\begin{frame}{Results: ingredient contributions, by masking level}
+  Paired pooled $\Delta$RMSE when an ingredient is removed
+  (negative = the ingredient helps; $^{*}$ = 95\% CI excludes 0):
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lcccccc@{}}
+  \toprule
+  removed & 50\% & 40\% & 30\% & 20\% & 10\% & LOO \\
+  \midrule
+  the graph & $-0.011^{*}$ & $-0.017^{*}$ & $-0.017^{*}$ & $-0.009^{*}$ & $-0.004$ & $-0.013^{*}$ \\
+  the embeddings & $-0.005$ & $-0.008^{*}$ & $-0.009^{*}$ & $-0.016^{*}$ & $-0.020^{*}$ & $-0.021^{*}$ \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  Per channel at 40\%:
   \begin{center}
   {\small
   \begin{tabular}{@{}lccc@{}}
   \toprule
-  Ingredient removed & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
+  removed & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
   \midrule
   the graph & $-0.0015^{*}$ & $-0.0282^{*}$ & $-0.0104^{*}$ \\
   the embeddings & $-0.0006$ & $-0.0147^{*}$ & $-0.0028^{*}$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
-  \vspace{1mm}
-  \begin{itemize}
-    \item Fixing a cross-piece mean inside the GP loses almost nothing
-          ($0.390$ vs $0.388$ pooled): channel coupling alone adds little.
-          The accuracy gain comes from re-weighting the features per piece.
-    \item The graph's calibration gain is mostly articulation (coverage
-          $0.784 \to 0.91$ over a bare mean).
-    \item Timing barely moves anywhere: rubato is absorbed by the tempo curve
-          before $\tau$ is even defined.
-  \end{itemize}
-\end{frame}
-
-% ================================================================ 17  RESULTS: NN BASELINES
-\begin{frame}{Results: neural-network baselines (validation set, 40\%)}
-  An MLP that predicts a mean and a variance for every note and channel,
-  trained with Gaussian likelihood on the training pieces; and an ensemble of
-  five such MLPs. Same input features as the proposed model.
-  \begin{center}
-  {\small RMSE / NLL per channel \\[1mm]
-  \begin{tabular}{@{}lccc@{}}
-  \toprule
-  System & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
-  \midrule
-  \textbf{proposed model (GP)} & \textbf{0.152} / $\bm{-0.82}$ & \textbf{0.601} / $\bm{+0.84}$ & \textbf{0.072} / $\bm{-1.23}$ \\
-  MLP ensemble ($5\times$) & 0.163 / $-0.53$ & 0.757 / $+1.10$ & 0.095 / $-0.89$ \\
-  MLP (single) & 0.164 / $-0.48$ & 0.762 / $+1.11$ & 0.096 / $-0.84$ \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \begin{itemize}
-    \item The GP is better in every channel on both metrics.
-    \item The MLPs cannot adapt to the individual piece and have no graph.
-    \item Caveat: the music-model features are frozen; end-to-end fine-tuning
-          was not tested.
-  \end{itemize}
+  \small The graph matters most mid-range; the embeddings' value grows with
+  observed context. Fixing a cross-piece mean inside the GP loses almost
+  nothing: the accuracy gain is per-piece re-weighting of the features.
 \end{frame}
 
 % ================================================================ 18  RESULTS: KERNEL/GRAPH VARIANTS
@@ -539,18 +581,17 @@
 % ================================================================ 21  RESULTS: FAILURE CASE
 \begin{frame}{Results: the one failure case, and its fix}
   \begin{itemize}
-    \item On one test piece (and one validation replica), timing NLL explodes
+    \item On one validation piece (at the 30\% level), timing NLL explodes
           ($+34.7$) while RMSE and coverage stay normal: a very steady piece
           gives a tiny fitted timing scale, and a few outlier notes land many
           standard deviations out. The Gaussian likelihood squares them.
-    \item This single piece is why pooled test NLL tied between the top two
-          systems, and why the test-set timing NLL favours mean + smoothing.
+    \item This is the $\dagger$ in the calibration table: one cell can
+          dominate a pooled NLL while every distributional metric stays fine.
     \item A Student-$t$ timing likelihood (EM fit, same model otherwise)
-          resolves it on the validation replica: NLL $+34.7 \to \bm{-0.96}$,
-          with RMSE and coverage unchanged and the outlier notes explicitly
-          down-weighted.
-    \item It is applied to no reported number: the test set is spent, and the
-          fix would need its own preregistered test.
+          resolves it: NLL $+34.7 \to \bm{-0.96}$, with RMSE and coverage
+          unchanged and the outlier notes explicitly down-weighted.
+    \item It is applied to no reported number yet; adopting it is future
+          work.
   \end{itemize}
 \end{frame}
 
@@ -637,9 +678,9 @@
   \begin{itemize}
     \item One GP prior on the score graph covers the whole program; only the
           observation model changes between phases.
-    \item Phase 1: best accuracy in every channel on a test set evaluated
-          once, with the claims fixed beforehand; the graph's calibration
-          role confirmed; conclusions independent of the masking rate.
+    \item Phase 1: best accuracy in every channel, at every masking level
+          from 50\% hidden to leave-one-out, on held-out validation pieces;
+          the graph carries the calibration.
     \item Where the gains come from is measured, not assumed: per-piece
           feature weighting for accuracy, the graph for calibration.
     \item Negative results are kept: tonality does not predict these

@@ -111,16 +111,23 @@ def main() -> None:
         "cuda" if torch.cuda.is_available() else "cpu")
     head, ev, _ = load_piece_arrays(".cache/asap_arrays_named.pkl")
     ev = ev[:30]
-    with open(INPUTS, "rb") as fh:
-        masks = pickle.load(fh)["masks"]
-    with open(".cache/kernel_sweep_emb_ma.pkl", "rb") as fh:
-        emb_dump = pickle.load(fh)["emb_ma"]
-
+    RATES = {  # tag -> (inputs pkl, embedding dump)
+        "obs0.60": (INPUTS, ".cache/kernel_sweep_emb_ma.pkl"),
+        "obs0.50": (".cache/masksweep_inputs_obs0.50.pkl", ".cache/masksweep_emb_obs0.50.pkl"),
+        "obs0.70": (".cache/masksweep_inputs_obs0.70.pkl", ".cache/masksweep_emb_obs0.70.pkl"),
+        "obs0.80": (".cache/masksweep_inputs_obs0.80.pkl", ".cache/masksweep_emb_obs0.80.pkl"),
+        "obs0.90": (".cache/masksweep_inputs_obs0.90.pkl", ".cache/masksweep_emb_obs0.90.pkl"),
+    }
     members = train_members(head, list(range(N_ENSEMBLE)), device)
 
-    cells = {"hetero": {}, "ensemble": {}}
-    for s in range(4):
-        for pi, p in enumerate(ev):
+    for tag, (inp_path, emb_path) in RATES.items():
+      with open(inp_path, "rb") as fh:
+          masks = pickle.load(fh)["masks"]
+      with open(emb_path, "rb") as fh:
+          emb_dump = pickle.load(fh)["emb_ma"]
+      cells = {"hetero": {}, "ensemble": {}}
+      for s in range(4):
+          for pi, p in enumerate(ev):
             Y = np.asarray(p["y"], dtype=float)
             mask = masks[(pi, s)]
             held = ~mask
@@ -145,38 +152,25 @@ def main() -> None:
                 cells[name][("GP", pi, s)] = (yt, pr, sd, ch)
                 cells[name].setdefault("_raw_sd", {})[(pi, s)] = sd_raw
 
-    os.makedirs(OUT_DIR, exist_ok=True)
-    from robustness_recheck import deltas, load_cells as rr_load
-    gp_cells = rr_load("results/graphgp_v2/b_featlm.shard*.pkl")
-
-    print(f"\n{'system':<22} {'RMSE':>8} {'NLL':>8} {'cov@.9':>7}  "
-          f"(floored sd; raw-sd NLL in pickle)")
-    for name in ("hetero", "ensemble"):
+      out_dir = OUT_DIR if tag == "obs0.60" else f"{OUT_DIR}_{tag}"
+      os.makedirs(out_dir, exist_ok=True)
+      print(f"\n=== {tag} ===")
+      for name in ("hetero", "ensemble"):
         raw_sd = cells[name].pop("_raw_sd")
         c = cells[name]
         yt = np.concatenate([v[0] for v in c.values()])
         pr = np.concatenate([v[1] for v in c.values()])
         sd = np.concatenate([v[2] for v in c.values()])
         m = evaluate(yt, pr, sd, level=0.9)
-        sd_r = np.concatenate([raw_sd[(pi, s)] for (_, pi, s) in c])
-        m_raw = evaluate(yt, pr, sd_r, level=0.9)
         print(f"{name:<22} {m['rmse']:8.4f} {m['nll']:8.3f} "
-              f"{m['coverage@0.90']:7.3f}   raw NLL {m_raw['nll']:+.3f} "
-              f"raw cov {m_raw['coverage@0.90']:.3f}")
-        with open(os.path.join(OUT_DIR, f"{name}.pkl"), "wb") as fh:
-            pickle.dump({"row": name, "cells": c,
-                         "raw_sd": raw_sd,
-                         "meta": {"protocol": "strict anchor masks, DEV",
+              f"{m['coverage@0.90']:7.3f}")
+        with open(os.path.join(out_dir, f"{name}.pkl"), "wb") as fh:
+            pickle.dump({"row": name, "cells": c, "raw_sd": raw_sd,
+                         "meta": {"protocol": f"strict masks {tag}, validation",
                                   "floor_frac": FLOOR_FRAC,
                                   "members": N_ENSEMBLE,
                                   "inputs": "feat25+emb (mask-aware at eval)"}},
                         fh)
-        for metric in ("rmse", "nll"):
-            d, _ = deltas(gp_cells, c, metric)
-            mu_, lo, hi = bootstrap_ci(d, B=2000, rng=np.random.default_rng(11))
-            sig = "*" if (lo > 0) or (hi < 0) else " "
-            print(f"    GP - {name} d{metric.upper():<5} "
-                  f"{mu_:+.4f} [{lo:+.4f},{hi:+.4f}]{sig}")
 
 
 if __name__ == "__main__":
