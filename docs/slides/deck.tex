@@ -224,30 +224,27 @@
 % ================================================================ 9  METHOD 3b: THE FEATURES
 \begin{frame}{Method (3b): the 25 hand-built score features}
   \begin{center}
-  {\footnotesize
-  \begin{tabular}{@{}lp{100mm}@{}}
+  {\small
+  \begin{tabular}{@{}lp{88mm}@{}}
   \toprule
-  Group & Features \\
+  Group & What it gives the model \\
   \midrule
-  pitch (7) & absolute; piece-normalized; local deviation from the 8-note
-              window mean; local spread; melodic interval; contour;
-              local pitch-vs-time trend \\
-  duration (3) & log duration; piece-normalized; relative to the local window \\
-  meter (6) & sine and cosine of the metrical phase at beat, half-bar, and
-              bar periods \\
-  rhythm (3) & inter-onset interval to the previous and to the next note;
-               local note density \\
-  chords (2) & chord size (notes sharing the onset); pitch rank within the
-               chord \\
-  position (3) & position in the piece; proximity to the start; proximity to
-                 the end \\
-  voice (1) & normalized voice index \\
+  pitch (7) & register and melodic context: where the note sits, how the
+              line moves \\
+  duration (3) & how long the note is, absolutely and relative to its
+                 neighbours \\
+  meter (6) & position within the bar: metrical stress \\
+  rhythm (3) & how crowded the moment is: local onset spacing and density \\
+  chords (2) & vertical context: chord membership and voicing position \\
+  position (3) & where in the piece: openings and endings are played
+                 differently \\
+  voice (1) & which line the note belongs to \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \vspace{1mm}
-  All computed from the score alone; a bias column is appended. An additional
-  set of 14 explicit music-theory features was also built and tested (results).
+  All score-only. Used as one set in a single linear kernel; the weights are
+  re-inferred for every piece.
 \end{frame}
 
 % ================================================================ 10  METHOD 4
