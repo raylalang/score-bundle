@@ -319,7 +319,7 @@
   \textbf{proposed} & $K = B \otimes K_G + \sum_f \diag(c_f)\otimes X_fX_f^{\!\top} + \diag(\varsigma^2)\otimes I$ & \\
   no graph & $K_G \to I$ & score graph \\
   no music model & $c_{\mathrm{mm}} \to 0$ & learned features \\
-  mean + smoothing & $\mu = X\hat\beta$, then per channel & standard \\
+  mean + smoothing & $\mu = X\hat\beta$ ($\hat\beta$: one cross-piece fit), then per channel & standard \\
    & $y_c - \mu_c \sim \N\bigl(0,\; \sigma_g^2 K_G + \sigma_e^2 I\bigr)$ & two-step recipe \\
   \bottomrule
   \end{tabular}}
