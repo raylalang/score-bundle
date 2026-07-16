@@ -228,7 +228,8 @@
 % ================================================================ 10  METHOD 4
 \begin{frame}{Method (4): the covariance of one performance}
   Stack all three channels of the $N$ notes into one vector $y \in \R^{3N}$.
-  Every component becomes one term of its covariance $K$:
+  Every component becomes one term of its covariance
+  $K \in \R^{3N \times 3N}$, built per piece:
   \begin{equation*}
     K \;=\;
     \underbrace{\textcolor{okblue}{B \otimes K_G(s)}}_{\text{coupled graph GP}}
@@ -258,26 +259,29 @@
 % ================================================================ 10a  NOTATION
 \begin{frame}{Notations}
   \begin{center}
-  {\small
-  \begin{tabular}{@{}lp{92mm}@{}}
+  {\footnotesize\setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}lp{58mm}l@{}}
   \toprule
-  Symbol & Meaning \\
+  Symbol & Meaning & Role \\
   \midrule
   $y \in \R^{3N}$ & the three channels ($\tau$, $\log r$, $v$) of all $N$
-                     notes, stacked \\
-  $K$ & the covariance of $y$: the entire model in one matrix \\
-  $K_G(s)$ & score-graph kernel: how expression co-varies between related
-             notes ($s$: smoothness, learned) \\
-  $B$ & $3\times3$: how strongly the three channels move together \\
-  $X_{\mathrm{feat}},\, H$ & the side information: simple score
-             descriptors; per-note music-model features \\
+                     notes, stacked & part observed, part predicted \\
+  $K \in \R^{3N \times 3N}$ & the covariance of $y$: the entire model in
+                     one matrix & built per piece \\
+  $K_G(s)$, $N \times N$ & score-graph kernel: how expression co-varies
+             between related notes & from the score; $s$ learned per piece \\
+  $\ell_b$, $\ell_p$ & graph length-scales (time, pitch) & fixed, global \\
+  $B$, $3\times3$ & how strongly the three channels move together
+             & learned per piece \\
+  $X_{\mathrm{feat}},\, H$ & score descriptors; music-model features
+             & inputs ($H$: model trained once, frozen) \\
   $c_{\mathrm{feat}},\, c_{\mathrm{mm}}$ & how much each channel trusts
-             each feature set (three scales per set) \\
-  $\varsigma^2$ & per-channel measurement-noise variances \\
-  $\theta$ & everything learned per piece:
-              $(s, B, c_{\mathrm{feat}}, c_{\mathrm{mm}}, \varsigma^2)$ \\
-  $\tilde y_o$, $o$ & the observed values, and which entries are observed \\
-  $m$, $\Sigma_y$ & the output: posterior mean and covariance \\
+             each feature set & learned per piece \\
+  $\varsigma^2$ & per-channel noise variances & learned per piece \\
+  $\theta$ & $(s, B, c_{\mathrm{feat}}, c_{\mathrm{mm}}, \varsigma^2)$
+             & all learned per piece, exact evidence \\
+  $\tilde y_o$, $o$ & observed values, and which entries & data \\
+  $m$, $\Sigma_y$ & posterior mean and covariance & predicted, closed form \\
   \bottomrule
   \end{tabular}}
   \end{center}
