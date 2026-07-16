@@ -201,10 +201,10 @@
 
 % ================================================================ 8  METHOD 3
 \begin{frame}{Method (3): side information as kernels}
-  Two per-note feature sets: hand-built score features
-  $X_{\mathrm{feat}} \in \R^{N \times 26}$, and
-  $H \in \R^{N \times 512}$ from a small music model trained on
-  MAESTRO.
+  Any per-note side information enters the same way. In Phase 1 there are
+  two sets: simple score descriptors $X_{\mathrm{feat}}$ (register,
+  duration, meter, position) and per-note features $H$ from a small music
+  model trained on MAESTRO. Designing richer score features is future work.
   \vspace{1mm}
 
   A linear mean with unknown weights $\beta$, integrated out, becomes a
@@ -224,31 +224,6 @@
   \end{itemize}
 \end{frame}
 
-% ================================================================ 9  METHOD 3b: THE FEATURES
-\begin{frame}{Method (3b): score features}
-  \begin{center}
-  {\small
-  \begin{tabular}{@{}lp{88mm}@{}}
-  \toprule
-  Group & What it gives the model \\
-  \midrule
-  pitch (7) & register and melodic context: where the note sits, how the
-              line moves \\
-  duration (3) & how long the note is, absolutely and relative to its
-                 neighbours \\
-  meter (6) & position within the bar: metrical stress \\
-  rhythm (3) & how crowded the moment is: local onset spacing and density \\
-  chords (2) & vertical context: chord membership and voicing position \\
-  position (3) & where in the piece: openings and endings are played
-                 differently \\
-  voice (1) & which line the note belongs to \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \vspace{1mm}
-  All score-only. Used as one set in a single linear kernel, with the
-  weights re-inferred for every piece.
-\end{frame}
 
 % ================================================================ 10  METHOD 4
 \begin{frame}{Method (4): the covariance of one performance}
@@ -294,8 +269,8 @@
   $K_G(s)$ & score-graph kernel: how expression co-varies between related
              notes ($s$: smoothness, learned) \\
   $B$ & $3\times3$: how strongly the three channels move together \\
-  $X_{\mathrm{feat}},\, H$ & the side information: 26 score features;
-             512-dim.\ music-model features \\
+  $X_{\mathrm{feat}},\, H$ & the side information: simple score
+             descriptors; per-note music-model features \\
   $c_{\mathrm{feat}},\, c_{\mathrm{mm}}$ & how much each channel trusts
              each feature set (three scales per set) \\
   $\varsigma^2$ & per-channel measurement-noise variances \\
@@ -636,8 +611,9 @@
           The graph carries the calibration.
     \item Where the gains come from is measured, not assumed: per-piece
           feature weighting for accuracy, the graph for calibration.
-    \item Phases 2 and 3 are scoped: the same prior, with the observation
-          model swapped for noisy estimates, then for the waveform.
+    \item Next: richer score features as a Phase-1 extension, then
+          Phases 2 and 3 with the same prior and the observation model
+          swapped for noisy estimates, then for the waveform.
   \end{itemize}
 \end{frame}
 
