@@ -449,9 +449,10 @@
 
 % ================================================================ 13d  CALIBRATION
 \begin{frame}{Results: calibration (NLL per channel, by masking level)}
-  \noindent{\small NLL of held-out notes, lower = better-calibrated
+  \noindent{\footnotesize NLL of held-out notes, lower = better-calibrated
   uncertainty (per system: $\tau$ / $r$ / $v$). Coverage stays 0.90--0.95
   throughout.}
+  \vspace{-1mm}
   \begin{center}
   {\scriptsize\setlength{\tabcolsep}{3.4pt}
   \begin{tabular}{@{}lccc ccc ccc ccc@{}}
@@ -472,8 +473,11 @@
   \end{tabular}}
   \end{center}
   \vspace{-2mm}
-  {\footnotesize The graph's pooled calibration contribution, by masking
-  level (paired $\Delta$NLL, negative = graph helps):}
+  {\footnotesize The graph's calibration contribution. Per piece, both
+  models run on the same masks and
+  $\Delta\mathrm{NLL} = \mathrm{NLL}(\text{proposed}) -
+  \mathrm{NLL}(\text{no graph})$, averaged over the 30 pieces
+  (negative = the graph helps, $^{*}$ = bootstrap 95\% CI excludes 0):}
   \begin{center}
   \vspace{-1mm}
   {\footnotesize
@@ -503,8 +507,11 @@
 
 % ================================================================ 16  RESULTS: ABLATIONS
 \begin{frame}{Results: ingredient contributions, by masking level}
-  Paired pooled $\Delta$RMSE when an ingredient is removed
-  (negative = the ingredient helps, $^{*}$ = 95\% CI excludes 0):
+  Per piece, the full model and the model with one ingredient removed run
+  on the same masks, and
+  $\Delta\mathrm{RMSE} = \mathrm{RMSE}(\text{full}) -
+  \mathrm{RMSE}(\text{removed})$ is averaged over the 30 pieces.
+  Negative = the ingredient helps, $^{*}$ = bootstrap 95\% CI excludes 0.
   \begin{center}
   {\small
   \begin{tabular}{@{}lcccccc@{}}
@@ -536,8 +543,11 @@
 % ================================================================ 18  RESULTS: KERNEL/GRAPH VARIANTS
 \begin{frame}{Results: kernel and graph variants}
   Vary the filter with the graph fixed (40\% level), then vary the graph
-  itself (every level). Pooled over the standardized channels.
+  itself (every level). Pooled over the standardized channels. $\Delta$
+  rows: per-piece paired difference vs the base graph, averaged over the 30
+  pieces ($^{*}$ = bootstrap 95\% CI excludes 0).
   \begin{center}
+  \vspace{-1.5mm}
   {\scriptsize
   \begin{tabular}{@{}lcccl@{}}
   \toprule
