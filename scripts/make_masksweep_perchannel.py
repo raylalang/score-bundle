@@ -26,7 +26,7 @@ TAGS = [("obs0.50", 50), ("obs0.60_anchor", 40), ("obs0.70", 30),
 SYSTEMS = [("b_featlm", "proposed", "#0072B2", "o", "-"),
            ("b_featlm_nograph", "no graph", "#E69F00", "s", "--"),
            ("b_feat", "no music model", "#009E73", "^", ":")]
-CH = [r"timing $\tau$", r"articulation $\log r$", r"dynamics $v$"]
+CH = [r"timing $\tau$", r"articulation $\log r$", r"velocity $v$"]
 INK, MUTED = "#1A1A1A", "#6B7280"
 
 

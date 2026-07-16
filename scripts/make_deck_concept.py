@@ -69,7 +69,7 @@ def main() -> None:
     ax.set_xticklabels([])
 
     names = [(r"timing $\tau_i$ (s)", VERM), (r"articulation $\log r_i$", GREEN),
-             (r"dynamics $v_i$", AMBER)]
+             (r"velocity $v_i$", AMBER)]
     for c in range(3):
         axc = fig.add_subplot(gs[c + 2], sharex=ax)
         axc.axhline(0.0, color=MUTED, lw=0.7)

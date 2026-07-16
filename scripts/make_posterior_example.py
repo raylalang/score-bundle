@@ -30,7 +30,7 @@ WINDOW = slice(0, 140)          # first 140 notes in score order, for legibility
 _Z90 = 1.6448536269514722
 INK, MUTED = "#1A1A1A", "#6B7280"
 BLUE, VERM, GREEN = "#0072B2", "#D55E00", "#009E73"
-NAMES = [r"timing $\tau_i$ (s)", r"articulation $\log r_i$", r"dynamics $v_i$"]
+NAMES = [r"timing $\tau_i$ (s)", r"articulation $\log r_i$", r"velocity $v_i$"]
 
 
 def main() -> None:

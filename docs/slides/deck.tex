@@ -84,7 +84,7 @@
 % ================================================================ 2  BACKGROUND
 \begin{frame}{Expressive performance}
   The score specifies pitches and note values. Performers add the timing,
-  articulation, and dynamics of every note. These deviations are the expression.
+  articulation, and velocity of every note. These deviations are the expression.
   \vspace{-2mm}
   \figslotw{deck_concept.png}{0.73}{the score, the same bars as a piano-roll
     (written vs played), and the three per-note deviation channels}
@@ -93,7 +93,7 @@
 % ================================================================ 3  PROBLEM
 \begin{frame}{Problem: infer how the music was played, with reliable uncertainty}
   The goal: a probabilistic model of \textbf{every per-note expressive
-  parameter a performer controls}: timing, articulation, dynamics, and, on
+  parameter a performer controls}: timing, articulation, velocity, and, on
   continuously pitched instruments, intonation and vibrato, ultimately
   inferred from audio alone. Every estimate must carry an error bar that can
   be trusted note by note.
@@ -103,7 +103,7 @@
   \begin{equation*}
     y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{onset timing}},\;\;
       \underbrace{\log r_i}_{\text{articulation}},\;\;
-      \underbrace{v_i}_{\text{dynamics}}\;\bigr] \in \R^{3}
+      \underbrace{v_i}_{\text{velocity}}\;\bigr] \in \R^{3}
     \qquad\text{per written note.}
   \end{equation*}
   \begin{itemize}
@@ -186,7 +186,7 @@
   Smooth-on-the-graph components keep their variance, rough ones are shrunk.
   \vspace{1mm}
 
-  Timing, articulation, and dynamics are correlated, so the three channels
+  Timing, articulation, and velocity are correlated, so the three channels
   share the graph through a learned $3 \times 3$ matrix $B$
   ($c, c'$ index the channels):
   \begin{equation*}
@@ -372,7 +372,7 @@
   \begin{itemize}
     \item 30 validation pieces, six masking levels. Exact numbers on the
           next three slides.
-    \item Articulation and dynamics: best at every level, gaps growing with
+    \item Articulation and velocity: best at every level, gaps growing with
           observed context. Timing: the GP systems are within noise.
   \end{itemize}
 \end{frame}
@@ -429,7 +429,7 @@
 \end{frame}
 
 % ================================================================ 13c  GRID: DYNAMICS
-\begin{frame}{Results: dynamics $v$ (RMSE, by masking level)}
+\begin{frame}{Results: velocity $v$ (RMSE, by masking level)}
   \begin{center}
   {\small
   \begin{tabular}{@{}lccccc@{}}
@@ -496,7 +496,7 @@
   {\footnotesize Significant at every level except 10\% (few scored notes
   per piece). $\dagger$ one steady piece puts a few timing outliers far into
   the Gaussian tail, and a Student-$t$ timing likelihood resolves it. Pooled
-  timing NLL is outlier-dominated everywhere. In articulation and dynamics
+  timing NLL is outlier-dominated everywhere. In articulation and velocity
   the proposed model wins at every level.}
 \end{frame}
 
@@ -530,7 +530,7 @@
   {\small
   \begin{tabular}{@{}lccc@{}}
   \toprule
-  removed & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
+  removed & timing $\tau$ & articulation $\log r$ & velocity $v$ \\
   \midrule
   the graph & $-0.0015^{*}$ & $-0.0282^{*}$ & $-0.0104^{*}$ \\
   the embeddings & $-0.0006$ & $-0.0147^{*}$ & $-0.0028^{*}$ \\
@@ -573,61 +573,22 @@
   {\small
   \begin{itemize}
     \item The filter shape is irrelevant. The \emph{edges} are not, at any
-          level: the gains sit in articulation and dynamics.
+          level: the gains sit in articulation and velocity.
     \item In the full model (embeddings present) the added edge families
           become redundant.
   \end{itemize}}
 \end{frame}
 
-% ================================================================ 19  RESULTS: THEORY FEATURES
-\begin{frame}{Results: explicit music-theory features}
-  Fourteen additional score-only features, added to the kernel and
-  evaluated at every masking level:
-  {\footnotesize \textbf{tonality (6)}: local key
-  (Krumhansl--Schmuckler profiles), key clarity, mode, scale degree
-  (sin/cos), in-scale flag, distance between successive local keys.
-  \textbf{meter (1)}: metrical-weight hierarchy over five levels.
-  \textbf{verticals (2)}: within-chord dissonance, bass flag.
-  \textbf{phrase (2)}: boundary salience from timing and pitch gaps.
-  \textbf{repetition (1)}: motif-repetition count (interval + rhythm
-  4-grams). \textbf{voice (2)}: within-voice tessitura and position.\par}
-  \vspace{-2mm}
-  \begin{center}
-  {\scriptsize paired $\Delta$RMSE per channel when the 14 features are
-  added ($^{*}$ = 95\% CI excludes 0) \\[0.5mm]
-  \setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{0.92}
-  \begin{tabular}{@{}lcccccc@{}}
-  \toprule
-  & \multicolumn{3}{c}{without embeddings} & \multicolumn{3}{c}{with embeddings} \\
-  \cmidrule(lr){2-4}\cmidrule(lr){5-7}
-  hidden & $\tau$ & $\log r$ & $v$ & $\tau$ & $\log r$ & $v$ \\
-  \midrule
-  50\% & $-.0002$ & $-.0028$ & $-.0005$ & $-.0003$ & $-.0013$ & $-.0002$ \\
-  40\% & $-.0001$ & $-.0038$ & $-.0002$ & $-.0006$ & $+.0013$ & $+.0000$ \\
-  30\% & $+.0002$ & $-.0026$ & $-.0007$ & $-.0002$ & $+.0022$ & $-.0004$ \\
-  20\% & $+.0001$ & $-.0047$ & $-.0004^{*}$ & $-.0002$ & $+.0056$ & $-.0003$ \\
-  10\% & $-.0009$ & $-.0060$ & $-.0007^{*}$ & $-.0012$ & $-.0022$ & $-.0004$ \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \vspace{-1mm}
-  {\footnotesize Next to the embeddings: no significant effect in any
-  channel at any level. Without them: a hair-thin dynamics effect at two
-  levels, and an articulation trend that never reaches significance. Direct
-  probes agree: the embeddings contain no tonal information, while rhythm,
-  voicing, and register are encoded.}
-\end{frame}
 
 
 
 % ================================================================ 22  FUTURE: PHASE 2
 \begin{frame}{Future work: Phase 2, intonation and vibrato}
-  Continuously pitched instruments. The channels grow: loudness $\ell_i$
-  (replacing MIDI velocity), intonation offset $c_i$ in cents, and vibrato
-  rate / depth / phase $f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}}$
-  in the cents curve $c_i(t)$:
+  Continuously pitched instruments. The channels grow: intonation offset
+  $c_i$ in cents, and vibrato rate / depth / phase $f_i^{\mathrm{vib}},
+  \gamma_i, \delta_i^{\mathrm{vib}}$ in the cents curve $c_i(t)$:
   \begin{equation*}
-    y_i = [\,\tau_i, \log r_i, \ell_i, c_i, f_i^{\mathrm{vib}}, \gamma_i,
+    y_i = [\,\tau_i, \log r_i, c_i, f_i^{\mathrm{vib}}, \gamma_i,
     \delta_i^{\mathrm{vib}}\,], \qquad
     c_i(t) = c_i + \gamma_i \sin\bigl(2\pi f_i^{\mathrm{vib}}
     (t - \delta_i^{\mathrm{vib}})\bigr) + \epsilon .
@@ -686,8 +647,6 @@
           The graph carries the calibration.
     \item Where the gains come from is measured, not assumed: per-piece
           feature weighting for accuracy, the graph for calibration.
-    \item Negative results are kept: tonality does not predict these
-          deviations, in the graph, as features, or in the embeddings.
     \item Phases 2 and 3 are scoped: the same prior, with the observation
           model swapped for noisy estimates, then for the waveform.
   \end{itemize}
