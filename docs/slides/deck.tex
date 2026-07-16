@@ -309,7 +309,7 @@
   fixed mean & $\beta \sim \N(0, cI) \;\to\; \beta = \hat\beta$ (one cross-piece fit) & per-piece adaptation \\
   mean + smoothing & $\mu = X\hat\beta$, then per channel & the standard \\
    & $y_c - \mu_c \sim \N\bigl(0,\; \sigma_g^2 K_G + \sigma_e^2 I\bigr)$ & two-step recipe \\
-  MLP (single / ens.) & $y_{ic} \sim \N\bigl(\mu_c(x_i),\, \sigma_c^2(x_i)\bigr)$; notes independent & the GP itself \\
+  MLP & $y_{ic} \sim \N\bigl(\mu_c(x_i),\, \sigma_c^2(x_i)\bigr)$; notes independent & the GP itself \\
   independent & $K_G \to I$ and $c_f \to 0$ & any structure at all \\
   temporal chain & $\Lg$ from time-adjacent edges only & score vs time edges \\
   \bottomrule
@@ -318,10 +318,9 @@
   \vspace{1mm}
   {\small Same input features and protocol for every system; all but the MLP
   are exact special cases of the proposed model. The MLP is a neural network
-  predicting each note's mean and variance from its own features; the
-  ensemble trains five from different random initializations and merges
-  their predictions (deep ensembles) --- the standard recipe for calibrated
-  networks.}
+  predicting each note's mean and variance from its own features, trained
+  five times from different random initializations with predictions merged
+  --- the standard recipe for a calibrated network baseline.}
 \end{frame}
 
 % ================================================================ 13  RESULTS: OVERVIEW
@@ -342,7 +341,7 @@
   {\small
   \begin{tabular}{@{}lccccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing & MLP ens. \\
+  hidden & proposed & no graph & no music model & mean + smoothing & MLP \\
   \midrule
   50\% & \textbf{0.162} & 0.163 & 0.162 & 0.168 & 0.172 \\
   40\% & \textbf{0.152} & 0.154 & 0.152 & 0.158 & 0.163 \\
@@ -355,7 +354,7 @@
   \end{center}
   \begin{itemize}
     \item Differences between the GP systems are within noise at every level;
-          the MLPs are consistently slightly worse.
+          the MLP is consistently slightly worse.
     \item Timing is the hardest channel to improve: rubato is absorbed by the
           tempo curve before $\tau$ is defined, and what remains is largely
           note-local.
@@ -368,7 +367,7 @@
   {\small
   \begin{tabular}{@{}lccccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing & MLP ens. \\
+  hidden & proposed & no graph & no music model & mean + smoothing & MLP \\
   \midrule
   50\% & \textbf{0.618} & 0.635 & 0.626 & 0.647 & 0.761 \\
   40\% & \textbf{0.601} & 0.627 & 0.615 & 0.633 & 0.757 \\
@@ -382,7 +381,7 @@
   \begin{itemize}
     \item The proposed model is best at every level; the graph's largest
           accuracy contribution lives here.
-    \item The MLPs are far behind and flat: they cannot use the observed
+    \item The MLP is far behind and flat: it cannot use the observed
           context of the piece.
   \end{itemize}
 \end{frame}
@@ -393,7 +392,7 @@
   {\small
   \begin{tabular}{@{}lccccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing & MLP ens. \\
+  hidden & proposed & no graph & no music model & mean + smoothing & MLP \\
   \midrule
   50\% & \textbf{0.074} & 0.083 & 0.076 & 0.080 & 0.096 \\
   40\% & \textbf{0.072} & 0.083 & 0.075 & 0.078 & 0.095 \\
@@ -422,7 +421,7 @@
   \toprule
   & \multicolumn{3}{c}{proposed} & \multicolumn{3}{c}{no graph}
   & \multicolumn{3}{c}{no music model} & \multicolumn{3}{c}{mean + smoothing}
-  & \multicolumn{3}{c}{MLP ens.} \\
+  & \multicolumn{3}{c}{MLP} \\
   \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-13}\cmidrule(lr){14-16}
   hidden & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$
   & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ \\
