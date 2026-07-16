@@ -6,7 +6,7 @@
 %    method (score graph / GP + coupling / side information / the 25
 %    features / full model + inference) -> experiment setup -> systems ->
 %    results (overview / per-channel grids at six masking levels /
-%    calibration / posterior example / ingredient contributions / kernel +
+%    calibration / posterior example / component contributions / kernel +
 %    graph variants / music-theory features / probes / failure case) ->
 %    future work (Phase 2 plan / Phase 2 pilot / Phase 3) -> summary.
 %
@@ -202,8 +202,8 @@
 % ================================================================ 8  METHOD 3
 \begin{frame}{Method (3): side information as kernels}
   Two per-note feature sets: hand-built score features
-  $X_{\mathrm{feat}} \in \R^{N \times 26}$ and embeddings
-  $H \in \R^{N \times 512}$ from a small music language model trained on
+  $X_{\mathrm{feat}} \in \R^{N \times 26}$, and
+  $H \in \R^{N \times 512}$ from a small music model trained on
   MAESTRO.
   \vspace{1mm}
 
@@ -253,7 +253,7 @@
 % ================================================================ 10  METHOD 4
 \begin{frame}{Method (4): the covariance of one performance}
   Stack all three channels of the $N$ notes into one vector $y \in \R^{3N}$.
-  Every ingredient becomes one term of its covariance $K$:
+  Every component becomes one term of its covariance $K$:
   \begin{equation*}
     K \;=\;
     \underbrace{\textcolor{okblue}{B \otimes K_G(s)}}_{\text{coupled graph GP}}
@@ -261,7 +261,7 @@
     \;+\; \underbrace{\textcolor{okverm}{\diag(\varsigma^2)\otimes I}}_{\text{noise}}
   \end{equation*}
   {\small $f$ runs over the two feature sets, giving per-channel scales
-  $c_{\mathrm{feat}}$ and $c_{\mathrm{emb}}$. $\varsigma^2$ = the three
+  $c_{\mathrm{feat}}$ and $c_{\mathrm{mm}}$. $\varsigma^2$ = the three
   per-channel noise variances.}
   \vspace{1mm}
 
@@ -295,12 +295,12 @@
              notes ($s$: smoothness, learned) \\
   $B$ & $3\times3$: how strongly the three channels move together \\
   $X_{\mathrm{feat}},\, H$ & the side information: 26 score features;
-             512-dim.\ music-model embeddings \\
-  $c_{\mathrm{feat}},\, c_{\mathrm{emb}}$ & how much each channel trusts
+             512-dim.\ music-model features \\
+  $c_{\mathrm{feat}},\, c_{\mathrm{mm}}$ & how much each channel trusts
              each feature set (three scales per set) \\
   $\varsigma^2$ & per-channel measurement-noise variances \\
   $\theta$ & everything learned per piece:
-              $(s, B, c_{\mathrm{feat}}, c_{\mathrm{emb}}, \varsigma^2)$ \\
+              $(s, B, c_{\mathrm{feat}}, c_{\mathrm{mm}}, \varsigma^2)$ \\
   $\tilde y_o$, $o$ & the observed values, and which entries are observed \\
   $m$, $\Sigma_y$ & the output: posterior mean and covariance \\
   \bottomrule
@@ -313,8 +313,8 @@
   \figslotw{arch_phase1_deck.png}{0.98}{architecture: graph branch (blue),
     feature branch (amber), likelihood (vermillion)}
   \vspace{-1mm}
-  \centering\small Blue: score graph $\to \Lg \to K_G$. Amber: features and
-  embeddings as linear kernels. They fuse into the joint kernel. The
+  \centering\small Blue: score graph $\to \Lg \to K_G$. Amber: score and
+  music-model features as linear kernels, fused into the joint kernel. The
   likelihood (vermillion) is the only block that changes in later phases.
 \end{frame}
 
@@ -324,8 +324,6 @@
     \item \textbf{Data}: ASAP piano (aligned score + performance MIDI).
           Performances that appeared in pretraining are removed
           ($1036 \to 653$).
-    \item \textbf{Split}: 40 train / 30 validation pieces (a further
-          20-piece test set is held in reserve and not used here).
     \item \textbf{Task}: hide notes, predict them from the visible rest,
           at \textbf{six masking levels}: 50, 40, 30, 20, 10\% hidden, and
           leave-one-out.
@@ -344,10 +342,10 @@
   System & Change to the model & Tests \\
   \midrule
   \textbf{proposed} & $K = B \otimes K_G + \sum_f \diag(c_f)\otimes X_fX_f^{\!\top} + \diag(\varsigma^2)\otimes I$ & \\
-  no graph & $K_G \to I$ & the score graph \\
-  no music model & $c_{\mathrm{emb}} \to 0$ & the learned features \\
+  no graph & $K_G \to I$ & score graph \\
+  no music model & $c_{\mathrm{mm}} \to 0$ & learned features \\
   fixed mean & $\beta \sim \N(0, c_X I) \;\to\; \beta = \hat\beta$ (one cross-piece fit) & per-piece adaptation \\
-  mean + smoothing & $\mu = X\hat\beta$, then per channel & the standard \\
+  mean + smoothing & $\mu = X\hat\beta$, then per channel & standard \\
    & $y_c - \mu_c \sim \N\bigl(0,\; \sigma_g^2 K_G + \sigma_e^2 I\bigr)$ & two-step recipe \\
   independent & $K_G \to I$ and $c_f \to 0$ & any structure at all \\
   temporal chain & $\Lg$ from time-adjacent edges only & score vs time edges \\
@@ -440,18 +438,19 @@
   \end{tabular}}
   \end{center}
   \begin{itemize}
-    \item Best at every level. Both the graph and the music-model embeddings
+    \item Best at every level. Both the graph and the music model
           contribute here.
-    \item The embeddings' contribution grows with observed context: they are
-          context-dependent features.
+    \item The music model's contribution grows with observed context: its
+          features are context-dependent.
   \end{itemize}
 \end{frame}
 
 % ================================================================ 13d  CALIBRATION
-\begin{frame}{Results: calibration (NLL per channel, by masking level)}
-  \noindent{\footnotesize NLL of held-out notes, lower = better-calibrated
-  uncertainty (per system: $\tau$ / $r$ / $v$). Coverage stays 0.90--0.95
-  throughout.}
+\begin{frame}{Results: quality of the error bars}
+  \noindent{\small NLL = how much probability the model gave to the true
+  values (lower is better; it punishes overconfident and vague error bars
+  alike). Coverage stays 0.90--0.95 for every system. Columns per system:
+  $\tau$ / $r$ / $v$.}
   \vspace{-1mm}
   \begin{center}
   {\scriptsize\setlength{\tabcolsep}{3.4pt}
@@ -472,28 +471,9 @@
   \bottomrule
   \end{tabular}}
   \end{center}
-  \vspace{-2mm}
-  {\footnotesize The graph's calibration contribution. Per piece, both
-  models run on the same masks and
-  $\Delta\mathrm{NLL} = \mathrm{NLL}(\text{proposed}) -
-  \mathrm{NLL}(\text{no graph})$, averaged over the 30 pieces
-  (negative = the graph helps, $^{*}$ = bootstrap 95\% CI excludes 0):}
-  \begin{center}
-  \vspace{-1mm}
-  {\footnotesize
-  \begin{tabular}{@{}lcccccc@{}}
-  \toprule
-   & 50\% & 40\% & 30\% & 20\% & 10\% & LOO \\
-  \midrule
-  $\Delta$NLL & $-0.055^{*}$ & $-0.067^{*}$ & $+0.024$ & $-0.104^{*}$ & $-0.019$ & $-0.042^{*}$ \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \vspace{-1mm}
-  \vspace{-1mm}
-  {\footnotesize Significant at every level except 30\% and 10\%. Pooled
-  timing NLL is dominated by a few outlier notes. In articulation and
-  velocity the proposed model wins at every level.}
+  \vspace{1mm}
+  {\small Pooled timing NLL is dominated by a few outlier notes. In
+  articulation and velocity the proposed model wins at every level.}
 \end{frame}
 
 % ================================================================ 15  RESULTS: EXAMPLE
@@ -507,38 +487,44 @@
 \end{frame}
 
 % ================================================================ 16  RESULTS: ABLATIONS
-\begin{frame}{Results: ingredient contributions, by masking level}
-  Per piece, the full model and the model with one ingredient removed run
+\begin{frame}{Results: component contributions, by masking level}
+  Per piece, the full model and the model with one component removed run
   on the same masks, and
-  $\Delta\mathrm{RMSE} = \mathrm{RMSE}(\text{full}) -
-  \mathrm{RMSE}(\text{removed})$ is averaged over the 30 pieces.
-  Negative = the ingredient helps, $^{*}$ = bootstrap 95\% CI excludes 0.
+  $\Delta = (\text{metric, full model}) - (\text{metric, component
+  removed})$ is averaged over the 30 pieces. Negative = the component
+  helps.
   \begin{center}
   {\small
   \begin{tabular}{@{}lcccccc@{}}
   \toprule
   removed & 50\% & 40\% & 30\% & 20\% & 10\% & LOO \\
   \midrule
-  the graph & $-0.011^{*}$ & $-0.017^{*}$ & $-0.017^{*}$ & $-0.009^{*}$ & $-0.004$ & $-0.013^{*}$ \\
-  the embeddings & $-0.005$ & $-0.008^{*}$ & $-0.009^{*}$ & $-0.016^{*}$ & $-0.020^{*}$ & $-0.021^{*}$ \\
+  graph ($\Delta$RMSE) & $-0.011$ & $-0.017$ & $-0.017$ & $-0.009$ & $-0.004$ & $-0.013$ \\
+  music model ($\Delta$RMSE) & $-0.005$ & $-0.008$ & $-0.009$ & $-0.016$ & $-0.020$ & $-0.021$ \\
+  graph ($\Delta$NLL) & $-0.055$ & $-0.067$ & $+0.024$ & $-0.104$ & $-0.019$ & $-0.042$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
+  \vspace{-1mm}
   Per channel at 40\%:
   \begin{center}
-  {\small
+  \vspace{-1mm}
+  {\footnotesize
   \begin{tabular}{@{}lccc@{}}
   \toprule
   removed & timing $\tau$ & articulation $\log r$ & velocity $v$ \\
   \midrule
-  the graph & $-0.0015^{*}$ & $-0.0282^{*}$ & $-0.0104^{*}$ \\
-  the embeddings & $-0.0006$ & $-0.0147^{*}$ & $-0.0028^{*}$ \\
+  graph & $-0.0015$ & $-0.0282$ & $-0.0104$ \\
+  music model & $-0.0006$ & $-0.0147$ & $-0.0028$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
-  \small The graph matters most mid-range, and the embeddings' value grows
-  with observed context. Fixing a cross-piece mean inside the GP loses almost
-  nothing: the accuracy gain is per-piece re-weighting of the features.
+  \vspace{-1mm}
+  {\footnotesize Every difference shown is significant except the graph at
+  10\% (both metrics) and 30\% (NLL only), and the music model at 50\% and
+  in timing. The graph carries calibration; the music model's value grows
+  with observed context. Fixing a cross-piece mean loses almost nothing:
+  the accuracy gain is per-piece re-weighting of the features.}
 \end{frame}
 
 % ================================================================ 18  RESULTS: KERNEL/GRAPH VARIANTS
@@ -546,7 +532,7 @@
   Vary the filter with the graph fixed (40\% level), then vary the graph
   itself (every level). Pooled over the standardized channels. $\Delta$
   rows: per-piece paired difference vs the base graph, averaged over the 30
-  pieces ($^{*}$ = bootstrap 95\% CI excludes 0).
+  pieces.
   \begin{center}
   \vspace{-1.5mm}
   {\scriptsize
@@ -556,27 +542,28 @@
   \midrule
   base graph, graph Mat\'ern $\alpha{=}1$ & 0.393 & $-0.322$ & 0.921 & reference \\
   \quad filter $\to$ Mat\'ern $\alpha \in \{2,3\}$, heat & 0.392--0.393 & $-0.312..{-0.321}$ & & all tie \\
-  graph $\to$ no edges & $0.446^{*}$ & $-0.190^{*}$ & 0.919 & worst \\
-  graph $\to$ time-only chain & 0.392 & $-0.292^{*}$ & 0.916 & calibration worse \\
+  graph $\to$ no edges & $0.446$ & $-0.190$ & 0.919 & worst \\
+  graph $\to$ time-only chain & 0.392 & $-0.292$ & 0.916 & calibration worse \\
   \bottomrule
   \end{tabular}\\[1.5mm]
   \begin{tabular}{@{}llccccc@{}}
   \toprule
   Added edges & paired $\Delta$ vs base & 50\% & 40\% & 30\% & 20\% & 10\% \\
   \midrule
-  + chord & $\Delta$RMSE & $-.009^{*}$ & $-.010^{*}$ & $-.011^{*}$ & $-.012^{*}$ & $-.014^{*}$ \\
-          & $\Delta$NLL  & $-.009^{*}$ & $-.009$ & $-.015^{*}$ & $-.014^{*}$ & $-.019^{*}$ \\
-  + chord, voice leading & $\Delta$RMSE & $-.008^{*}$ & $-.008^{*}$ & $-.010^{*}$ & $-.011^{*}$ & $-.011^{*}$ \\
-          & $\Delta$NLL  & $-.016^{*}$ & $-.013^{*}$ & $-.050^{*}$ & $-.015^{*}$ & $-.019^{*}$ \\
+  + chord & $\Delta$RMSE & $-.009$ & $-.010$ & $-.011$ & $-.012$ & $-.014$ \\
+          & $\Delta$NLL  & $-.009$ & $-.009$ & $-.015$ & $-.014$ & $-.019$ \\
+  + chord, voice leading & $\Delta$RMSE & $-.008$ & $-.008$ & $-.010$ & $-.011$ & $-.011$ \\
+          & $\Delta$NLL  & $-.016$ & $-.013$ & $-.050$ & $-.015$ & $-.019$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \vspace{-1mm}
   {\small
   \begin{itemize}
-    \item The filter shape is irrelevant. The \emph{edges} are not, at any
-          level: the gains sit in articulation and velocity.
-    \item In the full model (embeddings present) the added edge families
+    \item The filter shape is irrelevant. The \emph{edges} are not: every
+          difference in the lower table is significant except one, and the
+          gains sit in articulation and velocity.
+    \item In the full model (music model present) the added edge families
           become redundant.
   \end{itemize}}
 \end{frame}
