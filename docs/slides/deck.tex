@@ -156,8 +156,9 @@
 
 % ================================================================ 6  METHOD 1
 \begin{frame}{Method (1): the score graph}
-  Nodes are the written notes $(p_i, b_i, d_i)$; edges connect notes close in
-  score time and pitch (neighbours should be played similarly):
+  Nodes are the $N$ written notes --- pitch $p_i$, beat onset $b_i$, beat
+  duration $d_i$; edges connect notes close in score time and pitch
+  (neighbours should be played similarly):
   \vspace{-1mm}
   \begin{equation*}
     W_{ij} \;=\; \exp\!\Bigl( -\tfrac{(b_i - b_j)^2}{2\,\ell_b^2}
@@ -165,8 +166,10 @@
     \qquad
     \Lg \;=\; D - W .
   \end{equation*}
-  \vspace{-4mm}
-  \figslotw{deck_scoregraph.png}{0.84}{a few bars of real score as nodes,
+  \vspace{-2mm}
+  {\centering\small $\ell_b, \ell_p$: length-scales; $D_{ii} = \sum_j W_{ij}$;
+  $\Lg$: the graph Laplacian.\par}
+  \figslotw{deck_scoregraph.png}{0.80}{a few bars of real score as nodes,
     edges drawn by time / pitch / chord relation}
 \end{frame}
 
@@ -184,7 +187,8 @@
   \vspace{1mm}
 
   Timing, articulation, and dynamics are correlated, so the three channels
-  share the graph through a learned $3 \times 3$ matrix $B$:
+  share the graph through a learned $3 \times 3$ matrix $B$
+  ($c, c'$ index the channels):
   \begin{equation*}
     \operatorname{Cov}\bigl[\, y_{i,c},\; y_{j,c'} \bigr]
       \;=\; B_{cc'}\, \bigl[K_G(s)\bigr]_{ij}
@@ -203,7 +207,9 @@
   MAESTRO.
   \vspace{1mm}
 
-  A linear mean with unknown weights, integrated out, becomes a kernel term:
+  A linear mean with unknown weights $\beta$, integrated out, becomes a
+  kernel term ($X$ = either feature matrix, $f$ = the graph GP of Method (2),
+  $c$ = the prior scale of the weights):
   \begin{equation*}
     y \;=\; X\beta + f, \quad \beta \sim \N(0,\, c\,I)
     \qquad\Longrightarrow\qquad
@@ -245,13 +251,20 @@
 \end{frame}
 
 % ================================================================ 10  METHOD 4
-\begin{frame}{Method (4): the full model}
+\begin{frame}{Method (4): the covariance of one performance}
+  Stack all three channels of the $N$ notes into one vector $y \in \R^{3N}$;
+  every ingredient becomes one term of its covariance $K$:
   \begin{equation*}
     K \;=\;
     \underbrace{\textcolor{okblue}{B \otimes K_G(s)}}_{\text{coupled graph GP}}
     \;+\; \underbrace{\textcolor{okamber}{\textstyle\sum_f \diag(c_f)\otimes X_f X_f^{\!\top}}}_{\text{side information}}
     \;+\; \underbrace{\textcolor{okverm}{\diag(\varsigma^2)\otimes I}}_{\text{noise}}
   \end{equation*}
+  {\small $f$ runs over the two feature sets; $\diag(c_f)$ gives each channel
+  its own scale for set $f$; $\varsigma^2$ = the three per-channel noise
+  variances.}
+  \vspace{1mm}
+
   All hyperparameters $\theta = (s, B, \{c_f\}, \varsigma^2)$ from one exact
   evidence per piece; prediction is conjugate:
   \begin{equation*}
@@ -260,12 +273,11 @@
     m = C_{\cdot o} K_{oo}^{-1} \tilde y_o, \quad
     \Sigma_y = C - C_{\cdot o} K_{oo}^{-1} C_{o\cdot},
   \end{equation*}
-  with $C$ the latent covariance and $o$ the observed entries.
-  \begin{itemize}
-    \item No variational approximation anywhere in Phase 1.
-    \item The baselines are special cases: diagonal $B$, zero $c_f$, or a
-          fixed cross-piece mean recover each simpler system exactly.
-  \end{itemize}
+  {\small $\tilde y_o$: the observed values, $o$: the observed entries of $y$;
+  $C = K - \diag(\varsigma^2)\otimes I$: the noise-free part; $m, \Sigma_y$:
+  posterior mean and covariance. No variational approximation anywhere in
+  Phase 1; the baselines are exact special cases (diagonal $B$, zero $c_f$,
+  fixed cross-piece mean).}
 \end{frame}
 
 % ================================================================ 10b  ARCHITECTURE
