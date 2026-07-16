@@ -168,15 +168,16 @@
   \end{equation*}
   \vspace{-2mm}
   {\centering\small $\ell_b, \ell_p$: length-scales. $D_{ii} = \sum_j W_{ij}$.
-  $\Lg$: the graph Laplacian.\par}
+  $\Lg$: the graph Laplacian. $W, D, \Lg$: all $N \times N$.\par}
   \figslotw{deck_scoregraph.png}{0.80}{a few bars of real score as nodes,
     edges drawn by time / pitch / chord relation}
 \end{frame}
 
 % ================================================================ 7  METHOD 2
 \begin{frame}{Method (2): a GP on the graph, channels coupled}
-  Eigendecompose the Laplacian, $\Lg = U \diag(\nu)\, U^{\!\top}$, and shape its
-  spectrum with one parameter $s$:
+  Eigendecompose the Laplacian, $\Lg = U \diag(\nu)\, U^{\!\top}$
+  ($U$: $N \times N$ eigenvectors, $\nu \in \R^N$ eigenvalues), and shape
+  its spectrum with one parameter $s$:
   \begin{equation*}
     K_G(s) \;=\; U\, g(\nu; s)\, U^{\!\top},
     \qquad
@@ -202,9 +203,10 @@
 % ================================================================ 8  METHOD 3
 \begin{frame}{Method (3): side information as kernels}
   Any per-note side information enters the same way. In Phase 1 there are
-  two sets: simple score descriptors $X_{\mathrm{feat}}$ (register,
-  duration, meter, position) and per-note features $H$ from a small music
-  model trained on MAESTRO. Designing richer score features is future work.
+  two sets, each one row per note ($N \times d$): simple score descriptors
+  $X_{\mathrm{feat}}$ (register, duration, meter, position) and per-note
+  features $H$ from a small music model trained on MAESTRO. Designing
+  richer score features is future work.
   \vspace{1mm}
 
   A linear mean with unknown weights $\beta$, integrated out, becomes a
@@ -237,12 +239,12 @@
     \;+\; \underbrace{\textcolor{okverm}{\diag(\varsigma^2)\otimes I}}_{\text{noise}}
   \end{equation*}
   {\small $f$ runs over the two feature sets, giving per-channel scales
-  $c_{\mathrm{feat}}$ and $c_{\mathrm{mm}}$. $\varsigma^2$ = the three
-  per-channel noise variances.}
+  $c_{\mathrm{feat}}, c_{\mathrm{mm}} \in \R^3$. $\varsigma^2 \in \R^3$
+  = the per-channel noise variances.}
   \vspace{1mm}
 
-  All hyperparameters $\theta = (s, B, \{c_f\}, \varsigma^2)$ from one exact
-  evidence per piece. Prediction is conjugate:
+  All parameters $\theta = (s, B, \{c_f\}, \varsigma^2)$ --- 16 numbers ---
+  from one exact evidence per piece. Prediction is conjugate:
   \begin{equation*}
     \log p(\tilde y_o \mid \theta) = \log \N\!\bigl(\tilde y_o;\, 0,\, K_{oo}\bigr),
     \qquad
@@ -273,15 +275,16 @@
   $\ell_b$, $\ell_p$ & graph length-scales (time, pitch) & fixed, global \\
   $B$, $3\times3$ & how strongly the three channels move together
              & learned per piece \\
-  $X_{\mathrm{feat}},\, H$ & score descriptors; music-model features
-             & inputs ($H$: model trained once, frozen) \\
-  $c_{\mathrm{feat}},\, c_{\mathrm{mm}}$ & how much each channel trusts
-             each feature set & learned per piece \\
-  $\varsigma^2$ & per-channel noise variances & learned per piece \\
-  $\theta$ & $(s, B, c_{\mathrm{feat}}, c_{\mathrm{mm}}, \varsigma^2)$
+  $X_{\mathrm{feat}},\, H$, $N \times d$ & score descriptors; music-model
+             features & inputs ($H$: model trained once, frozen) \\
+  $c_{\mathrm{feat}},\, c_{\mathrm{mm}} \in \R^3$ & how much each channel
+             trusts each feature set & learned per piece \\
+  $\varsigma^2 \in \R^3$ & per-channel noise variances & learned per piece \\
+  $\theta$, 16 numbers & $(s, B, c_{\mathrm{feat}}, c_{\mathrm{mm}}, \varsigma^2)$
              & all learned per piece, exact evidence \\
   $\tilde y_o$, $o$ & observed values, and which entries & data \\
-  $m$, $\Sigma_y$ & posterior mean and covariance & predicted, closed form \\
+  $m \in \R^{3N}$, $\Sigma_y$ & posterior mean, covariance ($3N \times 3N$)
+             & predicted, closed form \\
   \bottomrule
   \end{tabular}}
   \end{center}
