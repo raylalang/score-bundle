@@ -326,16 +326,12 @@
   \textbf{proposed} & $K = B \otimes K_G + \sum_f \diag(c_f)\otimes X_fX_f^{\!\top} + \diag(\varsigma^2)\otimes I$ & \\
   no graph & $K_G \to I$ & score graph \\
   no music model & $c_{\mathrm{mm}} \to 0$ & learned features \\
-  mean + smoothing & $\mu = X\hat\beta$ ($\hat\beta$: one cross-piece fit), then per channel & standard \\
-   & $y_c - \mu_c \sim \N\bigl(0,\; \sigma_g^2 K_G + \sigma_e^2 I\bigr)$ & two-step recipe \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \vspace{1mm}
   {\small Same input features and protocol for every system, and every
-  system is an exact special case of the proposed model. In mean +
-  smoothing, $\sigma_g^2, \sigma_e^2$ are the smoother's signal and noise
-  variances.}
+  system is an exact special case of the proposed model.}
 \end{frame}
 
 % ================================================================ 13  RESULTS: OVERVIEW
@@ -354,16 +350,16 @@
 \begin{frame}{Results: timing $\tau$ (RMSE, by masking level)}
   \begin{center}
   {\small
-  \begin{tabular}{@{}lcccc@{}}
+  \begin{tabular}{@{}lccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing \\
+  hidden & proposed & no graph & no music model \\
   \midrule
-  50\% & \textbf{0.162} & 0.163 & 0.162 & 0.168 \\
-  40\% & \textbf{0.152} & 0.154 & 0.152 & 0.158 \\
-  30\% & \textbf{0.157} & 0.159 & 0.159 & 0.164 \\
-  20\% & \textbf{0.149} & 0.151 & 0.150 & 0.156 \\
-  10\% & \textbf{0.154} & 0.156 & 0.157 & 0.162 \\
-  LOO  & \textbf{0.149} & 0.150 & 0.152 & 0.159 \\
+  50\% & \textbf{0.162} & 0.163 & 0.162 \\
+  40\% & \textbf{0.152} & 0.154 & 0.152 \\
+  30\% & \textbf{0.157} & 0.159 & 0.159 \\
+  20\% & \textbf{0.149} & 0.151 & 0.150 \\
+  10\% & \textbf{0.154} & 0.156 & 0.157 \\
+  LOO  & \textbf{0.149} & 0.150 & 0.152 \\
   \bottomrule
   \end{tabular}}
   \end{center}
@@ -380,16 +376,16 @@
 \begin{frame}{Results: articulation $\log r$ (RMSE, by masking level)}
   \begin{center}
   {\small
-  \begin{tabular}{@{}lcccc@{}}
+  \begin{tabular}{@{}lccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing \\
+  hidden & proposed & no graph & no music model \\
   \midrule
-  50\% & \textbf{0.618} & 0.635 & 0.626 & 0.647 \\
-  40\% & \textbf{0.601} & 0.627 & 0.615 & 0.633 \\
-  30\% & \textbf{0.592} & 0.620 & 0.607 & 0.628 \\
-  20\% & \textbf{0.587} & 0.603 & 0.616 & 0.629 \\
-  10\% & \textbf{0.577} & 0.584 & 0.612 & 0.630 \\
-  LOO  & \textbf{0.546} & 0.567 & 0.582 & 0.607 \\
+  50\% & \textbf{0.618} & 0.635 & 0.626 \\
+  40\% & \textbf{0.601} & 0.627 & 0.615 \\
+  30\% & \textbf{0.592} & 0.620 & 0.607 \\
+  20\% & \textbf{0.587} & 0.603 & 0.616 \\
+  10\% & \textbf{0.577} & 0.584 & 0.612 \\
+  LOO  & \textbf{0.546} & 0.567 & 0.582 \\
   \bottomrule
   \end{tabular}}
   \end{center}
@@ -403,16 +399,16 @@
 \begin{frame}{Results: velocity $v$ (RMSE, by masking level)}
   \begin{center}
   {\small
-  \begin{tabular}{@{}lcccc@{}}
+  \begin{tabular}{@{}lccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing \\
+  hidden & proposed & no graph & no music model \\
   \midrule
-  50\% & \textbf{0.074} & 0.083 & 0.076 & 0.080 \\
-  40\% & \textbf{0.072} & 0.083 & 0.075 & 0.078 \\
-  30\% & \textbf{0.070} & 0.080 & 0.073 & 0.075 \\
-  20\% & \textbf{0.068} & 0.074 & 0.071 & 0.073 \\
-  10\% & \textbf{0.068} & 0.071 & 0.072 & 0.073 \\
-  LOO  & \textbf{0.066} & 0.068 & 0.070 & 0.073 \\
+  50\% & \textbf{0.074} & 0.083 & 0.076 \\
+  40\% & \textbf{0.072} & 0.083 & 0.075 \\
+  30\% & \textbf{0.070} & 0.080 & 0.073 \\
+  20\% & \textbf{0.068} & 0.074 & 0.071 \\
+  10\% & \textbf{0.068} & 0.071 & 0.072 \\
+  LOO  & \textbf{0.066} & 0.068 & 0.070 \\
   \bottomrule
   \end{tabular}}
   \end{center}
@@ -432,21 +428,20 @@
   $\tau$ / $r$ / $v$.}
   \vspace{-1mm}
   \begin{center}
-  {\scriptsize\setlength{\tabcolsep}{3.4pt}
-  \begin{tabular}{@{}lccc ccc ccc ccc@{}}
+  {\scriptsize\setlength{\tabcolsep}{5pt}
+  \begin{tabular}{@{}lccc ccc ccc@{}}
   \toprule
   & \multicolumn{3}{c}{proposed} & \multicolumn{3}{c}{no graph}
-  & \multicolumn{3}{c}{no music model} & \multicolumn{3}{c}{mean + smoothing} \\
-  \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-13}
-  hidden & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$
-  & $\tau$ & $r$ & $v$ \\
+  & \multicolumn{3}{c}{no music model} \\
+  \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+  hidden & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ \\
   \midrule
-  50\% & $-.65$ & $\bm{+.87}$ & $\bm{-1.21}$ & $-.64$ & $+.91$ & $-1.09$ & $-.60$ & $+.88$ & $-1.17$ & $\bm{-.77}$ & $+.93$ & $-1.12$ \\
-  40\% & $\bm{-.82}$ & $\bm{+.84}$ & $\bm{-1.23}$ & $-.82$ & $+.90$ & $-1.10$ & $-.78$ & $+.86$ & $-1.19$ & $-.81$ & $+.91$ & $-1.14$ \\
-  30\% & $+.03$ & $\bm{+.82}$ & $\bm{-1.27}$ & $-.24$ & $+.89$ & $-1.14$ & $-.16$ & $+.85$ & $-1.22$ & $\bm{-.44}$ & $+.90$ & $-1.17$ \\
-  20\% & $\bm{-.86}$ & $\bm{+.82}$ & $\bm{-1.29}$ & $-.67$ & $+.86$ & $-1.21$ & $-.81$ & $+.87$ & $-1.24$ & $-.84$ & $+.91$ & $-1.20$ \\
-  10\% & $-.77$ & $\bm{+.80}$ & $\bm{-1.28}$ & $-.78$ & $+.83$ & $-1.25$ & $-.72$ & $+.86$ & $-1.22$ & $\bm{-.81}$ & $+.90$ & $-1.20$ \\
-  LOO  & $\bm{-1.12}$ & $\bm{+.73}$ & $\bm{-1.33}$ & $-1.10$ & $+.79$ & $-1.29$ & $-1.09$ & $+.79$ & $-1.28$ & $-.95$ & $+.86$ & $-1.21$ \\
+  50\% & $\bm{-.65}$ & $\bm{+.87}$ & $\bm{-1.21}$ & $-.64$ & $+.91$ & $-1.09$ & $-.60$ & $+.88$ & $-1.17$ \\
+  40\% & $\bm{-.82}$ & $\bm{+.84}$ & $\bm{-1.23}$ & $-.82$ & $+.90$ & $-1.10$ & $-.78$ & $+.86$ & $-1.19$ \\
+  30\% & $+.03$ & $\bm{+.82}$ & $\bm{-1.27}$ & $\bm{-.24}$ & $+.89$ & $-1.14$ & $-.16$ & $+.85$ & $-1.22$ \\
+  20\% & $\bm{-.86}$ & $\bm{+.82}$ & $\bm{-1.29}$ & $-.67$ & $+.86$ & $-1.21$ & $-.81$ & $+.87$ & $-1.24$ \\
+  10\% & $-.77$ & $\bm{+.80}$ & $\bm{-1.28}$ & $\bm{-.78}$ & $+.83$ & $-1.25$ & $-.72$ & $+.86$ & $-1.22$ \\
+  LOO  & $\bm{-1.12}$ & $\bm{+.73}$ & $\bm{-1.33}$ & $-1.10$ & $+.79$ & $-1.29$ & $-1.09$ & $+.79$ & $-1.28$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
@@ -508,10 +503,9 @@
 
 % ================================================================ 18  RESULTS: KERNEL/GRAPH VARIANTS
 \begin{frame}{Results: kernel and graph variants}
-  Vary the filter with the graph fixed (40\% level), then vary the graph
-  itself (every level). Pooled over the standardized channels. $\Delta$
-  rows: per-piece paired difference vs the base graph, averaged over the 30
-  pieces.
+  Vary the filter with the graph fixed (40\% level), then the graph itself
+  (every level). Simplified two-step development setting, pooled over
+  channels. $\Delta$ rows: paired per-piece difference vs the base graph.
   \begin{center}
   \vspace{-1.5mm}
   {\scriptsize
