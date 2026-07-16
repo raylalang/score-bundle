@@ -581,32 +581,39 @@
 
 % ================================================================ 19  RESULTS: THEORY FEATURES
 \begin{frame}{Results: explicit music-theory features}
-  Fourteen additional score-only features were built and added to the kernel
-  (study at the 40\% level):
-  {\footnotesize
-  \begin{itemize}
-    \item \textbf{tonality (6)}: local key (Krumhansl--Schmuckler profiles),
-          key clarity, mode, scale degree (sin/cos), in-scale flag,
-          distance between successive local keys
-    \item \textbf{meter (1)}: metrical-weight hierarchy over five levels
-    \item \textbf{verticals (2)}: within-chord dissonance, bass flag
-    \item \textbf{phrase (2)}: boundary salience from timing and pitch gaps
-    \item \textbf{repetition (1)}: motif-repetition count
-          (interval + rhythm 4-grams)
-    \item \textbf{voice (2)}: within-voice tessitura and position.
-  \end{itemize}}
+  Fourteen additional score-only features, added to the kernel and
+  evaluated at every masking level:
+  {\footnotesize \textbf{tonality (6)}: local key
+  (Krumhansl--Schmuckler profiles), key clarity, mode, scale degree
+  (sin/cos), in-scale flag, distance between successive local keys.
+  \textbf{meter (1)}: metrical-weight hierarchy over five levels.
+  \textbf{verticals (2)}: within-chord dissonance, bass flag.
+  \textbf{phrase (2)}: boundary salience from timing and pitch gaps.
+  \textbf{repetition (1)}: motif-repetition count (interval + rhythm
+  4-grams). \textbf{voice (2)}: within-voice tessitura and position.\par}
+  \vspace{-2mm}
   \begin{center}
-  {\small paired $\Delta$RMSE per channel when the 14 features are added \\[1mm]
-  \begin{tabular}{@{}lccc@{}}
+  {\scriptsize paired $\Delta$RMSE per channel when the 14 features are
+  added ($^{*}$ = 95\% CI excludes 0) \\[0.5mm]
+  \setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{0.92}
+  \begin{tabular}{@{}lcccccc@{}}
   \toprule
-   & timing $\tau$ & articulation $\log r$ & dynamics $v$ \\
+  & \multicolumn{3}{c}{without embeddings} & \multicolumn{3}{c}{with embeddings} \\
+  \cmidrule(lr){2-4}\cmidrule(lr){5-7}
+  hidden & $\tau$ & $\log r$ & $v$ & $\tau$ & $\log r$ & $v$ \\
   \midrule
-  without embeddings & $-0.0001$ & $-0.0038$ & $-0.0002$ \\
-  with embeddings & $-0.0006$ & $+0.0013$ & $+0.0000$ \\
+  50\% & $-.0002$ & $-.0028$ & $-.0005$ & $-.0003$ & $-.0013$ & $-.0002$ \\
+  40\% & $-.0001$ & $-.0038$ & $-.0002$ & $-.0006$ & $+.0013$ & $+.0000$ \\
+  30\% & $+.0002$ & $-.0026$ & $-.0007$ & $-.0002$ & $+.0022$ & $-.0004$ \\
+  20\% & $+.0001$ & $-.0047$ & $-.0004^{*}$ & $-.0002$ & $+.0056$ & $-.0003$ \\
+  10\% & $-.0009$ & $-.0060$ & $-.0007^{*}$ & $-.0012$ & $-.0022$ & $-.0004$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
-  {\small No significant gain in any channel, in either regime. Direct
+  \vspace{-1mm}
+  {\footnotesize Next to the embeddings: no significant effect in any
+  channel at any level. Without them: a hair-thin dynamics effect at two
+  levels, and an articulation trend that never reaches significance. Direct
   probes agree: the embeddings contain no tonal information, while rhythm,
   voicing, and register are encoded.}
 \end{frame}
@@ -631,10 +638,8 @@
   \vspace{-2mm}
   {\small
   \begin{itemize}
-    \item Built and tested: the cell-mask posterior (exact) and the
-          estimator, validated end-to-end on synthetic data with known ground
-          truth. Notes too short to estimate get their vibrato from the
-          graph, with sensible coverage.
+    \item Notes too short for a vibrato fit would have missing cells, and
+          the posterior would fill them from the graph.
     \item Planned data: URMP (per-instrument audio + scores), then solo
           vocal corpora.
     \item Planned evaluation: the same held-out imputation, with a fresh
@@ -684,8 +689,8 @@
           feature weighting for accuracy, the graph for calibration.
     \item Negative results are kept: tonality does not predict these
           deviations, in the graph, as features, or in the embeddings.
-    \item Phase 2 machinery is built and validated on synthetic ground
-          truth. Phase 3 is scoped with its conjugate core tested.
+    \item Phases 2 and 3 are scoped: the same prior, with the observation
+          model swapped for noisy estimates, then for the waveform.
   \end{itemize}
 \end{frame}
 
