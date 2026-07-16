@@ -70,7 +70,7 @@
 \newcommand{\diag}{\operatorname{diag}}
 
 \title{\textbf{Expressive Performance as a Gaussian Process\\ on a Musical Score Graph}}
-\author{Raynaldi Lalang\\[1mm]{\small Supervisor: Prof.\ Kazuyoshi Yoshii}}
+\author{Raynaldi Lalang\\[1mm]}
 \institute{Kyoto University}
 \date{July 16, 2026}
 
@@ -208,12 +208,12 @@
   \vspace{1mm}
 
   A linear mean with unknown weights $\beta$, integrated out, becomes a
-  kernel term ($X$ = either feature matrix, $f$ = the graph GP of Method (2),
-  $c$ = the prior scale of the weights):
+  kernel term ($X$ = either feature matrix, $f_G$ = the graph GP of
+  Method (2), $c_X$ = the prior scale of set $X$'s weights):
   \begin{equation*}
-    y \;=\; X\beta + f, \quad \beta \sim \N(0,\, c\,I)
+    y \;=\; X\beta + f_G, \quad \beta \sim \N(0,\, c_X\,I)
     \qquad\Longrightarrow\qquad
-    \operatorname{Cov}[\,y\,] \;=\; c\, X X^{\!\top} + \operatorname{Cov}[\,f\,].
+    \operatorname{Cov}[\,y\,] \;=\; c_X\, X X^{\!\top} + \operatorname{Cov}[\,f_G\,].
   \end{equation*}
   \begin{itemize}
     \item So the regression weights are not fixed once across the corpus: they
@@ -260,9 +260,9 @@
     \;+\; \underbrace{\textcolor{okamber}{\textstyle\sum_f \diag(c_f)\otimes X_f X_f^{\!\top}}}_{\text{side information}}
     \;+\; \underbrace{\textcolor{okverm}{\diag(\varsigma^2)\otimes I}}_{\text{noise}}
   \end{equation*}
-  {\small $f$ runs over the two feature sets; $\diag(c_f)$ gives each channel
-  its own scale for set $f$; $\varsigma^2$ = the three per-channel noise
-  variances.}
+  {\small $f$ runs over the two feature sets, giving per-channel scales
+  $c_{\mathrm{feat}}$ and $c_{\mathrm{emb}}$; $\varsigma^2$ = the three
+  per-channel noise variances.}
   \vspace{1mm}
 
   All hyperparameters $\theta = (s, B, \{c_f\}, \varsigma^2)$ from one exact
@@ -278,6 +278,34 @@
   posterior mean and covariance. No variational approximation anywhere in
   Phase 1; the baselines are exact special cases (diagonal $B$, zero $c_f$,
   fixed cross-piece mean).}
+\end{frame}
+
+% ================================================================ 10a  NOTATION
+\begin{frame}{Method (4b): every symbol in one place}
+  \begin{center}
+  {\small
+  \begin{tabular}{@{}lp{92mm}@{}}
+  \toprule
+  Symbol & Meaning \\
+  \midrule
+  $y \in \R^{3N}$ & the three channels ($\tau$, $\log r$, $v$) of all $N$
+                     notes, stacked \\
+  $K$ & the covariance of $y$: the entire model in one matrix \\
+  $K_G(s)$ & score-graph kernel: how expression co-varies between related
+             notes ($s$: smoothness, learned) \\
+  $B$ & $3\times3$: how strongly the three channels move together \\
+  $X_{\mathrm{feat}},\, H$ & the side information: 26 score features;
+             512-dim.\ music-model embeddings \\
+  $c_{\mathrm{feat}},\, c_{\mathrm{emb}}$ & how much each channel trusts
+             each feature set (three scales per set) \\
+  $\varsigma^2$ & per-channel measurement-noise variances \\
+  $\theta$ & everything learned per piece:
+              $(s, B, c_{\mathrm{feat}}, c_{\mathrm{emb}}, \varsigma^2)$ \\
+  $\tilde y_o$, $o$ & the observed values, and which entries are observed \\
+  $m$, $\Sigma_y$ & the output: posterior mean and covariance \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
 \end{frame}
 
 % ================================================================ 10b  ARCHITECTURE
@@ -318,7 +346,7 @@
   \textbf{proposed} & $K = B \otimes K_G + \sum_f \diag(c_f)\otimes X_fX_f^{\!\top} + \diag(\varsigma^2)\otimes I$ & \\
   no graph & $K_G \to I$ & the score graph \\
   no music model & $c_{\mathrm{emb}} \to 0$ & the learned features \\
-  fixed mean & $\beta \sim \N(0, cI) \;\to\; \beta = \hat\beta$ (one cross-piece fit) & per-piece adaptation \\
+  fixed mean & $\beta \sim \N(0, c_X I) \;\to\; \beta = \hat\beta$ (one cross-piece fit) & per-piece adaptation \\
   mean + smoothing & $\mu = X\hat\beta$, then per channel & the standard \\
    & $y_c - \mu_c \sim \N\bigl(0,\; \sigma_g^2 K_G + \sigma_e^2 I\bigr)$ & two-step recipe \\
   MLP & $y_{ic} \sim \N\bigl(\mu_c(x_i),\, \sigma_c^2(x_i)\bigr)$; notes independent & the GP itself \\
@@ -330,9 +358,11 @@
   \vspace{1mm}
   {\small Same input features and protocol for every system; all but the MLP
   are exact special cases of the proposed model. The MLP is a neural network
-  predicting each note's mean and variance from its own features, trained
-  five times from different random initializations with predictions merged
-  --- the standard recipe for a calibrated network baseline.}
+  predicting each note's mean and variance from its own features $x_i$,
+  trained five times from different random initializations with predictions
+  merged --- the standard recipe for a calibrated network baseline.
+  In mean + smoothing, $\sigma_g^2, \sigma_e^2$ are the smoother's signal
+  and noise variances.}
 \end{frame}
 
 % ================================================================ 13  RESULTS: OVERVIEW
@@ -584,7 +614,10 @@
 
 % ================================================================ 22  FUTURE: PHASE 2
 \begin{frame}{Future work: Phase 2, intonation and vibrato}
-  Continuously pitched instruments; the channel set grows:
+  Continuously pitched instruments; the channel set grows --- loudness
+  $\ell_i$ (replacing MIDI velocity), intonation offset $c_i$ in cents, and
+  vibrato rate / depth / phase $f_i^{\mathrm{vib}}, \gamma_i,
+  \delta_i^{\mathrm{vib}}$, tied together by the cents curve $c_i(t)$:
   \begin{equation*}
     y_i = [\,\tau_i, \log r_i, \ell_i, c_i, f_i^{\mathrm{vib}}, \gamma_i,
     \delta_i^{\mathrm{vib}}\,], \qquad
@@ -594,6 +627,8 @@
   \textbf{Pipeline}: $f_0$ tracking $\to$ cents curve $\to$ per-note joint
   least-squares fit (with parameter variances) $\to$ the same GP, now with
   per-(note, channel) masks and heteroscedastic noise.
+  \vspace{-1mm}
+  {\small
   \begin{itemize}
     \item Built and tested: the cell-mask posterior (exact) and the
           estimator, validated end-to-end on synthetic data with known ground
@@ -606,7 +641,7 @@
     \item Main risk: audio-to-score alignment error enters $\tau$ directly and
           is correlated along time; mitigation is to model it in the noise or
           exclude $\tau$ from Phase-2 claims.
-  \end{itemize}
+  \end{itemize}}
 \end{frame}
 
 
@@ -620,7 +655,8 @@
   \end{equation*}
   where $z$ are the per-note expressive fields (under the same graph prior),
   $\Phi(z)$ is a differentiable harmonic synthesis basis, and the amplitudes
-  $a$ integrate out in closed form.
+  $a \sim \N(\mu_a, \Sigma_a)$ integrate out in closed form
+  ($K_n$: audio-noise covariance).
   \begin{itemize}
     \item Already implemented and tested: $\Phi$ and the amplitude
           marginalisation.
