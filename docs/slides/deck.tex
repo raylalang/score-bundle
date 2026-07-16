@@ -83,7 +83,7 @@
 
 % ================================================================ 2  BACKGROUND
 \begin{frame}{Expressive performance}
-  The score specifies pitches and note values; performers add the timing,
+  The score specifies pitches and note values. Performers add the timing,
   articulation, and dynamics of every note. These deviations are the expression.
   \vspace{-2mm}
   \figslotw{deck_concept.png}{0.73}{the score, the same bars as a piano-roll
@@ -94,7 +94,7 @@
 \begin{frame}{Problem: infer how the music was played, with reliable uncertainty}
   The goal: a probabilistic model of \textbf{every per-note expressive
   parameter a performer controls}: timing, articulation, dynamics, and, on
-  continuously pitched instruments, intonation and vibrato; ultimately
+  continuously pitched instruments, intonation and vibrato, ultimately
   inferred from audio alone. Every estimate must carry an error bar that can
   be trusted note by note.
   \vspace{2mm}
@@ -132,18 +132,18 @@
   \begin{itemize}
     \item rule systems: KTH performance rules (Friberg et al.\ 2006)
     \item linear basis-function models (Grachten \& Widmer 2012)
-    \item deep rendering models: VirtuosoNet (Jeong et al.\ 2019);
+    \item deep rendering models: VirtuosoNet (Jeong et al.\ 2019),
           Oore et al.\ 2018
     \item review: Cancino-Chac\'on et al.\ 2018
   \end{itemize}
-  All output one rendering or corpus statistics; none a calibrated
+  All output one rendering or corpus statistics, none a calibrated
   per-note posterior.}
   \column{0.48\textwidth}
   \textbf{Gaussian processes and graphs}
   {\small
   \begin{itemize}
     \item \textbf{Gaussian Processes over Graphs} (Venkitaraman et al.\
-          2018): outputs on graph nodes, Kronecker-coupled; the main
+          2018): outputs on graph nodes, Kronecker-coupled. The main
           foundation here
     \item graph Mat\'ern and heat kernels (Borovitskiy et al.\ 2021)
     \item multi-output coupling via ICM (Bonilla et al.\ 2008)
@@ -156,8 +156,8 @@
 
 % ================================================================ 6  METHOD 1
 \begin{frame}{Method (1): the score graph}
-  Nodes are the $N$ written notes --- pitch $p_i$, beat onset $b_i$, beat
-  duration $d_i$; edges connect notes close in score time and pitch
+  Nodes are the $N$ written notes: pitch $p_i$, beat onset $b_i$, beat
+  duration $d_i$. Edges connect notes close in score time and pitch
   (neighbours should be played similarly):
   \vspace{-1mm}
   \begin{equation*}
@@ -167,7 +167,7 @@
     \Lg \;=\; D - W .
   \end{equation*}
   \vspace{-2mm}
-  {\centering\small $\ell_b, \ell_p$: length-scales; $D_{ii} = \sum_j W_{ij}$;
+  {\centering\small $\ell_b, \ell_p$: length-scales. $D_{ii} = \sum_j W_{ij}$.
   $\Lg$: the graph Laplacian.\par}
   \figslotw{deck_scoregraph.png}{0.80}{a few bars of real score as nodes,
     edges drawn by time / pitch / chord relation}
@@ -183,7 +183,7 @@
     g(\nu; s) \;=\; \frac{1}{1 + s\,\nu}
     \quad\text{(graph Mat\'ern, } \alpha = 1\text{)} .
   \end{equation*}
-  Smooth-on-the-graph components keep their variance; rough ones are shrunk.
+  Smooth-on-the-graph components keep their variance, rough ones are shrunk.
   \vspace{1mm}
 
   Timing, articulation, and dynamics are correlated, so the three channels
@@ -246,14 +246,14 @@
   \end{tabular}}
   \end{center}
   \vspace{1mm}
-  All score-only. Used as one set in a single linear kernel; the weights are
-  re-inferred for every piece.
+  All score-only. Used as one set in a single linear kernel, with the
+  weights re-inferred for every piece.
 \end{frame}
 
 % ================================================================ 10  METHOD 4
 \begin{frame}{Method (4): the covariance of one performance}
-  Stack all three channels of the $N$ notes into one vector $y \in \R^{3N}$;
-  every ingredient becomes one term of its covariance $K$:
+  Stack all three channels of the $N$ notes into one vector $y \in \R^{3N}$.
+  Every ingredient becomes one term of its covariance $K$:
   \begin{equation*}
     K \;=\;
     \underbrace{\textcolor{okblue}{B \otimes K_G(s)}}_{\text{coupled graph GP}}
@@ -261,27 +261,27 @@
     \;+\; \underbrace{\textcolor{okverm}{\diag(\varsigma^2)\otimes I}}_{\text{noise}}
   \end{equation*}
   {\small $f$ runs over the two feature sets, giving per-channel scales
-  $c_{\mathrm{feat}}$ and $c_{\mathrm{emb}}$; $\varsigma^2$ = the three
+  $c_{\mathrm{feat}}$ and $c_{\mathrm{emb}}$. $\varsigma^2$ = the three
   per-channel noise variances.}
   \vspace{1mm}
 
   All hyperparameters $\theta = (s, B, \{c_f\}, \varsigma^2)$ from one exact
-  evidence per piece; prediction is conjugate:
+  evidence per piece. Prediction is conjugate:
   \begin{equation*}
     \log p(\tilde y_o \mid \theta) = \log \N\!\bigl(\tilde y_o;\, 0,\, K_{oo}\bigr),
     \qquad
     m = C_{\cdot o} K_{oo}^{-1} \tilde y_o, \quad
     \Sigma_y = C - C_{\cdot o} K_{oo}^{-1} C_{o\cdot},
   \end{equation*}
-  {\small $\tilde y_o$: the observed values, $o$: the observed entries of $y$;
-  $C = K - \diag(\varsigma^2)\otimes I$: the noise-free part; $m, \Sigma_y$:
-  posterior mean and covariance. No variational approximation anywhere in
-  Phase 1; the baselines are exact special cases (diagonal $B$, zero $c_f$,
-  fixed cross-piece mean).}
+  {\small $\tilde y_o$: the observed values. $o$: the observed entries of
+  $y$. $C = K - \diag(\varsigma^2)\otimes I$: the noise-free part. $m,
+  \Sigma_y$: posterior mean and covariance. No variational approximation
+  anywhere in Phase 1, and the baselines are exact special cases (diagonal
+  $B$, zero $c_f$, fixed cross-piece mean).}
 \end{frame}
 
 % ================================================================ 10a  NOTATION
-\begin{frame}{Method (4b): every symbol in one place}
+\begin{frame}{Notations}
   \begin{center}
   {\small
   \begin{tabular}{@{}lp{92mm}@{}}
@@ -314,22 +314,22 @@
     feature branch (amber), likelihood (vermillion)}
   \vspace{-1mm}
   \centering\small Blue: score graph $\to \Lg \to K_G$. Amber: features and
-  embeddings as linear kernels. They fuse into the joint kernel; the
+  embeddings as linear kernels. They fuse into the joint kernel. The
   likelihood (vermillion) is the only block that changes in later phases.
 \end{frame}
 
 % ================================================================ 11  SETUP
 \begin{frame}{Experiment setup}
   \begin{itemize}
-    \item \textbf{Data}: ASAP piano (aligned score + performance MIDI);
-          performances that appeared in pretraining are removed
+    \item \textbf{Data}: ASAP piano (aligned score + performance MIDI).
+          Performances that appeared in pretraining are removed
           ($1036 \to 653$).
     \item \textbf{Split}: 40 train / 30 validation pieces (a further
           20-piece test set is held in reserve and not used here).
     \item \textbf{Task}: hide notes, predict them from the visible rest,
           at \textbf{six masking levels}: 50, 40, 30, 20, 10\% hidden, and
           leave-one-out.
-    \item \textbf{Metrics}, per channel and per level: RMSE for accuracy;
+    \item \textbf{Metrics}, per channel and per level: RMSE for accuracy,
           NLL and coverage for the error bars. Comparisons are paired per
           piece.
   \end{itemize}
@@ -356,11 +356,11 @@
   \end{tabular}}
   \end{center}
   \vspace{1mm}
-  {\small Same input features and protocol for every system; all but the MLP
+  {\small Same input features and protocol for every system. All but the MLP
   are exact special cases of the proposed model. The MLP is a neural network
   predicting each note's mean and variance from its own features $x_i$,
   trained five times from different random initializations with predictions
-  merged --- the standard recipe for a calibrated network baseline.
+  merged, the standard recipe for a calibrated network baseline.
   In mean + smoothing, $\sigma_g^2, \sigma_e^2$ are the smoother's signal
   and noise variances.}
 \end{frame}
@@ -370,7 +370,7 @@
   \figslotw{masksweep_perchannel_dev.png}{0.99}{per channel: RMSE vs hidden
     fraction, 50\% to 10\% plus leave-one-out, three systems}
   \begin{itemize}
-    \item 30 validation pieces, six masking levels; exact numbers on the
+    \item 30 validation pieces, six masking levels. Exact numbers on the
           next three slides.
     \item Articulation and dynamics: best at every level, gaps growing with
           observed context. Timing: all systems within noise.
@@ -395,8 +395,8 @@
   \end{tabular}}
   \end{center}
   \begin{itemize}
-    \item Differences between the GP systems are within noise at every level;
-          the MLP is consistently slightly worse.
+    \item Differences between the GP systems are within noise at every
+          level. The MLP is consistently slightly worse.
     \item Timing is the hardest channel to improve: rubato is absorbed by the
           tempo curve before $\tau$ is defined, and what remains is largely
           note-local.
@@ -421,7 +421,7 @@
   \end{tabular}}
   \end{center}
   \begin{itemize}
-    \item The proposed model is best at every level; the graph's largest
+    \item The proposed model is best at every level. The graph's largest
           accuracy contribution lives here.
     \item The MLP is far behind and flat: it cannot use the observed
           context of the piece.
@@ -446,7 +446,7 @@
   \end{tabular}}
   \end{center}
   \begin{itemize}
-    \item Best at every level; both the graph and the music-model embeddings
+    \item Best at every level. Both the graph and the music-model embeddings
           contribute here.
     \item The embeddings' contribution grows with observed context: they are
           context-dependent features.
@@ -455,8 +455,9 @@
 
 % ================================================================ 13d  CALIBRATION
 \begin{frame}{Results: calibration (NLL per channel, by masking level)}
-  \noindent{\small NLL of held-out notes (lower = better-calibrated uncertainty;
-  per system: $\tau$ / $r$ / $v$); coverage stays 0.90--0.95 throughout.}
+  \noindent{\small NLL of held-out notes, lower = better-calibrated
+  uncertainty (per system: $\tau$ / $r$ / $v$). Coverage stays 0.90--0.95
+  throughout.}
   \begin{center}
   {\scriptsize\setlength{\tabcolsep}{1.9pt}
   \begin{tabular}{@{}lccc ccc ccc ccc ccc@{}}
@@ -494,8 +495,8 @@
   \vspace{-1mm}
   {\footnotesize Significant at every level except 10\% (few scored notes
   per piece). $\dagger$ one steady piece puts a few timing outliers far into
-  the Gaussian tail; a Student-$t$ timing likelihood resolves it. Pooled
-  timing NLL is outlier-dominated everywhere; in articulation and dynamics
+  the Gaussian tail, and a Student-$t$ timing likelihood resolves it. Pooled
+  timing NLL is outlier-dominated everywhere. In articulation and dynamics
   the proposed model wins at every level.}
 \end{frame}
 
@@ -512,7 +513,7 @@
 % ================================================================ 16  RESULTS: ABLATIONS
 \begin{frame}{Results: ingredient contributions, by masking level}
   Paired pooled $\Delta$RMSE when an ingredient is removed
-  (negative = the ingredient helps; $^{*}$ = 95\% CI excludes 0):
+  (negative = the ingredient helps, $^{*}$ = 95\% CI excludes 0):
   \begin{center}
   {\small
   \begin{tabular}{@{}lcccccc@{}}
@@ -536,8 +537,8 @@
   \bottomrule
   \end{tabular}}
   \end{center}
-  \small The graph matters most mid-range; the embeddings' value grows with
-  observed context. Fixing a cross-piece mean inside the GP loses almost
+  \small The graph matters most mid-range, and the embeddings' value grows
+  with observed context. Fixing a cross-piece mean inside the GP loses almost
   nothing: the accuracy gain is per-piece re-weighting of the features.
 \end{frame}
 
@@ -571,8 +572,8 @@
   \vspace{-1mm}
   {\small
   \begin{itemize}
-    \item The filter shape is irrelevant; the \emph{edges} are not, at every
-          level. The gains sit in articulation and dynamics.
+    \item The filter shape is irrelevant. The \emph{edges} are not, at any
+          level: the gains sit in articulation and dynamics.
     \item In the full model (embeddings present) the added edge families
           become redundant.
   \end{itemize}}
@@ -586,12 +587,12 @@
   \begin{itemize}
     \item \textbf{tonality (6)}: local key (Krumhansl--Schmuckler profiles),
           key clarity, mode, scale degree (sin/cos), in-scale flag,
-          distance between successive local keys;
-    \item \textbf{meter (1)}: metrical-weight hierarchy over five levels;
-    \item \textbf{verticals (2)}: within-chord dissonance; bass flag;
-    \item \textbf{phrase (2)}: boundary salience from timing and pitch gaps;
+          distance between successive local keys
+    \item \textbf{meter (1)}: metrical-weight hierarchy over five levels
+    \item \textbf{verticals (2)}: within-chord dissonance, bass flag
+    \item \textbf{phrase (2)}: boundary salience from timing and pitch gaps
     \item \textbf{repetition (1)}: motif-repetition count
-          (interval + rhythm 4-grams);
+          (interval + rhythm 4-grams)
     \item \textbf{voice (2)}: within-voice tessitura and position.
   \end{itemize}}
   \begin{center}
@@ -606,7 +607,7 @@
   \end{tabular}}
   \end{center}
   {\small No significant gain in any channel, in either regime. Direct
-  probes agree: the embeddings contain no tonal information; rhythm,
+  probes agree: the embeddings contain no tonal information, while rhythm,
   voicing, and register are encoded.}
 \end{frame}
 
@@ -614,10 +615,10 @@
 
 % ================================================================ 22  FUTURE: PHASE 2
 \begin{frame}{Future work: Phase 2, intonation and vibrato}
-  Continuously pitched instruments; the channel set grows --- loudness
-  $\ell_i$ (replacing MIDI velocity), intonation offset $c_i$ in cents, and
-  vibrato rate / depth / phase $f_i^{\mathrm{vib}}, \gamma_i,
-  \delta_i^{\mathrm{vib}}$, tied together by the cents curve $c_i(t)$:
+  Continuously pitched instruments. The channels grow: loudness $\ell_i$
+  (replacing MIDI velocity), intonation offset $c_i$ in cents, and vibrato
+  rate / depth / phase $f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}}$
+  in the cents curve $c_i(t)$:
   \begin{equation*}
     y_i = [\,\tau_i, \log r_i, \ell_i, c_i, f_i^{\mathrm{vib}}, \gamma_i,
     \delta_i^{\mathrm{vib}}\,], \qquad
@@ -627,20 +628,20 @@
   \textbf{Pipeline}: $f_0$ tracking $\to$ cents curve $\to$ per-note joint
   least-squares fit (with parameter variances) $\to$ the same GP, now with
   per-(note, channel) masks and heteroscedastic noise.
-  \vspace{-1mm}
+  \vspace{-2mm}
   {\small
   \begin{itemize}
     \item Built and tested: the cell-mask posterior (exact) and the
           estimator, validated end-to-end on synthetic data with known ground
           truth. Notes too short to estimate get their vibrato from the
           graph, with sensible coverage.
-    \item Planned data: URMP (per-instrument audio + scores); solo vocal
-          corpora as secondary.
-    \item Planned evaluation: same held-out imputation, calibration primary;
-          a fresh preregistered test set before any claim.
+    \item Planned data: URMP (per-instrument audio + scores), then solo
+          vocal corpora.
+    \item Planned evaluation: the same held-out imputation, with a fresh
+          preregistered test set before any claim.
     \item Main risk: audio-to-score alignment error enters $\tau$ directly and
-          is correlated along time; mitigation is to model it in the noise or
-          exclude $\tau$ from Phase-2 claims.
+          is correlated along time. Mitigation is to model it in the noise
+          or exclude $\tau$ from Phase-2 claims.
   \end{itemize}}
 \end{frame}
 
@@ -661,10 +662,10 @@
     \item Already implemented and tested: $\Phi$ and the amplitude
           marginalisation.
     \item Open: inference over $z$. There are no per-note observations, so
-          conjugacy is lost; plan is Laplace or variational inference,
+          conjugacy is lost. The plan is Laplace or variational inference,
           initialised from the score.
     \item Planned evaluation: synthetic audio first (parameter recovery,
-          identifiability), then monophonic recordings;
+          identifiability), then monophonic recordings, with
           posterior-predictive resynthesis as the end-to-end check.
     \item Open question: how to measure calibration without per-note ground
           truth.
@@ -674,17 +675,17 @@
 % ================================================================ 25  SUMMARY
 \begin{frame}{Summary}
   \begin{itemize}
-    \item One GP prior on the score graph covers the whole program; only the
-          observation model changes between phases.
+    \item One GP prior on the score graph covers the whole program. Only
+          the observation model changes between phases.
     \item Phase 1: best accuracy in every channel, at every masking level
-          from 50\% hidden to leave-one-out, on held-out validation pieces;
-          the graph carries the calibration.
+          from 50\% hidden to leave-one-out, on held-out validation pieces.
+          The graph carries the calibration.
     \item Where the gains come from is measured, not assumed: per-piece
           feature weighting for accuracy, the graph for calibration.
     \item Negative results are kept: tonality does not predict these
           deviations, in the graph, as features, or in the embeddings.
-    \item Phase 2 machinery is built and validated on synthetic ground truth;
-          Phase 3 is scoped with its conjugate core tested.
+    \item Phase 2 machinery is built and validated on synthetic ground
+          truth. Phase 3 is scoped with its conjugate core tested.
   \end{itemize}
 \end{frame}
 
