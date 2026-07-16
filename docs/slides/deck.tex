@@ -349,20 +349,16 @@
   fixed mean & $\beta \sim \N(0, c_X I) \;\to\; \beta = \hat\beta$ (one cross-piece fit) & per-piece adaptation \\
   mean + smoothing & $\mu = X\hat\beta$, then per channel & the standard \\
    & $y_c - \mu_c \sim \N\bigl(0,\; \sigma_g^2 K_G + \sigma_e^2 I\bigr)$ & two-step recipe \\
-  MLP & $y_{ic} \sim \N\bigl(\mu_c(x_i),\, \sigma_c^2(x_i)\bigr)$; notes independent & the GP itself \\
   independent & $K_G \to I$ and $c_f \to 0$ & any structure at all \\
   temporal chain & $\Lg$ from time-adjacent edges only & score vs time edges \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \vspace{1mm}
-  {\small Same input features and protocol for every system. All but the MLP
-  are exact special cases of the proposed model. The MLP is a neural network
-  predicting each note's mean and variance from its own features $x_i$,
-  trained five times from different random initializations with predictions
-  merged, the standard recipe for a calibrated network baseline.
-  In mean + smoothing, $\sigma_g^2, \sigma_e^2$ are the smoother's signal
-  and noise variances.}
+  {\small Same input features and protocol for every system, and every
+  system is an exact special case of the proposed model. In mean +
+  smoothing, $\sigma_g^2, \sigma_e^2$ are the smoother's signal and noise
+  variances.}
 \end{frame}
 
 % ================================================================ 13  RESULTS: OVERVIEW
@@ -373,7 +369,7 @@
     \item 30 validation pieces, six masking levels. Exact numbers on the
           next three slides.
     \item Articulation and velocity: best at every level, gaps growing with
-          observed context. Timing: the GP systems are within noise.
+          observed context. Timing: all systems are within noise.
   \end{itemize}
 \end{frame}
 
@@ -381,22 +377,22 @@
 \begin{frame}{Results: timing $\tau$ (RMSE, by masking level)}
   \begin{center}
   {\small
-  \begin{tabular}{@{}lccccc@{}}
+  \begin{tabular}{@{}lcccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing & MLP \\
+  hidden & proposed & no graph & no music model & mean + smoothing \\
   \midrule
-  50\% & \textbf{0.162} & 0.163 & 0.162 & 0.168 & 0.172 \\
-  40\% & \textbf{0.152} & 0.154 & 0.152 & 0.158 & 0.163 \\
-  30\% & \textbf{0.157} & 0.159 & 0.159 & 0.164 & 0.170 \\
-  20\% & \textbf{0.149} & 0.151 & 0.150 & 0.156 & 0.161 \\
-  10\% & \textbf{0.154} & 0.156 & 0.157 & 0.162 & 0.167 \\
-  LOO  & \textbf{0.149} & 0.150 & 0.152 & 0.159 & 0.165 \\
+  50\% & \textbf{0.162} & 0.163 & 0.162 & 0.168 \\
+  40\% & \textbf{0.152} & 0.154 & 0.152 & 0.158 \\
+  30\% & \textbf{0.157} & 0.159 & 0.159 & 0.164 \\
+  20\% & \textbf{0.149} & 0.151 & 0.150 & 0.156 \\
+  10\% & \textbf{0.154} & 0.156 & 0.157 & 0.162 \\
+  LOO  & \textbf{0.149} & 0.150 & 0.152 & 0.159 \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \begin{itemize}
-    \item Differences between the GP systems are within noise at every
-          level. The MLP is consistently slightly worse.
+    \item Differences between the systems are within noise at every
+          level.
     \item Timing is the hardest channel to improve: rubato is absorbed by the
           tempo curve before $\tau$ is defined, and what remains is largely
           note-local.
@@ -407,24 +403,22 @@
 \begin{frame}{Results: articulation $\log r$ (RMSE, by masking level)}
   \begin{center}
   {\small
-  \begin{tabular}{@{}lccccc@{}}
+  \begin{tabular}{@{}lcccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing & MLP \\
+  hidden & proposed & no graph & no music model & mean + smoothing \\
   \midrule
-  50\% & \textbf{0.618} & 0.635 & 0.626 & 0.647 & 0.761 \\
-  40\% & \textbf{0.601} & 0.627 & 0.615 & 0.633 & 0.757 \\
-  30\% & \textbf{0.592} & 0.620 & 0.607 & 0.628 & 0.761 \\
-  20\% & \textbf{0.587} & 0.603 & 0.616 & 0.629 & 0.771 \\
-  10\% & \textbf{0.577} & 0.584 & 0.612 & 0.630 & 0.770 \\
-  LOO  & \textbf{0.546} & 0.567 & 0.582 & 0.607 & 0.755 \\
+  50\% & \textbf{0.618} & 0.635 & 0.626 & 0.647 \\
+  40\% & \textbf{0.601} & 0.627 & 0.615 & 0.633 \\
+  30\% & \textbf{0.592} & 0.620 & 0.607 & 0.628 \\
+  20\% & \textbf{0.587} & 0.603 & 0.616 & 0.629 \\
+  10\% & \textbf{0.577} & 0.584 & 0.612 & 0.630 \\
+  LOO  & \textbf{0.546} & 0.567 & 0.582 & 0.607 \\
   \bottomrule
   \end{tabular}}
   \end{center}
   \begin{itemize}
     \item The proposed model is best at every level. The graph's largest
           accuracy contribution lives here.
-    \item The MLP is far behind and flat: it cannot use the observed
-          context of the piece.
   \end{itemize}
 \end{frame}
 
@@ -432,16 +426,16 @@
 \begin{frame}{Results: velocity $v$ (RMSE, by masking level)}
   \begin{center}
   {\small
-  \begin{tabular}{@{}lccccc@{}}
+  \begin{tabular}{@{}lcccc@{}}
   \toprule
-  hidden & proposed & no graph & no music model & mean + smoothing & MLP \\
+  hidden & proposed & no graph & no music model & mean + smoothing \\
   \midrule
-  50\% & \textbf{0.074} & 0.083 & 0.076 & 0.080 & 0.096 \\
-  40\% & \textbf{0.072} & 0.083 & 0.075 & 0.078 & 0.095 \\
-  30\% & \textbf{0.070} & 0.080 & 0.073 & 0.075 & 0.091 \\
-  20\% & \textbf{0.068} & 0.074 & 0.071 & 0.073 & 0.088 \\
-  10\% & \textbf{0.068} & 0.071 & 0.072 & 0.073 & 0.087 \\
-  LOO  & \textbf{0.066} & 0.068 & 0.070 & 0.073 & 0.084 \\
+  50\% & \textbf{0.074} & 0.083 & 0.076 & 0.080 \\
+  40\% & \textbf{0.072} & 0.083 & 0.075 & 0.078 \\
+  30\% & \textbf{0.070} & 0.080 & 0.073 & 0.075 \\
+  20\% & \textbf{0.068} & 0.074 & 0.071 & 0.073 \\
+  10\% & \textbf{0.068} & 0.071 & 0.072 & 0.073 \\
+  LOO  & \textbf{0.066} & 0.068 & 0.070 & 0.073 \\
   \bottomrule
   \end{tabular}}
   \end{center}
@@ -459,22 +453,21 @@
   uncertainty (per system: $\tau$ / $r$ / $v$). Coverage stays 0.90--0.95
   throughout.}
   \begin{center}
-  {\scriptsize\setlength{\tabcolsep}{1.9pt}
-  \begin{tabular}{@{}lccc ccc ccc ccc ccc@{}}
+  {\scriptsize\setlength{\tabcolsep}{3.4pt}
+  \begin{tabular}{@{}lccc ccc ccc ccc@{}}
   \toprule
   & \multicolumn{3}{c}{proposed} & \multicolumn{3}{c}{no graph}
-  & \multicolumn{3}{c}{no music model} & \multicolumn{3}{c}{mean + smoothing}
-  & \multicolumn{3}{c}{MLP} \\
-  \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-13}\cmidrule(lr){14-16}
+  & \multicolumn{3}{c}{no music model} & \multicolumn{3}{c}{mean + smoothing} \\
+  \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-13}
   hidden & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$
-  & $\tau$ & $r$ & $v$ & $\tau$ & $r$ & $v$ \\
+  & $\tau$ & $r$ & $v$ \\
   \midrule
-  50\% & $-.65$ & $\bm{+.87}$ & $\bm{-1.21}$ & $-.64$ & $+.91$ & $-1.09$ & $-.60$ & $+.88$ & $-1.17$ & $\bm{-.77}$ & $+.93$ & $-1.12$ & $-.48$ & $+1.11$ & $-.87$ \\
-  40\% & $\bm{-.82}$ & $\bm{+.84}$ & $\bm{-1.23}$ & $-.82$ & $+.90$ & $-1.10$ & $-.78$ & $+.86$ & $-1.19$ & $-.81$ & $+.91$ & $-1.14$ & $-.53$ & $+1.10$ & $-.89$ \\
-  30\% & $+.03^{\dagger}$ & $\bm{+.82}$ & $\bm{-1.27}$ & $-.24$ & $+.89$ & $-1.14$ & $-.16$ & $+.85$ & $-1.22$ & $-.44$ & $+.90$ & $-1.17$ & $\bm{-.47}$ & $+1.10$ & $-.92$ \\
-  20\% & $\bm{-.86}$ & $\bm{+.82}$ & $\bm{-1.29}$ & $-.67$ & $+.86$ & $-1.21$ & $-.81$ & $+.87$ & $-1.24$ & $-.84$ & $+.91$ & $-1.20$ & $-.46$ & $+1.12$ & $-.95$ \\
-  10\% & $-.77$ & $\bm{+.80}$ & $\bm{-1.28}$ & $-.78$ & $+.83$ & $-1.25$ & $-.72$ & $+.86$ & $-1.22$ & $\bm{-.81}$ & $+.90$ & $-1.20$ & $-.59$ & $+1.11$ & $-.95$ \\
-  LOO  & $\bm{-1.12}$ & $\bm{+.73}$ & $\bm{-1.33}$ & $-1.10$ & $+.79$ & $-1.29$ & $-1.09$ & $+.79$ & $-1.28$ & $-.95$ & $+.86$ & $-1.21$ & $-.50$ & $+1.10$ & $-.98$ \\
+  50\% & $-.65$ & $\bm{+.87}$ & $\bm{-1.21}$ & $-.64$ & $+.91$ & $-1.09$ & $-.60$ & $+.88$ & $-1.17$ & $\bm{-.77}$ & $+.93$ & $-1.12$ \\
+  40\% & $\bm{-.82}$ & $\bm{+.84}$ & $\bm{-1.23}$ & $-.82$ & $+.90$ & $-1.10$ & $-.78$ & $+.86$ & $-1.19$ & $-.81$ & $+.91$ & $-1.14$ \\
+  30\% & $+.03^{\dagger}$ & $\bm{+.82}$ & $\bm{-1.27}$ & $-.24$ & $+.89$ & $-1.14$ & $-.16$ & $+.85$ & $-1.22$ & $\bm{-.44}$ & $+.90$ & $-1.17$ \\
+  20\% & $\bm{-.86}$ & $\bm{+.82}$ & $\bm{-1.29}$ & $-.67$ & $+.86$ & $-1.21$ & $-.81$ & $+.87$ & $-1.24$ & $-.84$ & $+.91$ & $-1.20$ \\
+  10\% & $-.77$ & $\bm{+.80}$ & $\bm{-1.28}$ & $-.78$ & $+.83$ & $-1.25$ & $-.72$ & $+.86$ & $-1.22$ & $\bm{-.81}$ & $+.90$ & $-1.20$ \\
+  LOO  & $\bm{-1.12}$ & $\bm{+.73}$ & $\bm{-1.33}$ & $-1.10$ & $+.79$ & $-1.29$ & $-1.09$ & $+.79$ & $-1.28$ & $-.95$ & $+.86$ & $-1.21$ \\
   \bottomrule
   \end{tabular}}
   \end{center}
