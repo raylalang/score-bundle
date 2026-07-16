@@ -83,7 +83,7 @@ def main() -> None:
     axes[0].legend(frameon=False, fontsize=8, ncol=4, loc="upper left",
                    bbox_to_anchor=(0.0, 1.22))
     axes[0].set_title(
-        f"Proposed model posterior, dev piece {PIECE} "
+        f"Proposed model posterior, validation piece {PIECE} "
         f"({p.get('composer', '?')}), 40% hidden, first {len(idx)} notes",
         fontsize=10, color=INK, loc="left", pad=28)
     axes[-1].set_xlabel("note (score order)", fontsize=9, color=INK)

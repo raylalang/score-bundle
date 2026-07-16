@@ -373,7 +373,7 @@
     \item 30 validation pieces, six masking levels. Exact numbers on the
           next three slides.
     \item Articulation and dynamics: best at every level, gaps growing with
-          observed context. Timing: all systems within noise.
+          observed context. Timing: the GP systems are within noise.
   \end{itemize}
 \end{frame}
 
@@ -664,11 +664,10 @@
   $a \sim \N(\mu_a, \Sigma_a)$ integrate out in closed form
   ($K_n$: audio-noise covariance).
   \begin{itemize}
-    \item Already implemented and tested: $\Phi$ and the amplitude
-          marginalisation.
-    \item Open: inference over $z$. There are no per-note observations, so
-          conjugacy is lost. The plan is Laplace or variational inference,
-          initialised from the score.
+    \item The amplitude step is conjugate, so it stays exact. The open part
+          is inference over $z$: with no per-note observations conjugacy is
+          lost, and the plan is Laplace or variational inference, initialised
+          from the score.
     \item Planned evaluation: synthetic audio first (parameter recovery,
           identifiability), then monophonic recordings, with
           posterior-predictive resynthesis as the end-to-end check.
