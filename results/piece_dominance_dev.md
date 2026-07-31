@@ -50,6 +50,29 @@ descriptor of a performance's structure. Composer-level patterns (Chopin
 LM-timing, Debussy LM-dynamics) are suggestive but n-per-composer is too
 small for claims.
 
+## Disagreement (opposite-sign pulls at held-out notes)
+
+Fraction of held-out notes where two components pull in opposite directions
+with both pulls substantial (|m_c| > 0.25 × channel posterior-mean std;
+30 dev pieces, seed 0; `scripts/make_component_contrast.py`):
+
+| pair | τ | log r | v |
+|---|---|---|---|
+| graph × score features | 0.099 | 0.205 | 0.151 |
+| graph × embeddings | 0.059 | 0.107 | 0.107 |
+| score features × embeddings | 0.057 | 0.036 | 0.092 |
+
+The per-note face of the negative posterior cross-correlations: 1 in 5
+held-out articulation notes has the graph and the score features actively
+pulling against each other. Timing note: graph-dominated τ pieces (Liszt 14,
+Haydn 23) are the *steady* ones — their τ mean is largely shrunk to noise,
+so graph dominance there means "the graph carries what little is
+predictable". This is why the thesis contrast figure
+(`docs/thesis/figures/posterior_components_contrast_dev.png`,
+`fig:component-contrast`) uses the loudness channel: Liszt 14 (graph 0.76,
+level + late crescendo by graph, LM off) vs Debussy 5 (LM 0.69,
+note-to-note convention by embeddings, graph flat).
+
 Full 30-piece table: run log (per-piece lines); shares array at
 `~/.claude/jobs/b215b88d/tmp/piece_shares.npy`. Reconstruct: fit_components +
 cov_shares from `scripts/make_posterior_components.py`, seed-0 anchor masks.
