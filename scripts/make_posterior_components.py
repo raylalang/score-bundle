@@ -35,7 +35,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 OUT_FIG = "docs/thesis/figures/posterior_components_dev.png"
 OUT_TAB = "results/posterior_components_dev.md"
 PIECE, SEED = 0, 0
-WINDOW = slice(0, 140)
+# snapshot window (score order): a short section spanning the piece's two
+# large articulation events, so per-note component behaviour is legible
+WINDOW = slice(10, 66)
 INK, MUTED = "#1A1A1A", "#6B7280"
 BLUE, VERM, GREEN = "#0072B2", "#D55E00", "#009E73"
 NAMES = [r"timing $\tau_i$ (s)", r"articulation $\log r_i$", r"velocity $v_i$"]
@@ -89,7 +91,7 @@ def main() -> None:
     Y, comps = fit_components(p, mask, embs[(PIECE, SEED)])
     order = np.argsort(np.asarray(p["onset"], dtype=float), kind="stable")
     idx = order[WINDOW]
-    xs = np.arange(len(idx))
+    xs = np.arange(WINDOW.start, WINDOW.start + len(idx))
     fig, axes = plt.subplots(3, 1, figsize=(10.2, 6.2), dpi=200, sharex=True)
     for c, ax in enumerate(axes):
         obs = mask[idx]
@@ -99,20 +101,24 @@ def main() -> None:
                 label="posterior mean (sum)")
         for key, label, color in COMPS:
             ax.plot(xs, comps[key][idx, c], color=color, lw=1.1, label=label)
-        ax.plot(xs[obs], Y[idx, c][obs], ".", color=MUTED, ms=4,
+        ax.plot(xs[obs], Y[idx, c][obs], ".", color=MUTED, ms=5,
                 label="observed note")
+        ax.plot(xs[~obs], Y[idx, c][~obs], "o", color=INK, ms=4.5,
+                markerfacecolor="white", markeredgewidth=1.1,
+                label="hidden note (truth)")
         ax.set_ylabel(NAMES[c], fontsize=9, color=INK)
         for side in ("top", "right"):
             ax.spines[side].set_visible(False)
         for side in ("left", "bottom"):
             ax.spines[side].set_color(MUTED)
         ax.tick_params(colors=MUTED, labelsize=8)
-    axes[0].legend(frameon=False, fontsize=8, ncol=5, loc="upper left",
-                   bbox_to_anchor=(0.0, 1.24))
+    axes[0].legend(frameon=False, fontsize=8, ncol=3, loc="upper left",
+                   bbox_to_anchor=(0.0, 1.38))
     axes[0].set_title(
         f"Posterior mean by prior component, validation piece {PIECE} "
-        f"({p.get('composer', '?')}), 40% hidden, first {len(idx)} notes",
-        fontsize=10, color=INK, loc="left", pad=28)
+        f"({p.get('composer', '?')}), 40% hidden, "
+        f"notes {WINDOW.start}–{WINDOW.stop - 1} (score order)",
+        fontsize=10, color=INK, loc="left", pad=42)
     axes[-1].set_xlabel("note (score order)", fontsize=9, color=INK)
     fig.tight_layout()
     os.makedirs(os.path.dirname(OUT_FIG), exist_ok=True)

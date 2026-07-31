@@ -1315,14 +1315,17 @@ model's own attribution under its learned scales, not causal claims.
 Figure~\ref{fig:posterior-components} shows one development piece's posterior
 mean split into its component curves.
 
-\figph{posterior_components_dev.png}{1.0}{The posterior mean of
-\eqref{eq:posterior} split exactly by prior component \eqref{eq:decomp} on one
-development piece (40\% hidden, anchor mask): coupled graph GP, score-feature
-kernel, and music-model-embedding kernel sum to the grey total. The embedding
-component is nearly flat on timing and articulation here and active on
-loudness; the graph component carries the articulation level and its local
-excursions; the score features carry most of the timing
-mean.\label{fig:posterior-components}}
+\figph{posterior_components_dev.png}{1.0}{Snapshot of one section of a
+development piece (notes 10--65 in score order, 40\% hidden, anchor mask):
+the posterior mean of \eqref{eq:posterior} split exactly by prior component
+\eqref{eq:decomp} --- coupled graph GP, score-feature kernel, and
+music-model-embedding kernel sum to the grey total; open circles are the
+hidden notes' true values. The division of labour is legible note by note:
+on loudness the embedding component tracks the note-to-note alternation while
+the score features carry the phrase shape; the two large articulation events
+are carried almost entirely by the graph component, propagated from observed
+extreme neighbours; timing rests on the score features, with the embedding
+component nearly flat outside loudness.\label{fig:posterior-components}}
 
 \section{Per-channel breakdown: where the graph earns its keep}\label{sec:perchannel}
 The pooled headline (Table~\ref{tab:headline-exec}) averages three normalised
