@@ -1,0 +1,11 @@
+mean+smoothing: 10/30 pieces
+mean+smoothing: 20/30 pieces
+mean+smoothing: 30/30 pieces
+mean+smoothing LOO  tau: 0.159/0.95/nll -0.952  logr: 0.607/0.92/nll +0.862  v: 0.073/0.91/nll -1.210
+member seed 0: val NLL -1.0230 (35 epochs)
+member seed 1: val NLL -1.0396 (35 epochs)
+member seed 2: val NLL -1.0412 (37 epochs)
+member seed 3: val NLL -1.0253 (35 epochs)
+member seed 4: val NLL -1.0499 (35 epochs)
+MLP ensemble LOO    tau: 0.165/0.97/nll -0.504  logr: 0.755/0.88/nll +1.104  v: 0.084/0.95/nll -0.976
+wrote results/baselines_loo.pkl

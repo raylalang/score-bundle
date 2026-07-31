@@ -635,6 +635,29 @@ the observed ones through the conditional Gaussian --- the held-out
 \emph{imputation} task. The per-note posterior standard deviation is
 $\sigma_i = \sqrt{(\Sy)_{ii}}$.
 
+\paragraph{The posterior decomposes by prior component.}
+The latent field is a sum of independent components, $y = y^{(G)} + \sum_f
+y^{(f)}$ (the coupled graph GP and one draw per feature kernel), and $C$ is
+the sum of their covariances. Since the weight vector $K_{oo}^{-1}\tilde y_o$
+in \eqref{eq:posterior} is shared, the posterior mean splits \emph{exactly} by
+component,
+\begin{equation}
+  m \;=\; m^{(G)} + \sum_f m^{(f)}, \qquad
+  m^{(\cdot)} \;=\; C^{(\cdot)}_{\cdot o}\, K_{oo}^{-1}\, \tilde y_o,
+  \label{eq:decomp}
+\end{equation}
+and each term is itself the posterior mean $\mathbb{E}[\,y^{(\cdot)} \mid \tilde y_o\,]$
+of that component --- the functional-ANOVA decomposition of an additive GP.
+Observation noise shapes the shared weights but contributes no mean term of its
+own at held-out notes. The posterior covariance decomposes likewise, with
+cross-terms $-\,C^{(a)}_{\cdot o} K_{oo}^{-1} C^{(b)}_{o\cdot}$ between distinct
+components --- negative wherever two components can explain the same variation
+(explaining-away), so their normalised diagonals measure per-note redundancy
+between information sources. The split is the evidence-fitted model's own
+attribution --- it depends on the learned $B$, $c_f$, $\varsigma^2$ --- a
+description of how the fitted model divides labour, not a causal claim; its
+measured shape is reported in \S\ref{sec:attribution}.
+
 Figure~\ref{fig:arch-phase1} lays this assembly out as a computation graph: the
 graph-structure branch and the evidence branch are built independently from the
 score, fuse as a sum of Kronecker terms into the joint kernel
@@ -1284,6 +1307,35 @@ Bayesian weighting of informative per-note features under one joint marginal lik
 recovering; the graph makes the confidence honest}. The music model earns its place
 as a feature provider inside the kernel, not as an oracle mean.
 
+A third control needs no refitting at all: the exact component decomposition of
+the posterior \eqref{eq:decomp}, read off the fitted model itself
+(development pieces, $\nPieces \times 4$ anchor masks). Covariance shares of the
+posterior \emph{mean} at held-out notes --- summing to one per channel --- put
+most of the mean on the score-feature kernel on every channel
+($0.69/0.60/0.40$ for $\tau$ / $\log r$ / $v$), give the embeddings their
+largest share on loudness ($0.34$, the channel where they carry signal the
+hand-built features lack), and leave the graph's share of the mean modest
+($0.12/0.22/0.27$) --- consistent with (i)--(ii): feature weighting recovers
+the mean, the graph's contribution concentrates in the covariance. The
+posterior cross-correlations between components complete the picture: graph
+$\times$ embeddings is near zero ($-0.004/-0.025/-0.059$ per channel) --- the
+two information sources act \emph{complementarily}, not redundantly --- while
+the visible explaining-away sits between the two feature kernels (score
+$\times$ embeddings, $-0.18$ on loudness) and between graph and score features
+($-0.19/-0.18$ on articulation and loudness). Both statements are the fitted
+model's own attribution under its learned scales, not causal claims.
+Figure~\ref{fig:posterior-components} shows one development piece's posterior
+mean split into its component curves.
+
+\figph{posterior_components_dev.png}{1.0}{The posterior mean of
+\eqref{eq:posterior} split exactly by prior component \eqref{eq:decomp} on one
+development piece (40\% hidden, anchor mask): coupled graph GP, score-feature
+kernel, and music-model-embedding kernel sum to the grey total. The embedding
+component is nearly flat on timing and articulation here and active on
+loudness; the graph component carries the articulation level and its local
+excursions; the score features carry most of the timing
+mean.\label{fig:posterior-components}}
+
 \figph{digest_headline.png}{0.7}{Two orthogonal upgrades, strict protocol,
 development set (two-stage plug-in systems): per prior mean (rows), held-out RMSE with no
 graph, the plain score graph, and the chord/voice-leading-augmented graph.
@@ -1418,7 +1470,13 @@ at $\approx 0.45$, the level of the cross-piece plug-in mean without a graph.
 Their coverage is respectable ($0.92$, the variance head works), but their NLL
 is far behind because ranking \emph{which} notes are uncertain requires
 per-piece adaptation and the graph --- the attribution result confirmed from
-the other side. Scope stated honestly: these are frozen-embedding read-out
+the other side. A follow-up at the leave-one-out limit of \S\ref{sec:masksweep}
+--- the densest observation, where a read-out head should be at its best ---
+leaves the verdict unchanged: the proposed model wins every channel on both
+axes (timing RMSE $0.149$ vs.\ $0.165$, NLL $-1.12$ vs.\ $-0.50$ against the
+ensemble; articulation $0.546$ vs.\ $0.755$; loudness $0.066$ vs.\ $0.084$),
+so the ensemble's uncertainty ranking does not catch up with denser
+observation. Scope stated honestly: these are frozen-embedding read-out
 heads, the natural deep comparator at matched information and training data;
 a fine-tuned end-to-end deep model remains untested.
 
@@ -1520,11 +1578,28 @@ bitwise, \S\ref{sec:hygiene}). The edge weights are untuned defaults, and a
 six-variant sensitivity sweep ($\times 3$ / $\div 3$ on each family) shows no
 knife-edge. \textbf{Under the final model}, once the music-model
 embeddings enter the kernel as features, the harmonic edge families are
-measured-redundant (learned-graph and harmonic variants statistically tie the
-plain graph, development) --- the embeddings already carry the local-context information
-the extra edges encode. The finding therefore holds \emph{under the two-stage plug-in
-baseline}; its deeper lesson --- theory-as-extra-structure helps,
-theory-as-replacement-metric hurts --- carries over to the proposed model.
+measured-redundant \emph{at the 40\% operating point} (learned-graph and
+harmonic variants statistically tie the plain graph, development). Two
+post-adoption development studies scope that tie by masking level. First, the
+two-stage comparison repeated at every level of \S\ref{sec:masksweep} finds
+the added-edges win present at each level and growing with observation
+density ($\Delta$RMSE $-0.009$ to $-0.014$, all significant), while the
+metric-replacement penalty persists throughout. Second, at the densest level
+(10\% hidden) the harmonic learned-graph variant beats the plain graph
+\emph{under the final model as well}: $\Delta$RMSE $-0.0089$
+$[-0.0158, -0.0027]$, paired, development; NLL better on $22/30$ pieces
+(median $-0.030$) with the mean contrast dominated by a single cell of the
+documented Gaussian-tail piece (\S\ref{sec:guard-gp}), so no significance
+claim either way on that axis. The redundancy conclusion is therefore
+\emph{masking-level-scoped}: where observation is dense enough to determine
+the extra edge weights, the harmonic edges carry information the embeddings
+do not (consistent with the near-zero posterior correlation between the graph
+and embedding components, \S\ref{sec:attribution}); the intermediate levels
+are not yet measured under the final model. Whether the harmonic graph enters
+the thesis model is accordingly a question for a second preregistered
+confirmation set (\S\ref{sec:hygiene}), not a development decision. The
+deeper lesson --- theory-as-extra-structure helps,
+theory-as-replacement-metric hurts --- stands in both regimes.
 
 \begin{table}[h]\centering
 \caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; safeguard on),
@@ -1820,7 +1895,13 @@ a metrical-weight hierarchy, within-chord dissonance and a bass flag,
 phrase-boundary salience, motif-repetition counts, and per-voice tessitura.
 On the development set they change nothing significant: $-0.002$ RMSE (CI touches
 zero) without the music-model embeddings, $+0.001$ (ns) beside them, and no single
-channel is significant in either regime.
+channel is significant in either regime. The verdict is not specific to the
+40\% operating point: repeated at every masking level of \S\ref{sec:masksweep},
+the columns stay non-significant beside the embeddings at each level, and reach
+(marginal) significance on the plain model only at 10\% hidden
+($-0.004$ RMSE, paired) --- the same pattern as the harmonic edges: where the
+per-piece weights are best determined, explicit theory shows a small signal
+that the embeddings already cover.
 
 A follow-up \emph{linear-probe} study sharpens the interpretation, and not in the
 obvious direction. Probing the embeddings directly (cross-piece ridge, fit on the

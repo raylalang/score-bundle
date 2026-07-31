@@ -1,0 +1,5 @@
+cells: 120 vs 120
+c_harm_lm    RMSE 0.3383  NLL -0.1601  cov 0.920
+b_featlm     RMSE 0.3472  NLL -0.4183  cov 0.925
+drmse: -0.0089 [-0.0158,-0.0027]*  (n=30, median -0.0030)
+dnll: +0.2643 [-0.0503,+0.8643]   (n=30, median -0.0297)

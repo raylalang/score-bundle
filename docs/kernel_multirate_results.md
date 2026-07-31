@@ -57,6 +57,28 @@ anchor rate**. Two follow-ups, in order:
    goes through a **second preregistered confirmation set**
    (`docs/graphgp_first_design.md`), not dev numbers.
 
+### Outcome of the first dev check (obs 0.90, run 2026-07-31)
+
+**The tie breaks at the densest level.** `c_harm_lm` vs `b_featlm` at 10%
+hidden (30 dev pieces × 4 seeds, guard on;
+`scripts/run_charmlm_obs090.sh`, `results/graphgp_charmlm_obs0.90/`,
+`logs/charmlm_obs090_report.log`):
+
+| | RMSE | NLL | cov@.9 |
+|---|---|---|---|
+| c_harm_lm | **0.3383** | −0.160 | 0.920 |
+| b_featlm | 0.3472 | −0.418 | 0.925 |
+
+Paired dRMSE **−0.0089 [−0.0158, −0.0027]\***. Paired dNLL +0.264
+[−0.050, +0.864] ns — but 22/30 pieces are NLL-better (median −0.030); the
+positive mean is one cell of the documented tail piece 28 (seed 2, cell NLL
++33.5). So: where observation is dense enough to determine the extra edge
+weights, harmonic edges carry recovery information the embeddings do not —
+consistent with the near-zero posterior graph×LM correlation
+(`results/component_redundancy_dev.md`). The intermediate rates
+(obs 0.50–0.80) remain unmeasured under the final model; harmonic adoption
+is now a live question for the second preregistered confirmation set.
+
 ## Reproduce
 
 ```bash
