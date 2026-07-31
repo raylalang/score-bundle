@@ -1298,14 +1298,20 @@ as a feature provider inside the kernel, not as an oracle mean.
 A third control needs no refitting at all: the exact component decomposition of
 the posterior \eqref{eq:decomp}, read off the fitted model itself
 (development pieces, $\nPieces \times 4$ anchor masks). Covariance shares of the
-posterior \emph{mean} at held-out notes --- summing to one per channel --- put
+posterior \emph{mean} at held-out notes,
+$s^{(\cdot)} = \operatorname{Cov}\bigl(m^{(\cdot)},\, m\bigr) / \operatorname{Var}(m)$
+per channel with the components of \eqref{eq:decomp} --- an allocation that
+sums to one exactly, cross-terms landing where they belong --- put
 most of the mean on the score-feature kernel on every channel
 ($0.69/0.60/0.40$ for $\tau$ / $\log r$ / $v$), give the embeddings their
 largest share on loudness ($0.34$, the channel where they carry signal the
 hand-built features lack), and leave the graph's share of the mean modest
 ($0.12/0.22/0.27$) --- consistent with (i)--(ii): feature weighting recovers
 the mean, the graph's contribution concentrates in the covariance. The
-posterior cross-correlations between components complete the picture: graph
+posterior cross-correlations between components --- the per-note diagonal of
+the cross-covariance of \S\ref{sec:posterior}, normalised by the two
+component posterior standard deviations, averaged over held-out notes ---
+complete the picture: graph
 $\times$ embeddings is near zero ($-0.004/-0.025/-0.059$ per channel) --- the
 two information sources act \emph{complementarily}, not redundantly --- while
 the visible explaining-away sits between the two feature kernels (score
