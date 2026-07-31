@@ -639,8 +639,19 @@ component,
 \end{equation}
 and each term is itself the posterior mean $\mathbb{E}[\,y^{(\cdot)} \mid \tilde y_o\,]$
 of that component --- the functional-ANOVA decomposition of an additive GP.
-Observation noise shapes the shared weights but contributes no mean term of its
-own at held-out notes. The posterior covariance decomposes likewise, with
+Observation noise is not a fourth component here, by independence rather than
+by convention: a held-out note's noise is never observed and is independent of
+every observation, so its conditional mean is identically zero. Noise enters
+\eqref{eq:decomp} only through the shared weights --- $K_{oo}$ contains
+$\Sigma_e$, so the fitted noise level sets how much of the observed variation
+is explained at all, a uniform shrinkage of every component rather than a
+competing direction. At \emph{observed} notes the decomposition does gain an
+exact noise term, $\mathbb{E}[\,e_o \mid \tilde y_o\,] = \tilde y_o -
+\mathbb{E}[\,y_o \mid \tilde y_o\,]$: the residual the model declines to
+explain. And in the predictive variance of a held-out observation the noise
+reappears additively as the floor \eqref{eq:floor}, where it is directly
+comparable to the components' posterior variances.
+The posterior covariance decomposes likewise, with
 cross-terms $-\,C^{(a)}_{\cdot o} K_{oo}^{-1} C^{(b)}_{o\cdot}$ between distinct
 components --- negative wherever two components can explain the same variation
 (explaining-away), so their normalised diagonals measure per-note redundancy
