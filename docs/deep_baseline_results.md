@@ -53,8 +53,29 @@ raw cells: `results/deep_baseline/`.
    that at the same information set and training data, calibrated deep
    read-outs do not approach the GP — not that no deep model ever could.
 
+## Addendum — LOO limit (run 2026-07-16, written up 2026-07-31)
+
+Both baselines re-run under the LOO protocol of the masking sweep
+(`logs/baselines_loo_nll.log`, `results/baselines_loo.pkl`; mean+smoothing =
+feat+LM mean with chord+VL graph smoothing, the strongest two-stage
+configuration). Per-channel RMSE / cov@.9 / NLL, dev pieces:
+
+| system | τ | log r | v |
+|---|---|---|---|
+| proposed (`b_featlm`, GP LOO) | **0.149** / 0.96 / **−1.116** | **0.546** / 0.92 / **+0.730** | **0.066** / 0.91 / **−1.334** |
+| mean+smoothing | 0.159 / 0.95 / −0.952 | 0.607 / 0.92 / +0.862 | 0.073 / 0.91 / −1.210 |
+| MLP 5-ensemble | 0.165 / 0.97 / −0.504 | 0.755 / 0.88 / +1.104 | 0.084 / 0.95 / −0.976 |
+
+The anchor-rate verdict extends to the LOO limit: the GP wins every channel
+on both axes; the ensemble's NLL gap stays large (its per-note uncertainty
+ranking does not improve with denser observation), and even the strongest
+two-stage system trails the GP everywhere. (GP rows computed from
+`results/graphgp_masksweep/loo.pkl`; baseline rows from the 07-16 run log.)
+
 ## Reproduce
 
 ```bash
 PYTHONPATH=src:scripts python scripts/eval_deep_baseline.py
+# LOO addendum (logs/baselines_loo_nll.log):
+PYTHONPATH=src:scripts python scripts/eval_baselines_loo.py
 ```

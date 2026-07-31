@@ -95,3 +95,29 @@ probe (`--rff-dim 2048`, `results/probe_embeddings_rff.pkl`) replicates every
 tonal verdict — in-scale AUC 0.55, mode 0.47, scale degree R² ≈ 0 — so "not
 encoded" is not an artifact of probe linearity. The rhythmic/voicing verdicts
 also replicate (bass AUC 0.98, meter 0.23, phrase 0.44).
+
+## Addendum — the verdict holds at every masking rate (run 2026-07-16, written up 2026-07-31)
+
+The anchor A/B repeated at the other four masking levels
+(`scripts/run_theoryfeat_rates.sh`, cells in
+`results/graphgp_theoryfeat_obs{0.50,0.70,0.80,0.90}/` paired against the
+mask-sweep baselines; report `scripts/report_theoryfeat_rates.py`,
+`logs/theoryfeat_rates_report.log`):
+
+| hidden | theory (plain) ΔRMSE / ΔNLL | theory (with LM) ΔRMSE / ΔNLL |
+|---|---|---|
+| 50% | −0.0016 / +0.0039 | −0.0008 / +0.0030 |
+| 30% | −0.0015 / +0.0083 | +0.0011 / −0.1301 (see note) |
+| 20% | −0.0027 / +0.0119 | +0.0031 / +0.0004 |
+| 10% | **−0.0037\* / −0.0104\*** | −0.0017 / −0.0139 |
+
+The honest negative replicates at every rate, with one nuance: at 10% hidden
+(the densest observation) the theory columns reach marginal significance on
+the **plain** model — and are again redundant once the LM embeddings enter.
+This is the same pattern as the harmonic edges, now visible only where the
+per-piece feature weights are best determined. Note: the 30% with-LM ΔNLL
+(−0.13, CI [−0.39, +0.004]) is one piece — piece 28, the documented
+Gaussian-tail case (`results/robust_tail_piece28.pkl`), where the `b_featlm`
+baseline cell blows up (piece NLL +9.07) and the theory run happens not to
+(per-piece Δ −3.87); the median Δ across pieces is +0.001. Not a theory-column
+effect. No adoption change.

@@ -1,0 +1,69 @@
+# Kernel variants across masking rates — dev results (run 2026-07-16, written up 2026-07-31)
+
+> **Status: development-set study, two-stage regime.** Extends the kernel
+> comparison (`docs/kernel_comparison_results.md`, 40% hidden) to the other
+> four masking levels of the sweep protocol. Everything here is the
+> **two-stage development form** (plug-in mean `μ_LM` + per-channel graph
+> residual) — NOT the adopted GP-first model. Confirmation set untouched.
+> Raw log: `logs/kernels_ms_report.log`; cells in `results/kernels_ms_obs*/`.
+
+## Protocol
+
+Same as the anchor kernel comparison, at four additional rates: strict
+mask-aware `μ_LM`, 30 dev pieces × 4 seeds, per-rate leak-free masks/means
+(`.cache/masksweep_inputs_obsX.pkl`), EB guard on, paired per-piece bootstrap
+CIs vs the additive baseline. Kernels: additive (baseline), tonal
+(pitch-metric replacement), harmonic (chord edges), harmonic_vl (chord +
+voice-leading edges).
+
+## Result — the anchor finding generalizes to every masking level
+
+ΔRMSE / ΔNLL vs additive, paired 95% CI (`*` = CI excludes 0):
+
+| hidden | kernel | ΔRMSE | ΔNLL |
+|---|---|---|---|
+| 50% | harmonic | −0.0089* | −0.0089* |
+| 50% | harmonic_vl | −0.0077* | −0.0164* |
+| 30% | harmonic | −0.0108* | −0.0149* |
+| 30% | harmonic_vl | −0.0095* | −0.0502* |
+| 20% | harmonic | −0.0119* | −0.0140* |
+| 20% | harmonic_vl | −0.0108* | −0.0153* |
+| 10% | harmonic | −0.0138* | −0.0187* |
+| 10% | harmonic_vl | −0.0111* | −0.0185* |
+
+Tonal replacement stays neutral-to-harmful at every rate (significantly worse
+RMSE at 30/20/10%), replicating the anchor finding that *replacing* the pitch
+metric with tonal distance hurts while *adding* harmonic edges helps.
+
+The harmonic RMSE edge, if anything, grows as observation gets denser
+(−0.0089 at 50% hidden → −0.0138 at 10% hidden).
+
+## What this does and does not reopen
+
+This is a **two-stage-regime** result at every rate. The GP-first adoption
+record says harmonic edges are measured-redundant once the LM embeddings
+enter the kernel as features (`c_harm_lm` 0.3561 ties `b_featlm` 0.3590 at
+the 40%-hidden anchor) — but that redundancy check exists **only at the
+anchor rate**. Two follow-ups, in order:
+
+1. **Dev check:** run `c_harm_lm` vs `b_featlm` at the other rates (the
+   per-rate masks and embedding dumps already exist). If the tie holds
+   everywhere, the regime-scoped statement stands as-is and this doc is
+   closed. The new posterior-decomposition machinery
+   (`gp.posterior_components`, graph×LM cross-covariance) gives a per-note
+   redundancy measure to accompany the aggregate A/B.
+2. **Only if the dev check breaks the tie** at some rate would harmonic
+   edges become an adoption question again — and any adoption-level change
+   goes through a **second preregistered confirmation set**
+   (`docs/graphgp_first_design.md`), not dev numbers.
+
+## Reproduce
+
+```bash
+# per rate OF in 0.50 0.70 0.80 0.90 (run logs: logs/ms_baseline_obs$OF.log):
+OMP_NUM_THREADS=8 PYTHONPATH=src python scripts/eval_kernels.py --stage run \
+    --kernels additive,tonal,harmonic,harmonic_vl \
+    --inputs .cache/masksweep_inputs_obs$OF.pkl \
+    --out-dir results/kernels_ms_obs$OF
+# report over the four rates: logs/kernels_ms_report.log
+```
