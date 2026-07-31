@@ -226,6 +226,85 @@ def test_fit_guarded_impossible_screen_bottoms_out_bounded():
     assert float(np.max(np.abs(M[held]))) < 3.0 * float(np.max(np.abs(Y[mask].mean(axis=0)))) + 1e-6
 
 
+def test_posterior_components_sum_and_match_explicit_construction():
+    """m splits exactly into graph + per-feature terms, each equal to the
+    explicitly constructed E[f_c | y_obs] = K_ao^(c) (K_oo + noise)^-1 y."""
+    nu, U, Y, mask, rng = _setup(seed=10)
+    n = nu.size
+    X1 = np.concatenate([rng.standard_normal((n, 4)), np.ones((n, 1))], axis=1)
+    X2 = rng.standard_normal((n, 2))
+    gp = MultiOutputGraphGP(nu, U, kernel="additive", features=[X1, X2])
+    x_hat, _ = gp.fit(Y, mask, noise_floor=np.full(3, 1e-4), maxiter=40)
+    M, _ = gp.posterior(Y, mask, x_hat)
+    comps = gp.posterior_components(Y, mask, x_hat)
+    assert set(comps) == {"graph", "feat_0", "feat_1", "total"}
+    np.testing.assert_allclose(comps["total"], M, atol=1e-8)
+    np.testing.assert_allclose(
+        comps["graph"] + comps["feat_0"] + comps["feat_1"], M, atol=1e-8)
+
+    # independent brute-force construction (no _blocks / only involved)
+    p = gp.unpack(x_hat)
+    obs = np.where(mask)[0]
+    n_o = obs.size
+    Kg = shape_cov(nu, U, "additive", p["s"])
+    K_oo = np.zeros((3 * n_o, 3 * n_o))
+    for a in range(3):
+        for b in range(3):
+            blk = p["B"][a, b] * Kg[np.ix_(obs, obs)]
+            if a == b:
+                blk = blk + p["feature_scales"][0][a] * X1[obs] @ X1[obs].T \
+                    + p["feature_scales"][1][a] * X2[obs] @ X2[obs].T \
+                    + p["noise"][a] * np.eye(n_o)
+            K_oo[a * n_o:(a + 1) * n_o, b * n_o:(b + 1) * n_o] = blk
+    y = np.concatenate([Y[obs, c] for c in range(3)])
+    w = np.linalg.solve(K_oo, y)
+    graph_ao = np.zeros((3 * n, 3 * n_o))
+    for a in range(3):
+        for b in range(3):
+            graph_ao[a * n:(a + 1) * n, b * n_o:(b + 1) * n_o] = \
+                p["B"][a, b] * Kg[:, obs]
+    np.testing.assert_allclose(comps["graph"],
+                               (graph_ao @ w).reshape(3, n).T, atol=1e-8)
+    for f_idx, (name, X) in enumerate((("feat_0", X1), ("feat_1", X2))):
+        feat_ao = np.zeros((3 * n, 3 * n_o))
+        for a in range(3):
+            feat_ao[a * n:(a + 1) * n, a * n_o:(a + 1) * n_o] = \
+                p["feature_scales"][f_idx][a] * X @ X[obs].T
+        np.testing.assert_allclose(comps[name],
+                                   (feat_ao @ w).reshape(3, n).T, atol=1e-8)
+
+
+def test_posterior_components_cell_mask_sum():
+    nu, U, Y, _, rng = _setup(seed=11)
+    n = nu.size
+    X = np.concatenate([rng.standard_normal((n, 3)), np.ones((n, 1))], axis=1)
+    gp = MultiOutputGraphGP(nu, U, kernel="matern1", features=[X])
+    mask2d = rng.random((n, 3)) < 0.6
+    x = gp.x0()
+    x[0] = 0.1; x[1:4] = 0.2; x[4:7] = 0.1
+    x[7:10] = np.log(0.5); x[-3:] = np.log(0.05)
+    M, _ = gp.posterior(Y, mask2d, x)
+    comps = gp.posterior_components(Y, mask2d, x)
+    np.testing.assert_allclose(comps["total"], M, atol=1e-8)
+    np.testing.assert_allclose(comps["graph"] + comps["feat_0"], M, atol=1e-8)
+
+
+def test_posterior_components_zero_leak():
+    nu, U, Y, mask, rng = _setup(seed=12)
+    n = nu.size
+    X = np.concatenate([rng.standard_normal((n, 3)), np.ones((n, 1))], axis=1)
+    gp = MultiOutputGraphGP(nu, U, kernel="additive", features=[X])
+    x = gp.x0()
+    x[0] = 0.3; x[1:4] = 0.1; x[7:10] = np.log(0.4); x[-3:] = np.log(0.05)
+    held = ~mask
+    Y2 = Y.copy()
+    Y2[held] = 1e6
+    ca = gp.posterior_components(Y, mask, x)
+    cb = gp.posterior_components(Y2, mask, x)
+    for name in ca:
+        np.testing.assert_array_equal(ca[name], cb[name])
+
+
 def test_chol_to_B_is_psd_and_roundtrips_diag():
     theta = np.array([0.3, -0.2, 0.1, 0.5, -0.4, 0.2])
     B = chol_to_B(theta)

@@ -117,13 +117,23 @@ class MultiOutputGraphGP:
         return {"s": s, "B": B, "feature_scales": cs, "noise": nv}
 
     # --- covariance assembly ---------------------------------------------------
-    def _blocks(self, p: dict, rows: np.ndarray, cols: np.ndarray) -> np.ndarray:
+    def _blocks(self, p: dict, rows: np.ndarray, cols: np.ndarray,
+                only=None) -> np.ndarray:
         """Dense covariance between (channel-major) stacked points restricted to
-        note-index sets ``rows`` and ``cols`` — WITHOUT observation noise."""
-        Kg = shape_cov(self.nu, self.U, self.kernel, p["s"])[np.ix_(rows, cols)]
+        note-index sets ``rows`` and ``cols`` — WITHOUT observation noise.
+
+        ``only`` restricts assembly to one additive prior component: ``None``
+        (default) keeps every term and is arithmetically identical to the
+        published path; ``"graph"`` keeps only ``B (x) K_G``; ``("feat", f)``
+        keeps only feature kernel ``f``.  Used by
+        :meth:`posterior_components`.
+        """
+        Kg = (shape_cov(self.nu, self.U, self.kernel, p["s"])[np.ix_(rows, cols)]
+              if only in (None, "graph") else 0.0)
         lin = []
-        for X, c in zip(self.features, p["feature_scales"]):
-            lin.append((X[rows] @ X[cols].T, c))
+        for f, (X, c) in enumerate(zip(self.features, p["feature_scales"])):
+            if only in (None, ("feat", f)):
+                lin.append((X[rows] @ X[cols].T, c))
         nr, nc = rows.size, cols.size
         K = np.zeros((self.k * nr, self.k * nc))
         for a in range(self.k):
@@ -203,6 +213,63 @@ class MultiOutputGraphGP:
         m = m.reshape(self.k, self.N).T
         std = np.sqrt(np.clip(var, 0.0, None)).reshape(self.k, self.N).T
         return m, std
+
+    def posterior_components(self, Y: np.ndarray, mask: np.ndarray, x: np.ndarray
+                             ) -> Dict[str, np.ndarray]:
+        """Additive split of the posterior mean by prior component.
+
+        Because the cross-covariance is a sum over the independent prior
+        components, ``K_ao = K_ao^graph + sum_f K_ao^(f)``, while the weight
+        vector ``w = (K_oo + noise)^{-1} y_obs`` is shared, the posterior mean
+        decomposes exactly (up to floating-point regrouping) as
+        ``m = sum_c K_ao^(c) w`` — and each term is itself the posterior mean
+        ``E[f_c | y_obs]`` of that component (the functional-ANOVA / additive-GP
+        decomposition).  Observation noise shapes ``w`` but contributes no mean
+        term of its own at held-out notes, so the components are the graph plus
+        one per feature kernel.  NB the split is the evidence-fitted model's own
+        attribution — it depends on the learned ``B``, ``c_f``, ``nv`` — not a
+        causal ground truth.
+
+        Accepts the same 1-D note mask or 2-D (N, k) cell mask as
+        :meth:`posterior`.  Returns a dict of (N, k) arrays: ``"graph"``,
+        ``"feat_0"``, ..., and ``"total"`` (their sum, equal to
+        ``posterior()[0]``).
+        """
+        mask = np.asarray(mask, dtype=bool)
+        p = self.unpack(x)
+        names = ["graph"] + [f"feat_{f}" for f in range(len(self.features))]
+        sels = ["graph"] + [("feat", f) for f in range(len(self.features))]
+        allidx = np.arange(self.N)
+        Yf = np.asarray(Y, dtype=float)
+        if mask.ndim == 2:
+            obs = self._cell_obs(mask)
+        else:
+            obs = np.where(mask)[0]
+        if obs.size == 0:
+            out = {n: np.zeros((self.N, self.k)) for n in names}
+            out["total"] = np.zeros((self.N, self.k))
+            return out
+        if mask.ndim == 2:
+            C = self._blocks(p, allidx, allidx)
+            K_oo = C[np.ix_(obs, obs)] + np.diag(self._cell_noise(p)[obs])
+            ystack = np.concatenate([Yf[:, c] for c in range(self.k)])
+            w = np.linalg.solve(K_oo, ystack[obs])
+            parts = [self._blocks(p, allidx, allidx, only=s)[:, obs] @ w
+                     for s in sels]
+        else:
+            K_oo = self._blocks(p, obs, obs)
+            n_o = obs.size
+            for c in range(self.k):
+                K_oo[c * n_o:(c + 1) * n_o, c * n_o:(c + 1) * n_o] += \
+                    p["noise"][c] * np.eye(n_o)
+            y = np.concatenate([Yf[obs, c] for c in range(self.k)])
+            w = np.linalg.solve(K_oo, y)
+            parts = [self._blocks(p, allidx, obs, only=s) @ w for s in sels]
+        out = {n: v.reshape(self.k, self.N).T for n, v in zip(names, parts)}
+        out["total"] = np.zeros((self.N, self.k))
+        for n in names:
+            out["total"] = out["total"] + out[n]
+        return out
 
     # --- per-(note, channel) masks: the Phase-2 missingness case ---------------
     def _cell_obs(self, mask2d: np.ndarray) -> np.ndarray:
