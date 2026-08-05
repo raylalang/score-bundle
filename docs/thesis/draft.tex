@@ -1763,7 +1763,12 @@ The attribution study (\S\ref{sec:attribution}) splits the labour cleanly:
 \emph{recovery} is won by per-piece Bayesian weighting of informative per-note
 features under one joint marginal likelihood --- each piece decides for itself how much its timing,
 articulation, and loudness follow the score features and the music model's
-representation --- while \emph{calibration} is won by the graph. Why does structure
+representation --- while \emph{calibration} is won by the graph. The posterior
+decomposition sharpens this from inside a single fit: the graph and the
+music-model components act nearly orthogonally per note (cross-correlation
+$\approx 0$), so the two are complements, not rivals --- and which component
+dominates is itself a per-piece property the evidence assigns, down to
+wholesale inversions between pieces (Fig.~\ref{fig:component-contrast}). Why does structure
 help calibration and not merely accuracy? Coupling
 correlated notes lets each held-out note borrow statistical strength from its
 neighbours, which both sharpens the posterior mean and --- crucially --- produces a
@@ -2016,6 +2021,7 @@ $g(\nu; s)$, $s$ & shape-normalized spectral kernel of $\Lg$ ($g(0){=}1$); its s
 $X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
 $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
 $m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\
+$m^{(G)}$, $m^{(f)}$, $s^{(\cdot)}$ & posterior-mean components \eqref{eq:decomp}; covariance share of a component (\S\ref{sec:attribution}) \\
 $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
 $c_i$, $f_0$ & intonation (cents), fundamental frequency (Phase 2) \\
 $\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $\delta_i^{\mathrm{vib}}$ & Phase-2 loudness (log RMS); vibrato rate, extent, onset delay \\
