@@ -271,6 +271,69 @@ class MultiOutputGraphGP:
             out["total"] = out["total"] + out[n]
         return out
 
+    def posterior_component_cov(self, Y: np.ndarray, mask: np.ndarray,
+                                x: np.ndarray) -> Dict[str, np.ndarray]:
+        """Per-(note, channel) posterior variances of each prior component and
+        pairwise cross-covariances (diagonals).
+
+        For independent prior components ``a, b`` the exact posterior
+        cross-covariance is ``Cov(f_a, f_b | y_obs) = delta_ab K_a -
+        K_ao^(a) (K_oo + noise)^{-1} (K_ao^(b))^T``; this returns its diagonal,
+        reshaped (N, k).  Cross terms are negative wherever two components can
+        explain the same variation (explaining-away); normalising a cross term
+        by the two component standard deviations gives a per-note redundancy
+        correlation.  Keys: ``"var_graph"``, ``"var_feat_0"``, ..., and
+        ``"cov_graph_feat_0"``, ``"cov_feat_0_feat_1"``, ... for each unordered
+        pair.  The identity ``sum_a var_a + 2 sum_{a<b} cov_ab = latent
+        posterior variance`` (i.e. :meth:`posterior`'s std squared) holds
+        exactly and is pinned by a unit test.  Accepts the same 1-D note mask
+        or 2-D (N, k) cell mask as :meth:`posterior`.
+        """
+        mask = np.asarray(mask, dtype=bool)
+        p = self.unpack(x)
+        names = ["graph"] + [f"feat_{f}" for f in range(len(self.features))]
+        sels = ["graph"] + [("feat", f) for f in range(len(self.features))]
+        allidx = np.arange(self.N)
+        if mask.ndim == 2:
+            obs = self._cell_obs(mask)
+            comp_full = [self._blocks(p, allidx, allidx, only=s) for s in sels]
+            prior_diag = [np.diag(C) for C in comp_full]
+            if obs.size:
+                K_oo = self._blocks(p, allidx, allidx)[np.ix_(obs, obs)] \
+                    + np.diag(self._cell_noise(p)[obs])
+                ao = [C[:, obs] for C in comp_full]
+        else:
+            obs = np.where(mask)[0]
+            prior_diag = [np.diag(self._blocks(p, allidx, allidx, only=s))
+                          for s in sels]
+            if obs.size:
+                n_o = obs.size
+                K_oo = self._blocks(p, obs, obs)
+                for c in range(self.k):
+                    K_oo[c * n_o:(c + 1) * n_o, c * n_o:(c + 1) * n_o] += \
+                        p["noise"][c] * np.eye(n_o)
+                ao = [self._blocks(p, allidx, obs, only=s) for s in sels]
+
+        def to_nk(v: np.ndarray) -> np.ndarray:
+            return v.reshape(self.k, self.N).T
+
+        out: Dict[str, np.ndarray] = {}
+        if obs.size == 0:
+            for n, d in zip(names, prior_diag):
+                out[f"var_{n}"] = to_nk(d.copy())
+            for i in range(len(names)):
+                for j in range(i + 1, len(names)):
+                    out[f"cov_{names[i]}_{names[j]}"] = np.zeros((self.N, self.k))
+            return out
+        solves = [np.linalg.solve(K_oo, A.T) for A in ao]
+        for n, d, A, S in zip(names, prior_diag, ao, solves):
+            out[f"var_{n}"] = to_nk(d - np.einsum("ij,ji->i", A, S))
+        for i in range(len(names)):
+            for j in range(i + 1, len(names)):
+                out[f"cov_{names[i]}_{names[j]}"] = \
+                    to_nk(-np.einsum("ij,ji->i", ao[i], solves[j]))
+        return out
+
     # --- per-(note, channel) masks: the Phase-2 missingness case ---------------
     def _cell_obs(self, mask2d: np.ndarray) -> np.ndarray:
         """Channel-major stacked indices of the observed (note, channel) cells."""
@@ -354,13 +417,18 @@ class MultiOutputGraphGP:
     # --- fitting -----------------------------------------------------------------
     def fit(self, Y: np.ndarray, mask: np.ndarray, x0: Optional[np.ndarray] = None,
             noise_floor: Optional[np.ndarray] = None, maxiter: int = 300,
-            noise_fixed: Optional[np.ndarray] = None
+            noise_fixed: Optional[np.ndarray] = None,
+            b_diagonal: bool = False
             ) -> Tuple[np.ndarray, dict]:
         """Maximize the exact marginal likelihood over ALL parameters jointly.
 
         ``noise_floor`` (length k, variances) clamps the per-channel noise inside
         the objective and in the returned parameters — same principle as the
-        established EB noise floor.  Uses scipy L-BFGS-B when available, else the
+        established EB noise floor.  ``b_diagonal=True`` clamps the off-diagonal
+        log-Cholesky coordinates of ``B`` to zero (channels decoupled; the
+        diagonal prior variances are still learned) — the attribution switch
+        that severs cross-channel information flow while leaving everything
+        else identical.  Uses scipy L-BFGS-B when available, else the
         dependency-free Nelder–Mead.  Returns (x_hat, info dict).
         """
         Y = np.asarray(Y, dtype=float)
@@ -376,6 +444,8 @@ class MultiOutputGraphGP:
 
         def clamp(x: np.ndarray) -> np.ndarray:
             z = x.copy()
+            if b_diagonal:
+                z[1 + self.k:1 + self._ntri] = 0.0
             if fixed_log is not None:
                 z[-self.k:] = fixed_log
             elif floor_log is not None:

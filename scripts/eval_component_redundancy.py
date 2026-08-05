@@ -50,29 +50,14 @@ def piece_redundancy(p, mask, emb):
     floor = 0.05 * np.array([float(np.var(Y[mask, c])) for c in range(3)])
     x_hat, _ = gp.fit(Y, mask, noise_floor=floor, maxiter=200)
 
-    par = gp.unpack(x_hat)
-    obs = np.where(mask)[0]
-    allidx = np.arange(gp.N)
-    n_o = obs.size
-    K_oo = gp._blocks(par, obs, obs)
-    for c in range(3):
-        K_oo[c * n_o:(c + 1) * n_o, c * n_o:(c + 1) * n_o] += \
-            par["noise"][c] * np.eye(n_o)
-    ao = [gp._blocks(par, allidx, obs, only=sel) for sel, _ in COMPS]
-    solves = [np.linalg.solve(K_oo, A.T) for A in ao]          # (k n_o, k N)
-    # component posterior variances (diagonal)
-    var = []
-    for (sel, _), A, S in zip(COMPS, ao, solves):
-        prior_diag = np.diag(gp._blocks(par, allidx, allidx, only=sel))
-        var.append(np.clip(prior_diag - np.einsum("ij,ji->i", A, S),
-                           1e-12, None))
+    cov = gp.posterior_component_cov(Y, mask, x_hat)
+    names = ["graph", "feat_0", "feat_1"]
+    var = [np.clip(cov[f"var_{n}"], 1e-12, None) for n in names]
     held = ~mask
-    hstack = np.concatenate([held] * 3)          # channel-major over notes
     out = np.zeros((len(PAIRS), 3))
     for j, (a, b) in enumerate(PAIRS):
-        cross = -np.einsum("ij,ji->i", ao[a], solves[b])
-        corr = cross / np.sqrt(var[a] * var[b])
-        corr = corr.reshape(3, gp.N).T[held]     # (n_held, 3)
+        cross = cov[f"cov_{names[a]}_{names[b]}"]
+        corr = (cross / np.sqrt(var[a] * var[b]))[held]   # (n_held, 3)
         out[j] = corr.mean(axis=0)
     return out
 

@@ -305,6 +305,88 @@ def test_posterior_components_zero_leak():
         np.testing.assert_array_equal(ca[name], cb[name])
 
 
+def test_posterior_component_cov_matches_bruteforce():
+    """Component variances/cross-covariances equal explicit Gaussian
+    conditioning, and they sum to the latent posterior variance exactly."""
+    nu, U, Y, mask, rng = _setup(seed=13)
+    n = nu.size
+    X1 = np.concatenate([rng.standard_normal((n, 4)), np.ones((n, 1))], axis=1)
+    X2 = rng.standard_normal((n, 2))
+    gp = MultiOutputGraphGP(nu, U, kernel="additive", features=[X1, X2])
+    x_hat, _ = gp.fit(Y, mask, noise_floor=np.full(3, 1e-4), maxiter=40)
+    cov = gp.posterior_component_cov(Y, mask, x_hat)
+    _, S = gp.posterior(Y, mask, x_hat)
+
+    # total-variance identity
+    tot = cov["var_graph"] + cov["var_feat_0"] + cov["var_feat_1"] \
+        + 2 * (cov["cov_graph_feat_0"] + cov["cov_graph_feat_1"]
+               + cov["cov_feat_0_feat_1"])
+    np.testing.assert_allclose(tot, S ** 2, atol=1e-8)
+
+    # brute force: explicit per-component covariances (independent of _blocks)
+    p = gp.unpack(x_hat)
+    obs = np.where(mask)[0]
+    n_o = obs.size
+    Kg = shape_cov(nu, U, "additive", p["s"])
+
+    def comp_mats(sel):
+        K_aa = np.zeros((3 * n, 3 * n))
+        for a in range(3):
+            for b in range(3):
+                blk = np.zeros((n, n))
+                if sel == "graph":
+                    blk = p["B"][a, b] * Kg
+                elif a == b:
+                    f, X = sel
+                    blk = p["feature_scales"][f][a] * X @ X.T
+                K_aa[a * n:(a + 1) * n, b * n:(b + 1) * n] = blk
+        return K_aa
+
+    mats = {"graph": comp_mats("graph"), "feat_0": comp_mats((0, X1)),
+            "feat_1": comp_mats((1, X2))}
+    idx_o = np.concatenate([c * n + obs for c in range(3)])
+    K_oo = sum(mats.values())[np.ix_(idx_o, idx_o)]
+    for c in range(3):
+        K_oo[c * n_o:(c + 1) * n_o, c * n_o:(c + 1) * n_o] += \
+            p["noise"][c] * np.eye(n_o)
+    Kinv = np.linalg.inv(K_oo)
+    for a in ("graph", "feat_0", "feat_1"):
+        for b in ("graph", "feat_0", "feat_1"):
+            expected = float(a == b) * mats[a] \
+                - mats[a][:, idx_o] @ Kinv @ mats[b][idx_o, :]
+            d = np.diag(expected)
+            got = cov[f"var_{a}"] if a == b else cov.get(
+                f"cov_{a}_{b}", cov.get(f"cov_{b}_{a}"))
+            np.testing.assert_allclose(got, d.reshape(3, n).T, atol=1e-8)
+
+
+def test_posterior_component_cov_cell_mask_identity():
+    nu, U, Y, _, rng = _setup(seed=14)
+    n = nu.size
+    X = np.concatenate([rng.standard_normal((n, 3)), np.ones((n, 1))], axis=1)
+    gp = MultiOutputGraphGP(nu, U, kernel="matern1", features=[X])
+    mask2d = rng.random((n, 3)) < 0.6
+    x = gp.x0()
+    x[0] = 0.1; x[1:4] = 0.2; x[4:7] = 0.1
+    x[7:10] = np.log(0.5); x[-3:] = np.log(0.05)
+    _, S = gp.posterior(Y, mask2d, x)
+    cov = gp.posterior_component_cov(Y, mask2d, x)
+    tot = cov["var_graph"] + cov["var_feat_0"] + 2 * cov["cov_graph_feat_0"]
+    np.testing.assert_allclose(tot, S ** 2, atol=1e-8)
+
+
+def test_fit_b_diagonal_pins_offdiagonals_to_zero():
+    nu, U, Y, mask, rng = _setup(seed=15)
+    n = nu.size
+    X = np.concatenate([rng.standard_normal((n, 3)), np.ones((n, 1))], axis=1)
+    gp = MultiOutputGraphGP(nu, U, kernel="additive", features=[X])
+    x_hat, _ = gp.fit(Y, mask, noise_floor=np.full(3, 1e-4), maxiter=40,
+                      b_diagonal=True)
+    B = gp.unpack(x_hat)["B"]
+    np.testing.assert_array_equal(B - np.diag(np.diag(B)), np.zeros((3, 3)))
+    assert np.all(np.diag(B) > 0)
+
+
 def test_chol_to_B_is_psd_and_roundtrips_diag():
     theta = np.array([0.3, -0.2, 0.1, 0.5, -0.4, 0.2])
     B = chol_to_B(theta)
