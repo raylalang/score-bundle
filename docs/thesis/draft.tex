@@ -1615,21 +1615,28 @@ post-adoption development studies scope that tie by masking level. First, the
 two-stage comparison repeated at every level of \S\ref{sec:masksweep} finds
 the added-edges win present at each level and growing with observation
 density ($\Delta$RMSE $-0.009$ to $-0.014$, all significant), while the
-metric-replacement penalty persists throughout. Second, at the densest level
-(10\% hidden) the harmonic learned-graph variant beats the plain graph
-\emph{under the final model as well}: $\Delta$RMSE $-0.0089$
-$[-0.0158, -0.0027]$, paired, development; NLL better on $22/30$ pieces
-(median $-0.030$) with the mean contrast dominated by a single cell of the
-documented Gaussian-tail piece (\S\ref{sec:guard-gp}), so no significance
-claim either way on that axis. The redundancy conclusion is therefore
-\emph{masking-level-scoped}: where observation is dense enough to determine
-the extra edge weights, the harmonic edges carry information the embeddings
-do not (consistent with the near-zero posterior correlation between the graph
-and embedding components, \S\ref{sec:attribution}); the intermediate levels
-are not yet measured under the final model. Whether the harmonic graph enters
-the thesis model is accordingly a question for a second preregistered
-confirmation set (\S\ref{sec:hygiene}), not a development decision. The
-deeper lesson --- theory-as-extra-structure helps,
+metric-replacement penalty persists throughout. Second, the same comparison
+\emph{under the final model} at every level reveals a clean density
+gradient. At 30/20/10\% hidden the harmonic learned-graph variant beats the
+plain graph on recovery ($\Delta$RMSE $-0.0096$/$-0.0105$/$-0.0089$, all
+paired and significant, development), with NLL better on a majority of
+pieces at each level but never significantly (the means are disturbed by the
+documented Gaussian-tail piece, \S\ref{sec:guard-gp}). At the 40\% operating
+point it ties (the adoption record), and at 50\% hidden the advantage is
+gone ($-0.0037$, ns) --- and that rate also produced the one fit collapse of
+the sweep (one cell; the graph-parameter optimiser wandered to degenerate
+length scales, and the safeguard's calibration screen could not see it from
+the observed notes, the known blind spot of \S\ref{sec:guard-gp}). The
+reading is mechanistic and consistent with the decomposition
+(\S\ref{sec:attribution}): the extra edge weights are per-piece
+hyperparameters, and like every per-piece quantity they need observed
+coverage to be determined --- dense observation determines them and they add
+recovery; sparse observation leaves them under-determined and, at the
+extreme, fragile. The thesis model therefore keeps the plain graph at its
+operating point; the harmonic edges stand as a measured dense-observation
+refinement, and any future adoption would be a question for a second
+preregistered confirmation set (\S\ref{sec:hygiene}), not a development
+decision. The deeper lesson --- theory-as-extra-structure helps,
 theory-as-replacement-metric hurts --- stands in both regimes.
 
 \begin{table}[h]\centering

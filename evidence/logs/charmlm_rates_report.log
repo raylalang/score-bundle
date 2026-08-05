@@ -1,0 +1,24 @@
+== c_harm_lm vs b_featlm by masking rate (DEV, 30 x 4 seeds, guard on) ==
+
+ hidden system           RMSE      NLL  cov@.9
+    50% c_harm_lm    4690.3552 117872289.528   0.915
+    50% b_featlm       0.3711   -0.330   0.926
+
+    30% c_harm_lm      0.3458   -0.156   0.924
+    30% b_featlm       0.3561   -0.140   0.930
+
+    20% c_harm_lm      0.3411   -0.446   0.924
+    20% b_featlm       0.3521   -0.441   0.928
+
+    10% c_harm_lm      0.3383   -0.160   0.920
+    10% b_featlm       0.3472   -0.418   0.925
+
+== Paired per-piece contrasts, c_harm_lm - b_featlm (bootstrap 95% CI, 30 dev pieces) ==
+
+ hidden                        dRMSE                         dNLL  nll<0  med dNLL
+    50% +843.3846 [-0.0090,+2530.1644]  +114337546.4638 [+0.0067,+343012639.3514]*   15/30   +0.0024
+    30%   -0.0096 [-0.0150,-0.0047]*   -0.0164 [-0.0392,+0.0085]    19/30   -0.0137
+    20%   -0.0105 [-0.0153,-0.0059]*   -0.0036 [-0.0366,+0.0459]    21/30   -0.0219
+    10%   -0.0089 [-0.0159,-0.0029]*   +0.2643 [-0.0492,+0.8732]    22/30   -0.0297
+
+Anchor (40% hidden) record: c_harm_lm 0.3561 ties b_featlm 0.3590 (adoption record, logs/graphgp_final_report.log).

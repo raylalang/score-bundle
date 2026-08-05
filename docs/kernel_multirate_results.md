@@ -75,9 +75,36 @@ positive mean is one cell of the documented tail piece 28 (seed 2, cell NLL
 +33.5). So: where observation is dense enough to determine the extra edge
 weights, harmonic edges carry recovery information the embeddings do not —
 consistent with the near-zero posterior graph×LM correlation
-(`results/component_redundancy_dev.md`). The intermediate rates
-(obs 0.50–0.80) remain unmeasured under the final model; harmonic adoption
-is now a live question for the second preregistered confirmation set.
+(`results/component_redundancy_dev.md`).
+
+### Completed sweep (obs 0.50/0.70/0.80 run 2026-08-05) — a density gradient, not a uniform win
+
+`scripts/run_charmlm_rates.sh`, report `scripts/report_charmlm_rates.py`
+(`logs/charmlm_rates_report.log`). Paired c_harm_lm − b_featlm:
+
+| hidden | dRMSE | dNLL (mean) | NLL better | median dNLL |
+|---|---|---|---|---|
+| 50% | −0.0037 ns (excl. collapse; see below) | +0.026 ns | 15/29 | −0.003 |
+| 40% (anchor) | tie (adoption record) | tie | — | — |
+| 30% | **−0.0096\*** | −0.016 ns | 19/30 | −0.014 |
+| 20% | **−0.0105\*** | −0.004 ns | 21/30 | −0.022 |
+| 10% | **−0.0089\*** | +0.264 ns (piece 28) | 22/30 | −0.030 |
+
+**Collapse cell at 50% hidden:** piece 18 seed 2, RMSE 5×10⁴ (predictions to
+8.6×10⁵). Shard log (`logs/charmlm_obs0.50.shard6.log`) shows the
+graph-parameter optimizer at degenerate length scales (exp overflow,
+divide-by-zero in the adjacency); the guard's calibration screen passed it —
+the documented invisible-from-observed-notes class, now demonstrated for a
+learned-graph config at sparse observation.
+
+**Verdict:** harmonic edges + learned graph parameters add recovery value
+where observation is dense enough to determine the extra edge weights
+(significant at ≤30% hidden), tie at the 40% operating point, and offer
+nothing at 50% hidden while adding a collapse risk. The plan's prereg
+criterion (uniform win, no NLL harm) is NOT met → **no preregistration
+package; the thesis model keeps the plain graph at its operating point**, and
+the harmonic family stands as a measured dense-observation refinement.
+Thesis passage updated accordingly (sec:kernels). Doc closed.
 
 ## Reproduce
 
