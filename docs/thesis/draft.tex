@@ -1417,7 +1417,12 @@ Music-model mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0
 
 \noindent Two things a single pooled number hides: the graph's calibration win is
 almost entirely the articulation channel, and its recovery win is almost entirely
-loudness --- timing contributes little either way. The pooled RMSE improvement is
+loudness --- timing contributes little either way. The cross-channel coupling
+itself is also a loudness story: refitting the full model with $B$ constrained
+diagonal costs velocity specifically ($+0.0075$ RMSE / $+0.093$ NLL, paired,
+development, significant) and changes timing and articulation by nothing
+material --- the coregionalization earns its keep where an observed loud
+neighbour is informative. The pooled RMSE improvement is
 therefore a blend of a large loudness gain diluted by a near-static timing channel.
 Figure~\ref{fig:posterior-example} shows what the numbers summarise: the
 posterior on one development piece, with the hidden notes' true values plotted
