@@ -1,7 +1,8 @@
 """Intonation / vibrato feature extraction (Phase 2).
 
-`cents_from_f0` and `vibrato_from_f0` are implementable helpers; `extract_f0` is a
-stub to be backed by a pitch tracker (e.g. CREPE/pYIN) on monophonic audio.
+`extract_f0` tracks monophonic audio with probabilistic YIN (librosa,
+import-guarded); `cents_from_f0` converts to cents; `fit_vibrato_note` is the
+thesis-specified per-note NLLS estimator.
 
 NB `vibrato_from_f0` is a crude starting point and is NOT the estimator the thesis
 specifies (draft eq:vibrato): it mean-removes the cents curve (the thesis notes the
@@ -144,8 +145,44 @@ def fit_vibrato_note(t: np.ndarray, cents: np.ndarray,
             "vibrato_identifiable": identifiable, "sse": float(sse), "n": int(n)}
 
 
-def extract_f0(audio: np.ndarray, sr: float):  # pragma: no cover - stub
-    raise NotImplementedError(
-        "f0 extraction stub. Wire in a monophonic pitch tracker (e.g. pYIN or CREPE) "
-        "and return an f0 curve (Hz) on a fixed hop grid."
-    )
+def extract_f0(audio: np.ndarray, sr: float, hop_s: float = 0.010,
+               fmin: float = 65.0, fmax: float = 2093.0) -> Dict[str, np.ndarray]:
+    """Monophonic f0 tracking via probabilistic YIN (librosa ``pyin``).
+
+    Returns a dict of aligned per-frame arrays on a fixed hop grid:
+
+    - ``t``      frame times in seconds (hop ``hop_s``);
+    - ``f0``     fundamental in Hz (NaN on unvoiced frames — callers must
+      restrict to voiced frames, per the thesis: targets are fit on the
+      samples the tracker marks as voiced);
+    - ``voiced`` boolean voicing decision;
+    - ``prob``   the tracker's per-frame voicing probability, the confidence
+      that feeds the heteroscedastic observation noise of the Phase-2
+      likelihood (draft eq:phase2-noise).
+
+    ``librosa`` is an optional dependency (import-guarded, like scipy/torch
+    elsewhere): the numpy core never imports it, and this function raises a
+    clear ImportError when it is missing.  Deterministic for fixed inputs
+    (pyin is a Viterbi decode, no sampling).  Default range covers C2–C7;
+    widen ``fmin``/``fmax`` per instrument, and keep ``hop_s`` at 10 ms so
+    vibrato at up to ~9 Hz (the ``fit_vibrato_note`` grid) is sampled with
+    >10 frames per cycle.
+    """
+    try:
+        import librosa
+    except ImportError as exc:  # pragma: no cover - env-dependent
+        raise ImportError(
+            "extract_f0 needs librosa (pip install librosa); the numpy core "
+            "does not depend on it") from exc
+    audio = np.asarray(audio, dtype=float)
+    hop_length = max(int(round(hop_s * sr)), 1)
+    # frame_length must cover ~2 periods of fmin for YIN's difference function
+    frame_length = int(2 ** np.ceil(np.log2(2.0 * sr / fmin)))
+    f0, voiced, prob = librosa.pyin(
+        audio, fmin=fmin, fmax=fmax, sr=sr,
+        frame_length=frame_length, hop_length=hop_length, center=True)
+    t = librosa.times_like(f0, sr=sr, hop_length=hop_length)
+    return {"t": np.asarray(t, dtype=float),
+            "f0": np.asarray(f0, dtype=float),
+            "voiced": np.asarray(voiced, dtype=bool),
+            "prob": np.asarray(prob, dtype=float)}
