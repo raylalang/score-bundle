@@ -33,7 +33,8 @@ ROOT = "/home/ray/Research/data/urmp/Dataset"
 CACHE = ".cache/urmp_targets_dev.pkl"
 OUT_MD = "results/phase2_real_results.md"
 _Z90 = 1.6448536269514722
-CH = ["c (cents)", "log gamma", "log f"]
+CH = ["c (cents)", "log gamma", "log f", "loudness ell"]
+N_GT_CH = 3                       # GT F0 curves carry no amplitude
 HOLD_FRAC, SEEDS = 0.30, (0, 1)
 MIN_NOTES = 30
 # Estimator-failure rule for the intonation channel: |c| > C_MAX cents is an
@@ -108,21 +109,61 @@ def stage_extract() -> None:
     print(f"wrote {CACHE} ({len(data)} tracks)")
 
 
+def stage_loudness() -> None:
+    """Append the loudness channel: per-note log RMS from the track audio.
+
+    ell_i = mean over 4 equal chunks of log chunk-RMS, centred per track
+    (level is arbitrary per recording); var_ell = chunk variance / 4.
+    Cheap audio-only pass; extends the existing cache in place.
+    """
+    import soundfile as sf
+
+    with open(CACHE, "rb") as fh:
+        data = pickle.load(fh)
+    paths = {(p.index, tr.number): tr for p, tr in dev_unique_tracks()}
+    for key, d in sorted(data.items()):
+        tr = paths[key]
+        audio, sr = sf.read(tr.audio)
+        audio = np.asarray(audio, dtype=float)
+        n = d["onset"].size
+        ell = np.full(n, np.nan)
+        vell = np.full(n, np.nan)
+        for i in range(n):
+            a, b = int(d["onset"][i] * sr), int((d["onset"][i]
+                                                + d["duration"][i]) * sr)
+            seg = audio[max(a, 0):min(b, audio.size)]
+            if seg.size < 8:
+                continue
+            chunks = np.array_split(seg, 4)
+            lr = np.array([np.log(np.sqrt(np.mean(c ** 2)) + 1e-8)
+                           for c in chunks])
+            ell[i], vell[i] = float(lr.mean()), float(lr.var(ddof=1) / 4)
+        fin = np.isfinite(ell)
+        ell[fin] -= ell[fin].mean()          # per-track centring
+        d["ell"], d["var_ell"] = ell, np.maximum(vell, 1e-6)
+        print(f"  {key} ell done ({fin.sum()}/{n})", flush=True)
+    with open(CACHE, "wb") as fh:
+        pickle.dump(data, fh)
+    print("loudness appended")
+
+
 def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless):
     from score_bundle.gp import MultiOutputGraphGP
 
     nu, U = score_eig
+    k = Yobs.shape[1]
     floor = 0.05 * np.array([float(np.var(Yobs[mask[:, c], c]))
                              if mask[:, c].sum() > 2 else 1.0
-                             for c in range(3)])
-    med_var = np.array([np.median(var[:, c][mask[:, c]])
-                        if mask[:, c].any() else 1.0 for c in range(3)])
+                             for c in range(k)])
+    med_var = np.array([np.median(var[:, c][mask[:, c] & np.isfinite(var[:, c])])
+                        if (mask[:, c] & np.isfinite(var[:, c])).any() else 1.0
+                        for c in range(k)])
     fits = {}
     for name, kern, fixed in (("gp", "additive", None),
                               ("gp_asgiven", "additive", med_var),
                               ("nograph", "none", None)):
         g = MultiOutputGraphGP(nu, U, kernel=kern, features=feats,
-                               n_channels=3)
+                               n_channels=k)
         g.noise_scale = scale
         x_hat, _ = g.fit(Yobs, mask, noise_floor=floor, maxiter=200,
                          noise_fixed=fixed)
@@ -140,13 +181,16 @@ def stage_eval() -> None:
 
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
-    rows = {sys_: {tgt: {c: {"se": [], "cov": [], "n": 0} for c in range(3)}
+    n_ch = len(CH)
+    rows = {sys_: {tgt: {c: {"se": [], "cov": [], "n": 0} for c in range(n_ch)}
                    for tgt in ("est", "gt")}
             for sys_ in ("gp", "gp_asgiven", "nograph")}
-    per_track = []                      # (key, sys, channel, rmse_vs_est)
+    per_track = []          # (key, seed, sys, channel, instrument, rmse_vs_est)
     used = 0
     for key, d in sorted(data.items()):
-        est, var, ident = d["est"], d["var"], d["ident"]
+        est = np.concatenate([d["est"], d["ell"][:, None]], axis=1)
+        var = np.concatenate([d["var"], d["var_ell"][:, None]], axis=1)
+        ident = d["ident"]
         n = est.shape[0]
         usable = np.isfinite(est[:, 0]) & (np.abs(est[:, 0]) <= C_MAX)
         if usable.sum() < MIN_NOTES:
@@ -158,8 +202,8 @@ def stage_eval() -> None:
         X = rich_score_features(score, rff_dim=0)
         X = (X - X.mean(0)) / np.maximum(X.std(0), 1e-9)
         feats = [np.concatenate([X, np.ones((n, 1))], axis=1)]
-        scale = np.ones((n, 3))
-        for c in range(3):
+        scale = np.ones((n, n_ch))
+        for c in range(n_ch):
             v = var[:, c]
             obs_c = np.isfinite(v)
             med = np.median(v[obs_c]) if obs_c.any() else 1.0
@@ -169,22 +213,23 @@ def stage_eval() -> None:
         for seed in SEEDS:
             rng = np.random.default_rng(1000 + 7 * key[0] + key[1] + seed)
             held = (rng.random(n) < HOLD_FRAC) & usable
-            mask = np.zeros((n, 3), dtype=bool)
+            mask = np.zeros((n, n_ch), dtype=bool)
             mask[:, 0] = usable & ~held
             mask[:, 1] = mask[:, 2] = usable & ~held & ident
+            mask[:, 3] = usable & ~held & np.isfinite(est[:, 3])
             if mask[:, 0].sum() < 15 or held.sum() < 5:
                 continue
             Yobs = np.where(mask, np.nan_to_num(est), 0.0)
             fits = _fit_systems(eig, feats, Yobs, mask, scale, var, None)
             for sname, (m, sd, sd_pred) in fits.items():
-                for tgt_name, tgt, tvar, s_use in (
-                        ("est", est, None, sd_pred),
-                        ("gt", d["est_gt"], None, sd)):
-                    for c in range(3):
+                for tgt_name, tgt, s_use, kmax in (
+                        ("est", est, sd_pred, n_ch),
+                        ("gt", d["est_gt"], sd, N_GT_CH)):
+                    for c in range(kmax):
                         cells = held & np.isfinite(tgt[:, c])
                         if c == 0:
                             cells &= np.abs(tgt[:, 0]) <= C_MAX
-                        else:
+                        elif c < 3:
                             cells &= ident if tgt_name == "est" \
                                 else d["ident_gt"]
                         if cells.sum() < 3:
@@ -198,25 +243,25 @@ def stage_eval() -> None:
                         r["n"] += int(cells.sum())
                         if tgt_name == "est":
                             per_track.append(
-                                (key, seed, sname, c,
+                                (key, seed, sname, c, d["instrument"],
                                  float(np.sqrt(np.mean(err ** 2)))))
 
     lines = [f"# Phase 2 on real audio — first URMP dev results "
              f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
              f"of notes hidden)", ""]
-    for tgt_name, title in (("est", "vs estimator targets (primary; "
-                                    "predictive sd)"),
-                            ("gt", "vs ground-truth-derived targets "
-                                   "(quasi-truth; latent sd)")):
+    for tgt_name, title, kmax in (("est", "vs estimator targets (primary; "
+                                          "predictive sd)", n_ch),
+                                  ("gt", "vs ground-truth-derived targets "
+                                         "(quasi-truth; latent sd)", N_GT_CH)):
         lines += [f"## {title}", "",
                   "| system | " + " | ".join(
-                      f"{c} RMSE / cov@90" for c in CH) + " |",
-                  "|---|---|---|---|"]
+                      f"{CH[c]} RMSE / cov@90" for c in range(kmax)) + " |",
+                  "|---" * (kmax + 1) + "|"]
         for sname, label in (("gp", "graph GP (learned scale)"),
                              ("gp_asgiven", "graph GP (as-given)"),
                              ("nograph", "no-graph ablation")):
             cells = []
-            for c in range(3):
+            for c in range(kmax):
                 r = rows[sname][tgt_name][c]
                 if not r["se"]:
                     cells.append("--")
@@ -228,15 +273,16 @@ def stage_eval() -> None:
 
     # medians over (track, seed) — a collapsed fit cannot hide in these
     lines += ["## Median per-(track, seed) RMSE vs estimator targets", "",
-              "| system | " + " | ".join(CH) + " |", "|---|---|---|---|"]
+              "| system | " + " | ".join(CH) + " |",
+              "|---" * (n_ch + 1) + "|"]
     by_sys = {}
-    for key, seed, sname, c, rmse in per_track:
+    for key, seed, sname, c, inst, rmse in per_track:
         by_sys.setdefault(sname, {}).setdefault(c, []).append(rmse)
     for sname, label in (("gp", "graph GP (learned scale)"),
                          ("gp_asgiven", "graph GP (as-given)"),
                          ("nograph", "no-graph ablation")):
         cells = [f"{np.median(by_sys[sname].get(c, [np.nan])):.3f}"
-                 for c in range(3)]
+                 for c in range(n_ch)]
         lines.append(f"| {label} | " + " | ".join(cells) + " |")
     lines.append("")
 
@@ -247,15 +293,37 @@ def stage_eval() -> None:
               "vs estimator targets", "",
               "| channel | dRMSE [95% CI] |", "|---|---|"]
     by = {}
-    for key, seed, sname, c, rmse in per_track:
+    for key, seed, sname, c, inst, rmse in per_track:
         by.setdefault((key, seed, c), {})[sname] = rmse
-    for c in range(3):
+    for c in range(n_ch):
         d = [v["gp"] - v["nograph"] for (k, s, cc), v in by.items()
              if cc == c and "gp" in v and "nograph" in v]
         mu, lo, hi = bootstrap_ci(np.array(d), B=2000, rng=rngb)
         sig = "*" if (lo > 0) or (hi < 0) else " "
         lines.append(f"| {CH[c]} | {mu:+.3f} [{lo:+.3f}, {hi:+.3f}]{sig} "
                      f"(n={len(d)}) |")
+
+    # per-instrument-family breakdown of the paired graph value
+    from score_bundle.phase2.splits import FAMILIES
+    lines += ["", "## Paired graph value by instrument family "
+                  "(dRMSE, gp - nograph)", "",
+              "| family | " + " | ".join(CH) + " |",
+              "|---" * (n_ch + 1) + "|"]
+    by_fam = {}
+    for key, seed, sname, c, inst, rmse in per_track:
+        by_fam.setdefault((FAMILIES[inst], key, seed, c), {})[sname] = rmse
+    for fam in ("strings", "wood", "brass"):
+        cells = []
+        for c in range(n_ch):
+            d = [v["gp"] - v["nograph"] for (f, k, s, cc), v in by_fam.items()
+                 if f == fam and cc == c and "gp" in v and "nograph" in v]
+            if len(d) < 6:
+                cells.append("--")
+                continue
+            mu, lo, hi = bootstrap_ci(np.array(d), B=2000, rng=rngb)
+            sig = "*" if (lo > 0) or (hi < 0) else " "
+            cells.append(f"{mu:+.3f}{sig} (n={len(d)})")
+        lines.append(f"| {fam} | " + " | ".join(cells) + " |")
     table = "\n".join(lines)
     os.makedirs("results", exist_ok=True)
     with open(OUT_MD, "w") as fh:
@@ -265,4 +333,5 @@ def stage_eval() -> None:
 
 
 if __name__ == "__main__":
-    {"extract": stage_extract, "eval": stage_eval}[sys.argv[1]]()
+    {"extract": stage_extract, "loudness": stage_loudness,
+     "eval": stage_eval}[sys.argv[1]]()
