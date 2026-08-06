@@ -20,11 +20,20 @@ annotations, and the score MIDI. Loader:
 **Contamination / split rule (design decision, fixed now):** URMP reuses
 compositions across arrangements (e.g. five Art-of-the-Fugue variants, three
 Rejouissance). Splits are therefore by **composition**, never by arrangement:
-all variants of one composition land on the same side. Instrument-family
-coverage (strings / woodwind / brass) should be present on both sides.
-Proposed: development ≈ two thirds of compositions; the remaining
-compositions form the preregistered confirmation pool, untouched until
-registration.
+all variants of one composition land on the same side.
+
+**FROZEN SPLIT (2026-08-06, data-blind, deterministic).** Constructed by
+`score_bundle.phase2.splits.construct_split` (seed 0; inputs = only the
+published Table 1 metadata; unit-pinned to these literals):
+
+- **Confirmation pool — 7 compositions, 13 pieces, UNTOUCHED from here on:**
+  Chorale (43), Elise (33), Fugue (28, 29, 30, 32, 34), Jesus (9),
+  Pirates (24, 25), Surprise (15, 16), Waltz (14).
+- **Development — 20 compositions, 31 pieces:** everything else.
+- Constraints verified: Jupiter pinned to development (its violin track was
+  used in the 2026-08-06 smoke test); both sides contain every ensemble type
+  (duet/trio/quartet/quintet) and all three instrument families
+  (strings/woodwind/brass); confirmation holds 13 of 44 pieces.
 
 ## Targets and channels
 
