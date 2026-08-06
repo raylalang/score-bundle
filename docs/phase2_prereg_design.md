@@ -51,12 +51,17 @@ envelope. Estimator-supplied variances are used **as given** (synthetic-pilot
 default); the learned per-channel scale is the documented fallback for a
 mis-calibrated tracker.
 
-**Tracker calibration (new, URMP-specific):** URMP's ground-truth F0
-annotations live on the same 10 ms hop as `extract_f0`. On development
-pieces, compare pyin output against the provided truth to (i) measure the
-tracker's actual error distribution, (ii) test whether its confidence is
-calibrated, and (iii) decide as-given vs learned-scale **before** any GP is
-fit — turning the pilot's open question into a measured one.
+**Tracker calibration — MEASURED (2026-08-06, development side,
+`results/tracker_calibration_dev.md`):** pyin vs URMP ground truth on all
+~90 development tracks: median |dev| 2–5 cents per instrument (an order
+below vibrato extents); voicing recall ≥ 0.95 everywhere; pyin's confidence
+is informative (median error monotone in probability; gross-error rate
+9.6% → 0.4% across quintiles). **Decisions adopted:** estimator variances
+as-given; frames in the lowest confidence quintile discarded before the
+per-note NLLS fit; low-register tracks flagged (the one outlier is K515's
+second viola — octave slips). Bonus finding: arrangements of one composition
+share identical track recordings, so the composition-level split is
+literally required.
 
 ## The τ policy
 
