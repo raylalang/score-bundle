@@ -83,11 +83,21 @@ def load_urmp_meta(root: str) -> List[UrmpPiece]:
         if f"AuMix_{suffix}.wav" in files:
             piece.mix_audio = os.path.join(folder, f"AuMix_{suffix}.wav")
         for n, inst in enumerate(insts, start=1):
+            # URMP's own file names occasionally disagree with the folder's
+            # instrument list (e.g. piece 15: folder says track 3 = tbn, files
+            # say tpt) — match by track number and trust the file's label.
+            track_inst = inst
+            for f in files:
+                m2 = re.match(rf"^AuSep_{n}_([a-z]+)_{tag}\.wav$", f)
+                if m2:
+                    track_inst = m2.group(1)
+                    break
+
             def p(prefix: str, ext: str) -> str:
-                fname = f"{prefix}_{n}_{inst}_{tag}.{ext}"
+                fname = f"{prefix}_{n}_{track_inst}_{tag}.{ext}"
                 return os.path.join(folder, fname) if fname in files else ""
             piece.tracks.append(UrmpTrack(
-                number=n, instrument=inst,
+                number=n, instrument=track_inst,
                 audio=p("AuSep", "wav"), f0s=p("F0s", "txt"),
                 notes=p("Notes", "txt")))
         pieces.append(piece)

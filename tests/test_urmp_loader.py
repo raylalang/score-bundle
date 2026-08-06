@@ -53,6 +53,20 @@ def test_annotation_readers(tmp_path):
     np.testing.assert_allclose(notes["duration"], [0.50, 0.25])
 
 
+def test_folder_file_instrument_mismatch_trusts_files(tmp_path):
+    """URMP piece 15: folder says track 3 = tbn, files say tpt."""
+    folder = os.path.join(str(tmp_path), "15_Surprise_tpt_tpt_tbn")
+    os.makedirs(folder)
+    for nme in ("Sco_15_Surprise_tpt_tpt_tbn.mid",
+                "AuSep_1_tpt_15_Surprise.wav", "AuSep_2_tpt_15_Surprise.wav",
+                "AuSep_3_tpt_15_Surprise.wav", "F0s_3_tpt_15_Surprise.txt"):
+        open(os.path.join(folder, nme), "w").close()
+    p = load_urmp_meta(str(tmp_path))[0]
+    assert p.tracks[2].instrument == "tpt"
+    assert p.tracks[2].audio.endswith("AuSep_3_tpt_15_Surprise.wav")
+    assert p.tracks[2].f0s.endswith("F0s_3_tpt_15_Surprise.txt")
+
+
 def test_missing_files_tolerated(tmp_path):
     folder = os.path.join(str(tmp_path), "02_Sonata_vn_vn")
     os.makedirs(folder)
