@@ -97,7 +97,9 @@ Sketch, to be frozen at registration time:
 
 ## What blocks registration
 
-1. Full URMP download (form; Ray).
-2. Tracker-calibration study on development pieces.
-3. τ-policy decision and δ_vib in/out decision (development evidence).
-4. Frozen split list (compositions), committed with the final decision rule.
+1. ~~Full URMP download~~ — done 2026-08-06 (Dryad, MD5-verified).
+2. ~~Tracker-calibration study~~ — done (as-given + confidence filter).
+3. ~~Frozen split list~~ — done (`phase2/splits.py`, unit-pinned).
+4. τ-policy decision and δ_vib in/out decision (development evidence).
+5. Final claim set + decision rule, informed by the development results
+   (`results/phase2_real_results.md` once run).

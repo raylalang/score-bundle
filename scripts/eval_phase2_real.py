@@ -36,6 +36,12 @@ _Z90 = 1.6448536269514722
 CH = ["c (cents)", "log gamma", "log f"]
 HOLD_FRAC, SEEDS = 0.30, (0, 1)
 MIN_NOTES = 30
+# Estimator-failure rule for the intonation channel: |c| > C_MAX cents is an
+# octave/semitone slip, not intonation — GT-validated on the dev extraction
+# (0/358 notes with |c_pyin| > 150 agree with the GT-derived c within 50c).
+# Such cells are marked MISSING, the same epistemic status as unidentifiable
+# vibrato.  2.2% of notes, concentrated in low-register strings.
+C_MAX = 150.0
 
 RANGES = {"vn": (180, 3000), "va": (120, 1500), "vc": (60, 1000),
           "db": (35, 500), "fl": (240, 2500), "ob": (220, 1800),
@@ -142,7 +148,7 @@ def stage_eval() -> None:
     for key, d in sorted(data.items()):
         est, var, ident = d["est"], d["var"], d["ident"]
         n = est.shape[0]
-        usable = np.isfinite(est[:, 0])
+        usable = np.isfinite(est[:, 0]) & (np.abs(est[:, 0]) <= C_MAX)
         if usable.sum() < MIN_NOTES:
             continue
         used += 1
@@ -176,7 +182,9 @@ def stage_eval() -> None:
                         ("gt", d["est_gt"], None, sd)):
                     for c in range(3):
                         cells = held & np.isfinite(tgt[:, c])
-                        if c > 0:
+                        if c == 0:
+                            cells &= np.abs(tgt[:, 0]) <= C_MAX
+                        else:
                             cells &= ident if tgt_name == "est" \
                                 else d["ident_gt"]
                         if cells.sum() < 3:
@@ -217,6 +225,20 @@ def stage_eval() -> None:
                              f"{np.mean(r['cov']):.2f} (n={r['n']})")
             lines.append(f"| {label} | " + " | ".join(cells) + " |")
         lines.append("")
+
+    # medians over (track, seed) — a collapsed fit cannot hide in these
+    lines += ["## Median per-(track, seed) RMSE vs estimator targets", "",
+              "| system | " + " | ".join(CH) + " |", "|---|---|---|---|"]
+    by_sys = {}
+    for key, seed, sname, c, rmse in per_track:
+        by_sys.setdefault(sname, {}).setdefault(c, []).append(rmse)
+    for sname, label in (("gp", "graph GP (learned scale)"),
+                         ("gp_asgiven", "graph GP (as-given)"),
+                         ("nograph", "no-graph ablation")):
+        cells = [f"{np.median(by_sys[sname].get(c, [np.nan])):.3f}"
+                 for c in range(3)]
+        lines.append(f"| {label} | " + " | ".join(cells) + " |")
+    lines.append("")
 
     # paired per-(track,seed) graph-vs-nograph deltas, vs estimator targets
     from eval_graphgp import bootstrap_ci
