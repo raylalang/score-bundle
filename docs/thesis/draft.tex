@@ -643,7 +643,13 @@ kernel --- and the observation adds independent noise:
   \label{eq:components}
 \end{equation}
 with $C^{(G)} = B \otimes K_G(s)$, $C^{(f)} = \operatorname{diag}(c_f)
-\otimes X_f X_f^{\top}$, and $C = \sum_a C^{(a)}$. Because the other
+\otimes X_f X_f^{\top}$, and $C = \sum_a C^{(a)}$. Here $a$ indexes the
+prior components, $a \in \{G\} \cup \{f\}$ --- in Phase 1,
+$a \in \{G, \mathrm{feat}, \mathrm{emb}\}$ --- and $b$ below ranges over the
+same set. Note the components do \emph{not} correspond to the three summands
+of \eqref{eq:gpfirst}: the middle summand there contributes one component
+\emph{per feature set}, and the noise summand contributes none (see the end
+of this paragraph). Because the other
 components and the noise are independent of $y^{(a)}$, its cross-covariance
 with the observations is just its own block,
 $\operatorname{Cov}\bigl(y^{(a)},\, \tilde y_o\bigr) = C^{(a)}_{\cdot o}$,
@@ -962,7 +968,7 @@ the vibrato-free centre only over a whole number of cycles, which a note rarely
 supplies. The observation rule, with every threshold fixed by the
 development measurements of \S\ref{sec:phase2-real}: note $i$'s sample set is
 \begin{equation}
-  V_i \;=\; \bigl\{\, \text{frames } j:\; t_j \in [t_i,\, t_i + \delta_i),\;
+  J_i \;=\; \bigl\{\, \text{frames } j:\; t_j \in [t_i,\, t_i + \delta_i),\;
   \text{voiced}_j,\; p_j \ge q_{0.2}(\text{track}) \,\bigr\},
   \label{eq:framerule}
 \end{equation}
@@ -970,18 +976,21 @@ development measurements of \S\ref{sec:phase2-real}: note $i$'s sample set is
 lowest quintile, the measured gross-error filter. From it, three observation
 decisions, stated separately:
 \begin{itemize}[leftmargin=*,noitemsep]
-  \item the intonation cell is \emph{observed} iff $|V_i| \ge 4$ and
+  \item the intonation cell is \emph{observed} iff $|J_i| \ge 4$ and
         $|\hat c_i| \le 150$ cents (the ground-truth-validated
         octave-failure rule);
-  \item the vibrato cells additionally require the identifiability rule
-        below;
+  \item the vibrato cells additionally require \emph{identifiability}: at
+        least $8$ voiced frames \emph{and} at least $1.5$ cycles at the
+        fitted rate, else $(\gamma_i, f_i^{\mathrm{vib}},
+        \delta_i^{\mathrm{vib}})$ cannot be read from the note at all;
   \item everything else is a \emph{missing} cell for the GP.
 \end{itemize}
 Remaining open choice: a robust loss rather than least squares inside the
 fit.
 
 \paragraph{An honest structural problem: per-channel missingness.}
-That last choice is not cosmetic. A short note may support $c_i$ but no vibrato
+The identifiability rule makes missingness structural, not incidental. A
+short note may support $c_i$ but no vibrato
 parameters, so a target can be missing \emph{for some channels of a note and not
 others}. The conjugate posterior of \S\ref{sec:posterior} assumes \emph{per-note}
 masks, which is exactly what keeps the observed block Kronecker-compatible
@@ -1134,8 +1143,9 @@ f^{\mathrm{vib}}]$ plus per-note loudness $\ell$ (log RMS, centred per
 recording), estimator variances as given, per-(note, channel) missingness
 from the identifiability rule (55--93\% of notes identifiable per track ---
 the missingness case is the norm, not an edge case), and the heteroscedastic
-cell-mask GP --- on 77 unique development tracks (shared recordings
-deduplicated), hiding 30\% of notes. One target-quality rule was added with
+cell-mask GP --- on 77 of the 78 unique development tracks (shared
+recordings deduplicated; one track falls below the minimum of 30 usable
+notes), hiding 30\% of notes. One target-quality rule was added with
 measured justification rather than by fiat: $2.2\%$ of intonation targets
 are octave slips ($|c| \approx 1200$ cents), the ground-truth cross-check
 rejects every one of them (0 of 358 agree with the truth-derived value), and
@@ -1445,13 +1455,13 @@ A third control needs no refitting at all: the exact component decomposition
 of the posterior, \eqref{eq:decomp}--\eqref{eq:decomp-total}, read off the
 fitted model itself (development pieces, $\nPieces \times 4$ anchor masks).
 Two diagnostics are derived from it, per channel. The \emph{covariance
-share} allocates the posterior mean's variation over the held-out notes $h$
-of a piece to the components,
+share} allocates the posterior mean's variation over the held-out notes
+$\mathcal{H}$ of a piece to the components,
 \begin{equation}
-  s^{(a)} \;=\;
-  \frac{\operatorname{Cov}_{i \in h}\bigl(m^{(a)}_i,\, m_i\bigr)}
-       {\operatorname{Var}_{i \in h}\bigl(m_i\bigr)},
-  \qquad \sum_a s^{(a)} = 1
+  \omega^{(a)} \;=\;
+  \frac{\operatorname{Cov}_{i \in \mathcal{H}}\bigl(m^{(a)}_i,\, m_i\bigr)}
+       {\operatorname{Var}_{i \in \mathcal{H}}\bigl(m_i\bigr)},
+  \qquad \sum_a \omega^{(a)} = 1
   \label{eq:share}
 \end{equation}
 --- the normalisation is exact by bilinearity applied to
@@ -1518,7 +1528,7 @@ disagree?} Opposite-sign pulls with both components substantial (each
 exceeding a quarter of the channel's posterior-mean spread) occur at
 $20\%$ of held-out notes between graph and score features on articulation
 and $15\%$ on loudness --- the per-note face of the $-0.19/-0.18$
-cross-correlations above --- and least often between graph and embeddings on
+component correlations \eqref{eq:compcorr} above --- and least often between graph and embeddings on
 timing ($6\%$): such notes are exactly where the per-piece evidence had to
 arbitrate between overlapping explanations, and where the decomposition is
 most informative to inspect.
@@ -1931,7 +1941,7 @@ features under one joint marginal likelihood --- each piece decides for itself h
 articulation, and loudness follow the score features and the music model's
 representation --- while \emph{calibration} is won by the graph. The posterior
 decomposition sharpens this from inside a single fit: the graph and the
-music-model components act nearly orthogonally per note (cross-correlation
+music-model components act nearly orthogonally per note (component correlation
 $\approx 0$), so the two are complements, not rivals --- and which component
 dominates is itself a per-piece property the evidence assigns, down to
 wholesale inversions between pieces (Fig.~\ref{fig:component-contrast}). Why does structure
@@ -2201,8 +2211,8 @@ $g(\nu; s)$, $s$ & shape-normalized spectral kernel of $\Lg$ ($g(0){=}1$); its s
 $X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
 $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
 $m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\
-$y^{(a)}$, $C^{(a)}$, $m^{(a)}$ & prior components, their covariances, posterior-mean components \eqref{eq:components}--\eqref{eq:decomp} \\
-$s^{(a)}$, $\rho^{(ab)}_i$ & covariance share \eqref{eq:share}; per-note component correlation \eqref{eq:compcorr} \\
+$y^{(a)}$, $C^{(a)}$, $m^{(a)}$ & prior components ($a \in \{G, \mathrm{feat}, \mathrm{emb}\}$ in Phase 1), their covariances, posterior-mean components \eqref{eq:components}--\eqref{eq:decomp} \\
+$\omega^{(a)}$, $\rho^{(ab)}_i$ & covariance share \eqref{eq:share}; per-note component correlation \eqref{eq:compcorr} \\
 $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
 $c_i$, $f_0$ & intonation (cents), fundamental frequency (Phase 2) \\
 $\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $\delta_i^{\mathrm{vib}}$ & Phase-2 loudness (log RMS); vibrato rate, extent, onset delay \\
