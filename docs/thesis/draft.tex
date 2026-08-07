@@ -637,31 +637,31 @@ The latent field is, by construction \eqref{eq:gpfirst}, a sum of independent
 Gaussian components --- the coupled graph GP and one draw per feature
 kernel --- and the observation adds independent noise:
 \begin{equation}
-  y \;=\; \sum_{a} y^{(a)}, \qquad
-  y^{(a)} \sim \N\bigl(0,\, C^{(a)}\bigr) \text{ independent}, \qquad
+  y \;=\; \sum_{\zeta} y^{(\zeta)}, \qquad
+  y^{(\zeta)} \sim \N\bigl(0,\, C^{(\zeta)}\bigr) \text{ independent}, \qquad
   \tilde y \;=\; y + e,
   \label{eq:components}
 \end{equation}
 with $C^{(G)} = B \otimes K_G(s)$, $C^{(f)} = \operatorname{diag}(c_f)
-\otimes X_f X_f^{\top}$, and $C = \sum_a C^{(a)}$. Here $a$ indexes the
-prior components, $a \in \{G\} \cup \{f\}$ --- in Phase 1,
-$a \in \{G, \mathrm{feat}, \mathrm{emb}\}$ --- and $b$ below ranges over the
-same set. Note the components do \emph{not} correspond to the three summands
+\otimes X_f X_f^{\top}$, and $C = \sum_\zeta C^{(\zeta)}$. Here $\zeta$ indexes the
+prior components, $\zeta \in \{G\} \cup \{f\}$ --- in Phase 1,
+$\zeta \in \{G, \mathrm{feat}, \mathrm{emb}\}$ --- and the primed $\zeta'$
+below ranges over the same set. Note the components do \emph{not} correspond to the three summands
 of \eqref{eq:gpfirst}: the middle summand there contributes one component
 \emph{per feature set}, and the noise summand contributes none (see the end
 of this paragraph). Because the other
-components and the noise are independent of $y^{(a)}$, its cross-covariance
+components and the noise are independent of $y^{(\zeta)}$, its cross-covariance
 with the observations is just its own block,
-$\operatorname{Cov}\bigl(y^{(a)},\, \tilde y_o\bigr) = C^{(a)}_{\cdot o}$,
-and conditioning the jointly Gaussian pair $\bigl(y^{(a)}, \tilde y_o\bigr)$
+$\operatorname{Cov}\bigl(y^{(\zeta)},\, \tilde y_o\bigr) = C^{(\zeta)}_{\cdot o}$,
+and conditioning the jointly Gaussian pair $\bigl(y^{(\zeta)}, \tilde y_o\bigr)$
 gives each component its exact posterior:
 \begin{align}
-  m^{(a)} \;&:=\; \mathbb{E}\bigl[\, y^{(a)} \mid \tilde y_o \,\bigr]
-  \;=\; C^{(a)}_{\cdot o}\, K_{oo}^{-1}\, \tilde y_o,
+  m^{(\zeta)} \;&:=\; \mathbb{E}\bigl[\, y^{(\zeta)} \mid \tilde y_o \,\bigr]
+  \;=\; C^{(\zeta)}_{\cdot o}\, K_{oo}^{-1}\, \tilde y_o,
   \label{eq:decomp}\\[2pt]
-  \operatorname{Cov}\bigl(y^{(a)},\, y^{(b)} \mid \tilde y_o\bigr)
-  \;&=\; \delta_{ab}\, C^{(a)}
-  \;-\; C^{(a)}_{\cdot o}\, K_{oo}^{-1}\, C^{(b)}_{o \cdot}.
+  \operatorname{Cov}\bigl(y^{(\zeta)},\, y^{(\zeta')} \mid \tilde y_o\bigr)
+  \;&=\; \delta_{\zeta\zeta'}\, C^{(\zeta)}
+  \;-\; C^{(\zeta)}_{\cdot o}\, K_{oo}^{-1}\, C^{(\zeta')}_{o \cdot}.
   \label{eq:decomp-cov}
 \end{align}
 Two exactness identities follow by linearity, and both are pinned by unit
@@ -669,9 +669,9 @@ tests: summing \eqref{eq:decomp} over components recovers the posterior mean,
 and summing \eqref{eq:decomp-cov} over all pairs recovers the posterior
 covariance,
 \begin{equation}
-  m \;=\; \sum_a m^{(a)}, \qquad
-  \Sy \;=\; \sum_{a}\sum_{b}
-  \operatorname{Cov}\bigl(y^{(a)},\, y^{(b)} \mid \tilde y_o\bigr).
+  m \;=\; \sum_\zeta m^{(\zeta)}, \qquad
+  \Sy \;=\; \sum_{\zeta}\sum_{\zeta'}
+  \operatorname{Cov}\bigl(y^{(\zeta)},\, y^{(\zeta')} \mid \tilde y_o\bigr).
   \label{eq:decomp-total}
 \end{equation}
 This is the functional-ANOVA decomposition of an additive GP. The prior
@@ -1458,23 +1458,23 @@ Two diagnostics are derived from it, per channel. The \emph{covariance
 share} allocates the posterior mean's variation over the held-out notes
 $\mathcal{H}$ of a piece to the components,
 \begin{equation}
-  \omega^{(a)} \;=\;
-  \frac{\operatorname{Cov}_{i \in \mathcal{H}}\bigl(m^{(a)}_i,\, m_i\bigr)}
+  \omega^{(\zeta)} \;=\;
+  \frac{\operatorname{Cov}_{i \in \mathcal{H}}\bigl(m^{(\zeta)}_i,\, m_i\bigr)}
        {\operatorname{Var}_{i \in \mathcal{H}}\bigl(m_i\bigr)},
-  \qquad \sum_a \omega^{(a)} = 1
+  \qquad \sum_\zeta \omega^{(\zeta)} = 1
   \label{eq:share}
 \end{equation}
 --- the normalisation is exact by bilinearity applied to
-$m = \sum_a m^{(a)}$, so cross-component interactions land inside the shares
+$m = \sum_\zeta m^{(\zeta)}$, so cross-component interactions land inside the shares
 rather than in an unexplained remainder. The per-note \emph{component
 correlation} normalises the diagonal of the posterior cross-covariance
 \eqref{eq:decomp-cov} by the two component standard deviations,
 \begin{equation}
-  \rho^{(ab)}_i \;=\;
-  \frac{\operatorname{Cov}\bigl(y^{(a)}_i,\, y^{(b)}_i \mid \tilde y_o\bigr)}
-       {\sigma^{(a)}_i\, \sigma^{(b)}_i},
+  \rho^{(\zeta\zeta')}_i \;=\;
+  \frac{\operatorname{Cov}\bigl(y^{(\zeta)}_i,\, y^{(\zeta')}_i \mid \tilde y_o\bigr)}
+       {\sigma^{(\zeta)}_i\, \sigma^{(\zeta')}_i},
   \qquad
-  \sigma^{(a)}_i = \sqrt{\operatorname{Var}\bigl(y^{(a)}_i \mid \tilde y_o\bigr)},
+  \sigma^{(\zeta)}_i = \sqrt{\operatorname{Var}\bigl(y^{(\zeta)}_i \mid \tilde y_o\bigr)},
   \label{eq:compcorr}
 \end{equation}
 negative where the two information sources explain the same variation
@@ -2211,8 +2211,8 @@ $g(\nu; s)$, $s$ & shape-normalized spectral kernel of $\Lg$ ($g(0){=}1$); its s
 $X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
 $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
 $m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\
-$y^{(a)}$, $C^{(a)}$, $m^{(a)}$ & prior components ($a \in \{G, \mathrm{feat}, \mathrm{emb}\}$ in Phase 1), their covariances, posterior-mean components \eqref{eq:components}--\eqref{eq:decomp} \\
-$\omega^{(a)}$, $\rho^{(ab)}_i$ & covariance share \eqref{eq:share}; per-note component correlation \eqref{eq:compcorr} \\
+$y^{(\zeta)}$, $C^{(\zeta)}$, $m^{(\zeta)}$ & prior components ($\zeta \in \{G, \mathrm{feat}, \mathrm{emb}\}$ in Phase 1), their covariances, posterior-mean components \eqref{eq:components}--\eqref{eq:decomp} \\
+$\omega^{(\zeta)}$, $\rho^{(\zeta\zeta')}_i$ & covariance share \eqref{eq:share}; per-note component correlation \eqref{eq:compcorr} \\
 $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
 $c_i$, $f_0$ & intonation (cents), fundamental frequency (Phase 2) \\
 $\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $\delta_i^{\mathrm{vib}}$ & Phase-2 loudness (log RMS); vibrato rate, extent, onset delay \\
