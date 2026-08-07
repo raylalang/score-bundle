@@ -116,9 +116,14 @@ calibration is confirmed (paired NLL \dNllGraphConf), and nominal-90\% intervals
 cover $\approx\covGP$ of the truth. Six downstream tasks map where the structure
 helps (per-note recovery, confidence, error spotting) and where it does not
 (whole-performance summaries; extrapolation from a short excerpt, where a
-cross-piece head remains the honest tool). Phases~2--3 extend the same prior to
-intonation/vibrato and to audio via a differentiable synthesizer; they are scoped
-but not yet built.
+cross-piece head remains the honest tool). Phase~2 carries the same prior,
+unchanged, to intonation, vibrato, and loudness on continuously pitched
+instruments: on real recordings (URMP, development set) the full pipeline ---
+tracker, per-note estimator, per-(note, channel) missingness, heteroscedastic
+likelihood --- runs end to end, and the graph prior improves held-out recovery
+on every channel with calibrated intervals; its confirmation set is
+preregistration-ready and untouched. Phase~3 (audio via a differentiable
+synthesizer) is scoped but not built.
 \end{abstract}
 
 \tableofcontents
@@ -219,8 +224,9 @@ score onsets, score durations); held-out evaluation with calibration.
 Audio input/output and continuously pitched instruments enter only in Phases~2--3.
 The work is phased so that each stage produces a defensible result before the next
 risk is taken (Table~\ref{tab:phases}); Phase~0 (the from-scratch music model) and
-Phase~1 (the score-graph prior and its evaluation) are complete, Phases~2--3 are
-scoped and not built.
+Phase~1 (the score-graph prior and its evaluation) are complete, Phase~2 has
+development-set results on real recordings with its confirmation set frozen but
+not yet spent, and Phase~3 is scoped and not built.
 
 \begin{table}[h]\centering
 \caption{The four phases and their status.}
@@ -235,8 +241,8 @@ Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; the plug-in mean 
 1 --- core (piano) & Timing, articulation, dynamics from aligned score+performance &
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened \\
-2 --- extension (mono) & Intonation, vibrato on continuously pitched instruments &
-$f_0$-derived channels ($c_i$ cents, vibrato) & Machinery built (cell masks, estimator); synthetic pilot passed; real data open \\
+2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
+$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) & \textbf{Running on real data} (URMP, development): graph wins every channel; confirmation not yet registered \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested, inference not started \\
 \bottomrule
@@ -958,7 +964,11 @@ over- or under-confident. A synthetic pilot (\S\ref{sec:phase2-pilot}) reverses
 the a-priori guess: with \emph{calibrated} estimator variances, as-given wins on
 every channel and the learned scale over-shrinks the vibrato-extent channel
 (coverage $0.76$--$0.81$ vs $0.86$--$0.87$); the learned scale is therefore the
-\emph{fallback} for a mis-calibrated real-world tracker, not the default.
+\emph{fallback} for a mis-calibrated real-world tracker, not the default. Real
+data re-confirmed this the hard way (\S\ref{sec:phase2-real}): with estimator
+octave-failures present the learned scale collapses catastrophically while
+as-given stays healthy, and after the failure rule as-given remains the
+better-calibrated variant.
 
 \paragraph{The warp, and where the alignment error goes.}
 Phase 1 obtained the score-time warp $T(\cdot)$ from an aligned beat grid supplied with
@@ -973,6 +983,14 @@ the $\tau$ row of \eqref{eq:phase2-noise} --- noting honestly that
 cannot represent its correlation along score time --- or withhold $\tau$ from
 Phase-2 claims entirely and report only the channels the audio measures directly. This is the single
 largest threat to validity in Phase 2 and it has no analogue in Phase 1.
+On the chosen corpus the threat has a measured resolution: URMP's note-level
+onset annotations anchor the warp \emph{without any audio aligner} on 76 of
+78 development tracks (half by exact score-order matching, half by a pitch
+DTW), and the residual timing under a local leave-one-out warp has median
+scale $79$\,ms with lag-1 neighbour correlation $+0.59$ --- Phase-1-scale
+timing with exactly the structure the graph prior models, so $\tau$ is
+viable as a Phase-2 channel here (development evidence; the channel is not
+yet part of the evaluated bundle).
 
 \paragraph{The graph is unchanged --- and Phase 2 makes one music-theoretic hypothesis testable.}
 The graph construction \eqref{eq:adjacency} and its variants (\S\ref{sec:graphvariants})
@@ -990,15 +1008,30 @@ positive result would be the first evidence in this thesis that a music-theoreti
 geometry, rather than merely music-theoretic \emph{edges}, earns its place.
 
 \paragraph{Data, and what ``recovery'' can mean here.}
-Two corpora are plausible. \textbf{URMP} supplies multitrack chamber recordings with
-per-instrument audio and scores, so $f_0$ is derivable per track and a score exists to
-align against; alignment quality is moderate. Solo singing corpora (Vocadito, Opencpop)
-supply $f_0$ annotations but weaker or absent score alignment. Neither offers clean
-intonation ground truth. This must be said plainly, because it changes what a result
-means: the targets \emph{are} estimator outputs, so held-out recovery measures the
-model's ability to recover \emph{the estimator's} targets at masked notes, not
-agreement with a gold standard. The claim available in Phase 2 is therefore weaker in
-kind than the Phase-1 claim, and should not be reported as though it were the same.
+The corpus is \textbf{URMP}: 44 multi-instrument chamber pieces from
+separately recorded monophonic tracks, each with per-track audio,
+frame-level ground-truth pitch (10\,ms hop), note-level onset/pitch/duration
+annotations, and the score (verified download; 13 instruments across
+strings, woodwind, and brass). Three preparatory measurements discipline its
+use. (i) The tracker was calibrated against the provided ground-truth pitch
+before any model was fit: median error 2--5 cents per instrument --- an
+order of magnitude below vibrato extents --- with voicing recall
+$\ge 0.95$, and the tracker's per-frame confidence genuinely predicts its
+errors (gross octave slips fall from $9.6\%$ to $0.4\%$ across confidence
+quintiles), which fixes the estimator chain: variances as given, lowest
+confidence quintile discarded. (ii) The development/confirmation split is
+frozen at the \emph{composition} level, constructed deterministically and
+data-blind (13 of 44 pieces in the untouched confirmation pool) --- and this
+granularity is not merely prudent: arrangements of one composition share
+\emph{identical} track recordings, so any finer split would leak audio
+across sides. (iii) Even so, no clean intonation ground truth exists. This
+must be said plainly, because it changes what a result means: the targets
+\emph{are} estimator outputs, so held-out recovery measures the model's
+ability to recover \emph{the estimator's} targets at masked notes, not
+agreement with a gold standard (the provided pitch curves supply an
+independent quasi-truth cross-check, used below). The claim available in
+Phase 2 is therefore weaker in kind than the Phase-1 claim, and should not
+be reported as though it were the same.
 
 \paragraph{Evaluation and the discipline that carries over.}
 The protocol is unchanged: held-out imputation, both axes, paired per-piece bootstrap
@@ -1029,10 +1062,48 @@ unmodelled onset delay as candidate causes. This is a synthetic result --- it
 validates machinery and settles design defaults, and claims nothing about real
 audio.
 
-\paragraph{Gate.} Phase 2 is exploratory. It is scoped so that a negative result costs
+\paragraph{First results on real audio (development set).}
+\label{sec:phase2-real}
+The full pipeline then ran end to end on real recordings: tracked $f_0$,
+confidence-filtered per-note estimation of $[c, \log\gamma, \log
+f^{\mathrm{vib}}]$ plus per-note loudness $\ell$ (log RMS, centred per
+recording), estimator variances as given, per-(note, channel) missingness
+from the identifiability rule (55--93\% of notes identifiable per track ---
+the missingness case is the norm, not an edge case), and the heteroscedastic
+cell-mask GP --- on 77 unique development tracks (shared recordings
+deduplicated), hiding 30\% of notes. One target-quality rule was added with
+measured justification rather than by fiat: $2.2\%$ of intonation targets
+are octave slips ($|c| \approx 1200$ cents), the ground-truth cross-check
+rejects every one of them (0 of 358 agree with the truth-derived value), and
+they are marked missing --- the same epistemic status as unidentifiable
+vibrato. The result: \textbf{the graph prior improves held-out recovery on
+every channel of the bundle, with calibrated intervals} --- paired against
+the no-graph ablation, $\Delta$RMSE $-0.92$ cents (intonation), $-0.15$
+(log extent), $-0.17$ (log rate), $-0.010$ (loudness), all significant,
+coverage $0.88$--$0.91$ at nominal $90\%$ --- and the ordering is unchanged
+when scored against the quasi-truth targets derived from the provided pitch
+curves. The win holds \emph{within each instrument family} (strings,
+woodwind, brass; the single non-result is loudness on woodwinds), so no
+family carries the average. Estimator-missing vibrato cells on visible notes
+receive posteriors --- the capability no per-note method has
+(Fig.~\ref{fig:phase2-real}). All of this is development evidence in the
+Phase-1 sense: it selected the design defaults above, and any confirmed
+Phase-2 claim awaits the frozen confirmation pool.
+
+\figph{phase2_real_example.png}{1.0}{Phase 2 on one real development track
+(violin), 30\% of notes hidden. Top: intonation --- the estimator's
+per-note values with their own uncertainties (dots), the cell-mask GP's
+posterior with its 90\% predictive band, and the hidden notes' estimator
+values (open circles). Bottom: vibrato extent --- squares mark notes whose
+extent the estimator could not identify from the audio; the GP supplies a
+posterior there anyway, informed by neighbours through the graph and by the
+coupled channels.\label{fig:phase2-real}}
+
+\paragraph{Gate.} Phase 2 remains gated. It is scoped so that a negative result costs
 the thesis nothing: the Phase-1 contribution stands on its own, and Phase 2's value is
-the demonstration that the same prior, unchanged, extends to a channel it was never
-designed for.
+the demonstration that the same prior, unchanged, extends to channels it was never
+designed for --- now shown on real recordings at development level, with the
+confirmation-grade version deliberately still unspent.
 
 \section{Phase 3: waveform likelihood}\label{sec:phase3-math}
 The optional audio likelihood replaces $\tilde y$ with the waveform $x \in \R^{M}$:
@@ -1795,8 +1866,10 @@ variance), and articulation is comparatively idiosyncratic, so the music model's
 information has least to add there.
 
 \section{Limitations}
-The result is symbolic-only (no audio yet) and piano-only (no performer-controlled
-intonation or vibrato). Targets depend on the quality of a single corpus's
+The \emph{confirmed} result is symbolic and piano-only (no performer-controlled
+intonation or vibrato); the Phase-2 real-audio results are development
+evidence on one corpus and their confirmation set is deliberately unspent.
+Targets depend on the quality of a single corpus's
 score$\leftrightarrow$performance alignment (ASAP), and the evaluation sets, while
 held-out and contamination-filtered, are modest in size (30 development + 20
 confirmation pieces); the Vienna performer-ID corpus is small. Two model-level
@@ -1832,29 +1905,37 @@ the observed excerpt does not cover the feature space (a Mahalanobis coverage te
 would do) --- would close the adaptation boundary of \S\ref{sec:boundary}.
 
 \section{Phase 2: intonation and vibrato}
-The formulation is given in full in \S\ref{sec:phase2}: the prior, its evidence fit and
-the conjugate posterior are reused verbatim, while the channel set grows
-\eqref{eq:phase2-channels}, the targets are estimated from an $f_0$ curve
-\eqref{eq:cents-curve}--\eqref{eq:vibrato}, and the observation noise becomes
-heteroscedastic \eqref{eq:phase2-noise}. What remains is not writing but deciding.
-Four questions must be settled before Phase 2 is built, and none of them is cosmetic:
+The formulation is given in full in \S\ref{sec:phase2}, and the pipeline now
+runs end to end on real recordings with development-level results
+(\S\ref{sec:phase2-real}). Of the four questions that had to be settled,
+three now have measured answers:
 \begin{enumerate}[leftmargin=*,noitemsep]
-  \item \textbf{Per-channel missingness --- resolved in code.} Short notes support
-        an intonation offset but not vibrato parameters, so targets go missing per
-        (note, channel). The mask interface is now generalised to per-(note, channel)
-        index sets, unit-pinned exact, and validated in the synthetic pilot
-        (\S\ref{sec:phase2-pilot}).
-  \item \textbf{Where alignment error goes.} Without MIDI the warp comes from
-        audio-to-score alignment, whose error enters $\tau$ directly and is correlated
-        along score time --- exactly the structure the prior expects expressive timing to
-        have. Fold it into the noise, or withhold $\tau$ from Phase-2 claims.
-  \item \textbf{The loudness channel.} $v_i$ was a MIDI velocity; its replacement
-        $\ell_i$ is an amplitude. Whether the two are commensurable across phases is a
-        claim, not a convention.
-  \item \textbf{What a result would mean.} The targets are estimator outputs, not ground
-        truth, so recovery measures agreement with the estimator. The Phase-2 claim is
-        weaker \emph{in kind} than the Phase-1 claim and must be reported as such.
+  \item \textbf{Per-channel missingness --- resolved in code and exercised
+        on real data.} Short notes support an intonation offset but not
+        vibrato parameters; the per-(note, channel) mask interface is
+        unit-pinned exact, and on real tracks 7--45\% of notes are in the
+        missingness regime.
+  \item \textbf{Where alignment error goes --- measured.} On URMP the
+        annotated note onsets anchor the warp without an audio aligner
+        (76/78 development tracks; residual $\tau$ at 79\,ms with $+0.59$
+        neighbour correlation), so $\tau$ is viable as a channel there;
+        the general audio-alignment problem returns on any corpus without
+        note-level annotations.
+  \item \textbf{The loudness channel --- in the bundle, commensurability
+        still a claim.} $\ell_i$ (log RMS) is now measured and the graph
+        improves it, but whether it may be discussed as one channel with the
+        MIDI velocity $v_i$ across phases remains a claim to defend, not a
+        convention.
+  \item \textbf{What a result would mean.} Unchanged, and load-bearing: the
+        targets are estimator outputs, so recovery measures agreement with
+        the estimator; the quasi-truth cross-check softens but does not
+        remove this. The Phase-2 claim stays weaker \emph{in kind} than the
+        Phase-1 claim.
 \end{enumerate}
+What still blocks a confirmable Phase-2 result: adopting $\tau$ into the
+evaluated bundle, the vibrato-delay ($\delta^{\mathrm{vib}}$) in/out
+decision, and freezing the claim set for the preregistered confirmation
+pool (13 pieces, untouched).
 One experiment is worth doing first because it is nearly free (\S\ref{sec:phase2}):
 the circle-of-fifths metric \eqref{eq:tonaladj} that \emph{hurt} on piano expression may
 \emph{help} on intonation, whose target is pitch itself. That would be the first evidence
@@ -1866,9 +1947,11 @@ observation noise $\Sigma_e$ becomes substantive because the targets are now
 estimates rather than symbolic MIDI values --- the prior's structure and the exact
 conjugate posterior are untouched.
 
-\figph{arch_phase2.pdf}{1.0}{Phase 2 (not yet implemented; dashed). Audio enters
-only to \emph{derive} per-note targets ($c_i$ cents, vibrato). One structural
-block changed relative to Figure~\ref{fig:arch-phase1} --- the likelihood, where
+\figph{arch_phase2.pdf}{1.0}{Phase 2 (dashed blocks were prospective when
+drawn; the pipeline now runs on real data at development level,
+\S\ref{sec:phase2-real}). Audio enters only to \emph{derive} per-note
+targets ($c_i$ cents, vibrato, loudness). One structural block changed
+relative to Figure~\ref{fig:arch-phase1} --- the likelihood, where
 $\Sigma_e$ is now substantive and heteroscedastic --- while the coregionalization
 is re-learned at $k \times k$. The prior branches and the conjugate posterior
 head are reused unchanged.\label{fig:arch-phase2}}
@@ -2000,9 +2083,11 @@ feature provider inside the kernel. Six downstream tasks draw two clean boundari
 --- structure helps note-by-note, not for whole-performance summaries; per-piece
 adaptation helps interpolation, not excerpt extrapolation --- and the evaluation is
 hardened against leakage, contamination, fit collapse, and selection inflation.
-The validated Phase-1 contribution stands on its own; the same prior is engineered
-to carry forward, unchanged in form, to intonation and to audio via a
-differentiable synthesizer, which is where the most novel work still lies.
+The validated Phase-1 contribution stands on its own; the same prior has now
+been carried, unchanged in form, to intonation, vibrato, and loudness on real
+recordings --- at development level, with a frozen confirmation pool
+deliberately unspent --- and the step to audio through a differentiable
+synthesizer is where the most novel work still lies.
 
 % =====================================================================
 \appendix
