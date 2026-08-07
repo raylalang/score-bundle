@@ -111,6 +111,8 @@ note conceptually in sync.
 | `Σ_e` | observation-noise covariance; `Σ_y` posterior covariance; `m` posterior mean |
 | `σ` | **posterior standard deviation only** (not a prior scale) |
 | `μ_LM`, `h_i` | LM-predicted plug-in mean (development form), LM per-note embedding (GP feature kernel) |
+| `ζ`, `y^(ζ)`, `C^(ζ)`, `m^(ζ)` | posterior-decomposition component index (`ζ ∈ {G, feat, emb}` in Phase 1; `ζ′` the paired index — NOT a/b, which are amplitudes/beat onset), component draw/prior covariance/posterior mean |
+| `ω^(ζ)`, `ρ^(ζζ′)` | covariance share of a component (sums to 1); per-note component correlation |
 | `z, a, Φ(z), x, ε, A_i(t)` | Phase-3 positions, amplitudes, synth, audio, noise, amp envelope |
 
 Do **not** reuse `S` for a covariance, `σ` for a prior scale, `α` for the additive weight,
