@@ -888,7 +888,17 @@ a MIDI velocity. Neither holds here. The per-note vector becomes
   \label{eq:phase2-channels}
 \end{equation}
 where $\tau_i$ and $\log r_i$ are unchanged; $\ell_i$ is a loudness channel replacing
-the MIDI velocity $v_i$ (the log RMS of the note's amplitude envelope $A_i(t)$); $c_i$
+the MIDI velocity $v_i$: with the note's audio span split into $C = 4$ equal
+chunks of samples $x^{(k)}$,
+\begin{equation}
+  \ell_i \;=\; \frac{1}{C} \sum_{k=1}^{C} \log \mathrm{rms}\bigl(x^{(k)}\bigr)
+  \;-\; \overline{\ell}_{\mathrm{track}},
+  \qquad
+  \widehat{\operatorname{Var}}[\ell_i] \;=\; \frac{s^2_{\mathrm{chunks}}}{C},
+  \label{eq:loudness}
+\end{equation}
+centred per recording because absolute level is arbitrary per track, with the
+chunk variance supplying its estimator noise; $c_i$
 is the static intonation offset; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are the
 vibrato rate, extent and onset delay defined below (the superscript keeps the delay
 distinct from the performed duration $\delta_i$ of \eqref{eq:logr}). Two decisions are genuinely open
@@ -923,9 +933,19 @@ $\delta_i^{\mathrm{vib}}$ (s) the delay before it begins. Estimating $(c_i, f_i^
 \gamma_i, \delta_i^{\mathrm{vib}})$ is a small nonlinear least-squares fit per note on the voiced
 samples. Note that $c_i$ is \emph{not} the mean of $c_i(t)$: the mean coincides with
 the vibrato-free centre only over a whole number of cycles, which a note rarely
-supplies. Open choices, all consequential: a robust loss rather than least squares;
-the minimum voiced duration below which $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are
-not identifiable at all; and the treatment of notes that fall below it.
+supplies. The observation rule, with every threshold fixed by the
+development measurements of \S\ref{sec:phase2-real}: note $i$'s sample set is
+\begin{equation}
+  V_i \;=\; \bigl\{\, \text{frames } j:\; t_j \in [t_i,\, t_i + \delta_i),\;
+  \text{voiced}_j,\; p_j \ge q_{0.2}(\text{track}) \,\bigr\},
+  \label{eq:framerule}
+\end{equation}
+(the tracker's per-frame confidence $p_j$ thresholded at the track's lowest
+quintile — the measured gross-error filter); the intonation cell is observed
+iff $|V_i| \ge 4$ \emph{and} $|\hat c_i| \le 150$ cents (the ground-truth
+-validated octave-failure rule); the vibrato cells additionally require the
+identifiability rule below. Remaining open choice: a robust loss rather than
+least squares inside the fit.
 
 \paragraph{An honest structural problem: per-channel missingness.}
 That last choice is not cosmetic. A short note may support $c_i$ but no vibrato
@@ -986,11 +1006,21 @@ largest threat to validity in Phase 2 and it has no analogue in Phase 1.
 On the chosen corpus the threat has a measured resolution: URMP's note-level
 onset annotations anchor the warp \emph{without any audio aligner} on 76 of
 78 development tracks (half by exact score-order matching, half by a pitch
-DTW), and the residual timing under a local leave-one-out warp has median
-scale $79$\,ms with lag-1 neighbour correlation $+0.59$ --- Phase-1-scale
-timing with exactly the structure the graph prior models, so $\tau$ is
-viable as a Phase-2 channel here (development evidence; the channel is not
-yet part of the evaluated bundle).
+DTW). The feasibility statistic uses a local leave-one-out warp: with
+score-onset/performed-onset pairs $(b_j, t_j)$,
+\begin{equation}
+  \hat T_{-i}(b) \;=\; \hat a_i\, b + \hat u_i, \quad
+  (\hat a_i, \hat u_i) = \arg\min \textstyle\sum_{0 < |j - i| \le 8}
+  \bigl(t_j - a\, b_j - u\bigr)^2, \qquad
+  \tau_i = t_i - \hat T_{-i}(b_i),
+  \label{eq:localwarp}
+\end{equation}
+so each note's residual is judged against a tempo line fit from its
+neighbours alone. The result: median $\operatorname{std}(\tau)$ of $79$\,ms
+with lag-1 neighbour correlation $+0.59$ --- Phase-1-scale timing with
+exactly the structure the graph prior models, so $\tau$ is viable as a
+Phase-2 channel here (development evidence; the channel is not yet part of
+the evaluated bundle).
 
 \paragraph{The graph is unchanged --- and Phase 2 makes one music-theoretic hypothesis testable.}
 The graph construction \eqref{eq:adjacency} and its variants (\S\ref{sec:graphvariants})
