@@ -939,6 +939,32 @@ often enough to be worth a channel, and hence whether $k = 7$; and whether $\ell
 which is an amplitude rather than a keystroke, is commensurable enough with $v_i$ for
 the two to be discussed as one channel across phases. We do not assume they are.
 
+\paragraph{The channels in musical terms, and where their values come from.}
+Before the estimation machinery, what these quantities mean to a listener.
+\emph{Intonation} $c_i$ is whether the note is played sharp or flat, and by
+how much: the deviation of the note's held pitch centre from where equal
+temperament places the written note, measured in cents (one hundred cents to
+a semitone; positive means sharp). It is the centre of the pitch curve with
+the vibrato oscillation removed --- deliberately \emph{not} the curve's
+average, for the reason given below. \emph{Vibrato} is the deliberate
+periodic oscillation of pitch around that centre which singers, string
+players, and wind players add to sustained notes. Three numbers describe it
+per note: the rate $f_i^{\mathrm{vib}}$ (how many oscillations per second,
+typically five to eight), the extent $\gamma_i$ (how far the pitch swings
+from the centre at its peak, in cents --- commonly a few tens), and the
+onset delay $\delta_i^{\mathrm{vib}}$ (how long after the note begins the
+oscillation starts --- performers often begin a note straight and let the
+vibrato grow). \emph{Loudness} $\ell_i$ is how strongly the note sounds,
+read from the audio's energy via \eqref{eq:loudness}, relative to the
+recording's own level. None of these values is annotated by hand: every one
+is \emph{estimated} from the recording --- a pitch tracker supplies the
+note's pitch curve, and the per-note fit below turns that curve into these
+numbers, each with its own uncertainty, which is exactly why the observation
+noise of \eqref{eq:phase2-noise} becomes substantive in Phase~2. The
+corpus's human annotations supply only the note spans (onsets, durations,
+written pitches); its ground-truth pitch curves are used to calibrate the
+tracker, never as channel values.
+
 \paragraph{From an $f_0$ curve to per-note targets.}
 Let $f_0^{(i)}(t)$ be the fundamental estimated on the sounding interval of note $i$,
 restricted to the samples the tracker marks as voiced. Its deviation from the
