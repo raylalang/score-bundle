@@ -2201,7 +2201,8 @@ $g(\nu; s)$, $s$ & shape-normalized spectral kernel of $\Lg$ ($g(0){=}1$); its s
 $X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
 $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
 $m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\
-$m^{(G)}$, $m^{(f)}$, $s^{(\cdot)}$ & posterior-mean components \eqref{eq:decomp}; covariance share of a component (\S\ref{sec:attribution}) \\
+$y^{(a)}$, $C^{(a)}$, $m^{(a)}$ & prior components, their covariances, posterior-mean components \eqref{eq:components}--\eqref{eq:decomp} \\
+$s^{(a)}$, $\rho^{(ab)}_i$ & covariance share \eqref{eq:share}; per-note component correlation \eqref{eq:compcorr} \\
 $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
 $c_i$, $f_0$ & intonation (cents), fundamental frequency (Phase 2) \\
 $\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $\delta_i^{\mathrm{vib}}$ & Phase-2 loudness (log RMS); vibrato rate, extent, onset delay \\
