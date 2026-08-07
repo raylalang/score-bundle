@@ -633,22 +633,53 @@ the observed ones through the conditional Gaussian --- the held-out
 $\sigma_i = \sqrt{(\Sy)_{ii}}$.
 
 \paragraph{The posterior decomposes by prior component.}
-The latent field is a sum of independent components, $y = y^{(G)} + \sum_f
-y^{(f)}$ (the coupled graph GP and one draw per feature kernel), and $C$ is
-the sum of their covariances. Since the weight vector $K_{oo}^{-1}\tilde y_o$
-in \eqref{eq:posterior} is shared, the posterior mean splits \emph{exactly} by
-component,
+The latent field is, by construction \eqref{eq:gpfirst}, a sum of independent
+Gaussian components --- the coupled graph GP and one draw per feature
+kernel --- and the observation adds independent noise:
 \begin{equation}
-  m \;=\; m^{(G)} + \sum_f m^{(f)}, \qquad
-  m^{(\cdot)} \;=\; C^{(\cdot)}_{\cdot o}\, K_{oo}^{-1}\, \tilde y_o,
-  \label{eq:decomp}
+  y \;=\; \sum_{a} y^{(a)}, \qquad
+  y^{(a)} \sim \N\bigl(0,\, C^{(a)}\bigr) \text{ independent}, \qquad
+  \tilde y \;=\; y + e,
+  \label{eq:components}
 \end{equation}
-and each term is itself the posterior mean $\mathbb{E}[\,y^{(\cdot)} \mid \tilde y_o\,]$
-of that component --- the functional-ANOVA decomposition of an additive GP.
-Observation noise is not a fourth component here, by independence rather than
-by convention: a held-out note's noise is never observed and is independent of
-every observation, so its conditional mean is identically zero. Noise enters
-\eqref{eq:decomp} only through the shared weights --- $K_{oo}$ contains
+with $C^{(G)} = B \otimes K_G(s)$, $C^{(f)} = \operatorname{diag}(c_f)
+\otimes X_f X_f^{\top}$, and $C = \sum_a C^{(a)}$. Because the other
+components and the noise are independent of $y^{(a)}$, its cross-covariance
+with the observations is just its own block,
+$\operatorname{Cov}\bigl(y^{(a)},\, \tilde y_o\bigr) = C^{(a)}_{\cdot o}$,
+and conditioning the jointly Gaussian pair $\bigl(y^{(a)}, \tilde y_o\bigr)$
+gives each component its exact posterior:
+\begin{align}
+  m^{(a)} \;&:=\; \mathbb{E}\bigl[\, y^{(a)} \mid \tilde y_o \,\bigr]
+  \;=\; C^{(a)}_{\cdot o}\, K_{oo}^{-1}\, \tilde y_o,
+  \label{eq:decomp}\\[2pt]
+  \operatorname{Cov}\bigl(y^{(a)},\, y^{(b)} \mid \tilde y_o\bigr)
+  \;&=\; \delta_{ab}\, C^{(a)}
+  \;-\; C^{(a)}_{\cdot o}\, K_{oo}^{-1}\, C^{(b)}_{o \cdot}.
+  \label{eq:decomp-cov}
+\end{align}
+Two exactness identities follow by linearity, and both are pinned by unit
+tests: summing \eqref{eq:decomp} over components recovers the posterior mean,
+and summing \eqref{eq:decomp-cov} over all pairs recovers the posterior
+covariance,
+\begin{equation}
+  m \;=\; \sum_a m^{(a)}, \qquad
+  \Sy \;=\; \sum_{a}\sum_{b}
+  \operatorname{Cov}\bigl(y^{(a)},\, y^{(b)} \mid \tilde y_o\bigr).
+  \label{eq:decomp-total}
+\end{equation}
+This is the functional-ANOVA decomposition of an additive GP. The prior
+components are independent; a posteriori the cross-terms of
+\eqref{eq:decomp-cov} are negative wherever two components can explain the
+same variation (explaining-away), so their normalised diagonals measure
+per-note redundancy between information sources --- the diagnostics of
+\S\ref{sec:attribution} are built directly on
+\eqref{eq:decomp}--\eqref{eq:decomp-total}.
+
+Observation noise is not a component of \eqref{eq:decomp}, by independence
+rather than by convention: a held-out note's noise is never observed and is
+independent of every observation, so its conditional mean is identically
+zero. Noise enters only through the shared weights --- $K_{oo}$ contains
 $\Sigma_e$, so the fitted noise level sets how much of the observed variation
 is explained at all, a uniform shrinkage of every component rather than a
 competing direction. At \emph{observed} notes the decomposition does gain an
@@ -656,15 +687,10 @@ exact noise term, $\mathbb{E}[\,e_o \mid \tilde y_o\,] = \tilde y_o -
 \mathbb{E}[\,y_o \mid \tilde y_o\,]$: the residual the model declines to
 explain. And in the predictive variance of a held-out observation the noise
 reappears additively as the floor \eqref{eq:floor}, where it is directly
-comparable to the components' posterior variances.
-The posterior covariance decomposes likewise, with
-cross-terms $-\,C^{(a)}_{\cdot o} K_{oo}^{-1} C^{(b)}_{o\cdot}$ between distinct
-components --- negative wherever two components can explain the same variation
-(explaining-away), so their normalised diagonals measure per-note redundancy
-between information sources. The split is the evidence-fitted model's own
-attribution --- it depends on the learned $B$, $c_f$, $\varsigma^2$ --- a
-description of how the fitted model divides labour, not a causal claim; its
-measured shape is reported in \S\ref{sec:attribution}.
+comparable to the components' posterior variances. Finally, the split is the
+evidence-fitted model's own attribution --- it depends on the learned $B$,
+$c_f$, $\varsigma^2$ --- a description of how the fitted model divides
+labour, not a causal claim.
 
 Figure~\ref{fig:arch-phase1} lays this assembly out as a computation graph: the
 graph-structure branch and the evidence branch are built independently from the
@@ -1415,22 +1441,41 @@ Bayesian weighting of informative per-note features under one joint marginal lik
 recovering; the graph makes the confidence honest}. The music model earns its place
 as a feature provider inside the kernel, not as an oracle mean.
 
-A third control needs no refitting at all: the exact component decomposition of
-the posterior \eqref{eq:decomp}, read off the fitted model itself
-(development pieces, $\nPieces \times 4$ anchor masks). Covariance shares of the
-posterior \emph{mean} at held-out notes,
-$s^{(\cdot)} = \operatorname{Cov}\bigl(m^{(\cdot)},\, m\bigr) / \operatorname{Var}(m)$
-per channel with the components of \eqref{eq:decomp} --- an allocation that
-sums to one exactly, cross-terms landing where they belong --- put
-most of the mean on the score-feature kernel on every channel
+A third control needs no refitting at all: the exact component decomposition
+of the posterior, \eqref{eq:decomp}--\eqref{eq:decomp-total}, read off the
+fitted model itself (development pieces, $\nPieces \times 4$ anchor masks).
+Two diagnostics are derived from it, per channel. The \emph{covariance
+share} allocates the posterior mean's variation over the held-out notes $h$
+of a piece to the components,
+\begin{equation}
+  s^{(a)} \;=\;
+  \frac{\operatorname{Cov}_{i \in h}\bigl(m^{(a)}_i,\, m_i\bigr)}
+       {\operatorname{Var}_{i \in h}\bigl(m_i\bigr)},
+  \qquad \sum_a s^{(a)} = 1
+  \label{eq:share}
+\end{equation}
+--- the normalisation is exact by bilinearity applied to
+$m = \sum_a m^{(a)}$, so cross-component interactions land inside the shares
+rather than in an unexplained remainder. The per-note \emph{component
+correlation} normalises the diagonal of the posterior cross-covariance
+\eqref{eq:decomp-cov} by the two component standard deviations,
+\begin{equation}
+  \rho^{(ab)}_i \;=\;
+  \frac{\operatorname{Cov}\bigl(y^{(a)}_i,\, y^{(b)}_i \mid \tilde y_o\bigr)}
+       {\sigma^{(a)}_i\, \sigma^{(b)}_i},
+  \qquad
+  \sigma^{(a)}_i = \sqrt{\operatorname{Var}\bigl(y^{(a)}_i \mid \tilde y_o\bigr)},
+  \label{eq:compcorr}
+\end{equation}
+negative where the two information sources explain the same variation
+(reported below as its average over held-out notes). Measured: the shares
+put most of the mean on the score-feature kernel on every channel
 ($0.69/0.60/0.40$ for $\tau$ / $\log r$ / $v$), give the embeddings their
 largest share on loudness ($0.34$, the channel where they carry signal the
 hand-built features lack), and leave the graph's share of the mean modest
 ($0.12/0.22/0.27$) --- consistent with (i)--(ii): feature weighting recovers
 the mean, the graph's contribution concentrates in the covariance. The
-posterior cross-correlations between components --- the per-note diagonal of
-the cross-covariance of \S\ref{sec:posterior}, normalised by the two
-component posterior standard deviations, averaged over held-out notes ---
+component correlations \eqref{eq:compcorr}
 complete the picture: graph
 $\times$ embeddings is near zero ($-0.004/-0.025/-0.059$ per channel) --- the
 two information sources act \emph{complementarily}, not redundantly --- while
