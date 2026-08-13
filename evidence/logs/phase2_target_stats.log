@@ -1,0 +1,7 @@
+tracks in cache: 78
+vibrato-identifiable: min 0.02 p25 0.16 med 0.38 p75 0.72 max 0.97
+intonation finite: min 0.86 p25 0.97 med 0.99 p75 1.00 max 1.00
+usable (|c|<=150): min 0.61 p25 0.95 med 0.98 p75 1.00 max 1.00
+octave slips: 358 of 16546 finite intonation targets = 2.16%
+slips agreeing with GT within 50c: 0/358
+

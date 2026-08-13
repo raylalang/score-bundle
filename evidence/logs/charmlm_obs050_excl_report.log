@@ -1,0 +1,11 @@
+collapse cell: piece 18 seed 2 (worst per-piece RMSE: piece 18, 25302.0)
+
+-- excluding the collapse PIECE entirely (doc row, n=29) --
+  dRMSE  -0.0037 [-0.0108,+0.0027]  n=29  median -0.0028  <0: 16/29
+  dNLL   +0.0255 [-0.0001,+0.0574]  n=29  median -0.0025  <0: 15/29
+
+-- excluding only the collapse CELL (sensitivity, n=30) --
+  dRMSE  -0.0034 [-0.0101,+0.0030]  n=30  median -0.0015  <0: 16/30
+  dNLL   +0.0267 [+0.0016,+0.0573]* n=30  median +0.0024  <0: 15/30
+
+
