@@ -33,8 +33,9 @@ ROOT = "/home/ray/Research/data/urmp/Dataset"
 CACHE = ".cache/urmp_targets_dev.pkl"
 OUT_MD = "results/phase2_real_results.md"
 _Z90 = 1.6448536269514722
-CH = ["c (cents)", "log gamma", "log f", "loudness ell", "tau (s)"]
-N_GT_CH = 3                       # GT F0 curves carry no amplitude
+CH = ["c (cents)", "log gamma", "log f", "loudness ell", "tau (s)",
+      "delta_vib (s)"]
+GT_COLS = (0, 1, 2, 5)            # GT curves carry no amplitude and no tau
 CELLS_PKL = "results/phase2_real_cells.pkl"
 HOLD_FRAC, SEEDS = 0.30, (0, 1)
 MIN_NOTES = 30
@@ -198,6 +199,40 @@ def stage_tau() -> None:
     print("tau appended")
 
 
+def stage_delta() -> None:
+    """Append the vibrato onset-delay channel (delta_vib IN per the
+    pre-stated criterion, results/delta_vib_dev.md).
+
+    Values come from the GATED per-note fits already computed by
+    scripts/eval_delta_vib.py (the eq:vibrato-exact estimator); the bundle's
+    [c, log gamma, log f] keep the validated ungated estimator — the two
+    fits coexist per note, documented in the prereg design.  GT-derived
+    deltas are stored for the quasi-truth scoring.  Extends the cache.
+    """
+    with open(".cache/delta_vib_pyin.pkl", "rb") as fh:
+        dpy = pickle.load(fh)
+    with open(".cache/delta_vib_gt.pkl", "rb") as fh:
+        dgt = pickle.load(fh)
+    with open(CACHE, "rb") as fh:
+        data = pickle.load(fh)
+    for key, d in sorted(data.items()):
+        n = d["onset"].size
+        dv = np.full(n, np.nan)
+        vv = np.full(n, np.nan)
+        gv = np.full(n, np.nan)
+        for i, r in enumerate(dpy[key]["gated_pyin"]):
+            if r and r["delta_identifiable"] and np.isfinite(r["var_delta"]):
+                dv[i], vv[i] = r["delta"], max(r["var_delta"], 1e-8)
+        for i, r in enumerate(dgt[key]["gated_gt"]):
+            if r and r["delta_identifiable"]:
+                gv[i] = r["delta"]
+        d["dvib"], d["var_dvib"], d["dvib_gt"] = dv, vv, gv
+        print(f"  {key} delta_vib {np.isfinite(dv).sum()}/{n}", flush=True)
+    with open(CACHE, "wb") as fh:
+        pickle.dump(data, fh)
+    print("delta_vib appended")
+
+
 def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless):
     from score_bundle.gp import MultiOutputGraphGP
 
@@ -240,9 +275,13 @@ def stage_eval() -> None:
     used = 0
     for key, d in sorted(data.items()):
         est = np.concatenate([d["est"], d["ell"][:, None],
-                              d["tau"][:, None]], axis=1)
+                              d["tau"][:, None], d["dvib"][:, None]], axis=1)
         var = np.concatenate([d["var"], d["var_ell"][:, None],
-                              d["var_tau"][:, None]], axis=1)
+                              d["var_tau"][:, None],
+                              d["var_dvib"][:, None]], axis=1)
+        gt_full = np.full((est.shape[0], len(CH)), np.nan)
+        gt_full[:, :3] = d["est_gt"]
+        gt_full[:, 5] = d["dvib_gt"]
         ident = d["ident"]
         n = est.shape[0]
         usable = np.isfinite(est[:, 0]) & (np.abs(est[:, 0]) <= C_MAX)
@@ -271,15 +310,16 @@ def stage_eval() -> None:
             mask[:, 1] = mask[:, 2] = usable & ~held & ident
             mask[:, 3] = usable & ~held & np.isfinite(est[:, 3])
             mask[:, 4] = ~held & np.isfinite(est[:, 4])
+            mask[:, 5] = ~held & np.isfinite(est[:, 5])
             if mask[:, 0].sum() < 15 or held.sum() < 5:
                 continue
             Yobs = np.where(mask, np.nan_to_num(est), 0.0)
             fits = _fit_systems(eig, feats, Yobs, mask, scale, var, None)
             for sname, (m, sd, sd_pred) in fits.items():
-                for tgt_name, tgt, s_use, kmax in (
-                        ("est", est, sd_pred, n_ch),
-                        ("gt", d["est_gt"], sd, N_GT_CH)):
-                    for c in range(kmax):
+                for tgt_name, tgt, s_use, cols in (
+                        ("est", est, sd_pred, tuple(range(n_ch))),
+                        ("gt", gt_full, sd, GT_COLS)):
+                    for c in cols:
                         cells = held & np.isfinite(tgt[:, c])
                         if c == 0:
                             cells &= np.abs(tgt[:, 0]) <= C_MAX
@@ -303,19 +343,19 @@ def stage_eval() -> None:
     lines = [f"# Phase 2 on real audio — first URMP dev results "
              f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
              f"of notes hidden)", ""]
-    for tgt_name, title, kmax in (("est", "vs estimator targets (primary; "
-                                          "predictive sd)", n_ch),
+    for tgt_name, title, cols in (("est", "vs estimator targets (primary; "
+                                          "predictive sd)", tuple(range(n_ch))),
                                   ("gt", "vs ground-truth-derived targets "
-                                         "(quasi-truth; latent sd)", N_GT_CH)):
+                                         "(quasi-truth; latent sd)", GT_COLS)):
         lines += [f"## {title}", "",
                   "| system | " + " | ".join(
-                      f"{CH[c]} RMSE / cov@90" for c in range(kmax)) + " |",
-                  "|---" * (kmax + 1) + "|"]
+                      f"{CH[c]} RMSE / cov@90" for c in cols) + " |",
+                  "|---" * (len(cols) + 1) + "|"]
         for sname, label in (("gp", "graph GP (learned scale)"),
                              ("gp_asgiven", "graph GP (as-given)"),
                              ("nograph", "no-graph ablation")):
             cells = []
-            for c in range(kmax):
+            for c in cols:
                 r = rows[sname][tgt_name][c]
                 if not r["se"]:
                     cells.append("--")
@@ -397,4 +437,4 @@ def stage_eval() -> None:
 
 if __name__ == "__main__":
     {"extract": stage_extract, "loudness": stage_loudness,
-     "tau": stage_tau, "eval": stage_eval}[sys.argv[1]]()
+     "tau": stage_tau, "delta": stage_delta, "eval": stage_eval}[sys.argv[1]]()
