@@ -1,0 +1,58 @@
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:71: RuntimeWarning: overflow encountered in exp
+  Lc[np.diag_indices(k)] = np.exp(theta[:k])
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:73: RuntimeWarning: invalid value encountered in matmul
+  return Lc @ Lc.T
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:115: RuntimeWarning: overflow encountered in exp
+  cs.append(np.exp(x[i:i + self.k])); i += self.k
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:116: RuntimeWarning: overflow encountered in exp
+  nv = np.exp(x[i:i + self.k])
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:141: RuntimeWarning: invalid value encountered in multiply
+  blk = p["B"][a, b] * Kg
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:144: RuntimeWarning: invalid value encountered in add
+  blk = blk + c[a] * XXt
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:171: RuntimeWarning: invalid value encountered in multiply
+  K[c * n_o:(c + 1) * n_o, c * n_o:(c + 1) * n_o] += p["noise"][c] * np.eye(n_o)
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/numpy/linalg/_linalg.py:2350: RuntimeWarning: invalid value encountered in slogdet
+  sign, logdet = _umath_linalg.slogdet(a, signature=signature)
+
+  piece 0 done
+  piece 1 done
+  piece 2 done
+  piece 3 done
+  piece 4 done
+  piece 5 done
+  piece 6 done
+  piece 7 done
+  piece 8 done
+  piece 9 done
+  piece 10 done
+  piece 11 done
+  piece 12 done
+  piece 13 done
+  piece 14 done
+  piece 15 done
+  piece 16 done
+  piece 17 done
+  piece 18 done
+  piece 19 done
+  piece 20 done
+  piece 21 done
+  piece 22 done
+  piece 23 done
+  piece 24 done
+  piece 25 done
+  piece 26 done
+  piece 27 done
+  piece 28 done
+  piece 29 done
+# Posterior component correlations at held-out notes (DEV)
+
+30 dev pieces, anchor-mask seed 0, config b_featlm. Mean per-note posterior correlation between component pairs (negative = explaining-away / redundancy).
+
+| pair | tau | log r | v |
+|---|---|---|---|
+| graph x LM features | -0.004 ± 0.008 | -0.025 ± 0.041 | -0.059 ± 0.037 |
+| score features x LM features | -0.067 ± 0.085 | -0.079 ± 0.109 | -0.183 ± 0.072 |
+| graph x score features | -0.041 ± 0.081 | -0.185 ± 0.105 | -0.179 ± 0.097 |
+wrote results/component_redundancy_dev.md
+

@@ -29,10 +29,18 @@ variance` pinned by unit test. Both mask paths (Phase-2 cells included).
    modest (.12/.22/.27). Features recover, graph calibrates — the ablation
    attribution, now inside one fit.
 2. **Stability across rates (seed 0, obs .50–.90):** pattern stable; the
-   embedding share grows with observation density (v .28→.42 monotone;
-   logr .14→.32 with its peak .34 at obs .80) at the expense of both other
-   components — the graph share declines with density too (logr .26→.15,
-   v .32→.24). In-fit counterpart of the masksweep contrast growth.
+   embedding share grows with observation density (v .28→.42, logr .14→.32,
+   endpoint values) at the expense of both other components — the graph
+   share declines with density (logr .26→.15, v .32→.24). Reproduction
+   note (2026-08-13 audit): these shares reproduce only to ±0.04 across
+   BLAS/thread conditions (`evidence/logs/rate_shares_repro_omp2.md`), so
+   endpoint trends are the stable claim — intermediate-rate ordering
+   (which rate holds the peak) is not. The anchor-rate shares of finding 1
+   and the redundancy correlations of finding 3 reproduce byte-identically
+   (`evidence/logs/repro_components.log`, `repro_redundancy.log`); the
+   B-diagonal contrasts reproduce to the 4th decimal with identical
+   signs and stars (`repro_bdiag.log`). In-fit counterpart of the
+   masksweep contrast growth.
 3. **Redundancy (cross-correlations at held-out notes):** graph × embeddings
    ≈ 0 (−.004/−.025/−.059) — complements, not rivals. Explaining-away lives
    between graph and score features (logr −.19, v −.18) and score × LM

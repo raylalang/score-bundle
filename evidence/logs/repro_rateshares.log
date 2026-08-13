@@ -1,0 +1,165 @@
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:73: RuntimeWarning: overflow encountered in matmul
+  return Lc @ Lc.T
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:115: RuntimeWarning: overflow encountered in exp
+  cs.append(np.exp(x[i:i + self.k])); i += self.k
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:141: RuntimeWarning: invalid value encountered in multiply
+  blk = p["B"][a, b] * Kg
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:144: RuntimeWarning: invalid value encountered in add
+  blk = blk + c[a] * XXt
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/numpy/linalg/_linalg.py:2350: RuntimeWarning: invalid value encountered in slogdet
+  sign, logdet = _umath_linalg.slogdet(a, signature=signature)
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:71: RuntimeWarning: overflow encountered in exp
+  Lc[np.diag_indices(k)] = np.exp(theta[:k])
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:73: RuntimeWarning: invalid value encountered in matmul
+  return Lc @ Lc.T
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:116: RuntimeWarning: overflow encountered in exp
+  nv = np.exp(x[i:i + self.k])
+/home/ray/Research/score-bundle/.claude/worktrees/audit-week-0813/src/score_bundle/gp.py:171: RuntimeWarning: invalid value encountered in multiply
+  K[c * n_o:(c + 1) * n_o, c * n_o:(c + 1) * n_o] += p["noise"][c] * np.eye(n_o)
+
+  obs0.50 piece 0 done
+  obs0.50 piece 1 done
+  obs0.50 piece 2 done
+  obs0.50 piece 3 done
+  obs0.50 piece 4 done
+  obs0.50 piece 5 done
+  obs0.50 piece 6 done
+  obs0.50 piece 7 done
+  obs0.50 piece 8 done
+  obs0.50 piece 9 done
+  obs0.50 piece 10 done
+  obs0.50 piece 11 done
+  obs0.50 piece 12 done
+  obs0.50 piece 13 done
+  obs0.50 piece 14 done
+  obs0.50 piece 15 done
+  obs0.50 piece 16 done
+  obs0.50 piece 17 done
+  obs0.50 piece 18 done
+  obs0.50 piece 19 done
+  obs0.50 piece 20 done
+  obs0.50 piece 21 done
+  obs0.50 piece 22 done
+  obs0.50 piece 23 done
+  obs0.50 piece 24 done
+  obs0.50 piece 25 done
+  obs0.50 piece 26 done
+  obs0.50 piece 27 done
+  obs0.50 piece 28 done
+  obs0.50 piece 29 done
+| component | tau | log r | v |
+|---|---|---|---|
+| graph GP | +0.14 ± 0.27 | +0.25 ± 0.24 | +0.30 ± 0.21 |
+| score features | +0.72 ± 0.37 | +0.61 ± 0.27 | +0.44 ± 0.23 |
+| LM features | +0.15 ± 0.29 | +0.14 ± 0.25 | +0.27 ± 0.21 |
+
+  obs0.70 piece 0 done
+  obs0.70 piece 1 done
+  obs0.70 piece 2 done
+  obs0.70 piece 3 done
+  obs0.70 piece 4 done
+  obs0.70 piece 5 done
+  obs0.70 piece 6 done
+  obs0.70 piece 7 done
+  obs0.70 piece 8 done
+  obs0.70 piece 9 done
+  obs0.70 piece 10 done
+  obs0.70 piece 11 done
+  obs0.70 piece 12 done
+  obs0.70 piece 13 done
+  obs0.70 piece 14 done
+  obs0.70 piece 15 done
+  obs0.70 piece 16 done
+  obs0.70 piece 17 done
+  obs0.70 piece 18 done
+  obs0.70 piece 19 done
+  obs0.70 piece 20 done
+  obs0.70 piece 21 done
+  obs0.70 piece 22 done
+  obs0.70 piece 23 done
+  obs0.70 piece 24 done
+  obs0.70 piece 25 done
+  obs0.70 piece 26 done
+  obs0.70 piece 27 done
+  obs0.70 piece 28 done
+  obs0.70 piece 29 done
+| component | tau | log r | v |
+|---|---|---|---|
+| graph GP | +0.15 ± 0.30 | +0.19 ± 0.23 | +0.24 ± 0.18 |
+| score features | +0.70 ± 0.35 | +0.59 ± 0.34 | +0.36 ± 0.16 |
+| LM features | +0.15 ± 0.25 | +0.22 ± 0.31 | +0.41 ± 0.17 |
+
+  obs0.80 piece 0 done
+  obs0.80 piece 1 done
+  obs0.80 piece 2 done
+  obs0.80 piece 3 done
+  obs0.80 piece 4 done
+  obs0.80 piece 5 done
+  obs0.80 piece 6 done
+  obs0.80 piece 7 done
+  obs0.80 piece 8 done
+  obs0.80 piece 9 done
+  obs0.80 piece 10 done
+  obs0.80 piece 11 done
+  obs0.80 piece 12 done
+  obs0.80 piece 13 done
+  obs0.80 piece 14 done
+  obs0.80 piece 15 done
+  obs0.80 piece 16 done
+  obs0.80 piece 17 done
+  obs0.80 piece 18 done
+  obs0.80 piece 19 done
+  obs0.80 piece 20 done
+  obs0.80 piece 21 done
+  obs0.80 piece 22 done
+  obs0.80 piece 23 done
+  obs0.80 piece 24 done
+  obs0.80 piece 25 done
+  obs0.80 piece 26 done
+  obs0.80 piece 27 done
+  obs0.80 piece 28 done
+  obs0.80 piece 29 done
+| component | tau | log r | v |
+|---|---|---|---|
+| graph GP | +0.08 ± 0.15 | +0.16 ± 0.18 | +0.22 ± 0.19 |
+| score features | +0.62 ± 0.35 | +0.49 ± 0.30 | +0.35 ± 0.17 |
+| LM features | +0.30 ± 0.34 | +0.34 ± 0.29 | +0.43 ± 0.18 |
+
+  obs0.90 piece 0 done
+  obs0.90 piece 1 done
+  obs0.90 piece 2 done
+  obs0.90 piece 3 done
+  obs0.90 piece 4 done
+  obs0.90 piece 5 done
+  obs0.90 piece 6 done
+  obs0.90 piece 7 done
+  obs0.90 piece 8 done
+  obs0.90 piece 9 done
+  obs0.90 piece 10 done
+  obs0.90 piece 11 done
+  obs0.90 piece 12 done
+  obs0.90 piece 13 done
+  obs0.90 piece 14 done
+  obs0.90 piece 15 done
+  obs0.90 piece 16 done
+  obs0.90 piece 17 done
+  obs0.90 piece 18 done
+  obs0.90 piece 19 done
+  obs0.90 piece 20 done
+  obs0.90 piece 21 done
+  obs0.90 piece 22 done
+  obs0.90 piece 23 done
+  obs0.90 piece 24 done
+  obs0.90 piece 25 done
+  obs0.90 piece 26 done
+  obs0.90 piece 27 done
+  obs0.90 piece 28 done
+  obs0.90 piece 29 done
+| component | tau | log r | v |
+|---|---|---|---|
+| graph GP | +0.17 ± 0.26 | +0.15 ± 0.18 | +0.24 ± 0.23 |
+| score features | +0.56 ± 0.36 | +0.53 ± 0.29 | +0.34 ± 0.16 |
+| LM features | +0.27 ± 0.33 | +0.32 ± 0.29 | +0.42 ± 0.18 |
+
+wrote results/rate_shares_dev.md
+
