@@ -138,6 +138,8 @@ note conceptually in sync.
 | `μ_LM`, `h_i` | LM-predicted plug-in mean (development form), LM per-note embedding (GP feature kernel) |
 | `ζ`, `y^(ζ)`, `C^(ζ)`, `m^(ζ)` | posterior-decomposition component index (`ζ ∈ {G, feat, emb}` in Phase 1; `ζ′` the paired index — NOT a/b, which are amplitudes/beat onset), component draw/prior covariance/posterior mean |
 | `ω^(ζ)`, `ρ^(ζζ′)` | covariance share of a component (sums to 1); per-note component correlation |
+| `J_i`, `P_j`, `q_0.2`, `f_ref` | Phase-2 frame rule: note-i frame set, tracker per-frame confidence (capital — `p_i` is pitch), lowest-quintile threshold, tuning reference 440 Hz = A4 (MIDI 69) |
+| `φ̂_i, ψ̂_i` | Phase-2 local tempo-line slope/intercept at note i (eq:localwarp) |
 | `z, a, Φ(z), x, ε, A_i(t)` | Phase-3 positions, amplitudes, synth, audio, noise, amp envelope |
 
 Do **not** reuse `S` for a covariance, `σ` for a prior scale, `α` for the additive weight,

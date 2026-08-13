@@ -920,17 +920,18 @@ a MIDI velocity. Neither holds here. The per-note vector becomes
   \label{eq:phase2-channels}
 \end{equation}
 where $\tau_i$ and $\log r_i$ are unchanged; $\ell_i$ is a loudness channel replacing
-the MIDI velocity $v_i$: with the note's audio span split into $C = 4$ equal
-chunks of samples $x^{(k)}$,
+the MIDI velocity $v_i$: with the note's audio span split into four equal
+chunks of samples $x^{(q)}$, $q = 1, \dots, 4$,
 \begin{align}
-  \ell_i &\;=\; \frac{1}{C} \sum_{k=1}^{C} \log \mathrm{rms}\bigl(x^{(k)}\bigr)
+  \ell_i &\;=\; \frac{1}{4} \sum_{q=1}^{4} \log \mathrm{rms}\bigl(x^{(q)}\bigr)
   \;-\; \overline{\ell}_{\mathrm{track}},
   \label{eq:loudness}\\
-  \widehat{\operatorname{Var}}[\ell_i] &\;=\; \frac{s^2_{\mathrm{chunks}}}{C},
+  \widehat{\operatorname{Var}}[\ell_i] &\;=\; \frac{s^2_{\mathrm{chunks}}}{4},
   \nonumber
 \end{align}
-centred per recording because absolute level is arbitrary per track, with the
-chunk variance supplying its estimator noise; $c_i$
+centred per recording because absolute level is arbitrary per track;
+$s^2_{\mathrm{chunks}}$, the sample variance of the four log chunk-RMS values,
+supplies its estimator noise; $c_i$
 is the static intonation offset; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are the
 vibrato rate, extent and onset delay defined below (the superscript keeps the delay
 distinct from the performed duration $\delta_i$ of \eqref{eq:logr}). Two decisions are genuinely open
@@ -948,10 +949,10 @@ a semitone; positive means sharp). It is the centre of the pitch curve with
 the vibrato oscillation removed --- deliberately \emph{not} the curve's
 average, for the reason given below. \emph{Vibrato} is the deliberate
 periodic oscillation of pitch around that centre which singers, string
-players, and wind players add to sustained notes. Three numbers describe it
+players, and wind players add to sustained notes \cite{seashore1936}. Three numbers describe it
 per note: the rate $f_i^{\mathrm{vib}}$ (how many oscillations per second,
-typically five to eight), the extent $\gamma_i$ (how far the pitch swings
-from the centre at its peak, in cents --- commonly a few tens), and the
+typically five to eight \cite{prame1994}), the extent $\gamma_i$ (how far the pitch swings
+from the centre at its peak, in cents --- commonly a few tens \cite{prame1997}), and the
 onset delay $\delta_i^{\mathrm{vib}}$ (how long after the note begins the
 oscillation starts --- performers often begin a note straight and let the
 vibrato grow). \emph{Loudness} $\ell_i$ is how strongly the note sounds,
@@ -970,11 +971,14 @@ Let $f_0^{(i)}(t)$ be the fundamental estimated on the sounding interval of note
 restricted to the samples the tracker marks as voiced. Its deviation from the
 equal-tempered target, in cents, is
 \begin{equation}
-  c_i(t) \;=\; 1200\,\log_2 \frac{f_0^{(i)}(t)}{f_{\mathrm{ref}}\, 2^{\,p_i/12}} .
+  c_i(t) \;=\; 1200\,\log_2 \frac{f_0^{(i)}(t)}{f_{\mathrm{ref}}\, 2^{\,(p_i - 69)/12}} ,
   \label{eq:cents-curve}
 \end{equation}
+with $f_{\mathrm{ref}} = 440$\,Hz the frequency of A4, whose MIDI number is $69$
+--- so the denominator is the equal-tempered frequency of the written pitch $p_i$.
 This curve is not itself a target: it mixes a static mistuning with an oscillation. We
-decompose it as
+decompose it, following the standard sinusoidal description of vibrato
+\cite{seashore1936,prame1994,prame1997}, as
 \begin{equation}
   c_i(t) \;=\; \underbrace{c_i}_{\text{intonation}} \;+\; u_i(t) \;+\; \epsilon_i(t),
   \qquad
@@ -989,16 +993,19 @@ with $t_i$ the performed onset. So $c_i$ (cents) is the \emph{vibrato-free centr
 $\gamma_i$ (cents) the vibrato extent, $f_i^{\mathrm{vib}}$ (Hz) its rate, and
 $\delta_i^{\mathrm{vib}}$ (s) the delay before it begins. Estimating $(c_i, f_i^{\mathrm{vib}},
 \gamma_i, \delta_i^{\mathrm{vib}})$ is a small nonlinear least-squares fit per note on the voiced
-samples. Note that $c_i$ is \emph{not} the mean of $c_i(t)$: the mean coincides with
+samples; per-note vibrato parameter estimation from recordings is an
+established analysis task \cite{driedger2016}. Note that $c_i$ is \emph{not} the mean of $c_i(t)$: the mean coincides with
 the vibrato-free centre only over a whole number of cycles, which a note rarely
-supplies. The observation rule, with every threshold fixed by the
+supplies (perceived pitch likewise departs from the curve mean on short
+vibrato tones \cite{dalessandro1994}). The observation rule, with every threshold fixed by the
 development measurements of \S\ref{sec:phase2-real}: note $i$'s sample set is
 \begin{equation}
   J_i \;=\; \bigl\{\, \text{frames } j:\; t_j \in [t_i,\, t_i + \delta_i),\;
-  \text{voiced}_j,\; p_j \ge q_{0.2}(\text{track}) \,\bigr\},
+  \text{voiced}_j,\; P_j \ge q_{0.2}(\text{track}) \,\bigr\},
   \label{eq:framerule}
 \end{equation}
---- the tracker's per-frame confidence $p_j$ thresholded at the track's
+--- the tracker's per-frame confidence $P_j$ (capital, to keep it clear of
+the pitches $p_i$) thresholded at the track's
 lowest quintile, the measured gross-error filter. From it, three observation
 decisions, stated separately:
 \begin{itemize}[leftmargin=*,noitemsep]
@@ -1076,13 +1083,14 @@ onset annotations anchor the warp \emph{without any audio aligner} on 76 of
 78 development tracks (half by exact score-order matching, half by a pitch
 DTW). The feasibility statistic uses a local leave-one-out warp: with
 score-onset/performed-onset pairs $(b_j, t_j)$, each note gets a tempo line
+--- slope $\hat\varphi_i$, intercept $\hat\psi_i$ ---
 fitted from its neighbours alone,
 \begin{align}
-  (\hat a_i,\, \hat u_i)
-  &\;=\; \arg\min_{a,\,u}\; \sum_{0 < |j - i| \le 8}
-     \bigl(t_j - a\, b_j - u\bigr)^2,
+  (\hat\varphi_i,\, \hat\psi_i)
+  &\;=\; \arg\min_{\varphi,\,\psi}\; \sum_{0 < |j - i| \le 8}
+     \bigl(t_j - \varphi\, b_j - \psi\bigr)^2,
   \label{eq:localwarp}\\
-  \tau_i &\;=\; t_i \,-\, \bigl(\hat a_i\, b_i + \hat u_i\bigr),
+  \tau_i &\;=\; t_i \,-\, \bigl(\hat\varphi_i\, b_i + \hat\psi_i\bigr),
   \nonumber
 \end{align}
 so the note being judged never enters its own warp. The result: median $\operatorname{std}(\tau)$ of $79$\,ms
@@ -1469,8 +1477,10 @@ thesis model.
 \section{Attribution: posterior decomposition}\label{sec:attribution}
 Two development-set attribution controls pin the mechanism. (i) \emph{Fixed-mean control:}
 inserting the two-stage pipeline's cross-piece mean as a fixed mean inside the
-coupled GP scores 0.390 / $-0.327$ --- statistically at the two-stage pipeline's own
-level. Coregionalization and joint fitting per se contribute almost nothing.
+coupled GP scores 0.390 / $-0.327$ --- statistically at the level of the matching
+two-stage configuration (features, music model and plain graph; the adopted
+two-stage headline with harmonic edges remains significantly ahead of this
+control). Coregionalization and joint fitting per se contribute almost nothing.
 (ii) \emph{Component removal (paired, development):} removing the graph from the full model
 costs $+0.017$ RMSE / $+0.067$ NLL; removing the music-model embeddings costs
 $+0.008$ / $+0.034$ --- both significant. The mechanism is therefore: \textbf{per-piece
@@ -1508,7 +1518,7 @@ negative where the two information sources explain the same variation
 (reported below as its average over held-out notes). Measured: the shares
 put most of the mean on the score-feature kernel on every channel
 ($0.69/0.60/0.40$ for $\tau$ / $\log r$ / $v$), give the embeddings their
-largest share on loudness ($0.34$, the channel where they carry signal the
+largest share on velocity ($0.34$, the channel where they carry signal the
 hand-built features lack), and leave the graph's share of the mean modest
 ($0.12/0.22/0.27$) --- consistent with (i)--(ii): feature weighting recovers
 the mean, the graph's contribution concentrates in the covariance. The
@@ -1517,8 +1527,8 @@ complete the picture: graph
 $\times$ embeddings is near zero ($-0.004/-0.025/-0.059$ per channel) --- the
 two information sources act \emph{complementarily}, not redundantly --- while
 the visible explaining-away sits between the two feature kernels (score
-$\times$ embeddings, $-0.18$ on loudness) and between graph and score features
-($-0.19/-0.18$ on articulation and loudness). Both statements are the fitted
+$\times$ embeddings, $-0.18$ on velocity) and between graph and score features
+($-0.19/-0.18$ on articulation and velocity). Both statements are the fitted
 model's own attribution under its learned scales, not causal claims.
 Figure~\ref{fig:posterior-components} shows one development piece's posterior
 mean split into its component curves.
@@ -1529,11 +1539,11 @@ the posterior mean of \eqref{eq:posterior} split exactly by prior component
 \eqref{eq:decomp} --- coupled graph GP, score-feature kernel, and
 music-model-embedding kernel sum to the grey total; open circles are the
 hidden notes' true values. The division of labour is legible note by note:
-on loudness the embedding component tracks the note-to-note alternation while
+on velocity the embedding component tracks the note-to-note alternation while
 the score features carry the phrase shape; the two large articulation events
 are carried almost entirely by the graph component, propagated from observed
 extreme neighbours; timing rests on the score features, with the embedding
-component nearly flat outside loudness.\label{fig:posterior-components}}
+component nearly flat outside velocity.\label{fig:posterior-components}}
 
 The shares above are averages; the sharper statements are conditional
 (all development-labeled). \emph{When does a component dominate?} Dominance is
@@ -1542,7 +1552,7 @@ per channel according to the within-piece signal it finds --- the embedding
 kernel, for instance, is switched off entirely ($<1\%$ share) on timing and
 articulation for roughly 60\% of development pieces yet dominant on a
 minority --- and at the extremes the division of labour inverts wholesale.
-One piece's loudness rests on the graph (share $0.76$; its level and a
+One piece's velocity channel rests on the graph (share $0.76$; its level and a
 late crescendo propagate from observed neighbours, the embeddings switched
 off), another's on the embeddings (share $0.69$; note-to-note dynamics
 convention the score features do not encode):
@@ -1554,14 +1564,14 @@ carries what little of $\tau$ is predictable at all. \emph{When do components
 disagree?} Opposite-sign pulls with both components substantial (each
 exceeding a quarter of the channel's posterior-mean spread) occur at
 $20\%$ of held-out notes between graph and score features on articulation
-and $15\%$ on loudness --- the per-note face of the $-0.19/-0.18$
-component correlations \eqref{eq:compcorr} above --- and least often between graph and embeddings on
-timing ($6\%$): such notes are exactly where the per-piece evidence had to
+and $15\%$ on velocity --- the per-note face of the $-0.19/-0.18$
+component correlations \eqref{eq:compcorr} above --- and between graph and embeddings on
+timing at only $6\%$: such notes are exactly where the per-piece evidence had to
 arbitrate between overlapping explanations, and where the decomposition is
 most informative to inspect.
 
 \figph{posterior_components_contrast_dev.png}{1.0}{The same channel
-(loudness), two development pieces, opposite division of labour --- dominance
+(velocity), two development pieces, opposite division of labour --- dominance
 is assigned per piece by the evidence. Top: a graph-dominated piece (share
 $0.76$); the level and the late crescendo are carried by the graph component,
 the embedding kernel is switched off. Bottom: an embedding-dominated piece
@@ -1611,8 +1621,9 @@ almost entirely the articulation channel, and its recovery win is almost entirel
 loudness --- timing contributes little either way. The cross-channel coupling
 itself is also a loudness story: refitting the full model with $B$ constrained
 diagonal costs velocity specifically ($+0.0075$ RMSE / $+0.093$ NLL, paired,
-development, significant) and changes timing and articulation by nothing
-material --- the coregionalization earns its keep where an observed loud
+development, significant), leaves articulation statistically unchanged, and
+moves timing by a formally significant but negligible $0.0005$ in the
+diagonal's favour --- the coregionalization earns its keep where an observed loud
 neighbour is informative. The pooled RMSE improvement is
 therefore a blend of a large loudness gain diluted by a near-static timing channel.
 Figure~\ref{fig:posterior-example} shows what the numbers summarise: the
@@ -1816,10 +1827,13 @@ metric-replacement penalty persists throughout. Second, the same comparison
 gradient. At 30/20/10\% hidden the harmonic learned-graph variant beats the
 plain graph on recovery ($\Delta$RMSE $-0.0096$/$-0.0105$/$-0.0089$, all
 paired and significant, development), with NLL better on a majority of
-pieces at each level but never significantly (the means are disturbed by the
-documented Gaussian-tail piece, \S\ref{sec:guard-gp}). At the 40\% operating
+pieces at each level but never significantly (at 10\% hidden the mean is
+pulled positive by the documented Gaussian-tail piece, \S\ref{sec:guard-gp};
+at 30/20\% the means are negative with intervals crossing zero). At the 40\% operating
 point it ties (the adoption record), and at 50\% hidden the advantage is
-gone ($-0.0037$, ns) --- and that rate also produced the one fit collapse of
+gone ($-0.0037$, ns, with the collapsed piece excluded; excluding only the
+collapsed cell instead reads as a small significant NLL harm, $+0.027$)
+--- and that rate also produced the one fit collapse of
 the sweep (one cell; the graph-parameter optimiser wandered to degenerate
 length scales, and the safeguard's calibration screen could not see it from
 the observed notes, the known blind spot of \S\ref{sec:guard-gp}). The
@@ -2244,6 +2258,9 @@ $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_
 $c_i$, $f_0$ & intonation (cents), fundamental frequency (Phase 2) \\
 $\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $\delta_i^{\mathrm{vib}}$ & Phase-2 loudness (log RMS); vibrato rate, extent, onset delay \\
 $\sigma_{e,ij}^2$ & per-(note, channel) observation-noise variance (Phase 2) \\
+$J_i$, $P_j$, $q_{0.2}$ & note-$i$ frame set; tracker per-frame confidence; its lowest-quintile threshold \eqref{eq:framerule} \\
+$\hat\varphi_i$, $\hat\psi_i$ & local tempo-line slope and intercept at note $i$ \eqref{eq:localwarp} \\
+$f_{\mathrm{ref}}$ & tuning reference, $440$\,Hz $=$ A4 (MIDI $69$) \eqref{eq:cents-curve} \\
 $x$, $z$, $a$, $\Phi(z)$, $\epsilon$, $K_n$ & audio, nonlinear positions, amplitudes, synth basis, noise, noise cov (Phase 3) \\
 $A_i(t)$ & amplitude envelope of note $i$ (Phase 3) \\
 \end{longtable}
@@ -2347,6 +2364,22 @@ the accompanying evidence archive.
   Gaussian Processes Over Graphs. arXiv:1803.05776, 2018.
 \bibitem{blancomulero2021} D.~Blanco-Mulero, M.~Heinonen, V.~Kyrki.
   Evolving-Graph Gaussian Processes. \emph{ICML Time Series Workshop}, 2021.
+\bibitem{seashore1936} C.~E.~Seashore (ed.).
+\emph{Psychology of the Vibrato in Voice and Instrument}.
+University of Iowa Studies in the Psychology of Music, Vol.~III, 1936.
+\bibitem{prame1994} E.~Prame.
+Measurements of the vibrato rate of ten singers.
+\emph{J.\ Acoust.\ Soc.\ Am.}, 96(4):1979--1984, 1994.
+\bibitem{prame1997} E.~Prame.
+Vibrato extent and intonation in professional Western lyric singing.
+\emph{J.\ Acoust.\ Soc.\ Am.}, 102(1):616--621, 1997.
+\bibitem{dalessandro1994} C.~d'Alessandro, M.~Castellengo.
+The pitch of short-duration vibrato tones.
+\emph{J.\ Acoust.\ Soc.\ Am.}, 95(3):1617--1630, 1994.
+\bibitem{driedger2016} J.~Driedger, S.~Balke, S.~Ewert, M.~M\"uller.
+Template-based vibrato analysis in complex music signals.
+In \emph{Proc.\ of the International Society for Music Information Retrieval
+Conference (ISMIR)}, pages 239--245, 2016.
 \bibitem{ddsp} J.~Engel, L.~Hantrakul, C.~Gu, A.~Roberts.
   DDSP: Differentiable Digital Signal Processing. \emph{ICLR}, 2020.
 \bibitem{musictransformer} C.-Z.~A.~Huang et al.
