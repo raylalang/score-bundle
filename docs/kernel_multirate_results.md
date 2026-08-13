@@ -91,11 +91,24 @@ consistent with the near-zero posterior graph×LM correlation
 | 10% | **−0.0089\*** | +0.264 ns (piece 28) | 22/30 | −0.030 |
 
 **Collapse cell at 50% hidden:** piece 18 seed 2, RMSE 5×10⁴ (predictions to
-8.6×10⁵). Shard log (`logs/charmlm_obs0.50.shard6.log`) shows the
-graph-parameter optimizer at degenerate length scales (exp overflow,
-divide-by-zero in the adjacency); the guard's calibration screen passed it —
-the documented invisible-from-observed-notes class, now demonstrated for a
-learned-graph config at sparse observation.
+8.6×10⁵). Shard log (`logs/charmlm_obs0.50.shard6.log`) shows exp overflow in
+the graph-parameter optimizer (degenerate learned length scales) in this
+cell's window; divide-by-zero warnings in the same shard log fall in the
+adjacent seed-3 window (shard logs are not cell-attributed). The run had the
+guard enabled (`run_charmlm_rates.sh` passes `--guard`) and the cell survived
+its calibration screen — the documented invisible-from-observed-notes class,
+now demonstrated for a learned-graph config at sparse observation.
+
+**Provenance of the excluded row (added 2026-08-13):** the 50% row above was
+originally an ad-hoc recompute; it is now scripted and logged —
+`scripts/report_charmlm_obs050_excl.py`,
+`logs/charmlm_obs050_excl_report.log` (values reproduce exactly). The script
+also reports the exclusion-granularity sensitivity: dropping only the
+collapse *cell* instead of the whole piece gives dRMSE −0.0034 ns but dNLL
++0.0267 [+0.0016, +0.0573]\* — a small significant NLL harm at 50% hidden on
+that reading. Either granularity supports the verdict below (no adoption);
+the piece-level row stays the headline because a piece with a collapsed cell
+contributes a corrupted per-piece mean on the harmonic side.
 
 **Verdict:** harmonic edges + learned graph parameters add recovery value
 where observation is dense enough to determine the extra edge weights

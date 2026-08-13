@@ -11,8 +11,8 @@
 ## Corpus
 
 **URMP** (44 multi-instrument pieces, separately recorded monophonic tracks;
-`../data/urmp/`, download pending the registration form — see
-`URMP_doc.pdf`). Each track supplies: audio (48 kHz mono), frame-level
+`../data/urmp/Dataset/`, downloaded 2026-08-06 via Dryad and MD5-verified —
+the registration form was never needed). Each track supplies: audio (48 kHz mono), frame-level
 ground-truth F0 (46 ms windows, 10 ms hop), note-level onset/pitch/duration
 annotations, and the score MIDI. Loader:
 `score_bundle.phase2.urmp.load_urmp_meta`.
@@ -53,7 +53,7 @@ mis-calibrated tracker.
 
 **Tracker calibration — MEASURED (2026-08-06, development side,
 `results/tracker_calibration_dev.md`):** pyin vs URMP ground truth on all
-~90 development tracks: median |dev| 2–5 cents per instrument (an order
+101 development tracks (78 unique recordings after deduplication): median |dev| 2–5 cents per instrument (an order
 below vibrato extents); voicing recall ≥ 0.95 everywhere; pyin's confidence
 is informative (median error monotone in probability; gross-error rate
 9.6% → 0.4% across quintiles). **Decisions adopted:** estimator variances

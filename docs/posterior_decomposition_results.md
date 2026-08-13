@@ -19,14 +19,20 @@ variance` pinned by unit test. Both mask paths (Phase-2 cells included).
 
 ## Findings (config b_featlm, 30 dev pieces unless noted)
 
+> Provenance note (2026-08-13 audit): finding 1 is 30 pieces × 4 anchor
+> seeds; findings 3–5 (redundancy correlations, ARD switch-off, dominance)
+> are **anchor seed 0 only** (see the raw results/*.md headers); finding 6
+> is 30 × 4.
+
 1. **Shares of the mean (anchor, 4 seeds):** score features carry most
    (τ .69 / logr .60 / v .40); embeddings largest on velocity (.34); graph
    modest (.12/.22/.27). Features recover, graph calibrates — the ablation
    attribution, now inside one fit.
 2. **Stability across rates (seed 0, obs .50–.90):** pattern stable; the
-   embedding share grows monotonically with observation density
-   (v .28→.42, logr .14→.32) at the expense of score features; graph share
-   roughly flat. In-fit counterpart of the masksweep contrast growth.
+   embedding share grows with observation density (v .28→.42 monotone;
+   logr .14→.32 with its peak .34 at obs .80) at the expense of both other
+   components — the graph share declines with density too (logr .26→.15,
+   v .32→.24). In-fit counterpart of the masksweep contrast growth.
 3. **Redundancy (cross-correlations at held-out notes):** graph × embeddings
    ≈ 0 (−.004/−.025/−.059) — complements, not rivals. Explaining-away lives
    between graph and score features (logr −.19, v −.18) and score × LM

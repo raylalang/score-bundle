@@ -14,8 +14,8 @@ behind the "harmonic edges redundant once the music model is in the kernel"
 question.
 
 Dev-only diagnostic (30 dev pieces, anchor-mask seed 0, config b_featlm);
-uses gp._blocks(only=...) — promote to a tested gp.py method before any
-thesis-facing use.
+uses the tested gp.posterior_component_cov (total-variance identity pinned
+by unit test).
 
     OMP_NUM_THREADS=4 PYTHONPATH=src:scripts python scripts/eval_component_redundancy.py
 """
