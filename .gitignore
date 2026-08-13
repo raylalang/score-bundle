@@ -21,11 +21,16 @@ data/
 *.midi
 
 # Run artifacts (regenerable; do not commit)
+# NB no trailing slash on /.cache and the /results/* rule: dir-only patterns
+# do not match symlinks, which let worktree-scaffolding symlinks slip into
+# the index (2026-08-13; same lesson class as the evidence/ episode)
 /checkpoints/
-/.cache/
+/.cache
 /logs/
 /figures/
 !docs/thesis/figures/
+/results/*
+!/results/*.md
 *.pt
 *.pkl
 *.pdf
