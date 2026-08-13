@@ -61,3 +61,66 @@ def test_variances_roughly_calibrated():
     assert 0.5 < zc.std() < 2.0
     assert 0.5 < zg.std() < 2.0
     assert abs(zc.mean()) < 0.6 and abs(zg.mean()) < 0.6
+
+
+# --- gated variant (draft eq:vibrato exactly; the delta_vib study estimator) --
+
+from score_bundle.phase2.intonation import fit_vibrato_note_gated
+
+
+def _gated_curve(rng, c=10.0, gamma=25.0, f=6.0, delta=0.25, dur=1.2,
+                 sr=100.0, noise=4.0):
+    t = np.arange(0.0, dur, 1.0 / sr)
+    u = np.where(t >= delta, gamma * np.sin(2 * np.pi * f * (t - delta)), 0.0)
+    return t, c + u + rng.normal(0, noise, t.size)
+
+
+def test_gated_recovers_delay_and_parameters():
+    rng = np.random.default_rng(10)
+    t, x = _gated_curve(rng)
+    out = fit_vibrato_note_gated(t, x)
+    assert out["vibrato_identifiable"] and out["delta_identifiable"]
+    assert abs(out["delta"] - 0.25) < 0.06
+    assert abs(out["c"] - 10.0) < 2.0
+    assert abs(out["gamma"] - 25.0) < 4.0
+    assert abs(out["f"] - 6.0) < 0.2
+    assert np.isfinite(out["var_delta"]) and out["var_delta"] > 0
+
+
+def test_gated_no_delay_returns_zero_delta():
+    rng = np.random.default_rng(11)
+    t, x = _gated_curve(rng, delta=0.0)
+    out = fit_vibrato_note_gated(t, x)
+    assert out["vibrato_identifiable"]
+    assert out["delta"] < 0.05
+
+
+def test_gated_downward_start_is_folded_into_half_period():
+    rng = np.random.default_rng(12)
+    t = np.arange(0.0, 1.2, 0.01)
+    delta = 0.20
+    u = np.where(t >= delta, -22.0 * np.sin(2 * np.pi * 5.0 * (t - delta)), 0.0)
+    x = 5.0 + u + rng.normal(0, 3.0, t.size)
+    out = fit_vibrato_note_gated(t, x)
+    assert out["vibrato_identifiable"]
+    assert out["gamma"] > 0                     # extent reported positive
+    assert abs(out["delta"] - (delta + 0.5 / 5.0)) < 0.06
+
+
+def test_gated_short_note_unidentifiable():
+    rng = np.random.default_rng(13)
+    t, x = _gated_curve(rng, dur=0.15)
+    out = fit_vibrato_note_gated(t, x)
+    assert not out["vibrato_identifiable"]
+    assert not out["delta_identifiable"]
+
+
+def test_gated_matches_ungated_on_zero_delay_curves():
+    # sanity: on a no-delay curve both estimators agree on (c, gamma, f)
+    rng = np.random.default_rng(14)
+    t, x = _gated_curve(rng, delta=0.0, noise=3.0)
+    a = fit_vibrato_note(t, x)
+    b = fit_vibrato_note_gated(t, x)
+    assert abs(a["c"] - b["c"]) < 1.5
+    assert abs(a["gamma"] - b["gamma"]) < 3.0
+    assert abs(a["f"] - b["f"]) < 0.2

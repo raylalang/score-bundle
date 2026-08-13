@@ -145,6 +145,121 @@ def fit_vibrato_note(t: np.ndarray, cents: np.ndarray,
             "vibrato_identifiable": identifiable, "sse": float(sse), "n": int(n)}
 
 
+def fit_vibrato_note_gated(t: np.ndarray, cents: np.ndarray,
+                           f_grid: np.ndarray | None = None,
+                           n_delta: int = 13,
+                           min_cycles: float = 1.5,
+                           min_samples: int = 8) -> Dict[str, float]:
+    """The GATED estimator matching draft eq:vibrato exactly:
+
+        cents(t) = c + [t >= delta] * gamma * sin(2*pi*f*(t - delta)),
+
+    i.e. the pitch curve is flat at the centre until the vibrato onset delay
+    ``delta`` and oscillates after it, phase pinned to zero at the gate (the
+    oscillation grows out of the centre).  This is the model the thesis
+    equation specifies; :func:`fit_vibrato_note` (the evaluated-bundle
+    estimator for ``[c, gamma, f]``) fits the UNGATED form, whose ``delta``
+    is a phase reported modulo one period, not an onset delay.  This gated
+    variant exists to answer the delta_vib channel-candidate question on
+    development data (docs/phase2_prereg_design.md).
+
+    Implementation: a joint grid over rate ``f`` (default 2.5-9 Hz, 66 pts)
+    and delay ``delta`` (``n_delta`` points spanning [0, 0.6 * span]), with a
+    closed-form 2-parameter solve for ``(c, gamma)`` at each grid point
+    (basis 1 and the gated sinusoid); Gauss-Newton covariance at the optimum
+    over ``(c, gamma, f, delta)`` (gate treated as fixed, the standard smooth
+    approximation); a negative fitted ``gamma`` (vibrato starting downward)
+    is folded into ``delta + T/2`` when that stays inside the note, else the
+    fit is flagged unidentifiable.
+
+    Identifiability of the DELAY (``delta_identifiable``): the vibrato rule
+    (>= ``min_samples`` post-gate samples and >= ``min_cycles`` cycles after
+    the gate) plus a finite delta variance and a gate that is not pinned to
+    the upper grid edge.  ``delta = 0`` (no delay) is a legitimate
+    identifiable value.  numpy-only, deterministic.
+
+    Returns ``c, gamma, f, delta, var_c, var_gamma, var_f, var_delta,
+    vibrato_identifiable, delta_identifiable, sse, n``.
+    """
+    t = np.asarray(t, dtype=float)
+    x = np.asarray(cents, dtype=float)
+    n = x.size
+    bad = {"c": float(x.mean()) if n else 0.0, "gamma": 0.0, "f": 0.0,
+           "delta": 0.0, "var_c": float(x.var() / max(n, 1)) if n > 1 else np.inf,
+           "var_gamma": np.inf, "var_f": np.inf, "var_delta": np.inf,
+           "vibrato_identifiable": False, "delta_identifiable": False,
+           "sse": 0.0, "n": int(n)}
+    if n < 4:
+        return bad
+    if f_grid is None:
+        f_grid = np.linspace(2.5, 9.0, 66)
+    span = float(t.max() - t.min())
+    d_grid = np.linspace(0.0, 0.6 * span, n_delta) + float(t.min())
+
+    best = (np.inf, None)                     # (sse, (c, g, f, d))
+    for f in f_grid:
+        for d in d_grid:
+            gate = t >= d
+            if gate.sum() < min_samples or (t.max() - d) * f < min_cycles:
+                continue
+            s = np.where(gate, np.sin(2.0 * np.pi * f * (t - d)), 0.0)
+            # closed-form OLS for x ~ c + g*s
+            sm, xm = s.mean(), x.mean()
+            sv = float(s @ s) / n - sm * sm
+            if sv < 1e-12:
+                continue
+            g = (float(s @ x) / n - sm * xm) / sv
+            c = xm - g * sm
+            r = x - c - g * s
+            sse = float(r @ r)
+            if sse < best[0]:
+                best = (sse, (c, g, float(f), float(d)))
+    if best[1] is None:
+        return bad
+    sse, (c_hat, g_hat, f_hat, d_hat) = best
+    if g_hat < 0:                              # downward start = delta + T/2
+        d_flip = d_hat + 0.5 / f_hat
+        if (t.max() - d_flip) * f_hat >= min_cycles \
+                and (t >= d_flip).sum() >= min_samples:
+            g_hat, d_hat = -g_hat, d_flip
+            gate = t >= d_hat
+            s = np.where(gate, np.sin(2.0 * np.pi * f_hat * (t - d_hat)), 0.0)
+            c_hat = float(x.mean() - g_hat * s.mean())
+            r = x - c_hat - g_hat * s
+            sse = float(r @ r)
+        else:
+            return bad
+
+    gate = t >= d_hat
+    th = 2.0 * np.pi * f_hat * (t - d_hat)
+    s = np.where(gate, np.sin(th), 0.0)
+    cth = np.where(gate, np.cos(th), 0.0)
+    J = np.stack([np.ones(n), s,
+                  g_hat * cth * 2.0 * np.pi * (t - d_hat),
+                  -g_hat * cth * 2.0 * np.pi * f_hat], axis=1)
+    dof = max(n - 4, 1)
+    sigma2 = sse / dof
+    try:
+        cov = sigma2 * np.linalg.inv(J.T @ J + 1e-10 * np.eye(4))
+    except np.linalg.LinAlgError:
+        cov = np.full((4, 4), np.inf)
+    var_c, var_gamma, var_f, var_delta = (float(cov[i, i]) for i in range(4))
+
+    post = int(gate.sum())
+    vib_ok = bool(post >= min_samples
+                  and (t.max() - d_hat) * f_hat >= min_cycles
+                  and np.isfinite(var_gamma))
+    at_edge = d_hat >= d_grid[-1] - 1e-12
+    delta_ok = bool(vib_ok and np.isfinite(var_delta) and not at_edge)
+    if not vib_ok:
+        return bad
+    return {"c": float(c_hat), "gamma": float(g_hat), "f": f_hat,
+            "delta": float(d_hat - t.min()), "var_c": var_c,
+            "var_gamma": var_gamma, "var_f": var_f, "var_delta": var_delta,
+            "vibrato_identifiable": vib_ok, "delta_identifiable": delta_ok,
+            "sse": float(sse), "n": int(n)}
+
+
 def extract_f0(audio: np.ndarray, sr: float, hop_s: float = 0.010,
                fmin: float = 65.0, fmax: float = 2093.0) -> Dict[str, np.ndarray]:
     """Monophonic f0 tracking via probabilistic YIN (librosa ``pyin``).
