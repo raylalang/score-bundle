@@ -33,8 +33,9 @@ ROOT = "/home/ray/Research/data/urmp/Dataset"
 CACHE = ".cache/urmp_targets_dev.pkl"
 OUT_MD = "results/phase2_real_results.md"
 _Z90 = 1.6448536269514722
-CH = ["c (cents)", "log gamma", "log f", "loudness ell"]
+CH = ["c (cents)", "log gamma", "log f", "loudness ell", "tau (s)"]
 N_GT_CH = 3                       # GT F0 curves carry no amplitude
+CELLS_PKL = "results/phase2_real_cells.pkl"
 HOLD_FRAC, SEEDS = 0.30, (0, 1)
 MIN_NOTES = 30
 # Estimator-failure rule for the intonation channel: |c| > C_MAX cents is an
@@ -147,6 +148,56 @@ def stage_loudness() -> None:
     print("loudness appended")
 
 
+def stage_tau() -> None:
+    """Append the timing channel: onset-anchored local LOO warp residual.
+
+    The adopted tau policy (prereg option 1, feasibility measured in
+    results/tau_feasibility_dev.md): score MIDI matched to the annotated
+    performed notes, tau from the +/-8-note leave-one-out tempo line
+    (draft eq:localwarp), aligner error folded into the noise row as the
+    tempo line's OLS predictive variance.  Extends the cache in place.
+    """
+    import pretty_midi
+
+    from score_bundle.phase2.targets import hz_to_semitone
+    from score_bundle.phase2.urmp import read_notes_annotation
+    from score_bundle.phase2.warp import note_tau
+
+    with open(CACHE, "rb") as fh:
+        data = pickle.load(fh)
+    paths = {(p.index, tr.number): (p, tr) for p, tr in dev_unique_tracks()}
+    n_method = {"exact": 0, "dtw": 0, "failed": 0}
+    for key, d in sorted(data.items()):
+        p, tr = paths[key]
+        try:
+            pm = pretty_midi.PrettyMIDI(
+                os.path.join(p.folder, os.path.basename(p.score_mid)))
+            sc = pm.instruments[tr.number - 1].notes
+        except Exception:
+            sc = []
+        notes = read_notes_annotation(tr.notes)
+        if not sc:
+            n = notes["onset"].size
+            out = {"tau": np.full(n, np.nan), "var": np.full(n, np.nan),
+                   "method": "failed"}
+        else:
+            out = note_tau(np.array([nt.start for nt in sc]),
+                           np.array([nt.pitch for nt in sc]),
+                           notes["onset"],
+                           hz_to_semitone(notes["pitch_hz"]))
+        n_method[out["method"]] += 1
+        d["tau"], d["var_tau"] = out["tau"], np.maximum(out["var"], 1e-8)
+        d["tau_method"] = out["method"]
+        fin = np.isfinite(out["tau"])
+        print(f"  {key} tau {out['method']:<6} ({fin.sum()}/{fin.size}, "
+              f"std {np.nanstd(out['tau']) * 1000 if fin.any() else 0:.0f} ms)",
+              flush=True)
+    print("match methods:", n_method)
+    with open(CACHE, "wb") as fh:
+        pickle.dump(data, fh)
+    print("tau appended")
+
+
 def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless):
     from score_bundle.gp import MultiOutputGraphGP
 
@@ -188,8 +239,10 @@ def stage_eval() -> None:
     per_track = []          # (key, seed, sys, channel, instrument, rmse_vs_est)
     used = 0
     for key, d in sorted(data.items()):
-        est = np.concatenate([d["est"], d["ell"][:, None]], axis=1)
-        var = np.concatenate([d["var"], d["var_ell"][:, None]], axis=1)
+        est = np.concatenate([d["est"], d["ell"][:, None],
+                              d["tau"][:, None]], axis=1)
+        var = np.concatenate([d["var"], d["var_ell"][:, None],
+                              d["var_tau"][:, None]], axis=1)
         ident = d["ident"]
         n = est.shape[0]
         usable = np.isfinite(est[:, 0]) & (np.abs(est[:, 0]) <= C_MAX)
@@ -217,6 +270,7 @@ def stage_eval() -> None:
             mask[:, 0] = usable & ~held
             mask[:, 1] = mask[:, 2] = usable & ~held & ident
             mask[:, 3] = usable & ~held & np.isfinite(est[:, 3])
+            mask[:, 4] = ~held & np.isfinite(est[:, 4])
             if mask[:, 0].sum() < 15 or held.sum() < 5:
                 continue
             Yobs = np.where(mask, np.nan_to_num(est), 0.0)
@@ -286,22 +340,27 @@ def stage_eval() -> None:
         lines.append(f"| {label} | " + " | ".join(cells) + " |")
     lines.append("")
 
-    # paired per-(track,seed) graph-vs-nograph deltas, vs estimator targets
+    # paired per-(track,seed) graph-vs-nograph deltas, vs estimator targets,
+    # for BOTH noise variants (the as-given variant is the declared default;
+    # 2026-08-13 audit: its paired contrast was previously unquantified)
     from eval_graphgp import bootstrap_ci
     rngb = np.random.default_rng(31)
-    lines += ["## Paired graph value (gp - nograph), per (track, seed), "
-              "vs estimator targets", "",
-              "| channel | dRMSE [95% CI] |", "|---|---|"]
     by = {}
     for key, seed, sname, c, inst, rmse in per_track:
         by.setdefault((key, seed, c), {})[sname] = rmse
-    for c in range(n_ch):
-        d = [v["gp"] - v["nograph"] for (k, s, cc), v in by.items()
-             if cc == c and "gp" in v and "nograph" in v]
-        mu, lo, hi = bootstrap_ci(np.array(d), B=2000, rng=rngb)
-        sig = "*" if (lo > 0) or (hi < 0) else " "
-        lines.append(f"| {CH[c]} | {mu:+.3f} [{lo:+.3f}, {hi:+.3f}]{sig} "
-                     f"(n={len(d)}) |")
+    for sname, slabel in (("gp", "learned scale"),
+                          ("gp_asgiven", "as-given, the default")):
+        lines += [f"## Paired graph value ({slabel}; {sname} - nograph), "
+                  "per (track, seed), vs estimator targets", "",
+                  "| channel | dRMSE [95% CI] |", "|---|---|"]
+        for c in range(n_ch):
+            d = [v[sname] - v["nograph"] for (k, s, cc), v in by.items()
+                 if cc == c and sname in v and "nograph" in v]
+            mu, lo, hi = bootstrap_ci(np.array(d), B=2000, rng=rngb)
+            sig = "*" if (lo > 0) or (hi < 0) else " "
+            lines.append(f"| {CH[c]} | {mu:+.3f} [{lo:+.3f}, {hi:+.3f}]{sig} "
+                         f"(n={len(d)}) |")
+        lines.append("")
 
     # per-instrument-family breakdown of the paired graph value
     from score_bundle.phase2.splits import FAMILIES
@@ -328,10 +387,14 @@ def stage_eval() -> None:
     os.makedirs("results", exist_ok=True)
     with open(OUT_MD, "w") as fh:
         fh.write(table + "\n")
+    with open(CELLS_PKL, "wb") as fh:      # raw cells: re-analysis provenance
+        pickle.dump({"per_track": per_track, "rows": rows,
+                     "channels": CH, "seeds": SEEDS,
+                     "hold_frac": HOLD_FRAC}, fh)
     print(table)
-    print(f"\nwrote {OUT_MD}")
+    print(f"\nwrote {OUT_MD} and {CELLS_PKL}")
 
 
 if __name__ == "__main__":
     {"extract": stage_extract, "loudness": stage_loudness,
-     "eval": stage_eval}[sys.argv[1]]()
+     "tau": stage_tau, "eval": stage_eval}[sys.argv[1]]()

@@ -23,46 +23,26 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from eval_phase2_real import dev_unique_tracks  # noqa: E402
 
+from score_bundle.phase2.warp import dtw_match, local_loo_warp  # noqa: E402
+
 OUT = "results/tau_feasibility_dev.md"
 WIN = 8
 
 
-def dtw_match(sp: np.ndarray, pp: np.ndarray):
-    """Monotone alignment of two pitch sequences (small DP); returns index
-    pairs (i_score, j_perf) for matched notes with equal pitch."""
-    ns, npf = sp.size, pp.size
-    cost = np.full((ns + 1, npf + 1), np.inf)
-    cost[0, 0] = 0.0
-    for i in range(1, ns + 1):
-        for j in range(max(1, i - 40), min(npf + 1, i + 40)):
-            sub = 0.0 if sp[i - 1] == pp[j - 1] else 1.0
-            cost[i, j] = sub + min(cost[i - 1, j - 1], cost[i - 1, j] + 0.1,
-                                   cost[i, j - 1] + 0.1)
-    pairs = []
-    i, j = ns, npf
-    while i > 0 and j > 0:
-        moves = [(cost[i - 1, j - 1], i - 1, j - 1),
-                 (cost[i - 1, j], i - 1, j),
-                 (cost[i, j - 1], i, j - 1)]
-        _, i2, j2 = min(moves)
-        if i2 == i - 1 and j2 == j - 1 and sp[i - 1] == pp[j - 1]:
-            pairs.append((i - 1, j - 1))
-        i, j = i2, j2
-    return np.array(pairs[::-1], dtype=int)
-
-
 def local_linear_warp(b: np.ndarray, t: np.ndarray) -> np.ndarray:
-    """Predicted performance time per note from a rolling +/-WIN-note linear
-    fit of t on b, excluding the note itself (leave-one-out, so tau is not
-    trivially zero)."""
-    n = b.size
-    pred = np.empty(n)
-    for i in range(n):
-        lo, hi = max(0, i - WIN), min(n, i + WIN + 1)
-        idx = np.r_[lo:i, i + 1:hi]
-        A = np.stack([b[idx], np.ones(idx.size)], axis=1)
-        coef, *_ = np.linalg.lstsq(A, t[idx], rcond=None)
-        pred[i] = coef[0] * b[i] + coef[1]
+    """Predicted performance time per note (leave-one-out tempo line).
+
+    Since the tau adoption (2026-08-13) the implementation lives in
+    :mod:`score_bundle.phase2.warp`; this wrapper keeps the script's original
+    interface. ``local_loo_warp`` may return NaN at edge notes with too few
+    neighbours; the original inline version never did, so NaNs are filled
+    with the note's own time (tau contribution 0), matching the original
+    statistics to within the affected 0-2 edge notes per track."""
+    pred, _ = local_loo_warp(np.asarray(b, float), np.asarray(t, float),
+                             win=WIN)
+    bad = ~np.isfinite(pred)
+    if bad.any():
+        pred[bad] = np.asarray(t, float)[bad]
     return pred
 
 
