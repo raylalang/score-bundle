@@ -268,7 +268,8 @@ def stage_eval() -> None:
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
     n_ch = len(CH)
-    rows = {sys_: {tgt: {c: {"se": [], "cov": [], "n": 0} for c in range(n_ch)}
+    rows = {sys_: {tgt: {c: {"se": [], "cov": [], "nll": [], "n": 0}
+                         for c in range(n_ch)}
                    for tgt in ("est", "gt")}
             for sys_ in ("gp", "gp_asgiven", "nograph")}
     per_track = []          # (key, seed, sys, channel, instrument, rmse_vs_est)
@@ -330,15 +331,19 @@ def stage_eval() -> None:
                             continue
                         err = tgt[cells, c] - m[cells, c]
                         s = s_use[cells, c]
+                        nll = 0.5 * (np.log(2 * np.pi * s ** 2)
+                                     + (err / s) ** 2)
                         r = rows[sname][tgt_name][c]
                         r["se"].extend((err ** 2).tolist())
                         r["cov"].extend(
                             (np.abs(err) <= _Z90 * s).tolist())
+                        r["nll"].extend(nll.tolist())
                         r["n"] += int(cells.sum())
                         if tgt_name == "est":
                             per_track.append(
                                 (key, seed, sname, c, d["instrument"],
-                                 float(np.sqrt(np.mean(err ** 2)))))
+                                 float(np.sqrt(np.mean(err ** 2))),
+                                 float(np.mean(nll))))
 
     lines = [f"# Phase 2 on real audio — first URMP dev results "
              f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
@@ -349,7 +354,7 @@ def stage_eval() -> None:
                                          "(quasi-truth; latent sd)", GT_COLS)):
         lines += [f"## {title}", "",
                   "| system | " + " | ".join(
-                      f"{CH[c]} RMSE / cov@90" for c in cols) + " |",
+                      f"{CH[c]} RMSE / NLL / cov@90" for c in cols) + " |",
                   "|---" * (len(cols) + 1) + "|"]
         for sname, label in (("gp", "graph GP (learned scale)"),
                              ("gp_asgiven", "graph GP (as-given)"),
@@ -361,6 +366,7 @@ def stage_eval() -> None:
                     cells.append("--")
                     continue
                 cells.append(f"{np.sqrt(np.mean(r['se'])):.3f} / "
+                             f"{np.mean(r['nll']):+.2f} / "
                              f"{np.mean(r['cov']):.2f} (n={r['n']})")
             lines.append(f"| {label} | " + " | ".join(cells) + " |")
         lines.append("")
@@ -370,7 +376,7 @@ def stage_eval() -> None:
               "| system | " + " | ".join(CH) + " |",
               "|---" * (n_ch + 1) + "|"]
     by_sys = {}
-    for key, seed, sname, c, inst, rmse in per_track:
+    for key, seed, sname, c, inst, rmse, nll in per_track:
         by_sys.setdefault(sname, {}).setdefault(c, []).append(rmse)
     for sname, label in (("gp", "graph GP (learned scale)"),
                          ("gp_asgiven", "graph GP (as-given)"),
@@ -386,20 +392,25 @@ def stage_eval() -> None:
     from eval_graphgp import bootstrap_ci
     rngb = np.random.default_rng(31)
     by = {}
-    for key, seed, sname, c, inst, rmse in per_track:
-        by.setdefault((key, seed, c), {})[sname] = rmse
+    for key, seed, sname, c, inst, rmse, nll in per_track:
+        by.setdefault((key, seed, c), {})[sname] = (rmse, nll)
     for sname, slabel in (("gp", "learned scale"),
                           ("gp_asgiven", "as-given, the default")):
         lines += [f"## Paired graph value ({slabel}; {sname} - nograph), "
                   "per (track, seed), vs estimator targets", "",
-                  "| channel | dRMSE [95% CI] |", "|---|---|"]
+                  "| channel | dRMSE [95% CI] | dNLL [95% CI] |",
+                  "|---|---|---|"]
         for c in range(n_ch):
-            d = [v[sname] - v["nograph"] for (k, s, cc), v in by.items()
-                 if cc == c and sname in v and "nograph" in v]
-            mu, lo, hi = bootstrap_ci(np.array(d), B=2000, rng=rngb)
-            sig = "*" if (lo > 0) or (hi < 0) else " "
-            lines.append(f"| {CH[c]} | {mu:+.3f} [{lo:+.3f}, {hi:+.3f}]{sig} "
-                         f"(n={len(d)}) |")
+            pairs = [(v[sname], v["nograph"]) for (k, s, cc), v in by.items()
+                     if cc == c and sname in v and "nograph" in v]
+            cols = []
+            for m_i in range(2):
+                d = np.array([a[m_i] - b[m_i] for a, b in pairs])
+                mu, lo, hi = bootstrap_ci(d, B=2000, rng=rngb)
+                sig = "*" if (lo > 0) or (hi < 0) else " "
+                cols.append(f"{mu:+.3f} [{lo:+.3f}, {hi:+.3f}]{sig}")
+            lines.append(f"| {CH[c]} | {cols[0]} | {cols[1]} "
+                         f"(n={len(pairs)}) |")
         lines.append("")
 
     # per-instrument-family breakdown of the paired graph value
@@ -409,7 +420,7 @@ def stage_eval() -> None:
               "| family | " + " | ".join(CH) + " |",
               "|---" * (n_ch + 1) + "|"]
     by_fam = {}
-    for key, seed, sname, c, inst, rmse in per_track:
+    for key, seed, sname, c, inst, rmse, nll in per_track:
         by_fam.setdefault((FAMILIES[inst], key, seed, c), {})[sname] = rmse
     for fam in ("strings", "wood", "brass"):
         cells = []
