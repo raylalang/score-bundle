@@ -1,6 +1,7 @@
 # CLAUDE.md — score-bundle
 
 Guidance for working in this repo. Read `README.md` and `docs/music_lm_design.md` first.
+Codex will review your output once you are done.
 
 ## What this is
 
@@ -88,7 +89,31 @@ note conceptually in sync.
   same shuffle, `.cache/asap_arrays_named80.pkl`, identity-gated;
   `scripts/run_replication_set.sh`).
   Aria frozen-feature upper-bound baseline is an import-guarded stub (`lm/aria_baseline.py`).
-- **Phase 2 — intonation/vibrato (stubs + helpers).** `src/score_bundle/phase2/`.
+- **Phase 1 addendum — posterior decomposition (2026-07-31..08-07, in the thesis).**
+  Exact per-component split of the posterior (`gp.posterior_components`,
+  `posterior_component_cov`, `fit(b_diagonal=True)`; thesis eq:components–eq:decomp-total
+  + §5.3, component index ζ). Consolidated record: `docs/posterior_decomposition_results.md`
+  — features carry the mean, the graph calibrates, graph×LM components near-orthogonal
+  (complements); coupling's value is the velocity channel only; dominance is per-piece
+  (ARD switches kernels off/on). Harmonic-edge question **CLOSED**
+  (`docs/kernel_multirate_results.md`): a density gradient — wins at ≤30% hidden,
+  tie at the 40% operating point, nothing + one guard-invisible collapse at 50% —
+  so no adoption, no second confirmation set spent.
+- **Phase 2 — intonation/vibrato/loudness: REAL-DATA DEVELOPMENT RESULTS (2026-08-06/07).**
+  `src/score_bundle/phase2/`: `intonation.py` (`extract_f0` = librosa pyin,
+  import-guarded; `fit_vibrato_note` = the thesis NLLS estimator), `urmp.py` (loader,
+  44/44), `splits.py` (**FROZEN** composition-level dev/confirmation split, unit-pinned;
+  confirmation = 13 pieces, UNTOUCHED), `targets.py` (f0 → per-note channels).
+  Measured groundwork: tracker calibration vs URMP GT (2–5 cents/instrument, confidence
+  predictive → as-given variances + lowest-quintile frame filter,
+  `results/tracker_calibration_dev.md`); τ feasibility (onset-anchored warp, 76/78
+  tracks, 79 ms, lag-1 +0.59, `scripts/eval_tau_feasibility.py`). First real-audio
+  results (`scripts/eval_phase2_real.py`, `results/phase2_real_results.md`): graph
+  beats no-graph on all four channels ([c, log γ, log f, ℓ]) significantly, within
+  every instrument family, coverage 0.88–0.91; GT-validated octave-failure rule
+  (|c|>150 → missing); learned noise scale collapses on real data, as-given healthy.
+  All DEV-labeled; prereg design + blockers (τ adoption, δ_vib, claim freeze):
+  `docs/phase2_prereg_design.md`. Thesis §3.9 carries the measured state.
 - **Phase 3 — waveform likelihood (stubs + helpers).** `src/score_bundle/phase3/`.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
@@ -139,6 +164,11 @@ or `a_i(t)` for the amplitude envelope. (These were deliberately disambiguated.)
   **GiantMIDI-Piano**, **Aria-MIDI** (~100k h, transcribed). Avoid Lakh as primary.
 - **Phase 1 (thesis task):** **ASAP** — the only corpus with aligned score↔performance;
   MAESTRO supplies audio for the overlapping subset (Phase 3).
+- **Phase 2:** **URMP** — downloaded and MD5-verified (Dryad doi:10.5061/dryad.ng3r749;
+  the direct/API download is behind an Anubis proof-of-work gate, needs a browser),
+  extracted at `../data/urmp/Dataset/` (44 pieces). NB arrangements of one composition
+  share **identical track recordings**, so the dev/confirmation split MUST stay at the
+  composition level (`phase2/splits.py`, frozen).
 - **aria model:** frozen-feature **baseline / upper bound**, never the backbone.
 - MAESTRO + ASAP loaders are wired (see Phases list). Always hold out eval pieces;
   transcribed corpora may overlap ASAP/MAESTRO (contamination). ASAP's `metadata.csv`
