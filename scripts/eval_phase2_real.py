@@ -37,6 +37,17 @@ CH = ["c (cents)", "log gamma", "log f", "loudness ell", "tau (s)",
       "delta_vib (s)"]
 GT_COLS = (0, 1, 2, 5)            # GT curves carry no amplitude and no tau
 CELLS_PKL = "results/phase2_real_cells.pkl"
+TONAL_OUT_MD = "results/phase2_tonal_dev.md"
+TONAL_CELLS = "results/phase2_tonal_cells.pkl"
+# Circle-of-fifths study (dev, EXPLORATORY per the registration; hypothesis
+# stated before the run): if temperament/tuning-reference structure is real,
+# notes close on the circle of fifths share a mistuning that semitone
+# neighbours do not — the tonal-metric graph (build_adjacency_tonal, the
+# metric that HURT on piano expression) should improve held-out intonation
+# recovery and/or calibration vs the plain graph. Primary read: channel c,
+# as-given variant, paired tonal - plain, 95% CI. Expected on the non-pitch
+# channels: the Phase-1 replacement penalty reappears. Either outcome is
+# reported; nothing here touches the registered results file or claims.
 HOLD_FRAC, SEEDS = 0.30, (0, 1)
 MIN_NOTES = 30
 # Estimator-failure rule for the intonation channel: |c| > C_MAX cents is an
@@ -233,10 +244,10 @@ def stage_delta() -> None:
     print("delta_vib appended")
 
 
-def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless):
+def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless,
+                 tonal_eig=None):
     from score_bundle.gp import MultiOutputGraphGP
 
-    nu, U = score_eig
     k = Yobs.shape[1]
     floor = 0.05 * np.array([float(np.var(Yobs[mask[:, c], c]))
                              if mask[:, c].sum() > 2 else 1.0
@@ -244,10 +255,14 @@ def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless):
     med_var = np.array([np.median(var[:, c][mask[:, c] & np.isfinite(var[:, c])])
                         if (mask[:, c] & np.isfinite(var[:, c])).any() else 1.0
                         for c in range(k)])
+    systems = [("gp", "additive", None, score_eig),
+               ("gp_asgiven", "additive", med_var, score_eig),
+               ("nograph", "none", None, score_eig)]
+    if tonal_eig is not None:
+        systems += [("gp_tonal", "additive", None, tonal_eig),
+                    ("gp_tonal_asgiven", "additive", med_var, tonal_eig)]
     fits = {}
-    for name, kern, fixed in (("gp", "additive", None),
-                              ("gp_asgiven", "additive", med_var),
-                              ("nograph", "none", None)):
+    for name, kern, fixed, (nu, U) in systems:
         g = MultiOutputGraphGP(nu, U, kernel=kern, features=feats,
                                n_channels=k)
         g.noise_scale = scale
@@ -260,18 +275,25 @@ def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless):
     return fits
 
 
-def stage_eval() -> None:
+def stage_eval(tonal: bool = False) -> None:
     from score_bundle.baselines import rich_score_features
-    from score_bundle.graph import build_adjacency, laplacian
+    from score_bundle.graph import (build_adjacency, build_adjacency_tonal,
+                                    laplacian)
     from score_bundle.score import Score
 
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
     n_ch = len(CH)
+    sys_labels = [("gp", "graph GP (learned scale)"),
+                  ("gp_asgiven", "graph GP (as-given)"),
+                  ("nograph", "no-graph ablation")]
+    if tonal:
+        sys_labels += [("gp_tonal", "tonal graph GP (learned scale)"),
+                       ("gp_tonal_asgiven", "tonal graph GP (as-given)")]
     rows = {sys_: {tgt: {c: {"se": [], "cov": [], "nll": [], "n": 0}
                          for c in range(n_ch)}
                    for tgt in ("est", "gt")}
-            for sys_ in ("gp", "gp_asgiven", "nograph")}
+            for sys_, _ in sys_labels}
     per_track = []          # (key, seed, sys, channel, instrument, rmse_vs_est)
     used = 0
     for key, d in sorted(data.items()):
@@ -292,6 +314,8 @@ def stage_eval() -> None:
         score = Score.from_arrays(d["midi"], d["onset"], d["duration"],
                                   np.zeros(n, dtype=int))
         eig = np.linalg.eigh(laplacian(build_adjacency(score)))
+        eig_t = (np.linalg.eigh(laplacian(build_adjacency_tonal(score)))
+                 if tonal else None)
         X = rich_score_features(score, rff_dim=0)
         X = (X - X.mean(0)) / np.maximum(X.std(0), 1e-9)
         feats = [np.concatenate([X, np.ones((n, 1))], axis=1)]
@@ -315,7 +339,8 @@ def stage_eval() -> None:
             if mask[:, 0].sum() < 15 or held.sum() < 5:
                 continue
             Yobs = np.where(mask, np.nan_to_num(est), 0.0)
-            fits = _fit_systems(eig, feats, Yobs, mask, scale, var, None)
+            fits = _fit_systems(eig, feats, Yobs, mask, scale, var, None,
+                                tonal_eig=eig_t)
             for sname, (m, sd, sd_pred) in fits.items():
                 for tgt_name, tgt, s_use, cols in (
                         ("est", est, sd_pred, tuple(range(n_ch))),
@@ -345,9 +370,22 @@ def stage_eval() -> None:
                                  float(np.sqrt(np.mean(err ** 2))),
                                  float(np.mean(nll))))
 
-    lines = [f"# Phase 2 on real audio — first URMP dev results "
-             f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
-             f"of notes hidden)", ""]
+    if tonal:
+        lines = [f"# Circle-of-fifths metric on the Phase-2 bundle — "
+                 f"EXPLORATORY dev study "
+                 f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
+                 f"of notes hidden)", "",
+                 "> Hypothesis stated before the run (see the constants block "
+                 "of scripts/eval_phase2_real.py, committed first): the tonal "
+                 "metric that hurt on piano expression should help on "
+                 "intonation if temperament structure is real. Primary read: "
+                 "channel c, as-given, paired tonal - plain. Exploratory per "
+                 "the registration; the registered results file and claims "
+                 "are untouched.", ""]
+    else:
+        lines = [f"# Phase 2 on real audio — first URMP dev results "
+                 f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
+                 f"of notes hidden)", ""]
     for tgt_name, title, cols in (("est", "vs estimator targets (primary; "
                                           "predictive sd)", tuple(range(n_ch))),
                                   ("gt", "vs ground-truth-derived targets "
@@ -356,9 +394,7 @@ def stage_eval() -> None:
                   "| system | " + " | ".join(
                       f"{CH[c]} RMSE / NLL / cov@90" for c in cols) + " |",
                   "|---" * (len(cols) + 1) + "|"]
-        for sname, label in (("gp", "graph GP (learned scale)"),
-                             ("gp_asgiven", "graph GP (as-given)"),
-                             ("nograph", "no-graph ablation")):
+        for sname, label in sys_labels:
             cells = []
             for c in cols:
                 r = rows[sname][tgt_name][c]
@@ -378,9 +414,7 @@ def stage_eval() -> None:
     by_sys = {}
     for key, seed, sname, c, inst, rmse, nll in per_track:
         by_sys.setdefault(sname, {}).setdefault(c, []).append(rmse)
-    for sname, label in (("gp", "graph GP (learned scale)"),
-                         ("gp_asgiven", "graph GP (as-given)"),
-                         ("nograph", "no-graph ablation")):
+    for sname, label in sys_labels:
         cells = [f"{np.median(by_sys[sname].get(c, [np.nan])):.3f}"
                  for c in range(n_ch)]
         lines.append(f"| {label} | " + " | ".join(cells) + " |")
@@ -394,15 +428,26 @@ def stage_eval() -> None:
     by = {}
     for key, seed, sname, c, inst, rmse, nll in per_track:
         by.setdefault((key, seed, c), {})[sname] = (rmse, nll)
-    for sname, slabel in (("gp", "learned scale"),
-                          ("gp_asgiven", "as-given, the default")):
-        lines += [f"## Paired graph value ({slabel}; {sname} - nograph), "
+    contrasts = [("gp", "nograph", "graph value (learned scale; gp - nograph)"),
+                 ("gp_asgiven", "nograph",
+                  "graph value (as-given, the default; gp_asgiven - nograph)")]
+    if tonal:
+        contrasts += [
+            ("gp_tonal_asgiven", "gp_asgiven",
+             "TONAL vs PLAIN metric (PRIMARY read; as-given, "
+             "gp_tonal_asgiven - gp_asgiven)"),
+            ("gp_tonal", "gp",
+             "tonal vs plain metric (learned scale; gp_tonal - gp)"),
+            ("gp_tonal_asgiven", "nograph",
+             "tonal graph value (as-given; gp_tonal_asgiven - nograph)")]
+    for sname, base, slabel in contrasts:
+        lines += [f"## Paired {slabel}, "
                   "per (track, seed), vs estimator targets", "",
                   "| channel | dRMSE [95% CI] | dNLL [95% CI] |",
                   "|---|---|---|"]
         for c in range(n_ch):
-            pairs = [(v[sname], v["nograph"]) for (k, s, cc), v in by.items()
-                     if cc == c and sname in v and "nograph" in v]
+            pairs = [(v[sname], v[base]) for (k, s, cc), v in by.items()
+                     if cc == c and sname in v and base in v]
             cols = []
             for m_i in range(2):
                 d = np.array([a[m_i] - b[m_i] for a, b in pairs])
@@ -435,17 +480,20 @@ def stage_eval() -> None:
             cells.append(f"{mu:+.3f}{sig} (n={len(d)})")
         lines.append(f"| {fam} | " + " | ".join(cells) + " |")
     table = "\n".join(lines)
+    out_md = TONAL_OUT_MD if tonal else OUT_MD
+    cells_pkl = TONAL_CELLS if tonal else CELLS_PKL
     os.makedirs("results", exist_ok=True)
-    with open(OUT_MD, "w") as fh:
+    with open(out_md, "w") as fh:
         fh.write(table + "\n")
-    with open(CELLS_PKL, "wb") as fh:      # raw cells: re-analysis provenance
+    with open(cells_pkl, "wb") as fh:      # raw cells: re-analysis provenance
         pickle.dump({"per_track": per_track, "rows": rows,
                      "channels": CH, "seeds": SEEDS,
                      "hold_frac": HOLD_FRAC}, fh)
     print(table)
-    print(f"\nwrote {OUT_MD} and {CELLS_PKL}")
+    print(f"\nwrote {out_md} and {cells_pkl}")
 
 
 if __name__ == "__main__":
     {"extract": stage_extract, "loudness": stage_loudness,
-     "tau": stage_tau, "delta": stage_delta, "eval": stage_eval}[sys.argv[1]]()
+     "tau": stage_tau, "delta": stage_delta, "eval": stage_eval,
+     "eval-tonal": lambda: stage_eval(tonal=True)}[sys.argv[1]]()
