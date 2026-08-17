@@ -117,12 +117,15 @@ cover $\approx\covGP$ of the truth. Six downstream tasks map where the structure
 helps (per-note recovery, confidence, error spotting) and where it does not
 (whole-performance summaries; extrapolation from a short excerpt, where a
 cross-piece head remains the honest tool). Phase~2 carries the same prior,
-unchanged, to intonation, vibrato, and loudness on continuously pitched
+unchanged, to intonation, vibrato, loudness, timing, and vibrato onset delay
+on continuously pitched
 instruments: on real recordings (URMP, development set) the full pipeline ---
-tracker, per-note estimator, per-(note, channel) missingness, heteroscedastic
-likelihood --- runs end to end, and the graph prior improves held-out recovery
-on every channel with calibrated intervals; its confirmation set is
-preregistration-ready and untouched. Phase~3 (audio via a differentiable
+tracker, per-note estimator, onset-anchored warp, per-(note, channel)
+missingness, heteroscedastic
+likelihood --- runs end to end on a six-channel bundle; the graph prior
+significantly improves recovery on intonation and vibrato and calibration on
+vibrato and timing, with coverage on target on every channel; the claim set
+is registered and its confirmation pool untouched. Phase~3 (audio via a differentiable
 synthesizer) is scoped but not built.
 \end{abstract}
 
@@ -242,7 +245,7 @@ Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; the plug-in mean 
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened \\
 2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
-$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) & \textbf{Running on real data} (URMP, development): graph wins every channel; confirmation not yet registered \\
+$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $\delta^{\mathrm{vib}}$ & \textbf{Running on real data} (URMP, development, six channels): graph value significant on intonation/vibrato recovery and vibrato/timing calibration; claims registered, confirmation pool unspent \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested, inference not started \\
 \bottomrule
@@ -934,9 +937,15 @@ $s^2_{\mathrm{chunks}}$, the sample variance of the four log chunk-RMS values,
 supplies its estimator noise; $c_i$
 is the static intonation offset; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are the
 vibrato rate, extent and onset delay defined below (the superscript keeps the delay
-distinct from the performed duration $\delta_i$ of \eqref{eq:logr}). Two decisions are genuinely open
-and should be settled before any number is quoted: whether $\delta_i^{\mathrm{vib}}$ is identifiable
-often enough to be worth a channel, and hence whether $k = 7$; and whether $\ell_i$,
+distinct from the performed duration $\delta_i$ of \eqref{eq:logr}). Of the two decisions
+this vector leaves open, one is now settled by measurement, against a
+criterion fixed before the numbers were computed: the delay is identifiable
+on $95$--$97\%$ of vibrato-identifiable notes on both the ground-truth and
+the tracked pitch curves, with median tracker-versus-truth agreement of
+$18$\,ms --- so $\delta_i^{\mathrm{vib}}$ is a channel and $k = 7$ as
+written (on the evaluation corpus below, articulation has no measured
+offset chain, so the evaluated bundle there is the remaining six). The
+second stays open: whether $\ell_i$,
 which is an amplitude rather than a keystroke, is commensurable enough with $v_i$ for
 the two to be discussed as one channel across phases. We do not assume they are.
 
@@ -994,7 +1003,13 @@ $\gamma_i$ (cents) the vibrato extent, $f_i^{\mathrm{vib}}$ (Hz) its rate, and
 $\delta_i^{\mathrm{vib}}$ (s) the delay before it begins. Estimating $(c_i, f_i^{\mathrm{vib}},
 \gamma_i, \delta_i^{\mathrm{vib}})$ is a small nonlinear least-squares fit per note on the voiced
 samples; per-note vibrato parameter estimation from recordings is an
-established analysis task \cite{driedger2016}. Note that $c_i$ is \emph{not} the mean of $c_i(t)$: the mean coincides with
+established analysis task \cite{driedger2016}. In implementation the fit
+runs in two forms: an ungated sinusoid supplies
+$(c_i, \gamma_i, f_i^{\mathrm{vib}})$ --- in that form the delay coordinate
+is only a phase, identified modulo one period --- while the gated form of
+\eqref{eq:vibrato}, the oscillation growing out of the centre at
+$t_i + \delta_i^{\mathrm{vib}}$, supplies the delay itself, with its own
+identifiability rule and delta-method variance. Note that $c_i$ is \emph{not} the mean of $c_i(t)$: the mean coincides with
 the vibrato-free centre only over a whole number of cycles, which a note rarely
 supplies (perceived pitch likewise departs from the curve mean on short
 vibrato tones \cite{dalessandro1994}). The observation rule, with every threshold fixed by the
@@ -1095,9 +1110,11 @@ fitted from its neighbours alone,
 \end{align}
 so the note being judged never enters its own warp. The result: median $\operatorname{std}(\tau)$ of $79$\,ms
 with lag-1 neighbour correlation $+0.59$ --- Phase-1-scale timing with
-exactly the structure the graph prior models, so $\tau$ is viable as a
-Phase-2 channel here (development evidence; the channel is not yet part of
-the evaluated bundle).
+exactly the structure the graph prior models. On this measured basis
+$\tau$ \emph{is} a channel of the evaluated bundle below, its noise row the
+tempo line's leave-one-out predictive variance --- carrying the aligner
+error's scale, though not its correlation along score time, per the
+limitation stated above (development evidence).
 
 \paragraph{The graph is unchanged --- and Phase 2 makes one music-theoretic hypothesis testable.}
 The graph construction \eqref{eq:adjacency} and its variants (\S\ref{sec:graphvariants})
@@ -1173,8 +1190,10 @@ audio.
 \label{sec:phase2-real}
 The full pipeline then ran end to end on real recordings: tracked $f_0$,
 confidence-filtered per-note estimation of $[c, \log\gamma, \log
-f^{\mathrm{vib}}]$ plus per-note loudness $\ell$ (log RMS, centred per
-recording), estimator variances as given, per-(note, channel) missingness
+f^{\mathrm{vib}}]$, per-note loudness $\ell$ (log RMS, centred per
+recording), the onset-anchored timing channel $\tau$, and the gated-fit
+delay $\delta^{\mathrm{vib}}$ --- the six-channel bundle --- with estimator
+variances as given, per-(note, channel) missingness
 from the identifiability rule (the per-track vibrato-identifiable fraction
 ranges from $2\%$ to $97\%$ with median $38\%$ ---
 the missingness case is the norm, not an edge case), and the heteroscedastic
@@ -1185,19 +1204,30 @@ measured justification rather than by fiat: $2.2\%$ of intonation targets
 are octave slips ($|c| \approx 1200$ cents), the ground-truth cross-check
 rejects every one of them (0 of 358 agree with the truth-derived value), and
 they are marked missing --- the same epistemic status as unidentifiable
-vibrato. The result: \textbf{the graph prior improves held-out recovery on
-every channel of the bundle, with calibrated intervals} --- paired against
-the no-graph ablation, $\Delta$RMSE $-0.92$ cents (intonation), $-0.15$
-(log extent), $-0.17$ (log rate), $-0.010$ (loudness), all significant,
-coverage $0.88$--$0.91$ at nominal $90\%$ --- and the ordering is unchanged
-when scored against the quasi-truth targets derived from the provided pitch
-curves. The win holds \emph{within each instrument family} (strings,
-woodwind, brass; the single non-result is loudness on woodwinds), so no
-family carries the average. Estimator-missing vibrato cells on visible notes
+vibrato. The result, paired against the no-graph ablation under the
+\emph{as-given} noise variant (the declared default): \textbf{recovery
+improves significantly on intonation and both vibrato channels}
+($\Delta$RMSE $-0.89$ cents, $-0.26$, $-0.30$), \textbf{calibration
+improves significantly on both vibrato channels and on timing}
+($\Delta$NLL $-3.8$, $-0.43$, $-0.29$), and coverage is $0.88$--$0.91$ at
+nominal $90\%$ on every channel of the six. Reported rather than averaged
+away: under this variant the loudness and delay recovery contrasts are
+small and not significant ($-0.003$, $-0.001$), the loudness NLL contrast
+is $+0.04$ \emph{against} the graph, and the brass intonation cell is not
+significant on its own (the vibrato win holds within every family;
+the intonation win within strings and woodwind). The learned-scale variant
+makes every recovery contrast significant ($-0.92$ cents, $-0.18$, $-0.24$,
+$-0.006$, $-0.008$, $-0.004$) but stays the fallback, being the
+worse-calibrated variant against quasi-truth (coverage $0.72$--$0.86$ vs
+$0.82$--$0.86$); the ordering of systems is unchanged when scored against
+the quasi-truth targets derived from the provided pitch
+curves. Estimator-missing vibrato cells on visible notes
 receive posteriors --- the capability no per-note method has
 (Fig.~\ref{fig:phase2-real}). All of this is development evidence in the
 Phase-1 sense: it selected the design defaults above, and any confirmed
-Phase-2 claim awaits the frozen confirmation pool.
+Phase-2 claim awaits the frozen confirmation pool under the registered
+claim set (intonation recovery; vibrato calibration; coverage; timing
+calibration --- the delay channel deliberately carries no claim).
 
 \figph{phase2_real_example.png}{1.0}{Phase 2 on one real development track
 (violin), 30\% of notes hidden. Top: intonation --- the estimator's
@@ -2052,12 +2082,15 @@ three now have measured answers:
   \item \textbf{Where alignment error goes --- measured.} On URMP the
         annotated note onsets anchor the warp without an audio aligner
         (76/78 development tracks; residual $\tau$ at 79\,ms with $+0.59$
-        neighbour correlation), so $\tau$ is viable as a channel there;
+        neighbour correlation), and $\tau$ is now a channel of the
+        evaluated bundle there;
         the general audio-alignment problem returns on any corpus without
         note-level annotations.
   \item \textbf{The loudness channel --- in the bundle, commensurability
-        still a claim.} $\ell_i$ (log RMS) is now measured and the graph
-        improves it, but whether it may be discussed as one channel with the
+        still a claim.} $\ell_i$ (log RMS) is now measured and in the
+        bundle (its graph contrast is small, and not significant under the
+        as-given default), but whether it may be discussed as one channel
+        with the
         MIDI velocity $v_i$ across phases remains a claim to defend, not a
         convention.
   \item \textbf{What a result would mean.} Unchanged, and load-bearing: the
@@ -2066,10 +2099,12 @@ three now have measured answers:
         remove this. The Phase-2 claim stays weaker \emph{in kind} than the
         Phase-1 claim.
 \end{enumerate}
-What still blocks a confirmable Phase-2 result: adopting $\tau$ into the
-evaluated bundle, the vibrato-delay ($\delta^{\mathrm{vib}}$) in/out
-decision, and freezing the claim set for the preregistered confirmation
-pool (13 pieces, untouched).
+The three former blockers of a confirmable Phase-2 result are closed:
+$\tau$ is adopted into the evaluated bundle; the vibrato delay is IN by a
+criterion fixed before its numbers were computed (it carries no registered
+claim --- its graph contrasts are neutral); and the claim set is frozen in
+the registered preregistration document. What remains is the deliberate,
+one-shot act of spending the 13-piece confirmation pool.
 One experiment is worth doing first because it is nearly free (\S\ref{sec:phase2}):
 the circle-of-fifths metric \eqref{eq:tonaladj} that \emph{hurt} on piano expression may
 \emph{help} on intonation, whose target is pitch itself. That would be the first evidence
@@ -2218,8 +2253,10 @@ feature provider inside the kernel. Six downstream tasks draw two clean boundari
 adaptation helps interpolation, not excerpt extrapolation --- and the evaluation is
 hardened against leakage, contamination, fit collapse, and selection inflation.
 The validated Phase-1 contribution stands on its own; the same prior has now
-been carried, unchanged in form, to intonation, vibrato, and loudness on real
-recordings --- at development level, with a frozen confirmation pool
+been carried, unchanged in form, to intonation, vibrato, loudness, timing,
+and vibrato onset delay on real
+recordings --- at development level, with the claim set registered and the
+frozen confirmation pool
 deliberately unspent --- and the step to audio through a differentiable
 synthesizer is where the most novel work still lies.
 
