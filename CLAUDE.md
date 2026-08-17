@@ -112,8 +112,19 @@ note conceptually in sync.
   beats no-graph on all four channels ([c, log γ, log f, ℓ]) significantly, within
   every instrument family, coverage 0.88–0.91; GT-validated octave-failure rule
   (|c|>150 → missing); learned noise scale collapses on real data, as-given healthy.
-  All DEV-labeled; prereg design + blockers (τ adoption, δ_vib, claim freeze):
-  `docs/phase2_prereg_design.md`. Thesis §3.9 carries the measured state.
+  All DEV-labeled. **REGISTERED 2026-08-17** (tag `phase2-registration-2026-08-17`,
+  commit = frozen claims): 6-channel bundle [c, log γ, log f, ℓ, τ, δ_vib];
+  τ adopted (onset-anchored LOO warp, `phase2/warp.py`, noise row = OLS
+  predictive variance); δ_vib IN by pre-stated criterion
+  (`scripts/eval_delta_vib.py`, gated estimator `fit_vibrato_note_gated` =
+  eq:vibrato exactly; 95-97% coverage, 18 ms GT agreement) but carries NO
+  claim (graph-neutral); claims C1 intonation recovery / C2 vibrato
+  calibration / C3 coverage / C4 timing calibration, as-given variant
+  primary, one shot (`docs/phase2_prereg_design.md`). Confirmation pool
+  (13 pieces) UNTOUCHED — spending it is a separate deliberate act.
+  Thesis §3.9 carries the measured state. 2026-08-13 audit: every quoted
+  number re-verified against its log; reproduction tolerances recorded in
+  `docs/posterior_decomposition_results.md`.
 - **Phase 3 — waveform likelihood (stubs + helpers).** `src/score_bundle/phase3/`.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
