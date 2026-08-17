@@ -541,7 +541,7 @@ plain $\sigma$ is reserved for the posterior standard deviation
 (\S\ref{sec:posterior}).
 
 \section{Coupling the channels}\label{sec:coreg}
-Timing, articulation, and loudness are not independent: a stressed note tends to be
+Timing, articulation, and velocity are not independent: a stressed note tends to be
 louder, longer, and delayed together. The model therefore couples the channels with
 an \emph{intrinsic coregionalization} structure --- one latent field over the $3N$
 (note, channel) pairs with
@@ -1122,7 +1122,7 @@ carry over, with per-channel length scales. One result becomes newly interesting
 kernel comparison (\S\ref{sec:kernels}) found that \emph{replacing} the semitone metric
 by the circle-of-fifths metric \eqref{eq:tonaladj} made recovery and calibration
 significantly worse: expressive behaviour travels with register proximity, not tonal
-proximity. But that experiment measured timing, articulation and loudness --- none of
+proximity. But that experiment measured timing, articulation and velocity --- none of
 which \emph{is} a pitch. Phase 2 introduces a channel whose target is pitch itself.
 It is therefore an open and cheap question whether the tonal metric that failed for
 expression succeeds for \emph{intonation}: whether notes a fifth apart share a mistuning
@@ -1322,7 +1322,7 @@ imputing masked notes from the rest.
 Because ASAP reuses many MAESTRO recordings, every ASAP performance whose MAESTRO
 twin was in pretraining is removed ($1036 \to 653$ aligned performances), so the
 model is tested only on unseen performances. A \emph{strict} protocol additionally
-blanks every hidden note's loudness from the input; its measured cost is essentially
+blanks every hidden note's velocity from the input; its measured cost is essentially
 nil on error ($+0.0003$ for the music-model system, $+0.0000$ for the feature--music-model
 stack) and a small, honest calibration price ($\approx +0.014$ NLL). The strict
 numbers are the ones quoted throughout.
@@ -1648,14 +1648,14 @@ Music-model mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0
 
 \noindent Two things a single pooled number hides: the graph's calibration win is
 almost entirely the articulation channel, and its recovery win is almost entirely
-loudness --- timing contributes little either way. The cross-channel coupling
-itself is also a loudness story: refitting the full model with $B$ constrained
+velocity --- timing contributes little either way. The cross-channel coupling
+itself is also a velocity story: refitting the full model with $B$ constrained
 diagonal costs velocity specifically ($+0.0075$ RMSE / $+0.093$ NLL, paired,
 development, significant), leaves articulation statistically unchanged, and
 moves timing by a formally significant but negligible $0.0005$ in the
 diagonal's favour --- the coregionalization earns its keep where an observed loud
 neighbour is informative. The pooled RMSE improvement is
-therefore a blend of a large loudness gain diluted by a near-static timing channel.
+therefore a blend of a large velocity gain diluted by a near-static timing channel.
 Figure~\ref{fig:posterior-example} shows what the numbers summarise: the
 posterior on one development piece, with the hidden notes' true values plotted
 against the 90\% predictive band.
@@ -1670,12 +1670,12 @@ phrase-level structure the model exploits; the timing band is honest about how
 little of $\tau$ is predictable.\label{fig:posterior-example}}
 
 \section{Target leakage in the read-out, and the invariance that prevents it}
-An earlier read-out let the music model see a note's own loudness --- the very target it
-was asked to predict --- inflating the apparent loudness advantage. We read the
-summary one position earlier (provably blind to the note's own loudness, pinned by
+An earlier read-out let the music model see a note's own velocity --- the very target it
+was asked to predict --- inflating the apparent velocity advantage. We read the
+summary one position earlier (provably blind to the note's own velocity, pinned by
 an automated structural test), re-measured everything, and adopted the strict
 protocol. The corrected advantage is smaller but honest and statistically
-significant: on the loudness channel, the music model's mean-only error was $0.057$
+significant: on the velocity channel, the music model's mean-only error was $0.057$
 \emph{with} the leak (the retracted claim) and $0.090$ with the final read-out.
 The leak had also manufactured an apparent scaling gain: a $1.3\times$ larger,
 lower-perplexity music model is identical downstream once the leak is removed
@@ -1719,12 +1719,12 @@ or deploy-time predictive floors (\S\ref{ch:future}), and the per-piece median N
 \section{Do hand-built features suffice? (development study)}
 Against the 25-feature hand-built score baseline fit under the same protocol, the music model
 \emph{ties on average error}; its genuine, significant edge is calibration and
-loudness. The two \emph{stack} --- under the two-stage plug-in baseline as concatenated means
+velocity. The two \emph{stack} --- under the two-stage plug-in baseline as concatenated means
 (RMSE $\rmseStack$ vs.\ $\rmseNetGraph$, development), and in the final model as two
 feature kernels, where the embeddings' marginal value is $-0.008$ RMSE / $-0.034$
 NLL (development, paired, significant) and their removal cost is confirmed in direction on
 the confirmation set. Per channel, the music model's mean-only edge over the
-25-feature baseline is loudness; timing and articulation tie (development) ---
+25-feature baseline is velocity; timing and articulation tie (development) ---
 the same placement the decomposition of \S\ref{sec:attribution} recovers from
 inside the fitted model.
 
@@ -1750,7 +1750,7 @@ the other side. A follow-up at the leave-one-out limit of \S\ref{sec:masksweep}
 --- the densest observation, where a read-out head should be at its best ---
 leaves the verdict unchanged: the proposed model wins every channel on both
 axes (timing RMSE $0.149$ vs.\ $0.165$, NLL $-1.12$ vs.\ $-0.50$ against the
-ensemble; articulation $0.546$ vs.\ $0.755$; loudness $0.066$ vs.\ $0.084$),
+ensemble; articulation $0.546$ vs.\ $0.755$; velocity $0.066$ vs.\ $0.084$),
 so the ensemble's uncertainty ranking does not catch up with denser
 observation. Scope stated honestly: these are frozen-embedding read-out
 heads, the natural deep comparator at matched information and training data;
@@ -1761,7 +1761,7 @@ A bidirectional, mask-aware retraining (matched exactly to the evaluation task) 
 \emph{not} beat the original at matched compute: pooled error is slightly but
 significantly worse ($+0.011$), confidence quality ties strict-to-strict ($-0.325$
 vs.\ $-0.322$), and a $3\times$ budget does not close the gap (timing improves,
-articulation and loudness do not). The honest lesson: the original read-out already
+articulation and velocity do not). The honest lesson: the original read-out already
 extracted what the objective change was meant to unlock. En route, the same leak
 pattern tried to re-enter through the new bidirectional read-out (a note read at its
 own velocity token \emph{contains} that velocity); it was caught by its signature and
@@ -1832,7 +1832,7 @@ distance is significantly \emph{worse} on both axes (expressive coupling follows
 register proximity, not tonal proximity), while \emph{adding} chord + voice-leading
 edges gives the only significant both-axes win over the baseline
 ($\Delta$RMSE $-0.008^{*}$, $\Delta$NLL $-0.013^{*}$; chord edges carry the recovery
-gain, concentrated in articulation and loudness --- $\tau$ stays at its
+gain, concentrated in articulation and velocity --- $\tau$ stays at its
 plateau). The harmonic graph with the plain music-model mean (chord+VL, RMSE $0.3852$)
 even edges out
 the feature-stacked candidate on the plain graph (\rmseStack) --- and the two upgrades
@@ -1945,7 +1945,7 @@ Corrupt a small fraction of notes; rank by suspiciousness. The two-stage graph
 model ranks better than every structure-free baseline on every channel (AUROC
 $0.94 \to 0.98$ at $3\sigma$, $0.85 \to 0.94$ at $2\sigma$), and the proposed model
 --- scoring by its joint leave-one-out predictive surprise --- improves further on
-all three channels (loudness AUROC $0.995$, articulation $0.986$, timing $0.978$).
+all three channels (velocity AUROC $0.995$, articulation $0.986$, timing $0.978$).
 
 \section{Denoising --- win at known noise level, both models}
 Recover true values from added noise. With the noise level known, structure beats
@@ -2009,7 +2009,7 @@ the thesis, bounded by evidence on both sides.
 The attribution study (\S\ref{sec:attribution}) splits the labour cleanly:
 \emph{recovery} is won by per-piece Bayesian weighting of informative per-note
 features under one joint marginal likelihood --- each piece decides for itself how much its timing,
-articulation, and loudness follow the score features and the music model's
+articulation, and velocity follow the score features and the music model's
 representation --- while \emph{calibration} is won by the graph. The posterior
 decomposition sharpens this from inside a single fit: the graph and the
 music-model components act nearly orthogonally per note (component correlation
@@ -2022,7 +2022,7 @@ neighbours, which both sharpens the posterior mean and --- crucially --- produce
 posterior variance that reflects how well-pinned a note actually is by its context.
 Independent predictors must choose a single global uncertainty; the graph gives each
 note its own, and that is what brings coverage to the nominal level. Why is the
-music model's marginal edge concentrated in \emph{loudness}? Dynamics is the channel most
+music model's marginal edge concentrated in \emph{velocity}? Dynamics is the channel most
 predictable from learned performance conventions (phrase-level swells,
 metrical stress) that a sequence model captures but local hand-built features do
 not; timing is the channel where every model's error plateaus (largely note-local
