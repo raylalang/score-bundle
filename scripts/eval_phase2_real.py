@@ -30,13 +30,34 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 ROOT = "/home/ray/Research/data/urmp/Dataset"
-CACHE = ".cache/urmp_targets_dev.pkl"
-OUT_MD = "results/phase2_real_results.md"
+
+# --- confirmation-mode switch (GUARDED; default is the development side) ---
+# PHASE2_SPLIT=confirmation flips every stage of this script (and
+# eval_delta_vib.py, which imports it) onto the frozen 13-piece pool with
+# separate caches/outputs. The pool is ONE-SHOT (registered
+# 2026-08-17, tag phase2-registration-2026-08-17): importing in confirmation
+# mode without PHASE2_CONFIRMATION_I_AM_SURE=yes refuses outright, so no
+# stage — including extract's MD5 dedup — can touch a confirmation file by
+# accident.
+CONF_MODE = os.environ.get("PHASE2_SPLIT", "dev") == "confirmation"
+if CONF_MODE and os.environ.get("PHASE2_CONFIRMATION_I_AM_SURE") != "yes":
+    raise SystemExit(
+        "REFUSED: PHASE2_SPLIT=confirmation targets the frozen one-shot "
+        "confirmation pool (registered 2026-08-17). If this is the "
+        "deliberate, agreed spend of the pool, set "
+        "PHASE2_CONFIRMATION_I_AM_SURE=yes and use "
+        "scripts/run_phase2_confirmation.sh.")
+
+_TAG = "conf" if CONF_MODE else "dev"
+CACHE = f".cache/urmp_targets_{_TAG}.pkl"
+OUT_MD = ("results/phase2_confirmation_results.md" if CONF_MODE
+          else "results/phase2_real_results.md")
 _Z90 = 1.6448536269514722
 CH = ["c (cents)", "log gamma", "log f", "loudness ell", "tau (s)",
       "delta_vib (s)"]
 GT_COLS = (0, 1, 2, 5)            # GT curves carry no amplitude and no tau
-CELLS_PKL = "results/phase2_real_cells.pkl"
+CELLS_PKL = ("results/phase2_confirmation_cells.pkl" if CONF_MODE
+             else "results/phase2_real_cells.pkl")
 TONAL_OUT_MD = "results/phase2_tonal_dev.md"
 TONAL_CELLS = "results/phase2_tonal_cells.pkl"
 # Circle-of-fifths study (dev, EXPLORATORY per the registration; hypothesis
@@ -64,13 +85,14 @@ RANGES = {"vn": (180, 3000), "va": (120, 1500), "vc": (60, 1000),
           "tba": (40, 400)}
 
 
-def dev_unique_tracks():
+def _unique_tracks(side: str):
     from score_bundle.phase2.splits import urmp_split
     from score_bundle.phase2.urmp import load_urmp_meta
 
-    dev, _ = urmp_split(load_urmp_meta(ROOT))
+    dev, conf = urmp_split(load_urmp_meta(ROOT))
+    pieces = conf if side == "confirmation" else dev
     seen, out = set(), []
-    for p in dev:
+    for p in pieces:
         for tr in p.tracks:
             if not (tr.audio and tr.f0s and tr.notes):
                 continue
@@ -82,6 +104,16 @@ def dev_unique_tracks():
     return out
 
 
+def dev_unique_tracks():
+    """Development side, unconditionally (imported by the dev-only studies)."""
+    return _unique_tracks("dev")
+
+
+def selected_tracks():
+    """The side this process is switched to (see CONF_MODE above)."""
+    return _unique_tracks("confirmation" if CONF_MODE else "dev")
+
+
 def stage_extract() -> None:
     import soundfile as sf
 
@@ -90,8 +122,8 @@ def stage_extract() -> None:
     from score_bundle.phase2.urmp import (read_f0_annotation,
                                           read_notes_annotation)
 
-    tracks = dev_unique_tracks()
-    print(f"{len(tracks)} unique development tracks", flush=True)
+    tracks = selected_tracks()
+    print(f"{len(tracks)} unique {_TAG} tracks", flush=True)
     data = {}
     for p, tr in tracks:
         notes = read_notes_annotation(tr.notes)
@@ -133,7 +165,7 @@ def stage_loudness() -> None:
 
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
-    paths = {(p.index, tr.number): tr for p, tr in dev_unique_tracks()}
+    paths = {(p.index, tr.number): tr for p, tr in selected_tracks()}
     for key, d in sorted(data.items()):
         tr = paths[key]
         audio, sr = sf.read(tr.audio)
@@ -177,7 +209,7 @@ def stage_tau() -> None:
 
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
-    paths = {(p.index, tr.number): (p, tr) for p, tr in dev_unique_tracks()}
+    paths = {(p.index, tr.number): (p, tr) for p, tr in selected_tracks()}
     n_method = {"exact": 0, "dtw": 0, "failed": 0}
     for key, d in sorted(data.items()):
         p, tr = paths[key]
@@ -220,9 +252,10 @@ def stage_delta() -> None:
     fits coexist per note, documented in the prereg design.  GT-derived
     deltas are stored for the quasi-truth scoring.  Extends the cache.
     """
-    with open(".cache/delta_vib_pyin.pkl", "rb") as fh:
+    sfx = "_conf" if CONF_MODE else ""
+    with open(f".cache/delta_vib_pyin{sfx}.pkl", "rb") as fh:
         dpy = pickle.load(fh)
-    with open(".cache/delta_vib_gt.pkl", "rb") as fh:
+    with open(f".cache/delta_vib_gt{sfx}.pkl", "rb") as fh:
         dgt = pickle.load(fh)
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
@@ -275,28 +308,57 @@ def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless,
     return fits
 
 
-def stage_eval(tonal: bool = False) -> None:
+def _sys_labels(tonal: bool):
+    labels = [("gp", "graph GP (learned scale)"),
+              ("gp_asgiven", "graph GP (as-given)"),
+              ("nograph", "no-graph ablation")]
+    if tonal:
+        labels += [("gp_tonal", "tonal graph GP (learned scale)"),
+                   ("gp_tonal_asgiven", "tonal graph GP (as-given)")]
+    return labels
+
+
+def _cells_dir(tonal: bool) -> str:
+    tag = "tonal" if tonal else "plain"
+    if CONF_MODE:
+        tag = "conf"
+    return os.path.join("results", "phase2_cells", tag)
+
+
+def stage_run(shard: str = "0/1", tonal: bool = False) -> None:
+    """Compute the in-shard (track, seed) cells; write a fragment pickle.
+
+    Sharding is by cell index in the canonical order (sorted tracks x SEEDS),
+    the eval_graphgp.py convention; every system of a cell stays in one
+    fragment, so pairing is never split.  One flushed progress line per cell
+    with its wall time — the observability the 21h/31h monolithic runs of
+    2026-08-13/17 lacked.  ``stage_report`` reassembles fragments in the
+    canonical order, which makes shard-count choice bit-invisible in the
+    output (pinned by tests/test_phase2_eval_shard.py).
+    """
+    import time as _time
+
     from score_bundle.baselines import rich_score_features
     from score_bundle.graph import (build_adjacency, build_adjacency_tonal,
                                     laplacian)
     from score_bundle.score import Score
 
+    if CONF_MODE and tonal:
+        raise SystemExit("REFUSED: the tonal variant is exploratory and is "
+                         "not part of the registered confirmation protocol.")
+    shard_k, shard_n = map(int, shard.split("/"))
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
     n_ch = len(CH)
-    sys_labels = [("gp", "graph GP (learned scale)"),
-                  ("gp_asgiven", "graph GP (as-given)"),
-                  ("nograph", "no-graph ablation")]
-    if tonal:
-        sys_labels += [("gp_tonal", "tonal graph GP (learned scale)"),
-                       ("gp_tonal_asgiven", "tonal graph GP (as-given)")]
-    rows = {sys_: {tgt: {c: {"se": [], "cov": [], "nll": [], "n": 0}
-                         for c in range(n_ch)}
-                   for tgt in ("est", "gt")}
-            for sys_, _ in sys_labels}
-    per_track = []          # (key, seed, sys, channel, instrument, rmse_vs_est)
-    used = 0
-    for key, d in sorted(data.items()):
+    frags = []
+    used_keys = []
+    keys = sorted(data)
+    for ti, key in enumerate(keys):
+        seeds_here = [s for si, s in enumerate(SEEDS)
+                      if (ti * len(SEEDS) + si) % shard_n == shard_k]
+        if not seeds_here:
+            continue
+        d = data[key]
         est = np.concatenate([d["est"], d["ell"][:, None],
                               d["tau"][:, None], d["dvib"][:, None]], axis=1)
         var = np.concatenate([d["var"], d["var_ell"][:, None],
@@ -310,7 +372,7 @@ def stage_eval(tonal: bool = False) -> None:
         usable = np.isfinite(est[:, 0]) & (np.abs(est[:, 0]) <= C_MAX)
         if usable.sum() < MIN_NOTES:
             continue
-        used += 1
+        used_keys.append(key)
         score = Score.from_arrays(d["midi"], d["onset"], d["duration"],
                                   np.zeros(n, dtype=int))
         eig = np.linalg.eigh(laplacian(build_adjacency(score)))
@@ -327,7 +389,7 @@ def stage_eval(tonal: bool = False) -> None:
             scale[:, c] = np.where(np.isfinite(v),
                                    np.clip(v / max(med, 1e-12), 1e-2, 1e3),
                                    1.0)
-        for seed in SEEDS:
+        for seed in seeds_here:
             rng = np.random.default_rng(1000 + 7 * key[0] + key[1] + seed)
             held = (rng.random(n) < HOLD_FRAC) & usable
             mask = np.zeros((n, n_ch), dtype=bool)
@@ -339,8 +401,11 @@ def stage_eval(tonal: bool = False) -> None:
             if mask[:, 0].sum() < 15 or held.sum() < 5:
                 continue
             Yobs = np.where(mask, np.nan_to_num(est), 0.0)
+            t0 = _time.time()
             fits = _fit_systems(eig, feats, Yobs, mask, scale, var, None,
                                 tonal_eig=eig_t)
+            cell_rows = {}
+            pt = []
             for sname, (m, sd, sd_pred) in fits.items():
                 for tgt_name, tgt, s_use, cols in (
                         ("est", est, sd_pred, tuple(range(n_ch))),
@@ -358,18 +423,95 @@ def stage_eval(tonal: bool = False) -> None:
                         s = s_use[cells, c]
                         nll = 0.5 * (np.log(2 * np.pi * s ** 2)
                                      + (err / s) ** 2)
-                        r = rows[sname][tgt_name][c]
-                        r["se"].extend((err ** 2).tolist())
-                        r["cov"].extend(
-                            (np.abs(err) <= _Z90 * s).tolist())
-                        r["nll"].extend(nll.tolist())
-                        r["n"] += int(cells.sum())
+                        cr = cell_rows.setdefault(sname, {}).setdefault(
+                            tgt_name, {})
+                        cr[c] = {"se": (err ** 2).tolist(),
+                                 "cov": (np.abs(err) <= _Z90 * s).tolist(),
+                                 "nll": nll.tolist(),
+                                 "n": int(cells.sum())}
                         if tgt_name == "est":
-                            per_track.append(
+                            pt.append(
                                 (key, seed, sname, c, d["instrument"],
                                  float(np.sqrt(np.mean(err ** 2))),
                                  float(np.mean(nll))))
+            frags.append({"key": key, "seed": seed, "rows": cell_rows,
+                          "pt": pt})
+            print(f"  {key} seed {seed}: {len(fits)} systems in "
+                  f"{_time.time() - t0:.0f}s", flush=True)
+    outdir = _cells_dir(tonal)
+    os.makedirs(outdir, exist_ok=True)
+    out = os.path.join(outdir, f"cells.shard{shard_k}of{shard_n}.pkl")
+    with open(out, "wb") as fh:
+        pickle.dump({"frags": frags, "used_keys": used_keys,
+                     "meta": {"shard": shard, "tonal": tonal,
+                              "seeds": SEEDS, "hold_frac": HOLD_FRAC}}, fh)
+    print(f"wrote {out} ({len(frags)} cells)")
 
+
+def stage_report(tonal: bool = False) -> None:
+    """Merge shard fragments in canonical cell order and render the tables.
+
+    Refuses mixed shard counts (stale fragments from a different N — clean
+    results/phase2_cells/<tag>/ and rerun).  Output files and their bytes are
+    identical to the pre-shard single-process path.
+    """
+    import glob
+
+    outdir = _cells_dir(tonal)
+    files = sorted(glob.glob(os.path.join(outdir, "cells.shard*.pkl")))
+    if not files:
+        raise SystemExit(f"no shard fragments under {outdir} — run "
+                         f"'run{'-tonal' if tonal else ''}' first")
+    frags, used, shards, ns = [], set(), set(), set()
+    for f in files:
+        with open(f, "rb") as fh:
+            blob = pickle.load(fh)
+        k, n = map(int, blob["meta"]["shard"].split("/"))
+        shards.add(k)
+        ns.add(n)
+        frags.extend(blob["frags"])
+        used.update(blob["used_keys"])
+    if len(ns) != 1 or shards != set(range(next(iter(ns)))):
+        raise SystemExit(f"inconsistent/incomplete fragments in {outdir} "
+                         f"(counts {sorted(ns)}, shards {sorted(shards)}) — "
+                         f"remove stale files and rerun")
+    seed_pos = {s: i for i, s in enumerate(SEEDS)}
+    frags.sort(key=lambda fr: (fr["key"], seed_pos[fr["seed"]]))
+    n_ch = len(CH)
+    sys_labels = _sys_labels(tonal)
+    rows = {sname: {tgt: {c: {"se": [], "cov": [], "nll": [], "n": 0}
+                          for c in range(n_ch)}
+                    for tgt in ("est", "gt")}
+            for sname, _ in sys_labels}
+    per_track = []
+    for fr in frags:
+        for sname, _ in sys_labels:
+            for tgt in ("est", "gt"):
+                for c in range(n_ch):
+                    cr = fr["rows"].get(sname, {}).get(tgt, {}).get(c)
+                    if not cr:
+                        continue
+                    r = rows[sname][tgt][c]
+                    r["se"].extend(cr["se"])
+                    r["cov"].extend(cr["cov"])
+                    r["nll"].extend(cr["nll"])
+                    r["n"] += cr["n"]
+        per_track.extend(fr["pt"])
+    _render(rows, per_track, len(used), tonal)
+
+
+def stage_eval(tonal: bool = False) -> None:
+    """Single-process convenience path: run everything as one shard, report.
+
+    For anything longer than a smoke test use scripts/run_phase2_eval.sh,
+    which shards across processes (hours, not days)."""
+    stage_run("0/1", tonal=tonal)
+    stage_report(tonal=tonal)
+
+
+def _render(rows, per_track, used, tonal: bool) -> None:
+    n_ch = len(CH)
+    sys_labels = _sys_labels(tonal)
     if tonal:
         lines = [f"# Circle-of-fifths metric on the Phase-2 bundle — "
                  f"EXPLORATORY dev study "
@@ -494,6 +636,13 @@ def stage_eval(tonal: bool = False) -> None:
 
 
 if __name__ == "__main__":
+    verb = sys.argv[1]
+    shard_arg = sys.argv[2] if len(sys.argv) > 2 else "0/1"
     {"extract": stage_extract, "loudness": stage_loudness,
-     "tau": stage_tau, "delta": stage_delta, "eval": stage_eval,
-     "eval-tonal": lambda: stage_eval(tonal=True)}[sys.argv[1]]()
+     "tau": stage_tau, "delta": stage_delta,
+     "eval": stage_eval,
+     "eval-tonal": lambda: stage_eval(tonal=True),
+     "run": lambda: stage_run(shard_arg, tonal=False),
+     "run-tonal": lambda: stage_run(shard_arg, tonal=True),
+     "report": stage_report,
+     "report-tonal": lambda: stage_report(tonal=True)}[verb]()

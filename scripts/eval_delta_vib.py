@@ -40,12 +40,13 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from eval_phase2_real import RANGES, dev_unique_tracks  # noqa: E402
+from eval_phase2_real import CONF_MODE, RANGES, selected_tracks  # noqa: E402
 
-F0_CACHE = ".cache/urmp_f0_dev.pkl"
-GT_OUT = ".cache/delta_vib_gt.pkl"
-PYIN_OUT = ".cache/delta_vib_pyin.pkl"
-OUT_MD = "results/delta_vib_dev.md"
+_SFX = "_conf" if CONF_MODE else ""
+F0_CACHE = f".cache/urmp_f0{_SFX or '_dev'}.pkl"
+GT_OUT = f".cache/delta_vib_gt{_SFX}.pkl"
+PYIN_OUT = f".cache/delta_vib_pyin{_SFX}.pkl"
+OUT_MD = f"results/delta_vib{_SFX or '_dev'}.md"
 CONF_Q = 0.2          # the estimator chain's measured confidence filter
 MIN_FRAMES = 4
 
@@ -81,7 +82,7 @@ def stage_gt() -> None:
                                           read_notes_annotation)
 
     data = {}
-    for p, tr in dev_unique_tracks():
+    for p, tr in selected_tracks():
         notes = read_notes_annotation(tr.notes)
         t, f0 = read_f0_annotation(tr.f0s)
         ok = np.isfinite(f0) & (f0 > 0)
@@ -110,7 +111,7 @@ def stage_pyin() -> None:
         with open(F0_CACHE, "rb") as fh:
             f0cache = pickle.load(fh)
     data = {}
-    for p, tr in dev_unique_tracks():
+    for p, tr in selected_tracks():
         key = (p.index, tr.number)
         notes = read_notes_annotation(tr.notes)
         if key not in f0cache:

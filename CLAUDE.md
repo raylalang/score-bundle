@@ -211,6 +211,17 @@ The conda env's `train` extra installs torch + pretty_midi + tqdm, so the PyTorc
 trains for real. Without torch, `examples/phase0_pretrain_lm.py` prints an install hint and
 the LM tests no-op; the Phase-1 examples and the numpy core run regardless.
 
+**Long-run rule (2026-08-19, after two silent 21h/31h Phase-2 evals):** long
+evaluations run SHARDED with per-cell progress — Phase 2:
+`bash scripts/run_phase2_eval.sh [N=8] [tonal]`; Phase 1:
+`eval_graphgp.py --shard k/n` + report. Estimate wall time from one cell
+before launching; a silent single-process eval projected past ~2 h is a bug,
+not a mode (shard equivalence is bit-exact, pinned by
+`tests/test_phase2_eval_shard.py`). The Phase-2 confirmation one-shot has a
+staged, guarded runner: `scripts/run_phase2_confirmation.sh` — it refuses
+without `PHASE2_SPLIT=confirmation` + `PHASE2_CONFIRMATION_I_AM_SURE=yes`
+and is to be run ONCE, on an explicit, agreed decision only.
+
 **Env gotchas (this machine):** activating `score-bundle` sets
 `LD_LIBRARY_PATH=$CONDA_PREFIX/lib` (a conda env var) so numpy/torch find the conda
 `libstdc++` (GLIBCXX_3.4.29). The NVIDIA driver is CUDA 12.8, so torch must be the **cu128**
