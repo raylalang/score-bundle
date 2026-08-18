@@ -1,0 +1,97 @@
+# Circle-of-fifths metric on the Phase-2 bundle — EXPLORATORY dev study (77 unique tracks, 2 seeds, 30% of notes hidden)
+
+> Hypothesis stated before the run (see the constants block of scripts/eval_phase2_real.py, committed first): the tonal metric that hurt on piano expression should help on intonation if temperament structure is real. Primary read: channel c, as-given, paired tonal - plain. Exploratory per the registration; the registered results file and claims are untouched.
+
+## vs estimator targets (primary; predictive sd)
+
+| system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | loudness ell RMSE / NLL / cov@90 | tau (s) RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
+|---|---|---|---|---|---|---|
+| graph GP (learned scale) | 14.058 / +3.90 / 0.89 (n=9629) | 1.527 / +4.51 / 0.91 (n=3275) | 0.406 / +0.22 / 0.89 (n=3275) | 0.415 / +0.50 / 0.89 (n=9629) | 0.105 / -1.62 / 0.91 (n=9091) | 0.130 / -0.87 / 0.89 (n=3833) |
+| graph GP (as-given) | 14.135 / +3.92 / 0.89 (n=9629) | 1.514 / +1.90 / 0.90 (n=3275) | 0.375 / +0.24 / 0.88 (n=3275) | 0.420 / +0.52 / 0.90 (n=9629) | 0.109 / -1.63 / 0.91 (n=9091) | 0.130 / -0.87 / 0.89 (n=3833) |
+| no-graph ablation | 14.376 / +3.90 / 0.90 (n=9629) | 1.560 / +5.09 / 0.92 (n=3275) | 0.566 / +0.38 / 0.90 (n=3275) | 0.429 / +0.51 / 0.90 (n=9629) | 0.110 / -1.44 / 0.91 (n=9091) | 0.132 / -0.88 / 0.90 (n=3833) |
+| tonal graph GP (learned scale) | 13.925 / +3.86 / 0.89 (n=9629) | 1.533 / +5.25 / 0.91 (n=3275) | 0.390 / +0.22 / 0.89 (n=3275) | 0.410 / +0.48 / 0.90 (n=9629) | 0.106 / -1.60 / 0.91 (n=9091) | 0.129 / -0.83 / 0.89 (n=3833) |
+| tonal graph GP (as-given) | 13.944 / +3.88 / 0.89 (n=9629) | 1.492 / +2.13 / 0.90 (n=3275) | 0.352 / +0.23 / 0.87 (n=3275) | 0.415 / +0.51 / 0.90 (n=9629) | 0.109 / -1.62 / 0.91 (n=9091) | 0.131 / -0.84 / 0.88 (n=3833) |
+
+## vs ground-truth-derived targets (quasi-truth; latent sd)
+
+| system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
+|---|---|---|---|---|
+| graph GP (learned scale) | 13.984 / +4.39 / 0.79 (n=9627) | 1.021 / +2.70 / 0.74 (n=3605) | 0.411 / +2.15 / 0.72 (n=3605) | 0.138 / -0.80 / 0.86 (n=4112) |
+| graph GP (as-given) | 14.104 / +4.38 / 0.82 (n=9627) | 0.996 / +1.64 / 0.83 (n=3605) | 0.368 / +0.41 / 0.85 (n=3605) | 0.139 / -0.81 / 0.86 (n=4112) |
+| no-graph ablation | 14.274 / +4.19 / 0.83 (n=9627) | 1.181 / +2.54 / 0.74 (n=3605) | 0.577 / +2.15 / 0.73 (n=3605) | 0.139 / -0.86 / 0.87 (n=4112) |
+| tonal graph GP (learned scale) | 13.839 / +4.34 / 0.80 (n=9627) | 1.049 / +2.72 / 0.74 (n=3605) | 0.390 / +2.09 / 0.73 (n=3605) | 0.139 / -0.77 / 0.85 (n=4112) |
+| tonal graph GP (as-given) | 13.924 / +4.35 / 0.82 (n=9627) | 0.993 / +1.74 / 0.82 (n=3605) | 0.343 / +0.43 / 0.85 (n=3605) | 0.138 / -0.74 / 0.85 (n=4112) |
+
+## Median per-(track, seed) RMSE vs estimator targets
+
+| system | c (cents) | log gamma | log f | loudness ell | tau (s) | delta_vib (s) |
+|---|---|---|---|---|---|---|
+| graph GP (learned scale) | 11.289 | 0.712 | 0.346 | 0.399 | 0.073 | 0.086 |
+| graph GP (as-given) | 11.071 | 0.599 | 0.299 | 0.402 | 0.072 | 0.083 |
+| no-graph ablation | 12.548 | 0.939 | 0.420 | 0.413 | 0.074 | 0.083 |
+| tonal graph GP (learned scale) | 11.004 | 0.686 | 0.338 | 0.395 | 0.072 | 0.086 |
+| tonal graph GP (as-given) | 10.907 | 0.607 | 0.292 | 0.403 | 0.073 | 0.083 |
+
+## Paired graph value (learned scale; gp - nograph), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -0.920 [-1.507, -0.429]* | -0.032 [-0.078, +0.015]  (n=153) |
+| log gamma | -0.182 [-0.278, -0.091]* | -0.797 [-1.827, -0.207]* (n=148) |
+| log f | -0.239 [-0.313, -0.168]* | -0.325 [-0.420, -0.231]* (n=148) |
+| loudness ell | -0.006 [-0.011, -0.000]* | +0.029 [-0.005, +0.073]  (n=153) |
+| tau (s) | -0.008 [-0.013, -0.004]* | -0.311 [-0.813, -0.053]* (n=149) |
+| delta_vib (s) | -0.004 [-0.009, -0.000]* | +0.029 [-0.040, +0.132]  (n=153) |
+
+## Paired graph value (as-given, the default; gp_asgiven - nograph), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -0.891 [-1.513, -0.378]* | -0.020 [-0.069, +0.022]  (n=153) |
+| log gamma | -0.256 [-0.362, -0.139]* | -3.772 [-10.477, -0.346]* (n=148) |
+| log f | -0.300 [-0.379, -0.227]* | -0.426 [-0.560, -0.301]* (n=148) |
+| loudness ell | -0.003 [-0.009, +0.004]  | +0.042 [+0.009, +0.083]* (n=153) |
+| tau (s) | -0.002 [-0.004, +0.000]  | -0.292 [-0.780, -0.035]* (n=149) |
+| delta_vib (s) | -0.001 [-0.007, +0.005]  | +0.057 [-0.023, +0.174]  (n=153) |
+
+## Paired TONAL vs PLAIN metric (PRIMARY read; as-given, gp_tonal_asgiven - gp_asgiven), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -0.213 [-0.339, -0.085]* | -0.050 [-0.072, -0.029]* (n=153) |
+| log gamma | -0.058 [-0.133, +0.001]  | +0.207 [-0.033, +0.569]  (n=148) |
+| log f | -0.027 [-0.061, -0.001]* | -0.038 [-0.088, +0.006]  (n=148) |
+| loudness ell | -0.003 [-0.007, +0.002]  | -0.011 [-0.029, +0.007]  (n=153) |
+| tau (s) | +0.001 [-0.000, +0.002]  | +0.027 [+0.003, +0.068]* (n=149) |
+| delta_vib (s) | +0.001 [-0.001, +0.003]  | +0.032 [-0.010, +0.079]  (n=153) |
+
+## Paired tonal vs plain metric (learned scale; gp_tonal - gp), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -0.164 [-0.265, -0.060]* | -0.044 [-0.062, -0.028]* (n=153) |
+| log gamma | -0.021 [-0.080, +0.031]  | +0.831 [-0.009, +2.450]  (n=148) |
+| log f | -0.016 [-0.040, +0.010]  | -0.029 [-0.089, +0.026]  (n=148) |
+| loudness ell | -0.004 [-0.008, +0.000]  | -0.014 [-0.030, +0.002]  (n=153) |
+| tau (s) | +0.002 [+0.000, +0.004]* | +0.050 [+0.001, +0.134]* (n=149) |
+| delta_vib (s) | +0.002 [-0.000, +0.004]  | +0.057 [+0.009, +0.122]* (n=153) |
+
+## Paired tonal graph value (as-given; gp_tonal_asgiven - nograph), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -1.104 [-1.700, -0.622]* | -0.071 [-0.117, -0.032]* (n=153) |
+| log gamma | -0.314 [-0.408, -0.227]* | -3.565 [-9.672, -0.352]* (n=148) |
+| log f | -0.327 [-0.413, -0.249]* | -0.463 [-0.590, -0.339]* (n=148) |
+| loudness ell | -0.005 [-0.013, +0.002]  | +0.031 [-0.001, +0.069]  (n=153) |
+| tau (s) | -0.001 [-0.003, +0.001]  | -0.265 [-0.717, -0.026]* (n=149) |
+| delta_vib (s) | +0.000 [-0.005, +0.005]  | +0.090 [+0.010, +0.200]* (n=153) |
+
+
+## Paired graph value by instrument family (dRMSE, gp - nograph)
+
+| family | c (cents) | log gamma | log f | loudness ell | tau (s) | delta_vib (s) |
+|---|---|---|---|---|---|---|
+| strings | -0.415* (n=70) | -0.081* (n=70) | -0.098* (n=70) | -0.014* (n=70) | -0.004* (n=68) | -0.004* (n=70) |
+| wood | -2.353* (n=47) | -0.270* (n=45) | -0.451* (n=45) | +0.007  (n=47) | -0.016* (n=47) | -0.010  (n=47) |
+| brass | -0.030  (n=36) | -0.277* (n=33) | -0.252* (n=33) | -0.007* (n=36) | -0.007* (n=34) | +0.004  (n=36) |

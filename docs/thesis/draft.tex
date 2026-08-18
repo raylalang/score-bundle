@@ -1127,9 +1127,19 @@ which \emph{is} a pitch. Phase 2 introduces a channel whose target is pitch itse
 It is therefore an open and cheap question whether the tonal metric that failed for
 expression succeeds for \emph{intonation}: whether notes a fifth apart share a mistuning
 that notes a semitone apart do not, as temperament and a fixed tuning reference would
-predict. The apparatus to test it already exists; only the channel is missing. A
-positive result would be the first evidence in this thesis that a music-theoretic
-geometry, rather than merely music-theoretic \emph{edges}, earns its place.
+predict. The test is now run (development, exploratory by the registered
+design, hypothesis committed before the numbers): replacing the semitone
+metric by the circle-of-fifths metric \emph{improves held-out intonation on
+both axes} --- paired tonal-minus-plain under the default noise variant,
+$\Delta$RMSE $-0.21$ cents $[-0.34, -0.09]$, $\Delta$NLL $-0.05$
+$[-0.07, -0.03]$, both significant --- while re-imposing the familiar
+replacement penalty on timing ($\Delta$NLL $+0.03$ against, significant) and
+leaving the remaining channels indifferent. The tonal geometry helps exactly
+where the target is pitch and hurts where it is not: the first evidence in
+this thesis that a music-theoretic \emph{geometry}, rather than merely
+music-theoretic \emph{edges}, earns its place. Adoption into the bundle
+would be a channel-dependent metric choice and needs its own preregistered
+confirmation; nothing in the registered claim set depends on it.
 
 \paragraph{Data, and what ``recovery'' can mean here.}
 The corpus is \textbf{URMP}: 44 multi-instrument chamber pieces from
@@ -2105,11 +2115,14 @@ criterion fixed before its numbers were computed (it carries no registered
 claim --- its graph contrasts are neutral); and the claim set is frozen in
 the registered preregistration document. What remains is the deliberate,
 one-shot act of spending the 13-piece confirmation pool.
-One experiment is worth doing first because it is nearly free (\S\ref{sec:phase2}):
-the circle-of-fifths metric \eqref{eq:tonaladj} that \emph{hurt} on piano expression may
-\emph{help} on intonation, whose target is pitch itself. That would be the first evidence
+The nearly-free experiment flagged here in earlier drafts is now run
+(\S\ref{sec:phase2}; development, exploratory): the circle-of-fifths metric
+\eqref{eq:tonaladj} that \emph{hurt} on piano expression \emph{helps} on
+intonation, whose target is pitch itself, on both axes --- and re-imposes
+the replacement penalty on timing. It is the first evidence
 here that a music-theoretic \emph{geometry}, and not only music-theoretic edges, earns
-its place. Figure~\ref{fig:arch-phase2} makes the claim precise: relative to
+its place; adopting a channel-dependent metric is a preregistered-confirmation
+question, deliberately left for after this round. Figure~\ref{fig:arch-phase2} makes the claim precise: relative to
 Figure~\ref{fig:arch-phase1}, the coregionalization grows from $3 \times 3$ to
 $k \times k$ as channels join the bundle (re-learned, not carried over), and the
 observation noise $\Sigma_e$ becomes substantive because the targets are now
