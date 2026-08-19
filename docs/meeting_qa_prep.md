@@ -61,9 +61,14 @@ Loudness carries no claim. Timing and delay recovery are also ns (their
 value is calibration / bundle membership respectively).
 
 **Q: Two mask seeds — enough?**
-A: The paired unit is (track, seed): n = 148–153 pairs with bootstrap CIs.
-A fresh-seed dev check (seeds 2, 3) is running; expectation is ordering
-stability, and the result will be quotable either way.
+A: Measured (fresh seeds 2, 3, same protocol): every direction reproduces
+and the recovery deltas match to two decimals (−0.898\*/−0.254\*/−0.299\*
+vs −0.891\*/−0.256\*/−0.300\*); the adverse loudness cell replicates
+(+0.048\*). The stars on heavy-tailed contrasts move: extent dNLL −3.8\* →
+−0.22 ns, τ recovery ns → starred. Honest reading: point estimates are
+stable, the extent-channel NLL star is seed-sensitive — so C2's extent
+half is the riskiest registered claim, known before the pool is spent.
+(`results/phase2_seeds23_dev.md`.)
 
 **Q: Why does δ_vib get no claim if you adopted it?**
 A: Adoption and claims are separate gates. The delay is measurable
@@ -109,7 +114,9 @@ Beyond URMP the alignment problem returns — stated future work.
 
 ## The three asks
 1. The Phase-2 claim set is preregistered — want to review it before the
-   pool is spent, and when should we run it?
+   pool is spent, and when should we run it? (Worth raising: the fresh-seed
+   check shows C2's extent half is the seed-sensitive claim — the one-shot
+   could fail it honestly.)
 2. Is the modest claim posture (no δ_vib claim, calibration-first) right
    for the committee?
 3. Next priority: tonal-metric confirmation or Phase-3 scoping?

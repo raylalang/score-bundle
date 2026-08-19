@@ -1,0 +1,56 @@
+# Phase 2 on real audio — first URMP dev results (77 unique tracks, 2 seeds, 30% of notes hidden)
+
+## vs estimator targets (primary; predictive sd)
+
+| system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | loudness ell RMSE / NLL / cov@90 | tau (s) RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
+|---|---|---|---|---|---|---|
+| graph GP (learned scale) | 14.791 / +3.91 / 0.89 (n=9804) | 1.491 / +4.82 / 0.92 (n=3281) | 0.415 / +0.24 / 0.88 (n=3281) | 0.413 / +0.49 / 0.90 (n=9804) | 0.096 / -1.63 / 0.91 (n=9279) | 0.140 / -0.83 / 0.89 (n=3938) |
+| graph GP (as-given) | 14.891 / +3.95 / 0.88 (n=9804) | 1.483 / +1.96 / 0.89 (n=3281) | 0.371 / +0.25 / 0.87 (n=3281) | 0.419 / +0.52 / 0.90 (n=9804) | 0.101 / -1.66 / 0.92 (n=9279) | 0.142 / -0.84 / 0.88 (n=3938) |
+| no-graph ablation | 15.045 / +3.91 / 0.90 (n=9804) | 1.507 / +2.20 / 0.93 (n=3281) | 0.572 / +0.39 / 0.89 (n=3281) | 0.425 / +0.51 / 0.91 (n=9804) | 0.114 / -1.58 / 0.92 (n=9279) | 0.141 / -0.85 / 0.90 (n=3938) |
+
+## vs ground-truth-derived targets (quasi-truth; latent sd)
+
+| system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
+|---|---|---|---|---|
+| graph GP (learned scale) | 14.158 / +4.38 / 0.81 (n=9800) | 1.060 / +2.54 / 0.71 (n=3619) | 0.419 / +2.85 / 0.70 (n=3619) | 0.137 / -0.74 / 0.85 (n=4197) |
+| graph GP (as-given) | 14.311 / +4.36 / 0.82 (n=9800) | 1.008 / +1.47 / 0.81 (n=3619) | 0.378 / +0.40 / 0.83 (n=3619) | 0.140 / -0.79 / 0.85 (n=4197) |
+| no-graph ablation | 14.398 / +4.18 / 0.83 (n=9800) | 1.139 / +2.11 / 0.75 (n=3619) | 0.562 / +2.31 / 0.76 (n=3619) | 0.141 / -0.81 / 0.87 (n=4197) |
+
+## Median per-(track, seed) RMSE vs estimator targets
+
+| system | c (cents) | log gamma | log f | loudness ell | tau (s) | delta_vib (s) |
+|---|---|---|---|---|---|---|
+| graph GP (learned scale) | 11.750 | 0.712 | 0.341 | 0.400 | 0.066 | 0.085 |
+| graph GP (as-given) | 12.017 | 0.604 | 0.301 | 0.405 | 0.073 | 0.084 |
+| no-graph ablation | 12.598 | 0.985 | 0.393 | 0.412 | 0.072 | 0.084 |
+
+## Paired graph value (learned scale; gp - nograph), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -0.976 [-1.509, -0.489]* | -0.059 [-0.102, -0.021]* (n=154) |
+| log gamma | -0.154 [-0.235, -0.068]* | +2.075 [-0.052, +5.542]  (n=149) |
+| log f | -0.222 [-0.292, -0.155]* | -0.307 [-0.400, -0.216]* (n=149) |
+| loudness ell | -0.005 [-0.010, +0.000]  | +0.029 [-0.015, +0.104]  (n=154) |
+| tau (s) | -0.012 [-0.021, -0.006]* | -0.080 [-0.113, -0.050]* (n=150) |
+| delta_vib (s) | -0.002 [-0.006, +0.004]  | +0.073 [-0.025, +0.211]  (n=154) |
+
+## Paired graph value (as-given, the default; gp_asgiven - nograph), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -0.898 [-1.496, -0.356]* | -0.014 [-0.065, +0.032]  (n=154) |
+| log gamma | -0.254 [-0.347, -0.159]* | -0.224 [-0.833, +0.505]  (n=149) |
+| log f | -0.299 [-0.375, -0.231]* | -0.342 [-0.463, -0.228]* (n=149) |
+| loudness ell | -0.002 [-0.007, +0.004]  | +0.048 [+0.009, +0.106]* (n=154) |
+| tau (s) | -0.006 [-0.014, -0.001]* | -0.106 [-0.169, -0.054]* (n=150) |
+| delta_vib (s) | -0.001 [-0.007, +0.006]  | +0.126 [-0.080, +0.463]  (n=154) |
+
+
+## Paired graph value by instrument family (dRMSE, gp - nograph)
+
+| family | c (cents) | log gamma | log f | loudness ell | tau (s) | delta_vib (s) |
+|---|---|---|---|---|---|---|
+| strings | -0.326* (n=70) | -0.119* (n=70) | -0.050* (n=70) | -0.013* (n=70) | -0.004* (n=68) | -0.004* (n=70) |
+| wood | -2.577* (n=48) | -0.214  (n=46) | -0.484* (n=46) | +0.008  (n=48) | -0.027* (n=48) | -0.001  (n=48) |
+| brass | -0.106  (n=36) | -0.145* (n=33) | -0.222* (n=33) | -0.008* (n=36) | -0.007* (n=34) | +0.002  (n=36) |
