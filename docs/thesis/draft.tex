@@ -402,10 +402,10 @@ Gaussian-kernel edge weights
   \label{eq:adjacency}
 \end{equation}
 with length scales $\ell_b$ (beats) and $\ell_p$ (semitones) and an optional
-same-voice bonus $w_v \ge 0$ (untuned defaults throughout: $\ell_b = 2$,
-$\ell_p = 4$, and $w_v = 0$ --- ASAP carries no voice labels, so the voice
-bonus is inert in every reported run and stands as the documented hook for
-voiced corpora). The (combinatorial) graph Laplacian is
+same-voice bonus $w_v \ge 0$. Throughout, these are untuned defaults:
+$\ell_b = 2$, $\ell_p = 4$, $w_v = 0$. ASAP carries no voice labels, so the
+voice bonus is inert in every reported run and stands as the documented
+hook for voiced corpora. The (combinatorial) graph Laplacian is
 \begin{equation}
   \Lg \;=\; D - W, \qquad D = \diag\Bigl(\textstyle\sum_j W_{ij}\Bigr).
   \label{eq:laplacian}
@@ -443,8 +443,9 @@ shorter way around that ring,
   \label{eq:fifths}
 \end{equation}
 so a perfect fifth is $1$ step, a major second $2$, and a semitone $5$: tonal
-proximity, deliberately unlike semitone proximity. Substituting it for the pitch term (the voice bonus is dropped and an octave-band locality term added alongside)
-of \eqref{eq:adjacency} gives
+proximity, deliberately unlike semitone proximity. Substituting it for the
+pitch term of \eqref{eq:adjacency} --- dropping the voice bonus and adding
+an octave-band locality term alongside --- gives
 \begin{equation}
   W^{\mathrm{tonal}}_{ij} \;=\; \exp\!\Bigl( -\tfrac{(b_i - b_j)^2}{2\ell_b^2}
     \;-\; \tfrac{d_5(i,j)^2}{2\ell_5^2}
@@ -535,9 +536,9 @@ $\sigma_g^{2}(\kappa^2 + \nu_j)^{-\alpha}$ on the Laplacian eigenvalue $\nu_j$, 
 with $s = \kappa^2$ and the scale $g(0) = \sigma_g^2 \kappa^{-2\alpha}$ carried
 by $B$ --- the graph analogue
 of a Euclidean Mat\'ern GP through the SPDE link of Lindgren et
-al.\ \cite{lindgren2011}; the diffusion kernel is its $\alpha \to \infty$ limit
-under the joint reparameterization $s = \alpha/t$ (at fixed $s$ the limit
-degenerates to zero).
+al.\ \cite{lindgren2011}. The diffusion profile is its
+$\alpha \to \infty$ limit under the joint reparameterization $s = \alpha/t$
+(at fixed $s$ the limit degenerates to zero).
 The additive profile is not a fourth family: it \emph{is} the graph Mat\'ern at
 $\alpha = 1$ with the shape parameter inverted ($1/(1+s\nu) = s'/(s'+\nu)$ at
 $s' = 1/s$), also known as the regularized-Laplacian kernel.
@@ -564,8 +565,8 @@ an \emph{intrinsic coregionalization} structure --- one latent field over the $3
   \label{eq:icm}
 \end{equation}
 where $B \in \R^{3 \times 3}$ is a positive semidefinite matrix learned through its
-log-Cholesky factor. Because $g(0) = 1$, the split of scale between $B$ and
-$K_G$ is identifiable and $B$ carries all of it --- the per-note prior variance
+log-Cholesky factor. Because the $g(0) = 1$ normalisation resolves the
+scale ambiguity of \S\ref{sec:graphgp}, $B$ carries all of the scale --- the per-note prior variance
 of channel $c$ is $B_{cc}\,[K_G]_{ii}$ (the normalisation fixes the spectrum's
 \emph{shape}, not the diagonal of $K_G$) --- and its off-diagonal entries
 let an observed channel inform an unobserved one at a coupled note. Constraining
@@ -596,13 +597,12 @@ model's \emph{input}, so the embedding of a held-out note depends only on the sc
 and the \emph{observed} notes' performances.
 
 \medskip\noindent
-Each feature matrix has its columns z-scored within the piece, with a bias
-column appended, before entering the kernel --- the single per-channel scale
-$c_{f,c}$ is isotropic over columns, so the standardization is load-bearing,
-not cosmetic.
 Each feature set enters the GP as a \emph{linear kernel} with per-channel scales
 $c_f \in \R^{3}_{\ge 0}$, contributing $\diag(c_f) \otimes X_f X_f^\top$ to the
-covariance. This is not a heuristic. A GP whose \emph{mean} is a linear model
+covariance. Each feature matrix has its columns z-scored within the piece,
+with a bias column appended, before entering the kernel --- the single
+per-channel scale $c_{f,c}$ is isotropic over columns, so the
+standardisation is load-bearing, not cosmetic. This is not a heuristic. A GP whose \emph{mean} is a linear model
 $X_f \beta_c$ with unknown per-channel weights $\beta_c \sim \N(0,\, c_{f,c} I)$
 becomes, once each $\beta_c$ is integrated out, a zero-mean GP with
 $c_{f,c}\, X_f X_f^\top$ added to channel $c$'s kernel: a
@@ -879,7 +879,7 @@ $\to$ the conservative decoupled fit $\eta = 0$,
 $\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$). One honest
 asymmetry: the per-channel screen tests \emph{recovery} only (error against
 the mean-only fallback); the overconfidence screen of \S\ref{sec:eb} exists
-only in the joint model's safeguard --- the two are related, not identical.
+only in the joint model's safeguard --- the two screens are related, not identical.
 
 \paragraph{The constrained systems, by their switches.}
 The constrained systems compared in Chapter~\ref{ch:results} are choices of the
@@ -913,13 +913,11 @@ Plug-in mean, graph on (two-stage baseline)    & $\muLM$ & $>0$  & $\bigl[(\Qg+P
 \paragraph{Exact nesting.}
 Constraining $B$ diagonal, dropping the feature kernels, and fixing the graph
 recovers the per-channel model exactly \emph{on the shared-shape slice}:
-with one spectral shape $s$ common to the channels, the joint marginal
-likelihood \eqref{eq:marglik} equals the sum of the per-channel ones under
-$(\lambda_c, \eta_c) = (1/B_{cc},\, s/B_{cc})$, and the equality is pinned
-by a unit test. The per-channel pipeline, fit independently, may select
-three different shapes; the nesting statement is about the model
-\emph{family} --- every per-channel configuration with a common shape is a
-point of the joint parameter space --- not about coinciding optima. The constrained systems are therefore not
+the joint marginal likelihood \eqref{eq:marglik} equals the sum of the
+per-channel ones under $(\lambda_c, \eta_c) = (1/B_{cc},\, s/B_{cc})$, and
+the equality is pinned by a unit test. The per-channel pipeline, fit
+independently, may select three different shapes; the nesting statement is
+about the model \emph{family}, not about coinciding optima. The constrained systems are therefore not
 merely \emph{analogous} baselines but points in the proposed model's own parameter
 space, which is what makes the ablation tables of Chapter~\ref{ch:results} an
 ablation of one model rather than a comparison of two. Re-inserting the two-stage
@@ -972,9 +970,9 @@ criterion fixed before the numbers were computed: the delay is identifiable
 on $95$--$97\%$ of vibrato-identifiable notes on both the ground-truth and
 the tracked pitch curves, with median tracker-versus-truth agreement of
 $18$\,ms --- so $\delta_i^{\mathrm{vib}}$ is a channel and $k = 7$ as
-written (on the evaluation corpus below, articulation has no measured
-offset chain, so the evaluated bundle there is the remaining six). The
-second stays open: whether $\ell_i$,
+written. On the evaluation corpus below, articulation has no measured
+offset chain, so the bundle evaluated there is the remaining six. The
+second decision stays open: whether $\ell_i$,
 which is an amplitude rather than a keystroke, is commensurable enough with $v_i$ for
 the two to be discussed as one channel across phases. We do not assume they are.
 
@@ -1141,9 +1139,9 @@ so the note being judged never enters its own warp. The result: median $\operato
 with lag-1 neighbour correlation $+0.59$ --- Phase-1-scale timing with
 exactly the structure the graph prior models. On this measured basis
 $\tau$ \emph{is} a channel of the evaluated bundle below, its noise row the
-tempo line's leave-one-out predictive variance --- carrying the aligner
-error's scale, though not its correlation along score time, per the
-limitation stated above (development evidence).
+tempo line's leave-one-out predictive variance --- which carries the
+aligner error's scale but not its correlation, as noted above. This is
+development evidence.
 
 \paragraph{The graph is unchanged --- and Phase 2 makes one music-theoretic hypothesis testable.}
 The graph construction \eqref{eq:adjacency} and its variants (\S\ref{sec:graphvariants})
@@ -1233,14 +1231,14 @@ The full pipeline then ran end to end on real recordings: tracked $f_0$,
 confidence-filtered per-note estimation of $[c, \log\gamma, \log
 f^{\mathrm{vib}}]$, per-note loudness $\ell$ (log RMS, centred per
 recording), the onset-anchored timing channel $\tau$, and the gated-fit
-delay $\delta^{\mathrm{vib}}$ --- the six-channel bundle --- with estimator
-variances as given, per-(note, channel) missingness
-from the identifiability rule (the per-track vibrato-identifiable fraction
-ranges from $2\%$ to $97\%$ with median $38\%$ ---
-the missingness case is the norm, not an edge case), and the heteroscedastic
-cell-mask GP --- on 77 of the 78 unique development tracks (shared
-recordings deduplicated; one track falls below the minimum of 30 usable
-notes), hiding 30\% of notes. One target-quality rule was added with
+delay $\delta^{\mathrm{vib}}$ --- the six-channel bundle. Estimator variances
+enter as given, with per-(note, channel) missingness from the
+identifiability rule and the heteroscedastic cell-mask GP; the per-track
+vibrato-identifiable fraction ranges from $2\%$ to $97\%$ with median
+$38\%$, so the missingness case is the norm, not an edge case. The run
+covers 77 of the 78 unique development tracks (shared recordings
+deduplicated; one falls below the 30-usable-note minimum), hiding 30\% of
+notes. One target-quality rule was added with
 measured justification rather than by fiat: $2.2\%$ of intonation targets
 are octave slips ($|c| \approx 1200$ cents), the ground-truth cross-check
 rejects every one of them (0 of 358 agree with the truth-derived value), and
@@ -1877,7 +1875,9 @@ therefore not a separate row. A $\mu = 0$ block (not shown) repeats every conclu
 without the learned mean. Full protocol and numbers: the accompanying evidence archive.
 
 Three findings (Table~\ref{tab:kernels}). \textbf{First, the additive Laplacian
-survives every classical alternative profile}: Mat\'ern at every $\alpha$ (at $\alpha=1$ the Mat\'ern profile \emph{is} the additive baseline under $s \mapsto 1/s$, so only $\alpha \ge 2$ are distinct alternatives), diffusion,
+survives every classical alternative profile}: Mat\'ern at every
+$\alpha \ge 2$ (at $\alpha = 1$ the profile \emph{is} the additive baseline
+under $s \mapsto 1/s$, \S\ref{sec:graphgp}), diffusion,
 and the normalized Laplacian
 are statistically indistinguishable from it on RMSE and do not improve NLL --- among
 classical graph-GP kernels the plainest one is the right default, and its extra-cost
@@ -1918,13 +1918,13 @@ paired and significant, development), with NLL better on a majority of
 pieces at each level but never significantly (at 10\% hidden the mean is
 pulled positive by the documented Gaussian-tail piece, \S\ref{sec:guard-gp};
 at 30/20\% the means are negative with intervals crossing zero). At the 40\% operating
-point it ties (the adoption record), and at 50\% hidden the advantage is
-gone ($-0.0037$, ns, with the collapsed piece excluded; excluding only the
-collapsed cell instead reads as a small significant NLL harm, $+0.027$)
---- and that rate also produced the one fit collapse of
-the sweep (one cell; the graph-parameter optimiser wandered to degenerate
-length scales, and the safeguard's calibration screen could not see it from
-the observed notes, the known blind spot of \S\ref{sec:guard-gp}). The
+point it ties (the adoption record). At 50\% hidden the sweep produced its
+one fit collapse (one cell; the graph-parameter optimiser wandered to
+degenerate length scales, and the safeguard's calibration screen could not
+see it from the observed notes --- the known blind spot of
+\S\ref{sec:guard-gp}). With that piece excluded the advantage is gone
+($-0.0037$, ns); excluding only the collapsed cell instead reads as a small
+significant NLL harm ($+0.027$). The
 reading is mechanistic and consistent with the decomposition
 (\S\ref{sec:attribution}): the extra edge weights are per-piece
 hyperparameters, and like every per-piece quantity they need observed
@@ -2130,7 +2130,7 @@ would do) --- would close the adaptation boundary of \S\ref{sec:boundary}.
 The formulation is given in full in \S\ref{sec:phase2}, and the pipeline now
 runs end to end on real recordings with development-level results
 (\S\ref{sec:phase2-real}). Of the four questions that had to be settled,
-three now have measured answers:
+the first three now have measured answers; the fourth is unchanged:
 \begin{enumerate}[leftmargin=*,noitemsep]
   \item \textbf{Per-channel missingness --- resolved in code and exercised
         on real data.} Short notes support an intonation offset but not
@@ -2158,12 +2158,12 @@ three now have measured answers:
         remove this. The Phase-2 claim stays weaker \emph{in kind} than the
         Phase-1 claim.
 \end{enumerate}
-Separately from those four questions, the three former blockers of a
+Beyond those answers, the three former blockers of a
 confirmable Phase-2 result are closed:
-$\tau$ is adopted into the evaluated bundle; the vibrato delay is IN by a
-criterion fixed before its numbers were computed (it carries no registered
-claim --- its graph contrasts are neutral); and the claim set is frozen in
-the registered preregistration document. What remains is the deliberate,
+$\tau$ is adopted into the evaluated bundle; the vibrato delay is adopted
+by a criterion fixed before its numbers were computed (it carries no
+registered claim --- its graph contrasts are neutral); and the claim set is
+frozen in the preregistration document. What remains is the deliberate,
 one-shot act of spending the 13-piece confirmation pool.
 The nearly-free experiment flagged here in earlier drafts is now run
 (\S\ref{sec:phase2}; development, exploratory): the circle-of-fifths metric
@@ -2306,8 +2306,8 @@ performance model is solid.
 A single multi-output Gaussian process on the score graph --- channels coupled,
 side information marginalized into the kernel, every hyperparameter learned by the
 per-piece evidence --- recovers hidden expressive detail better than the strongest
-two-stage pipeline it provably subsumes (as the diagonal-$B$, shared-shape,
-no-feature slice of its parameter space), a claim preregistered and confirmed once
+two-stage pipeline it provably subsumes (as the diagonal-$B$, fixed-graph,
+shared-shape, no-feature slice of its parameter space), a claim preregistered and confirmed once
 on pieces no modelling decision ever touched. Each ingredient's marginal value is
 isolated: per-piece Bayesian weighting of score features and music-model
 embeddings does the recovering; the graph makes the confidence honest (its
@@ -2351,7 +2351,7 @@ $\mu$, $\muLM$, $h_i$ & prior mean; music-model mean; music-model per-note embed
 $B$, $c_f$ & coregionalization matrix; per-channel feature-kernel scales \eqref{eq:gpfirst} \\
 $g(\nu; s)$, $s$ & shape-normalized spectral kernel of $\Lg$ ($g(0){=}1$); its shape parameter \\
 $\nu$, $U$, $K_G$ & Laplacian eigenvalues and eigenvectors; graph kernel $U \operatorname{diag}(g(\nu;s)) U^\top$ \eqref{eq:spectral} \\
-$d_5$, $\pi(p)$ & circle-of-fifths distance; pitch-class position map \eqref{eq:tonaladj} \\
+$d_5$, $\pi(p)$ & circle-of-fifths distance; pitch-class position map \eqref{eq:fifths}, used by \eqref{eq:tonaladj} \\
 $K_{oo}$, $C$ & observed block of $K$ (noise included); latent covariance \eqref{eq:posterior} \\
 $\beta$ & feature weights of the marginalized Bayesian linear mean (\S\ref{sec:features}) \\
 $X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
@@ -2379,7 +2379,10 @@ parameter, while $s_i$ is a score event; capital $P$ is the per-note
 observation precision and $P_j$ the tracker confidence; $B$ is the
 coregionalization matrix ($B = 2000$ appears only as the bootstrap replicate
 count); $\delta_i$ is the performed duration, $\delta_i^{\mathrm{vib}}$ the
-vibrato onset delay, and $\delta_{\zeta\zeta'}$ the Kronecker delta; our
+vibrato onset delay, and $\delta_{\zeta\zeta'}$ the Kronecker delta;
+$\ell_b, \ell_p$ are graph length scales while $\ell_i$ is the Phase-2
+loudness channel; $c$ is a channel index, $c_f$ a feature-kernel scale, and
+$c_i$ the intonation channel in cents; our
 $\alpha$ (exponent) and $\nu$ (eigenvalue) differ from the Mat\'ern
 smoothness convention of the graph-GP literature.
 
