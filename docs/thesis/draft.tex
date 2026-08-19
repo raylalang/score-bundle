@@ -1275,13 +1275,22 @@ delay channel deliberately carries no claim, and the rule is one-shot with
 every number reported.
 
 \figph{phase2_real_example.png}{1.0}{Phase 2 on one real development track
-(violin), 30\% of notes hidden. Top: intonation --- the estimator's
-per-note values with their own uncertainties (dots), the cell-mask GP's
-posterior with its 90\% predictive band, and the hidden notes' estimator
-values (open circles). Bottom: vibrato extent --- squares mark notes whose
-extent the estimator could not identify from the audio; the GP supplies a
-posterior there anyway, informed by neighbours through the graph and by the
-coupled channels.\label{fig:phase2-real}}
+(violin), 30\% of notes hidden; four of the six channels. First panel:
+intonation --- the estimator's per-note values with their own uncertainties
+(dots), the cell-mask GP's posterior with its 90\% predictive band, and the
+hidden notes' estimator values (open circles). Second: vibrato extent ---
+squares mark notes whose extent the estimator could not identify from the
+audio; the GP supplies a posterior there anyway, informed by neighbours
+through the graph and by the coupled channels. Third: the onset-anchored
+timing channel $\tau$, whose error bars are the tempo line's leave-one-out
+predictive standard deviations --- the aligner error carried in the noise
+row (note the wide-interval edge note at the right). Fourth: the gated-fit
+vibrato onset delay; squares again mark estimator-missing cells filled by
+the GP (its posterior may stray below zero on unobserved stretches --- the
+channel is modelled as an unconstrained Gaussian field, and every observed
+delay is nonnegative by construction). Loudness and the full per-channel
+numbers are in the tables; loudness is also the bundle's honest
+non-result under the default noise variant.\label{fig:phase2-real}}
 
 \paragraph{Gate.} Phase 2 remains gated. It is scoped so that a negative result costs
 the thesis nothing: the Phase-1 contribution stands on its own, and Phase 2's value is
