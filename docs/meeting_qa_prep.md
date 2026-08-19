@@ -1,8 +1,46 @@
-# Meeting prep — anticipated questions, one-line answers (2026-08, private prep sheet)
+# Meeting prep — study plan + anticipated questions (2026-08, private prep sheet)
 
-One page, for Ray only. Every answer is grounded; pointers name the evidence.
-The frame stays modest: development-labeled results, registered claims,
-pool unspent.
+For Ray only. Every answer is grounded; pointers name the evidence. The
+frame stays modest: development-labeled results, registered claims, pool
+unspent. Page numbers refer to the current 54-page `docs/thesis/draft.pdf`.
+
+## Study plan (~75 minutes, in order)
+
+1. **First (5 min): sync Overleaf with current `main`** — what the professor
+   opens must be this state, not July's.
+2. **§3.9, p. 19–24 (20 min).** Read once, slowly. The arc: nothing in the
+   prior changes; the channel set, the targets, and the noise do. The two
+   channel decisions are measured (delay in with 95/97% coverage and 18 ms
+   truth-agreement; τ via annotated onsets); the τ threat and its diagonal
+   -noise limitation are stated, not hidden.
+3. **The figure, p. 25 (10 min).** Practice narrating the four panels aloud
+   once — intonation band + hidden circles; extent with GP-filled squares;
+   τ with aligner error bars (point at the wide edge note yourself, before
+   anyone asks); delay with GP-filled squares (sub-zero excursions are GP
+   extrapolations; every observed delay is nonnegative).
+4. **The results paragraph, p. 23–24 (10 min).** Memorize the know-cold
+   table below, including the adverse cell.
+5. **The tonal passage, p. 22 (5 min).** One sentence to say: "the metric
+   that hurt expression helps exactly where the target is pitch — and it
+   re-imposes the timing penalty, which is what the hypothesis predicted."
+6. **The Q&A below (20 min).** Read twice; say the loudness and δ_vib
+   answers out loud once.
+7. **The asks (5 min).** They are the planning-flavored close.
+   (Optional depth if he digs into Phase 1: §5.3, p. 30 — shares .69/.60/.40,
+   graph×embeddings ≈ 0, complements not rivals.)
+
+## Numbers to know cold (as-given variant, paired vs no-graph, dev)
+
+| what | value |
+|---|---|
+| intonation recovery | −0.89 cents\* |
+| vibrato extent / rate recovery | −0.26\* / −0.30\* |
+| vibrato calibration (dNLL) | −3.8\* / −0.43\* |
+| timing calibration (dNLL) | −0.29\* |
+| coverage @ 90%, all six channels | 0.88–0.91 |
+| the adverse cell | loudness dNLL +0.04\* against |
+| tonal − plain, intonation | −0.21\* RMSE, −0.05\* NLL |
+| registration | tag 2026-08-17; pool of 13 UNSPENT |
 
 **Q: The targets are estimator outputs — what does "recovery" even mean?**
 A: Exactly that, and the thesis says so wherever numbers appear: recovery =
@@ -76,7 +114,8 @@ Beyond URMP the alignment problem returns — stated future work.
    for the committee?
 3. Next priority: tonal-metric confirmation or Phase-3 scoping?
 
-## Before the meeting
-- Sync Overleaf with current `main` (pushed repo ≠ synced Overleaf).
-- Pages to have open: §3.9, sec:phase2-real results paragraph (know the
-  loudness cell), fig:phase2-real (now four panels), the tonal passage.
+## In the room
+- Have open: p. 25 (the figure) and p. 23 (the results paragraph).
+- Opening line: "I picked things back up and focused on Phase 2."
+- If a question stumps you: "that's measured — let me follow up with the
+  exact number" is a fine answer; everything above has a file behind it.
