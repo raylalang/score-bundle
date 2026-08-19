@@ -1,5 +1,8 @@
 # Tracker calibration — URMP development side (pyin vs GT F0)
 
+Reproduce: `OMP_NUM_THREADS=4 PYTHONPATH=src python scripts/eval_tracker_calibration.py`
+(pointer added 2026-08-19; the script existed but was not named here).
+
 | instrument | tracks | med \|dev\| (c) | 90th pct | >50c | voicing recall |
 |---|---|---|---|---|---|
 | bn | 2 | 2.5 | 6.4 | 7.2% | 0.99 |
