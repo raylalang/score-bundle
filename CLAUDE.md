@@ -16,8 +16,9 @@ residual) is its nested special case and ablation chain. The model is one genera
 process run two ways — forward = synthesis, inverse = transcription. See
 `docs/architecture.svg`.
 
-The companion thesis plan lives in Notion ("Score-Bundle Models"); keep code and that
-note conceptually in sync.
+All thesis updates are delivered through `docs/thesis/draft.tex` — there is
+no external companion note. (A Notion page existed early on and is RETIRED;
+do not create, sync, or reference one.)
 
 ## Phases (and what's implemented)
 
@@ -142,7 +143,7 @@ note conceptually in sync.
   GiantMIDI loaders remain open. Datasets live under `../data/`
   (`/home/ray/Research/data/{maestro-v3.0.0,asap-dataset}`); pass the root explicitly.
 
-## Canonical notation (keep consistent everywhere — code, docs, Notion)
+## Canonical notation (keep consistent everywhere — code, docs, thesis)
 
 | Symbol | Meaning |
 |--------|---------|
