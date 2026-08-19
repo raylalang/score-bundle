@@ -132,5 +132,6 @@ Plus a **per-channel** appendix (τ / log r / v × RMSE, cov) for the same rows,
   significance, and a 3–5 sentence verdict: *which kernel wins, and is the extra
   complexity (Matérn / diffusion / music-theory edges) worth it over the plain additive
   Laplacian?*
-- Then hand the numbers back to Cowork to fill the `Kernel comparison` table in
-  `docs/thesis/draft.tex`.
+- The numbers were handed back and the `Kernel comparison` table in
+  `docs/thesis/draft.tex` filled (July 2026; the Cowork hand-off workflow is
+  since retired — the draft is edited directly).
