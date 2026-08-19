@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-"""Phase 2 on real audio: the first URMP results (DEVELOPMENT side only).
+"""Phase 2 on real audio: the URMP pipeline (development side by default).
 
 End-to-end: pyin f0 (extract_f0, cached) -> confidence-filtered per-note NLLS
-targets (targets.note_targets) -> heteroscedastic cell-mask graph GP ->
-held-out imputation, graph vs no-graph, both axes.  Mirrors the synthetic
-pilot (eval_phase2_synthetic.py) with real estimator targets in place of
-synthetic truth.  Two scorings per held-out note:
+targets (targets.note_targets) -> loudness, onset-anchored tau, gated-fit
+delta_vib -> heteroscedastic cell-mask graph GP -> held-out imputation of the
+six-channel bundle, graph vs no-graph, both axes.  Two scorings per held-out
+note:
 
   vs ESTIMATOR targets (primary; the prereg design's honest claim — recovery
      = agreement with the estimator; predictive sd includes the cell noise);
@@ -13,10 +13,15 @@ synthetic truth.  Two scorings per held-out note:
      ground-truth F0 curve; scored with the latent sd, pilot-style).
 
 Shared recordings across arrangements are deduplicated by the MD5 of the
-ground-truth F0 annotation.  Confirmation pieces are refused.
+ground-truth F0 annotation.  Confirmation pieces are guarded: they are only
+reachable via PHASE2_SPLIT=confirmation, which refuses at import unless the
+one-shot spend has been explicitly consented to (see the CONF_MODE block).
 
-    OMP_NUM_THREADS=4 PYTHONPATH=src python scripts/eval_phase2_real.py extract
-    OMP_NUM_THREADS=4 PYTHONPATH=src python scripts/eval_phase2_real.py eval
+Stages: extract | loudness | tau | delta | run [k/n] | report | eval
+(run+report in-process) and the -tonal variants (dev-only exploratory).
+Anything longer than a smoke test goes through the sharded driver:
+
+    bash scripts/run_phase2_eval.sh [N_SHARDS=8] [tonal]
 """
 from __future__ import annotations
 
@@ -524,6 +529,13 @@ def _render(rows, per_track, used, tonal: bool) -> None:
                  "channel c, as-given, paired tonal - plain. Exploratory per "
                  "the registration; the registered results file and claims "
                  "are untouched.", ""]
+    elif CONF_MODE:
+        lines = [f"# Phase 2 CONFIRMATION — one-shot on the frozen 13-piece "
+                 f"pool ({used} unique tracks, {len(SEEDS)} seeds, "
+                 f"{HOLD_FRAC:.0%} of notes hidden)", "",
+                 "> Registered protocol: docs/phase2_prereg_design.md, tag "
+                 "phase2-registration-2026-08-17. Run ONCE; every number "
+                 "reported whatever the outcome.", ""]
     else:
         lines = [f"# Phase 2 on real audio — first URMP dev results "
                  f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "

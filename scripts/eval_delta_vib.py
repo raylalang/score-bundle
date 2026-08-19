@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-"""delta_vib channel-candidate study (URMP DEVELOPMENT side only).
+"""delta_vib channel-candidate study (URMP development side by default;
+in PHASE2_SPLIT=confirmation mode the gt/pyin stages feed the guarded
+one-shot pipeline with _conf-suffixed caches — see eval_phase2_real.py).
 
 Answers the last open Phase-2 channel question (docs/phase2_prereg_design.md):
 is the vibrato onset delay delta_vib identifiable often enough, and measured
@@ -26,8 +28,9 @@ registered claims; the measurement is reported as a development finding.
 Stages:
     gt      gated fits on URMP's ground-truth F0 curves (fast, no audio)
     pyin    gated + ungated fits on tracked curves (caches pyin output to
-            .cache/urmp_f0_dev.pkl for reuse; slow, librosa)
-    report  verdict against C-A..C-D
+            F0_CACHE for reuse; slow, librosa)
+    report  verdict against C-A..C-D (a dev-side decision record; the
+            criterion was frozen for the 2026-08-13 study)
 
     OMP_NUM_THREADS=1 PYTHONPATH=src:scripts python scripts/eval_delta_vib.py gt
 """

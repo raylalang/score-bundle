@@ -107,11 +107,19 @@ note conceptually in sync.
   Measured groundwork: tracker calibration vs URMP GT (2–5 cents/instrument, confidence
   predictive → as-given variances + lowest-quintile frame filter,
   `results/tracker_calibration_dev.md`); τ feasibility (onset-anchored warp, 76/78
-  tracks, 79 ms, lag-1 +0.59, `scripts/eval_tau_feasibility.py`). First real-audio
-  results (`scripts/eval_phase2_real.py`, `results/phase2_real_results.md`): graph
-  beats no-graph on all four channels ([c, log γ, log f, ℓ]) significantly, within
-  every instrument family, coverage 0.88–0.91; GT-validated octave-failure rule
-  (|c|>150 → missing); learned noise scale collapses on real data, as-given healthy.
+  tracks, 79 ms, lag-1 +0.59, `scripts/eval_tau_feasibility.py`). Real-audio
+  results (`scripts/eval_phase2_real.py`, `results/phase2_real_results.md`,
+  6-channel, as-given default): graph value significant on intonation/vibrato
+  recovery (−0.89*/−0.26*/−0.30*) and vibrato/timing calibration, coverage
+  0.88–0.91 on all six; honest cells reported (ℓ recovery ns with NLL +0.04
+  against, δ_vib graph-neutral, brass intonation ns); learned-scale variant
+  stars all six recovery contrasts but is the worse-calibrated fallback.
+  GT-validated octave-failure rule (|c|>150 → missing); learned noise scale
+  collapses on real data with failure cells present, as-given healthy.
+  Circle-of-fifths EXPLORATORY result (2026-08-18, `results/phase2_tonal_dev.md`):
+  tonal metric beats plain on intonation both axes (−0.213*/−0.050*), re-imposes
+  the replacement penalty on timing — first geometry-level positive; adoption =
+  future preregistered confirmation.
   All DEV-labeled. **REGISTERED 2026-08-17** (tag `phase2-registration-2026-08-17`,
   commit = frozen claims): 6-channel bundle [c, log γ, log f, ℓ, τ, δ_vib];
   τ adopted (onset-anchored LOO warp, `phase2/warp.py`, noise row = OLS

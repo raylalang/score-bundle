@@ -31,16 +31,19 @@ The editable diagram is `docs/architecture.excalidraw`.
 |------:|-------|-----------------|-----------|------|
 | **0 — foundation** | from-scratch symbolic music LM (backbone + representations) | — (per-note embeddings `h_i`, a feature kernel of the Phase-1 GP; `μ_LM` in the development form) | next-token (autoregressive) pretraining | MAESTRO/ATEPP, Lakh, GiantMIDI |
 | **1 — core (piano)** | timing, articulation, dynamics | `y = [τ, log r, v]` | closed-form Gaussian posterior over the graph field | ASAP, MAESTRO |
-| **2 — extension (mono)** | intonation, vibrato | `c` (cents), `u(t)`, `f₀` | same prior, f0-derived targets | URMP, Vocadito/Opencpop |
+| **2 — extension (mono)** | intonation, vibrato, loudness, timing, vibrato delay | `[c, log γ, log f, ℓ, τ, δ_vib]` from tracked `f₀` + annotated onsets | same prior, cell-mask heteroscedastic likelihood | URMP (dev results in; claims registered, confirmation pool unspent) |
 | **3 — extension (waveform)** | timbre | harmonic amplitudes `a` | marginalize `a` exactly, Laplace/VI over nonlinear `z` | + audio |
 
 Phase 0 (the music LM) and Phase 1 are implemented: a from-scratch tokenizer, a from-scratch
 **PyTorch** Transformer (hand-written attention, `forward`/`embed`/`generate` + training
 loop), and the embedding→prior-mean bridge. The Phase-1 core runs on numpy alone; the LM
-needs torch (`pip install -e ".[train]"`). Phases 2 and 3 are clean interfaces with some
-working helpers
-(intonation/vibrato features; harmonic synthesizer; closed-form amplitude posterior) and
-documented stubs for the open research steps (f0 extraction, position inference over `z`).
+needs torch (`pip install -e ".[train]"`). Phase 2 runs end to end on real
+recordings (URMP, development side): tracked f0 → per-note estimators (incl.
+the gated vibrato-delay fit) → onset-anchored timing → six-channel cell-mask
+GP, with the claim set preregistered and the 13-piece confirmation pool
+deliberately unspent (`docs/phase2_prereg_design.md`). Phase 3 remains a clean
+interface with working helpers (harmonic synthesizer; closed-form amplitude
+posterior) and documented stubs (position inference over `z`).
 
 **Phase 0 — music language model.** A decoder-only Transformer over note-structured MIDI
 tokens, built from the ground up (`src/score_bundle/lm/`). It is the generative backbone and
@@ -169,7 +172,7 @@ src/score_bundle/
     data.py         synthetic corpus + next-token batching
     model_torch.py  from-scratch PyTorch Transformer (attention by hand) + training
     features.py     per-note embeddings -> learned prior mean (Phase-1 bridge)
-  phase2/         intonation & vibrato (extension)
+  phase2/         URMP pipeline: intonation/vibrato estimators, loudness, warp (τ), frozen split
   phase3/         differentiable synthesizer Φ(z) + amplitude marginalization (extension)
 docs/             architecture diagram + music_lm_design.md
 examples/         runnable Phase-0 and Phase-1 scripts

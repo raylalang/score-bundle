@@ -1,5 +1,15 @@
 # Notion sync content — prepared 2026-08-05 (for Ray/Cowork to apply)
 
+> **SUPERSEDED IN PART (2026-08-19): do not apply as-is.** Since this delta
+> was prepared, Phase 2 moved substantially: τ and δ_vib are adopted bundle
+> channels, the six-channel real-audio results replaced the four-channel
+> ones (as-given variant primary, honest cells reported), the **claim set is
+> REGISTERED** (tag `phase2-registration-2026-08-17`, pool unspent), and the
+> circle-of-fifths exploratory study landed (tonal metric helps intonation,
+> both axes — `results/phase2_tonal_dev.md`). Whoever syncs Notion should
+> work from CLAUDE.md's Phase-2 block and `docs/phase2_prereg_design.md`,
+> using this file only for the older July→early-August items.
+
 > The "Score-Bundle Models" Notion page is owned by the Cowork workflow; this
 > file is the prepared delta so whoever applies it doesn't have to
 > reconstruct the record. Everything below is already in the repo

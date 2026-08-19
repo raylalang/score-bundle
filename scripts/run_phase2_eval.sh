@@ -17,6 +17,10 @@ export PYTHONPATH=src:scripts
 
 N="${1:-8}"
 TAG="${2:-plain}"
+case "$N" in (*[!0-9]*|"")
+  echo "usage: run_phase2_eval.sh [N_SHARDS=8] [tonal] — first arg must be a number" >&2
+  exit 2 ;;
+esac
 if [ "$TAG" = "tonal" ]; then
   RUN=run-tonal; REPORT=report-tonal; DIR=results/phase2_cells/tonal
 else
