@@ -1,0 +1,14 @@
+PIECE 0 (the figure piece):
+   tau: prior-var shares graph/feat/emb = 0.000/1.000/0.000   raw c_emb=4.17e-12
+  logr: prior-var shares graph/feat/emb = 0.575/0.425/0.000   raw c_emb=2.10e-09
+     v: prior-var shares graph/feat/emb = 0.653/0.275/0.072   raw c_emb=3.62e-06
+
+ACROSS 30 DEV PIECES (seed 0), prior-variance share of the EMB kernel per channel:
+   tau: median 0.001  IQR [0.000,0.172]  frac<1% 0.60  frac>10% 0.27
+  logr: median 0.000  IQR [0.000,0.118]  frac<1% 0.60  frac>10% 0.30
+     v: median 0.103  IQR [0.065,0.171]  frac<1% 0.07  frac>10% 0.50
+
+same for the SCORE-FEATURE kernel:
+   tau: median 0.865  IQR [0.278,1.000]
+  logr: median 0.296  IQR [0.090,0.486]
+     v: median 0.264  IQR [0.144,0.371]

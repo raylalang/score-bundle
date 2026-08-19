@@ -44,7 +44,8 @@ This is a **two-stage-regime** result at every rate. The GP-first adoption
 record says harmonic edges are measured-redundant once the LM embeddings
 enter the kernel as features (`c_harm_lm` 0.3561 ties `b_featlm` 0.3590 at
 the 40%-hidden anchor) — but that redundancy check exists **only at the
-anchor rate**. Two follow-ups, in order:
+anchor rate**. Two follow-ups were planned, in order (both since run —
+outcomes in the sections below):
 
 1. **Dev check:** run `c_harm_lm` vs `b_featlm` at the other rates (the
    per-rate masks and embedding dumps already exist). If the tie holds

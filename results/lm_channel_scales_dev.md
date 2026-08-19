@@ -49,5 +49,5 @@ ladder shows adding embeddings also improves log r RMSE slightly
 (0.615 → 0.601) — likely carried by the minority of pieces with a nonzero
 log r scale and/or by cross-channel coupling through B; not yet isolated.
 
-Logs: `~/.claude/jobs/b215b88d/tmp/lm_scales.log`, `lm_probe2.log` (inline
+Logs: `evidence/logs/lm_scales.log` (archived 2026-08-20; original ran in a session scratch dir), `logs/lm_probe2.log` (inline
 scripts; both reconstructible from this doc's description).
