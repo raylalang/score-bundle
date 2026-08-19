@@ -1,5 +1,12 @@
 # Presentation brief — Score-Bundle Models (prepared 2026-07-15, for the 2026-07-16 talk)
 
+> **HISTORICAL (banner added 2026-08-19).** This brief fed the delivered July
+> lab talk and is kept as the deck's number source. Its Phase-2 statements
+> ("real audio untouched", claims pending) describe the July state and are
+> long superseded: Phase 2 now has six-channel real-audio development
+> results and a REGISTERED claim set (tag phase2-registration-2026-08-17).
+> Current state: CLAUDE.md + docs/phase2_prereg_design.md.
+
 Everything below is verified against committed logs/results tonight; each number
 names its source. Development numbers are labeled DEV; the only headline numbers
 are the confirmation ones.

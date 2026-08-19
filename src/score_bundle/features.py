@@ -54,20 +54,6 @@ def tempo_implied_onset(beats: np.ndarray, sec_per_beat: np.ndarray) -> np.ndarr
     return out
 
 
-def onset_residual(beats, perf_onset, sec_per_beat) -> np.ndarray:
-    """tau_i = performed onset - tempo-implied onset (seconds)."""
-    implied = tempo_implied_onset(beats, sec_per_beat)
-    implied = implied - implied.mean() + np.asarray(perf_onset, float).mean()
-    return np.asarray(perf_onset, dtype=float) - implied
-
-
-def articulation_ratio(score: Score, perf_duration, sec_per_beat) -> np.ndarray:
-    """log r_i = log(performed duration / nominal duration)."""
-    nominal = score.duration * np.asarray(sec_per_beat, dtype=float)
-    nominal = np.clip(nominal, 1e-6, None)
-    return np.log(np.clip(np.asarray(perf_duration, float), 1e-6, None) / nominal)
-
-
 def normalize_velocity(midi_velocity, lo: float = 0.0, hi: float = 127.0) -> np.ndarray:
     """Map MIDI velocity to a centered, roughly unit-scale dynamics variable."""
     v = (np.asarray(midi_velocity, dtype=float) - lo) / (hi - lo)
@@ -291,7 +277,7 @@ def asap_performance_variables(
         log r_i = log(performed duration / warp-implied duration)  (articulation)
         v_i     = centered MIDI velocity                            (dynamics)
 
-    consistent with :func:`onset_residual` / :func:`articulation_ratio` but computed from the
+    per draft eq:tau / eq:logr, computed from the
     strictly-increasing global warp (chord-safe).  Restricts to matched notes; returns
     ``(score_matched, y)`` with ``y`` of shape ``(n_matched, 3)``.
     """

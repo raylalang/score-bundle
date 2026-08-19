@@ -395,3 +395,21 @@ def test_chol_to_B_is_psd_and_roundtrips_diag():
     theta_diag = np.array([0.3, -0.2, 0.1, 0.0, 0.0, 0.0])
     Bd = chol_to_B(theta_diag)
     np.testing.assert_allclose(Bd, np.diag(np.exp(2 * theta_diag[:3])))
+
+
+def test_no_observation_posterior_equals_prior_diag():
+    """2026-08-19 audit fix: with zero observations the returned std must be
+    the true per-note prior sd (B_cc * [K_G]_ii + feature terms), not
+    sqrt(diag B) — g(0)=1 normalizes the spectral shape, it does not give
+    K_G a unit diagonal."""
+    nu, U, Y, mask, rng = _setup(n=8, seed=5)
+    X = rng.normal(size=(8, 3))
+    gp = MultiOutputGraphGP(nu, U, kernel="additive", features=[X],
+                            n_channels=3)
+    x = gp.x0() + rng.normal(0, 0.3, gp.n_params())
+    m, sd = gp.posterior(np.zeros((8, 3)), np.zeros(8, dtype=bool), x)
+    assert np.allclose(m, 0.0)
+    params = gp.unpack(x)
+    C = gp._blocks(params, np.arange(8), np.arange(8))
+    expect = np.sqrt(np.diag(C)).reshape(3, 8).T
+    assert np.allclose(sd, expect, rtol=1e-10)

@@ -21,13 +21,25 @@ Hence: the primary artifacts live in version control.
 
 ## Contents
 
-- `logs/` — the report logs cited throughout `docs/draft.tex` and
+- `logs/` — the report logs cited throughout `docs/thesis/draft.tex` and
   `docs/graphgp_first_design.md` (cited there under their original `logs/...`
   paths; these are byte-identical archival copies). Key files:
   `confirmation_verdict.log` (THE headline evidence), `graphgp_v2_report*.log`
   (dev ladder, one code state), `dev12_report.log` (12-seed robustness),
   `downstream_gpfirst_report.log` + `overnight_performer.log` (all six tasks),
   `guarded_ab_verdict.log` (guard A/B + τ-tail), the two-stage record logs.
+  Phase-2 additions (2026-08): `phase2_real_eval7.log` (the six-channel
+  registration-grade dev run = `results/phase2_real_results.md`),
+  `phase2_tonal_eval.log` (circle-of-fifths exploratory),
+  `delta_vib_{gt,pyin,report}.log` (the delta_vib decision study),
+  `phase2_target_stats.log` (identifiability + 0/358 octave cross-check),
+  `phase2_{tau,delta}_stage.log`, `urmp_load_check.log`,
+  `charmlm_obs050_excl_report.log` (the scripted 50%-exclusion row), and the
+  2026-08-13 reproduction sweep (`repro_*.log`, `rate_shares_repro_omp2.md`).
+  **NB `phase2_real_results_dev.md` here is the SUPERSEDED four-channel
+  version** (same title as the live six-channel `results/phase2_real_results.md`
+  — archived before τ and δ_vib joined the bundle); it is history, not the
+  current record.
 - `results/graphgp_conf/`, `results/kernels_conf_*/` — the raw per-cell
   confirmation outputs (held-out targets, predictions, predictive stds per
   (piece, seed)); every confirmation number is recomputable from these alone.

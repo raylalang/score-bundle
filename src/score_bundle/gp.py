@@ -145,6 +145,20 @@ class MultiOutputGraphGP:
                 K[a * nr:(a + 1) * nr, b * nc:(b + 1) * nc] = blk
         return K
 
+    def _prior_diag(self, p: dict) -> np.ndarray:
+        """Latent prior variance per stacked (channel, note) entry:
+        ``B_cc * [K_G]_ii + sum_f c_f[c] ||x_i||^2`` (no observation noise)."""
+        Kg_diag = np.einsum("ij,j,ij->i", self.U, np.clip(
+            SHAPE_KERNELS[self.kernel](self.nu, p["s"]), _G_MIN, _G_MAX),
+            self.U)
+        pv = np.empty(self.k * self.N)
+        for c in range(self.k):
+            v = p["B"][c, c] * Kg_diag
+            for X, cf in zip(self.features, p["feature_scales"]):
+                v = v + cf[c] * np.einsum("ij,ij->i", X, X)
+            pv[c * self.N:(c + 1) * self.N] = v
+        return pv
+
     def log_marginal_likelihood(self, Y: np.ndarray, mask: np.ndarray,
                                 x: np.ndarray) -> float:
         """log N(vec(Y_obs); 0, K_oo + noise) for parameter vector ``x``.
@@ -190,7 +204,13 @@ class MultiOutputGraphGP:
         obs = np.where(mask)[0]
         allidx = np.arange(self.N)
         if obs.size == 0:
-            var = np.tile(np.diag(p["B"]), (self.N, 1))
+            # no observations: the posterior is the prior. NB the per-note
+            # prior variance is B_cc * [K_G]_ii + sum_f c_f[c] ||x_i||^2 —
+            # NOT diag(B): g(0)=1 normalizes the spectrum's shape, it does
+            # not give K_G a unit diagonal (2026-08-19 audit fix; the old
+            # branch returned sqrt(diag B) here, inconsistent with the
+            # observed-path prior diagonal below and with _posterior_cells).
+            var = self._prior_diag(p).reshape(self.k, self.N).T
             return np.zeros((self.N, self.k)), np.sqrt(var)
         K_oo = self._blocks(p, obs, obs)
         n_o = obs.size
@@ -200,15 +220,7 @@ class MultiOutputGraphGP:
         y = np.concatenate([Y[obs, c] for c in range(self.k)])
         A = np.linalg.solve(K_oo, K_ao.T)          # (k n_o, k N)
         m = K_ao @ np.linalg.solve(K_oo, y)
-        # prior variance diag per (channel, note): B_cc * Kg_ii + sum_f c_f[c] * ||x_i||^2
-        Kg_diag = np.einsum("ij,j,ij->i", self.U, np.clip(
-            SHAPE_KERNELS[self.kernel](self.nu, p["s"]), _G_MIN, _G_MAX), self.U)
-        pv = np.empty(self.k * self.N)
-        for c in range(self.k):
-            v = p["B"][c, c] * Kg_diag
-            for X, cf in zip(self.features, p["feature_scales"]):
-                v = v + cf[c] * np.einsum("ij,ij->i", X, X)
-            pv[c * self.N:(c + 1) * self.N] = v
+        pv = self._prior_diag(p)
         var = pv - np.einsum("ij,ji->i", K_ao, A)
         m = m.reshape(self.k, self.N).T
         std = np.sqrt(np.clip(var, 0.0, None)).reshape(self.k, self.N).T

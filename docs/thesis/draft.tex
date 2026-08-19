@@ -339,7 +339,10 @@ defined relative to the monotone score-time warp $T(\cdot)$ (score beats $\to$
 performance seconds). The warp is read off the alignment: the local tempo, in seconds
 per beat, is estimated by finite differences of performed time against score time
 along the aligned beat grid, and $T$ is its cumulative integral over score time, so
-that $T(b)$ is the tempo-implied arrival of beat $b$. Conditional on $T$, the three
+that $T(b)$ is the tempo-implied arrival of beat $b$. $T$ is estimated from
+the same performance's aligned beat grid and then treated as known; its
+estimation error is not propagated (a limitation Phase~2 addresses
+explicitly with a leave-one-out warp, \S\ref{sec:phase2}). Conditional on $T$, the three
 channels are
 \begin{align}
   \tau_i   &= t_i - T(b_i), \label{eq:tau}\\
@@ -399,7 +402,10 @@ Gaussian-kernel edge weights
   \label{eq:adjacency}
 \end{equation}
 with length scales $\ell_b$ (beats) and $\ell_p$ (semitones) and an optional
-same-voice bonus $w_v \ge 0$. The (combinatorial) graph Laplacian is
+same-voice bonus $w_v \ge 0$ (untuned defaults throughout: $\ell_b = 2$,
+$\ell_p = 4$, and $w_v = 0$ --- ASAP carries no voice labels, so the voice
+bonus is inert in every reported run and stands as the documented hook for
+voiced corpora). The (combinatorial) graph Laplacian is
 \begin{equation}
   \Lg \;=\; D - W, \qquad D = \diag\Bigl(\textstyle\sum_j W_{ij}\Bigr).
   \label{eq:laplacian}
@@ -437,7 +443,7 @@ shorter way around that ring,
   \label{eq:fifths}
 \end{equation}
 so a perfect fifth is $1$ step, a major second $2$, and a semitone $5$: tonal
-proximity, deliberately unlike semitone proximity. Substituting it for the pitch term
+proximity, deliberately unlike semitone proximity. Substituting it for the pitch term (the voice bonus is dropped and an octave-band locality term added alongside)
 of \eqref{eq:adjacency} gives
 \begin{equation}
   W^{\mathrm{tonal}}_{ij} \;=\; \exp\!\Bigl( -\tfrac{(b_i - b_j)^2}{2\ell_b^2}
@@ -451,7 +457,9 @@ octave-displacement penalty (length scale $\ell_{\mathrm{oct}}$, in octaves) not
 octaves apart would be maximally close. The score-time term is unchanged.
 
 \paragraph{(ii) Harmonic and voice-leading edges (addition).}
-Here the base graph is kept and two edge families are added,
+Here the base graph is kept and two edge families are added (a third,
+sustain-overlap family exists in code, was evaluated on development data,
+and was not adopted),
 \begin{equation}
   W^{\mathrm{harm}}_{ij} \;=\; W_{ij}
     \;+\; w_{\mathrm{ch}}\, \mathbf{1}\bigl[\, b_i = b_j \,\bigr]
@@ -501,7 +509,7 @@ $\Lg = U \diag(\nu)\, U^\top$ be the Laplacian's eigendecomposition, with
 eigenvalues $0 = \nu_1 \le \nu_2 \le \dots$ playing the role of \emph{graph
 frequencies}. A graph kernel is obtained by shaping this spectrum,
 \begin{equation}
-  K_G(s) \;=\; U\, g(\nu;\, s)\, U^\top,
+  K_G(s) \;=\; U \operatorname{diag}\bigl(g(\nu;\, s)\bigr)\, U^\top,
   \label{eq:spectral}
 \end{equation}
 with a decreasing spectral profile $g$: components that vary smoothly along the
@@ -524,9 +532,12 @@ scale must live in exactly one place. Three classical profiles are used:
 The Mat\'ern profile is the \emph{graph Mat\'ern Gaussian process} of Borovitskiy
 et al.\ \cite{borovitskiy2021} --- covariance eigenvalues
 $\sigma_g^{2}(\kappa^2 + \nu_j)^{-\alpha}$ on the Laplacian eigenvalue $\nu_j$, here
-with $s = \kappa^2$ and the scale $\sigma_g$ normalised out --- the graph analogue
+with $s = \kappa^2$ and the scale $g(0) = \sigma_g^2 \kappa^{-2\alpha}$ carried
+by $B$ --- the graph analogue
 of a Euclidean Mat\'ern GP through the SPDE link of Lindgren et
-al.\ \cite{lindgren2011}; the diffusion kernel is its $\alpha \to \infty$ limit.
+al.\ \cite{lindgren2011}; the diffusion kernel is its $\alpha \to \infty$ limit
+under the joint reparameterization $s = \alpha/t$ (at fixed $s$ the limit
+degenerates to zero).
 The additive profile is not a fourth family: it \emph{is} the graph Mat\'ern at
 $\alpha = 1$ with the shape parameter inverted ($1/(1+s\nu) = s'/(s'+\nu)$ at
 $s' = 1/s$), also known as the regularized-Laplacian kernel.
@@ -553,8 +564,10 @@ an \emph{intrinsic coregionalization} structure --- one latent field over the $3
   \label{eq:icm}
 \end{equation}
 where $B \in \R^{3 \times 3}$ is a positive semidefinite matrix learned through its
-log-Cholesky factor. Because $g(0) = 1$, $B$ carries \emph{all} the scale: its
-diagonal entries are the per-channel prior variances, and its off-diagonal entries
+log-Cholesky factor. Because $g(0) = 1$, the split of scale between $B$ and
+$K_G$ is identifiable and $B$ carries all of it --- the per-note prior variance
+of channel $c$ is $B_{cc}\,[K_G]_{ii}$ (the normalisation fixes the spectrum's
+\emph{shape}, not the diagonal of $K_G$) --- and its off-diagonal entries
 let an observed channel inform an unobserved one at a coupled note. Constraining
 $B$ to be diagonal severs exactly this coupling, making the three channels
 independent scalar graph GPs --- one of the constraint switches of
@@ -583,12 +596,20 @@ model's \emph{input}, so the embedding of a held-out note depends only on the sc
 and the \emph{observed} notes' performances.
 
 \medskip\noindent
+Each feature matrix has its columns z-scored within the piece, with a bias
+column appended, before entering the kernel --- the single per-channel scale
+$c_{f,c}$ is isotropic over columns, so the standardization is load-bearing,
+not cosmetic.
 Each feature set enters the GP as a \emph{linear kernel} with per-channel scales
 $c_f \in \R^{3}_{\ge 0}$, contributing $\diag(c_f) \otimes X_f X_f^\top$ to the
 covariance. This is not a heuristic. A GP whose \emph{mean} is a linear model
-$X_f \beta$ with unknown weights $\beta \sim \N(0,\, c_f I)$ becomes, once $\beta$
-is integrated out, a zero-mean GP with $c_f\, X_f X_f^\top$ added to its kernel: a
-linear kernel \emph{is} the marginalized Bayesian linear mean. The regression
+$X_f \beta_c$ with unknown per-channel weights $\beta_c \sim \N(0,\, c_{f,c} I)$
+becomes, once each $\beta_c$ is integrated out, a zero-mean GP with
+$c_{f,c}\, X_f X_f^\top$ added to channel $c$'s kernel: a
+linear kernel \emph{is} the marginalized Bayesian linear mean. The feature
+term is channel-diagonal --- the coregionalization $B$ acts on the graph
+component only, so cross-channel information flows exclusively through
+$B \otimes K_G$. The regression
 weights are thereby re-inferred for every piece, jointly with everything else, and
 their uncertainty flows into the predictive variance.
 
@@ -744,13 +765,13 @@ feature scales $c_f$, and the per-channel noise $\varsigma^2$ --- is learned
   \log p(\tilde y_o \mid \theta)
   \;=\; \log \N\bigl(\tilde y_o;\; 0,\; K_{oo}(\theta)\bigr),
   \qquad \theta = \bigl(s,\, B,\, \{c_f\},\, \varsigma^2\bigr),
-  \label{eq:marginal likelihood}
+  \label{eq:marglik}
 \end{equation}
 optimised in log space ($s$, $c_f$, $\varsigma^2$) and log-Cholesky space ($B$), so
 positivity and positive semidefiniteness hold by construction. The optimiser is
 L-BFGS-B on those unconstrained coordinates where SciPy is available, with a
 derivative-free Nelder--Mead polish, and a Nelder--Mead-only path otherwise; a
-non-finite objective is returned as $+\infty$ rather than raised, so a failed
+non-finite objective is returned as a large finite sentinel rather than raised, so a failed
 Cholesky cannot poison the line search. One evidence per piece
 decides every knob --- including how much to trust each information source, the
 choice a plug-in construction must make once, across pieces, by cross-validation. A
@@ -760,14 +781,14 @@ under the floored predictive variance \eqref{eq:floor}.
 
 \paragraph{Noise floor.}
 On a minority of mask realisations the unconstrained maximiser of
-\eqref{eq:marginal likelihood} degenerates ($\sigma_e^2 \to 0$), producing an
+\eqref{eq:marglik} degenerates ($\sigma_e^2 \to 0$), producing an
 overconfident posterior; the same principle as \eqref{eq:floor} applies to the
 \emph{fit}: constrain each noise variance above a small floor
 $\varepsilon_{\mathrm{nv}}$ (e.g.\ a fixed fraction of the observed residual
 variance) inside the optimisation.
 
 \paragraph{Safeguard (validating the fitted GP).}
-Rarely, the maximiser of \eqref{eq:marginal likelihood} lands on a degenerate
+Rarely, the maximiser of \eqref{eq:marglik} lands on a degenerate
 configuration that the noise floor cannot catch --- the fitted field then
 extrapolates catastrophically, or reports far-too-tight intervals, on notes it did
 not fit. The safeguard screens the fit on data it did not use: hold back a
@@ -850,12 +871,15 @@ piece-disjoint split) applied to the embeddings of \S\ref{sec:features},
 \end{equation}
 with the graph modelling the residual $y - \muLM$. Hyperparameters
 $\theta = (\lambda, \eta, \sigma_e^2)$ are fitted per channel by the same marginal
-likelihood \eqref{eq:marginal likelihood} restricted to that channel (with the
+likelihood \eqref{eq:marglik} restricted to that channel (with the
 plug-in mean subtracted from $\tilde y$), with the same noise floor, and with the
-safeguard of \S\ref{sec:eb} in its per-channel form
+per-channel safeguard
 (fallback sequence: marginal likelihood $\to$ the calibration-split objective
 $\to$ the conservative decoupled fit $\eta = 0$,
-$\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$).
+$\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$). One honest
+asymmetry: the per-channel screen tests \emph{recovery} only (error against
+the mean-only fallback); the overconfidence screen of \S\ref{sec:eb} exists
+only in the joint model's safeguard --- the two are related, not identical.
 
 \paragraph{The constrained systems, by their switches.}
 The constrained systems compared in Chapter~\ref{ch:results} are choices of the
@@ -888,9 +912,14 @@ Plug-in mean, graph on (two-stage baseline)    & $\muLM$ & $>0$  & $\bigl[(\Qg+P
 
 \paragraph{Exact nesting.}
 Constraining $B$ diagonal, dropping the feature kernels, and fixing the graph
-recovers the per-channel model exactly --- the joint marginal likelihood
-\eqref{eq:marginal likelihood} equals the sum of the per-channel ones --- and the
-equality is pinned by a unit test. The constrained systems are therefore not
+recovers the per-channel model exactly \emph{on the shared-shape slice}:
+with one spectral shape $s$ common to the channels, the joint marginal
+likelihood \eqref{eq:marglik} equals the sum of the per-channel ones under
+$(\lambda_c, \eta_c) = (1/B_{cc},\, s/B_{cc})$, and the equality is pinned
+by a unit test. The per-channel pipeline, fit independently, may select
+three different shapes; the nesting statement is about the model
+\emph{family} --- every per-channel configuration with a common shape is a
+point of the joint parameter space --- not about coinciding optima. The constrained systems are therefore not
 merely \emph{analogous} baselines but points in the proposed model's own parameter
 space, which is what makes the ablation tables of Chapter~\ref{ch:results} an
 ablation of one model rather than a comparison of two. Re-inserting the two-stage
@@ -1133,8 +1162,9 @@ metric by the circle-of-fifths metric \emph{improves held-out intonation on
 both axes} --- paired tonal-minus-plain under the default noise variant,
 $\Delta$RMSE $-0.21$ cents $[-0.34, -0.09]$, $\Delta$NLL $-0.05$
 $[-0.07, -0.03]$, both significant --- while re-imposing the familiar
-replacement penalty on timing ($\Delta$NLL $+0.03$ against, significant) and
-leaving the remaining channels indifferent. The tonal geometry helps exactly
+replacement penalty on timing ($\Delta$NLL $+0.03$ against, significant);
+the vibrato-rate channel picks up a small significant recovery gain
+($-0.027$) and the remaining channels are indifferent. The tonal geometry helps exactly
 where the target is pitch and hurts where it is not: the first evidence in
 this thesis that a music-theoretic \emph{geometry}, rather than merely
 music-theoretic \emph{edges}, earns its place. Adoption into the bundle
@@ -1174,7 +1204,8 @@ becomes the more informative axis, and the predictive variance floor is no longe
 technicality but a first-order modelling term. Two rules carry over without exception.
 Development numbers stay labelled development. And the confirmation set of this thesis
 is \emph{spent}: any confirmed Phase-2 claim requires its own fresh, preregistered
-confirmation set, fixed before the data are seen.
+confirmation set, fixed before the data are seen --- exactly what the frozen
+13-piece pool and the registered claim set (\S\ref{sec:phase2-real}) provide.
 
 \paragraph{A synthetic pilot: the machinery works end to end.}
 \label{sec:phase2-pilot}
@@ -1221,11 +1252,14 @@ improves significantly on intonation and both vibrato channels}
 improves significantly on both vibrato channels and on timing}
 ($\Delta$NLL $-3.8$, $-0.43$, $-0.29$), and coverage is $0.88$--$0.91$ at
 nominal $90\%$ on every channel of the six. Reported rather than averaged
-away: under this variant the loudness and delay recovery contrasts are
-small and not significant ($-0.003$, $-0.001$), the loudness NLL contrast
-is $+0.04$ \emph{against} the graph, and the brass intonation cell is not
-significant on its own (the vibrato win holds within every family;
-the intonation win within strings and woodwind). The learned-scale variant
+away: under this variant the loudness, timing, and delay recovery contrasts
+are small and not significant ($-0.003$, $-0.002$, $-0.001$), and the
+loudness NLL contrast is $+0.04$ \emph{against} the graph --- small but
+itself significant, the one adverse starred cell of the bundle. In the
+per-family breakdown (computed under the learned-scale contrast) the
+brass intonation cell is not significant on its own, while the vibrato win
+holds within every family and the intonation win within strings and
+woodwind. The learned-scale variant
 makes every recovery contrast significant ($-0.92$ cents, $-0.18$, $-0.24$,
 $-0.006$, $-0.008$, $-0.004$) but stays the fallback, being the
 worse-calibrated variant against quasi-truth (coverage $0.72$--$0.86$ vs
@@ -1236,8 +1270,11 @@ receive posteriors --- the capability no per-note method has
 (Fig.~\ref{fig:phase2-real}). All of this is development evidence in the
 Phase-1 sense: it selected the design defaults above, and any confirmed
 Phase-2 claim awaits the frozen confirmation pool under the registered
-claim set (intonation recovery; vibrato calibration; coverage; timing
-calibration --- the delay channel deliberately carries no claim).
+claim set: recovery on intonation; calibration on \emph{both} vibrato
+channels; coverage within $[0.85, 0.95]$ on all six channels; and timing
+calibration as a secondary claim that does not gate the others --- the
+delay channel deliberately carries no claim, and the rule is one-shot with
+every number reported.
 
 \figph{phase2_real_example.png}{1.0}{Phase 2 on one real development track
 (violin), 30\% of notes hidden. Top: intonation --- the estimator's
@@ -1282,7 +1319,11 @@ $a \sim \N(\mu_a, \Sigma_a)$, the amplitudes marginalise exactly:
   p(x \mid z) &= \N\bigl( x;\; \Phi\, \mu_a,\; \Phi\, \Sigma_a\, \Phi^\top + K_n \bigr),
   \label{eq:collapsed}
 \end{align}
-writing $\Phi = \Phi(z)$. Inference over the nonlinear $z$ (Laplace approximation or
+writing $\Phi = \Phi(z)$, with $\mu_a \in \R^{2KN}$ and
+$\Sigma_a \in \R^{2KN \times 2KN}$ for $K$ harmonics (two quadrature columns
+each); the implemented helpers specialize $K_n = \sigma^2 I$, and the
+amplitude envelope $A_i(t)$ belongs to the specification, not yet to the
+helpers. Inference over the nonlinear $z$ (Laplace approximation or
 variational inference, initialised from the nominal score) is the open Phase-3 step;
 the coupled graph prior --- the first two terms of \eqref{eq:gpfirst} --- plays the
 role of $p(z)$'s structured component.
@@ -1630,7 +1671,7 @@ Articulation ($\log r$) is where the graph most improves \emph{calibration}: a b
 prior mean badly under-covers (coverage $0.784$, the zero-mean graph-off cell of
 the development record in the accompanying evidence archive), and the
 graph lifts every configuration to $\approx$0.91 coverage while the full GP cuts
-its error furthest ($0.96$ bare $\to 0.60$). Loudness ($v$) is where \emph{recovery} improves most,
+its error furthest ($0.96$ bare $\to 0.60$). Velocity ($v$) is where \emph{recovery} improves most,
 and it is the one channel where the music-model embeddings carry signal
 the hand-built features lack.
 
@@ -1641,7 +1682,7 @@ the hand-built features lack.
 \footnotesize
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
- & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Articulation $\log r$} & \multicolumn{2}{c}{Loudness $v$} \\
+ & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Articulation $\log r$} & \multicolumn{2}{c}{Velocity $v$} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
 System (development) & RMSE & cov & RMSE & cov & RMSE & cov \\
 \midrule
@@ -1695,6 +1736,13 @@ apology: the structural test now makes the leak impossible to reintroduce
 silently, and the same mask-aware read-out is what feeds the proposed model's
 feature kernel --- whose full pipeline was additionally audited bitwise
 (corrupting held-out targets or velocities changes no prediction by one bit).
+One dependence sits upstream of that audit's scope, in the target
+\emph{definition}: the velocity centring constant is the piece mean over
+\emph{all} matched notes, held-out ones included --- an $O(1/N)$ coupling of
+observed targets to hidden velocities. It is invisible to the bitwise audit
+(which corrupts targets after construction), identical for every system
+compared, and recorded here as a documented limitation rather than silently
+absorbed.
 
 \section{Hyperparameter fragility and the safeguard}
 Two distinct failure modes were found and fixed. First, on a minority of mask
@@ -1795,7 +1843,7 @@ as a flat list of rivals, is what makes the result legible.
 
 \begin{table}[h]\centering
 \caption{What each row of Table~\ref{tab:kernels} is. The graph kernel is
-$K_G(s) = U\,g(\nu;s)\,U^{\!\top}$, so a row changes either the Laplacian $\Lg$ that supplies
+$K_G(s) = U \operatorname{diag}(g(\nu;s))\, U^{\!\top}$, so a row changes either the Laplacian $\Lg$ that supplies
 the spectrum $\nu$, or the profile $g$ that reshapes it. ``Chord'' and ``voice-leading''
 edges are edges of \emph{harmony}; they are unrelated to the harmonic amplitudes of
 \S\ref{sec:phase3-math}.}
@@ -1808,7 +1856,7 @@ Row & Axis moved & Construction & Defined \\
 Additive Laplacian & --- (reference) & $g(\nu;s)=1/(1+s\nu)$ on the base graph \eqref{eq:adjacency} & \eqref{eq:additive} \\
 \addlinespace
 Graph Mat\'ern ($\alpha$) & profile & $g(\nu;s)=\bigl(s/(s+\nu)\bigr)^{\alpha}$; larger $\alpha$ suppresses high graph frequencies harder & \eqref{eq:matern} \\
-Diffusion / heat & profile & $g(\nu;s)=e^{-s\nu}$; the $\alpha\to\infty$ limit of Mat\'ern, the smoothest of the family & \eqref{eq:diffusion} \\
+Diffusion / heat & profile & $g(\nu;s)=e^{-s\nu}$; the $\alpha\to\infty$ Mat\'ern limit at $s=\alpha/t$, the smoothest of the family & \eqref{eq:diffusion} \\
 \addlinespace
 Independent & graph & no edges at all: $\Lg=0$, so $K_G=I$ and notes are a priori independent & \S\ref{sec:graphgp} \\
 Temporal chain & graph & edges only between score-time neighbours: an AR(1)-style smoother along the piece & \S\ref{sec:graphgp} \\
@@ -1829,7 +1877,7 @@ therefore not a separate row. A $\mu = 0$ block (not shown) repeats every conclu
 without the learned mean. Full protocol and numbers: the accompanying evidence archive.
 
 Three findings (Table~\ref{tab:kernels}). \textbf{First, the additive Laplacian
-survives every classical alternative profile}: Mat\'ern at every $\alpha$, diffusion,
+survives every classical alternative profile}: Mat\'ern at every $\alpha$ (at $\alpha=1$ the Mat\'ern profile \emph{is} the additive baseline under $s \mapsto 1/s$, so only $\alpha \ge 2$ are distinct alternatives), diffusion,
 and the normalized Laplacian
 are statistically indistinguishable from it on RMSE and do not improve NLL --- among
 classical graph-GP kernels the plainest one is the right default, and its extra-cost
@@ -2087,8 +2135,9 @@ three now have measured answers:
   \item \textbf{Per-channel missingness --- resolved in code and exercised
         on real data.} Short notes support an intonation offset but not
         vibrato parameters; the per-(note, channel) mask interface is
-        unit-pinned exact, and on real tracks 7--45\% of notes are in the
-        missingness regime.
+        unit-pinned exact, and on real tracks the missingness regime is the
+        norm --- the per-track vibrato-identifiable fraction runs from
+        $2\%$ to $97\%$ with median $38\%$ (\S\ref{sec:phase2-real}).
   \item \textbf{Where alignment error goes --- measured.} On URMP the
         annotated note onsets anchor the warp without an audio aligner
         (76/78 development tracks; residual $\tau$ at 79\,ms with $+0.59$
@@ -2109,7 +2158,8 @@ three now have measured answers:
         remove this. The Phase-2 claim stays weaker \emph{in kind} than the
         Phase-1 claim.
 \end{enumerate}
-The three former blockers of a confirmable Phase-2 result are closed:
+Separately from those four questions, the three former blockers of a
+confirmable Phase-2 result are closed:
 $\tau$ is adopted into the evaluated bundle; the vibrato delay is IN by a
 criterion fixed before its numbers were computed (it carries no registered
 claim --- its graph contrasts are neutral); and the claim set is frozen in
@@ -2256,7 +2306,8 @@ performance model is solid.
 A single multi-output Gaussian process on the score graph --- channels coupled,
 side information marginalized into the kernel, every hyperparameter learned by the
 per-piece evidence --- recovers hidden expressive detail better than the strongest
-two-stage pipeline it provably subsumes, a claim preregistered and confirmed once
+two-stage pipeline it provably subsumes (as the diagonal-$B$, shared-shape,
+no-feature slice of its parameter space), a claim preregistered and confirmed once
 on pieces no modelling decision ever touched. Each ingredient's marginal value is
 isolated: per-piece Bayesian weighting of score features and music-model
 embeddings does the recovering; the graph makes the confidence honest (its
@@ -2299,6 +2350,10 @@ $\sigma_g$, $\kappa$, $\alpha$ & Mat\'ern scale, inverse length, exponent \\
 $\mu$, $\muLM$, $h_i$ & prior mean; music-model mean; music-model per-note embedding \\
 $B$, $c_f$ & coregionalization matrix; per-channel feature-kernel scales \eqref{eq:gpfirst} \\
 $g(\nu; s)$, $s$ & shape-normalized spectral kernel of $\Lg$ ($g(0){=}1$); its shape parameter \\
+$\nu$, $U$, $K_G$ & Laplacian eigenvalues and eigenvectors; graph kernel $U \operatorname{diag}(g(\nu;s)) U^\top$ \eqref{eq:spectral} \\
+$d_5$, $\pi(p)$ & circle-of-fifths distance; pitch-class position map \eqref{eq:tonaladj} \\
+$K_{oo}$, $C$ & observed block of $K$ (noise included); latent covariance \eqref{eq:posterior} \\
+$\beta$ & feature weights of the marginalized Bayesian linear mean (\S\ref{sec:features}) \\
 $X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
 $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
 $m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\
@@ -2319,6 +2374,14 @@ $A_i(t)$ & amplitude envelope of note $i$ (Phase 3) \\
 covariance; plain $\sigma$ is never a prior scale ($\sigma_g$ is); $\alpha$ is never
 the additive weight ($\eta$ is); $A_i(t)$ (capital) is the amplitude envelope, never
 lowercase $a_i(t)$; $\Phi(z)$ is the synthesis operator, $\Phi_{\N}$ the normal CDF.
+Further live overloads, context-disambiguated: $s$ is the spectral shape
+parameter, while $s_i$ is a score event; capital $P$ is the per-note
+observation precision and $P_j$ the tracker confidence; $B$ is the
+coregionalization matrix ($B = 2000$ appears only as the bootstrap replicate
+count); $\delta_i$ is the performed duration, $\delta_i^{\mathrm{vib}}$ the
+vibrato onset delay, and $\delta_{\zeta\zeta'}$ the Kronecker delta; our
+$\alpha$ (exponent) and $\nu$ (eigenvalue) differ from the Mat\'ern
+smoothness convention of the graph-GP literature.
 
 \chapter{Additional results}\label{app:extra}
 
@@ -2358,7 +2421,7 @@ edged by specialised variants, e.g.\ corpus-frozen $\tau$ 0.150, harmonic learne
 \footnotesize
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
- & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Artic.\ $\log r$} & \multicolumn{2}{c}{Loudness $v$} \\
+ & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Artic.\ $\log r$} & \multicolumn{2}{c}{Velocity $v$} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
 Configuration & RMSE & cov & RMSE & cov & RMSE & cov \\
 \midrule

@@ -149,8 +149,9 @@ kernel from the existing result pickles) is a cheap addition if wanted.
 
 1. Draft naming: "additive kernel" → **graph Matérn ν = 1 (regularized
    Laplacian)** everywhere in `draft.tex`; cite Borovitskiy et al. for the
-   family and Smola & Kondor for the regularized-Laplacian name (folds into
-   the pending terminology sweep).
+   family and Smola & Kondor for the regularized-Laplacian name (landed in
+   the draft: the additive ≡ Matérn ν=1 identity and naming are in
+   sec:graphgp and the kernel-results prose as of 2026-08-19).
 2. Draft model chapter: state the identifiability argument of §2 in one
    sentence where `g(0) = 1` is introduced (it currently reads as a
    convention; it is a forced choice).

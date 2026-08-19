@@ -30,25 +30,28 @@ fi
 source /home/ray/miniconda3/etc/profile.d/conda.sh
 conda activate score-bundle
 export PYTHONPATH=src:scripts
-N="${1:-8}"
+# The registered protocol pins OMP_NUM_THREADS=4 for the GP fits (fits drift
+# in the 4th decimal across BLAS thread counts — the documented condition).
+# Default 4 shards x 4 threads honours it within 16 cores.
+N="${1:-4}"
 mkdir -p logs results/phase2_cells/conf
 rm -f results/phase2_cells/conf/cells.shard*.pkl
 
 echo "== confirmation pipeline start $(date -Is)" | tee logs/phase2_confirmation.log
 for STAGE in extract loudness tau; do
-  OMP_NUM_THREADS=2 python scripts/eval_phase2_real.py "$STAGE" \
+  OMP_NUM_THREADS=4 python scripts/eval_phase2_real.py "$STAGE" \
     2>&1 | tee -a logs/phase2_confirmation.log
 done
 for STAGE in gt pyin; do
   OMP_NUM_THREADS=1 python scripts/eval_delta_vib.py "$STAGE" \
     2>&1 | tee -a logs/phase2_confirmation.log
 done
-OMP_NUM_THREADS=2 python scripts/eval_phase2_real.py delta \
+OMP_NUM_THREADS=4 python scripts/eval_phase2_real.py delta \
   2>&1 | tee -a logs/phase2_confirmation.log
 
 pids=()
 for K in $(seq 0 $((N - 1))); do
-  OMP_NUM_THREADS=2 python scripts/eval_phase2_real.py run "$K/$N" \
+  OMP_NUM_THREADS=4 python scripts/eval_phase2_real.py run "$K/$N" \
     > "logs/phase2_confirmation.shard${K}.log" 2>&1 &
   pids+=($!)
 done

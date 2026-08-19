@@ -99,7 +99,7 @@ note conceptually in sync.
   (`docs/kernel_multirate_results.md`): a density gradient — wins at ≤30% hidden,
   tie at the 40% operating point, nothing + one guard-invisible collapse at 50% —
   so no adoption, no second confirmation set spent.
-- **Phase 2 — intonation/vibrato/loudness: REAL-DATA DEVELOPMENT RESULTS (2026-08-06/07).**
+- **Phase 2 — intonation/vibrato/loudness/timing/vibrato-delay: REAL-DATA DEVELOPMENT RESULTS + REGISTERED CLAIMS.**
   `src/score_bundle/phase2/`: `intonation.py` (`extract_f0` = librosa pyin,
   import-guarded; `fit_vibrato_note` = the thesis NLLS estimator), `urmp.py` (loader,
   44/44), `splits.py` (**FROZEN** composition-level dev/confirmation split, unit-pinned;
@@ -111,8 +111,9 @@ note conceptually in sync.
   results (`scripts/eval_phase2_real.py`, `results/phase2_real_results.md`,
   6-channel, as-given default): graph value significant on intonation/vibrato
   recovery (−0.89*/−0.26*/−0.30*) and vibrato/timing calibration, coverage
-  0.88–0.91 on all six; honest cells reported (ℓ recovery ns with NLL +0.04
-  against, δ_vib graph-neutral, brass intonation ns); learned-scale variant
+  0.88–0.91 on all six; honest cells reported (ℓ recovery ns with NLL +0.042*
+  against — starred adverse; τ recovery ns; δ_vib graph-neutral; brass
+  intonation ns in the learned-scale family table); learned-scale variant
   stars all six recovery contrasts but is the worse-calibrated fallback.
   GT-validated octave-failure rule (|c|>150 → missing); learned noise scale
   collapses on real data with failure cells present, as-given healthy.

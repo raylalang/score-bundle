@@ -1,7 +1,9 @@
 """Performance-variable definitions and the phased channel registry.
 
 Phase 1 (piano):   y_i = [tau_i, log r_i, v_i]
-Phase 2 (mono):    + c_i (cents), vibrato params, f0 curve
+Phase 2 (mono):    the evaluated URMP bundle [c, log gamma, log f, ell, tau,
+                   delta_vib] (draft eq:phase2-channels lists k=7 with log r;
+                   articulation has no measured offset chain on URMP)
 Phase 3 (waveform):+ harmonic amplitudes a_i (timbre)
 
 Each channel is a scalar (or vector) field over the score nodes with its own graph
@@ -29,15 +31,19 @@ CHANNELS: Dict[str, Channel] = {
     "log_r": Channel("log_r", "dimensionless", 1, "all (esp. piano)", "articulation/duration ratio (log)"),
     "v": Channel("v", "norm. MIDI velocity", 1, "keyboard reliable", "per-note dynamics"),
     "pedal": Channel("pedal", "on/off|cont.", 1, "piano only", "sustain pedal (optional)"),
-    "c": Channel("c", "cents", 2, "voice/strings/winds — not piano", "intonation deviation"),
-    "f0": Channel("f0", "Hz", 2, "monophonic pitched", "instantaneous fundamental"),
-    "vibrato": Channel("vibrato", "Hz, cents, s", 2, "voice/strings/winds", "rate, extent, onset delay"),
-    "amp_env": Channel("amp_env", "norm.", 2, "monophonic", "amplitude envelope"),
+    "c": Channel("c", "cents", 2, "voice/strings/winds — not piano", "intonation deviation (vibrato-free centre)"),
+    "log_gamma": Channel("log_gamma", "log cents", 2, "voice/strings/winds", "vibrato extent (log)"),
+    "log_f": Channel("log_f", "log Hz", 2, "voice/strings/winds", "vibrato rate (log)"),
+    "ell": Channel("ell", "log RMS, per-track centred", 2, "monophonic", "loudness"),
+    "delta_vib": Channel("delta_vib", "s", 2, "voice/strings/winds", "vibrato onset delay (gated fit)"),
     "a": Channel("a", "—", 3, "narrow/monophonic only", "harmonic amplitudes / timbre"),
 }
 
 PHASE1_CHANNELS: List[str] = ["tau", "log_r", "v"]
-PHASE2_CHANNELS: List[str] = ["c", "f0", "vibrato", "amp_env"]
+# The evaluated URMP bundle (registered 2026-08-17); tau is the Phase-1
+# timing channel re-anchored by the annotated-onset warp (phase2/warp.py).
+PHASE2_CHANNELS: List[str] = ["c", "log_gamma", "log_f", "ell", "tau",
+                              "delta_vib"]
 PHASE3_CHANNELS: List[str] = ["a"]
 
 

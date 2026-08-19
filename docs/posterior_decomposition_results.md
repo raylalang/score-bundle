@@ -60,7 +60,7 @@ variance` pinned by unit test. Both mask paths (Phase-2 cells included).
    the coupling costs **velocity only** (full−diag RMSE −0.0075*, NLL
    −0.093*), is neutral on articulation (+0.002 ns; NLL −0.023 ns) and
    marginally *helps* timing (+0.0005*). So (i) the coregionalization earns
-   its keep on loudness; (ii) the embeddings' articulation gain in the
+   its keep on velocity; (ii) the embeddings' articulation gain in the
    ladder is NOT v→logr flow through B — it is carried by the minority of
    pieces with nonzero logr embedding scales (finding 4).
 7. **Harmonic-edge mechanism (see `docs/kernel_multirate_results.md`,

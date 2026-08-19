@@ -1,6 +1,6 @@
 # Kernel variants across masking rates — dev results (run 2026-07-16, written up 2026-07-31)
 
-> **Status: development-set study, two-stage regime.** Extends the kernel
+> **Status: CLOSED (2026-08-05) — development-set study, two-stage regime.** Extends the kernel
 > comparison (`docs/kernel_comparison_results.md`, 40% hidden) to the other
 > four masking levels of the sweep protocol. Everything here is the
 > **two-stage development form** (plug-in mean `μ_LM` + per-channel graph

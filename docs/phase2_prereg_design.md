@@ -158,3 +158,12 @@ where the target is pitch itself; and the per-family breakdown.
 4. ~~τ policy~~ — adopted (option 1); ~~δ_vib~~ — IN by pre-stated criterion.
 5. ~~Final claim set + decision rule~~ — frozen above, informed by the
    development results (`results/phase2_real_results.md`, 6-channel run).
+
+---
+
+**Erratum (2026-08-19, non-claim-altering).** In the "Development basis"
+block above, the loudness dNLL reported as "+0.042 against the graph" is
+CI-starred (+0.042 [+0.009, +0.083]) — a small but *significant* adverse
+cell, and the omission of the star under-reported it. No claim, system,
+threshold, or decision rule is changed by this note; the frozen results
+file has carried the starred value throughout.

@@ -42,7 +42,12 @@ appear in a figure that the thesis does not define.
 Dimensions are real, not invented: `N×26` = 25 rich score features + bias
 (`baselines.rich_score_features` + bias column, as assembled in
 `scripts/eval_graphgp.py`); `N×512` = the Phase-0 checkpoint's `d_model`.
-Phase-2 `k×k` stays symbolic until the vibrato parameterisation is fixed.
+Phase-2 `k×k` is no longer symbolic in the text (the evaluated URMP
+bundle is six channels; eq:phase2-channels lists k=7 with articulation).
+`arch_phase2.pdf` still draws its audio/likelihood blocks dashed — under
+this file's own convention that meant "not yet implemented" when drawn; the
+draft's caption states they are now running, so the dashes are historical
+(redraw is a deliberate design decision, not done unilaterally).
 
 ## Build (single source of truth = the .tex files)
 

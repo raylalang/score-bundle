@@ -43,10 +43,10 @@ runs are documented: chord+voice-leading edges beat additive at every
 masking level in the two-stage regime. Under the final model, the
 "redundant once embeddings are in the kernel" tie was anchor-rate-only:
 at 10% hidden `c_harm_lm` beats `b_featlm` on RMSE (−0.0089*, dev; NLL
-majority-better, mean ns via the documented tail piece). Runs at the
-remaining rates are in progress; if the dev verdict is uniform, a SECOND
-preregistered confirmation set (fresh shuffle positions 80+) decides
-adoption — prereg package will be prepared, go/no-go is Ray's.
+majority-better, mean ns via the documented tail piece).
+[CLOSED 2026-08-05: the completed sweep gave a density gradient, NOT a
+uniform win — no prereg package, no adoption; the thesis keeps the plain
+graph. See docs/kernel_multirate_results.md.]
 
 **Phase-2 real-data path started.** `extract_f0` implemented (probabilistic
 YIN, 10 ms hop, voicing + confidence; end-to-end test recovers synthetic
@@ -54,8 +54,9 @@ vibrato through the full chain), URMP loader written against the documented
 layout, and a preregistration DESIGN draft committed
 (`docs/phase2_prereg_design.md`): composition-level splits, as-given
 estimator noise default, τ-policy ladder, and a URMP-specific tracker
--calibration step (their ground-truth F0s share our hop grid). Full URMP
-download pending the registration form (Ray action).
+-calibration step (their ground-truth F0s share our hop grid).
+[DONE 2026-08-06: URMP downloaded via Dryad and MD5-verified; the
+registration form was never needed.]
 
 **Thesis hygiene pass (Ray-directed).** draft.tex cleaned for clarity over
 history: sidelined results (sustain-overlap, scaling section, three
