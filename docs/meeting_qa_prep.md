@@ -77,11 +77,13 @@ the numbers), so it belongs in the bundle; its graph contrasts are neutral
 on dev, so registering a claim on it would be claim-shopping.
 
 **Q: The estimator's missing cells aren't missing at random, are they?**
-A: Correct, and the draft now says so with the mechanism named (Rubin):
+A: Correct, and the draft says so with the mechanism named (Rubin):
 the evaluation's hidden notes are MCAR by construction; the estimator's
 missing cells are informative (missing when vibrato is short or weak).
-Held-out scores are unaffected — they are computed at randomly hidden
-notes. The GP's posteriors at estimator-missing cells are extrapolations
+Held-out scores stay interpretable, but for the vibrato-identifiable
+sub-population — random masking inside an informatively filtered cell set
+is unbiased for the notes the estimator can measure, not for all notes.
+The GP's posteriors at estimator-missing cells are extrapolations
 under the prior, possibly biased toward audible vibrato — the delay
 panel's sub-zero stretches are the visible signature — and the draft says
 to read them as extrapolations, not recovered measurements. (§3.9.)
