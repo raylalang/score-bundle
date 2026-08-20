@@ -104,6 +104,7 @@ graph}: notes related in the score are related in performance (a graph GP in the
 sense of Borovitskiy et al.), the three expressive channels are coupled by a
 coregionalization matrix, and all side information --- hand-built score features
 and per-note embeddings from a small, from-scratch symbolic music language model
+(hereafter the \emph{music model})
 --- enters as linear kernels, i.e.\ as a marginalized Bayesian linear mean. One
 exact marginal likelihood per piece learns every hyperparameter. Development used
 \nPieces{} held-out ASAP pieces; the headline claims were then \emph{preregistered
@@ -541,7 +542,7 @@ $\alpha \to \infty$ limit under the joint reparameterization $s = \alpha/t$
 (at fixed $s$ the limit degenerates to zero).
 The additive profile is not a fourth family: it \emph{is} the graph Mat\'ern at
 $\alpha = 1$ with the shape parameter inverted ($1/(1+s\nu) = s'/(s'+\nu)$ at
-$s' = 1/s$), also known as the regularized-Laplacian kernel.
+$s' = 1/s$), also known as the regularized-Laplacian kernel \cite{smolakondor2003}.
 Under any of these profiles, neighbouring notes are \emph{encouraged}, not forced,
 to share expressive behaviour, with distant notes coupled only weakly. The constant
 profile $g \equiv 1$ gives $K_G = I$ --- the graph switched off, notes a priori
@@ -555,7 +556,7 @@ plain $\sigma$ is reserved for the posterior standard deviation
 \section{Coupling the channels}\label{sec:coreg}
 Timing, articulation, and velocity are not independent: a stressed note tends to be
 louder, longer, and delayed together. The model therefore couples the channels with
-an \emph{intrinsic coregionalization} structure --- one latent field over the $3N$
+an \emph{intrinsic coregionalization} structure \cite{bonilla2008} --- one latent field over the $3N$
 (note, channel) pairs with
 \begin{equation}
   \operatorname{Cov}\bigl[\, y_{i,c},\; y_{j,c'} \bigr]
@@ -943,7 +944,10 @@ the \emph{observation noise}, which stops being negligible.
 
 \paragraph{The channel set.}
 A fixed-pitch keyboard affords no performer-controlled intonation, and its dynamics is
-a MIDI velocity. Neither holds here. The per-note vector becomes
+a MIDI velocity. Neither holds here. We call the per-note vector of channels
+the \emph{bundle} --- the everyday sense of the word; the title's geometric
+sense, per-note fibres over the score, is the outlook of
+\S\ref{sec:future-geom}. The per-note vector becomes
 \begin{equation}
   y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ \delta_i^{\mathrm{vib}} \,\bigr]
   \;\in\; \R^{k},
@@ -973,7 +977,7 @@ $18$\,ms --- so $\delta_i^{\mathrm{vib}}$ is a channel and $k = 7$ as
 written. On the evaluation corpus below, articulation has no measured
 offset chain, so the bundle evaluated there is the remaining six. The
 second decision stays open: whether $\ell_i$,
-which is an amplitude rather than a keystroke, is commensurable enough with $v_i$ for
+which is an amplitude rather than a keystroke, is comparable enough with $v_i$ for
 the two to be discussed as one channel across phases. We do not assume they are.
 
 \paragraph{The channels in musical terms, and where their values come from.}
@@ -987,8 +991,9 @@ average, for the reason given below. \emph{Vibrato} is the deliberate
 periodic oscillation of pitch around that centre which singers, string
 players, and wind players add to sustained notes \cite{seashore1936}. Three numbers describe it
 per note: the rate $f_i^{\mathrm{vib}}$ (how many oscillations per second,
-typically five to eight \cite{prame1994}), the extent $\gamma_i$ (how far the pitch swings
-from the centre at its peak, in cents --- commonly a few tens \cite{prame1997}), and the
+typically five to eight, mean $6.0$\,Hz \cite{prame1994}), the extent $\gamma_i$ (how far the pitch swings
+from the centre at its peak, in cents --- tens of cents on strings and winds
+here, and $\pm 71$ on average in professional singing \cite{prame1997}), and the
 onset delay $\delta_i^{\mathrm{vib}}$ (how long after the note begins the
 oscillation starts --- performers often begin a note straight and let the
 vibrato grow). \emph{Loudness} $\ell_i$ is how strongly the note sounds,
@@ -997,7 +1002,7 @@ recording's own level. None of these values is annotated by hand: every one
 is \emph{estimated} from the recording --- a pitch tracker supplies the
 note's pitch curve, and the per-note fit below turns that curve into these
 numbers, each with its own uncertainty, which is exactly why the observation
-noise of \eqref{eq:phase2-noise} becomes substantive in Phase~2. The
+noise of \eqref{eq:phase2-noise} becomes substantial in Phase~2. The
 corpus's human annotations supply only the note spans (onsets, durations,
 written pitches); its ground-truth pitch curves are used to calibrate the
 tracker, never as channel values.
@@ -1067,7 +1072,8 @@ fit.
 The identifiability rule makes missingness structural, not incidental. A
 short note may support $c_i$ but no vibrato
 parameters, so a target can be missing \emph{for some channels of a note and not
-others}. The conjugate posterior of \S\ref{sec:posterior} assumes \emph{per-note}
+others}. We call each (note, channel) entry a \emph{cell}, and the resulting
+per-cell observation pattern the \emph{cell mask}. The conjugate posterior of \S\ref{sec:posterior} assumes \emph{per-note}
 masks, which is exactly what keeps the observed block Kronecker-compatible
 (\S\ref{sec:gpfirst}). Per-(note, channel) missingness breaks that bookkeeping ---
 though not the exactness: the conjugate posterior conditions on an arbitrary
@@ -1079,7 +1085,21 @@ conditioning, and the per-note case reproduces the published path; a synthetic
 end-to-end pilot exercises it with real estimator-induced missingness
 (\S\ref{sec:phase2-pilot}).
 
-\paragraph{The observation noise becomes substantive --- and heteroscedastic.}
+The missingness \emph{mechanism} deserves naming \cite{rubin1976}. The
+evaluation's hidden notes are missing completely at random by construction
+(a seeded coin per note). The estimator's missing cells are not: the
+identifiability rule removes a vibrato cell exactly when the note's vibrato
+is short or weak, so that missingness is informative --- missing
+\emph{not} at random, dependent on the value it hides. Two consequences
+are drawn honestly. The held-out scores are unaffected: they are computed
+at the randomly hidden notes, on cells the estimator could measure. But
+the posteriors the model supplies at \emph{estimator-missing} cells borrow
+from vibrato-rich observed neighbours and may therefore be biased toward
+audible vibrato --- the delay posterior's occasional sub-zero stretches
+are the visible signature. Filled cells are posterior extrapolations under
+the prior, to be read as such, not as recovered measurements.
+
+\paragraph{The observation noise becomes substantial --- and heteroscedastic.}
 In Phase 1 the targets are read from clean MIDI and $\Sigma_e \approx 0$. Here every
 target is an \emph{estimate}, and its uncertainty is both known and unequal across
 notes: the $f_0$ tracker reports a per-frame periodicity or confidence, and the
@@ -1174,12 +1194,12 @@ The corpus is \textbf{URMP}: 44 multi-instrument chamber pieces from
 separately recorded monophonic tracks, each with per-track audio,
 frame-level ground-truth pitch (10\,ms hop), note-level onset/pitch/duration
 annotations, and the score (verified download; 13 instruments across
-strings, woodwind, and brass). Three preparatory measurements discipline its
-use. (i) The tracker was calibrated against the provided ground-truth pitch
+strings, woodwind, and brass). Three preparatory measurements govern how it
+is used. (i) The tracker was calibrated against the provided ground-truth pitch
 before any model was fit: median error 2--5 cents per instrument --- an
 order of magnitude below vibrato extents --- with voicing recall
 $\ge 0.95$, and the tracker's per-frame confidence genuinely predicts its
-errors (gross octave slips fall from $9.6\%$ to $0.4\%$ across confidence
+errors (gross octave errors --- `slips' hereafter --- fall from $9.6\%$ to $0.4\%$ across confidence
 quintiles), which fixes the estimator chain: variances as given, lowest
 confidence quintile discarded. (ii) The development/confirmation split is
 frozen at the \emph{composition} level, constructed deterministically and
@@ -1191,7 +1211,9 @@ must be said plainly, because it changes what a result means: the targets
 \emph{are} estimator outputs, so held-out recovery measures the model's
 ability to recover \emph{the estimator's} targets at masked notes, not
 agreement with a gold standard (the provided pitch curves supply an
-independent quasi-truth cross-check, used below). The claim available in
+independent \emph{quasi-truth} --- a pseudo-ground-truth in the usual sense:
+the same estimator run on the provided ground-truth pitch curves --- used as
+a cross-check below). The claim available in
 Phase 2 is therefore weaker in kind than the Phase-1 claim, and should not
 be reported as though it were the same.
 
@@ -1239,10 +1261,10 @@ $38\%$, so the missingness case is the norm, not an edge case. The run
 covers 77 of the 78 unique development tracks (shared recordings
 deduplicated; one falls below the 30-usable-note minimum), hiding 30\% of
 notes. One target-quality rule was added with
-measured justification rather than by fiat: $2.2\%$ of intonation targets
+measured justification rather than by assumption: $2.2\%$ of intonation targets
 are octave slips ($|c| \approx 1200$ cents), the ground-truth cross-check
 rejects every one of them (0 of 358 agree with the truth-derived value), and
-they are marked missing --- the same epistemic status as unidentifiable
+they are marked missing --- treated exactly like unidentifiable
 vibrato. The result, paired against the no-graph ablation under the
 \emph{as-given} noise variant (the declared default): \textbf{recovery
 improves significantly on intonation and both vibrato channels}
@@ -1253,7 +1275,7 @@ nominal $90\%$ on every channel of the six. Reported rather than averaged
 away: under this variant the loudness, timing, and delay recovery contrasts
 are small and not significant ($-0.003$, $-0.002$, $-0.001$), and the
 loudness NLL contrast is $+0.04$ \emph{against} the graph --- small but
-itself significant, the one adverse starred cell of the bundle. In the
+itself significant: the bundle's one significant result \emph{against} the graph. In the
 per-family breakdown (computed under the learned-scale contrast) the
 brass intonation cell is not significant on its own, while the vibrato win
 holds within every family and the intonation win within strings and
@@ -1267,8 +1289,8 @@ curves. A fresh-mask-seed check (seeds 2, 3, same protocol) reproduces
 every direction, every recovery star to two decimals, and the adverse
 loudness cell; the stars on the heavy-tailed calibration contrasts move
 (the extent-channel $\Delta$NLL, $-3.8$ starred there, is $-0.22$ and not
-significant on the fresh seeds) --- which calibrates expectations for the
-one-shot confirmation rather than being discovered by it. Estimator-missing vibrato cells on visible notes
+significant on the fresh seeds) --- so this variability is known before
+the one-shot confirmation rather than discovered by it. Estimator-missing vibrato cells on visible notes
 receive posteriors --- the capability no per-note method has
 (Fig.~\ref{fig:phase2-real}). All of this is development evidence in the
 Phase-1 sense: it selected the design defaults above, and any confirmed
@@ -1395,7 +1417,10 @@ The \nPieces{} development pieces adjudicated every modelling decision of the
 project --- the noise floor, the leak fix, the feature stack, the kernel and edge
 families, and finally the proposed model itself. Individually each paired
 test is valid; collectively, a reused evaluation set flatters whatever survives
-selection. The protocol therefore ends with a \textbf{preregistered confirmation}:
+selection. (In the usual machine-learning vocabulary the development and
+confirmation sets are the validation and test splits; they are renamed here
+to make their one-shot discipline explicit \cite{nosek2018}.) The protocol
+therefore ends with a \textbf{preregistered confirmation}:
 \nConfPieces{} further contamination-filtered pieces (the same corpus shuffle,
 verified untouched by any decision), disjoint mask seeds, the systems, claims, and
 decision rule committed to the repository \emph{before} the confirmation data
@@ -1644,7 +1669,7 @@ a property of the piece: the per-piece evidence turns each kernel on or off
 per channel according to the within-piece signal it finds --- the embedding
 kernel, for instance, is switched off entirely ($<1\%$ share) on timing and
 articulation for roughly 60\% of development pieces yet dominant on a
-minority --- and at the extremes the division of labour inverts wholesale.
+minority --- and at the extremes the division of labour reverses completely.
 One piece's velocity channel rests on the graph (share $0.76$; its level and a
 late crescendo propagate from observed neighbours, the embeddings switched
 off), another's on the embeddings (share $0.69$; note-to-note dynamics
@@ -1660,7 +1685,7 @@ $20\%$ of held-out notes between graph and score features on articulation
 and $15\%$ on velocity --- the per-note face of the $-0.19/-0.18$
 component correlations \eqref{eq:compcorr} above --- and between graph and embeddings on
 timing at only $6\%$: such notes are exactly where the per-piece evidence had to
-arbitrate between overlapping explanations, and where the decomposition is
+decide between overlapping explanations, and where the decomposition is
 most informative to inspect.
 
 \figph{posterior_components_contrast_dev.png}{1.0}{The same channel
@@ -1778,9 +1803,11 @@ tight intervals; a handful of held-out outlier notes then land many standard
 deviations out, and the Gaussian likelihood's quadratic tail amplifies them into
 the pooled average --- which is why the confirmation's pooled-NLL comparison tied
 while the \emph{median} piece is better calibrated under the proposed model. A safeguarded fit in
-the same spirit as the two-stage safeguard (calibration-split screen including an
-overconfidence check, fixed fallback sequence) was built and validated: it is bitwise
-inert on healthy fits, \emph{and it cannot catch this tail}, because the failure
+the same spirit as the two-stage safeguard --- now with a calibration-split
+screen that \emph{adds} the overconfidence check the per-channel form lacks
+(\S\ref{sec:special-cases}), and a fixed fallback sequence --- was built and
+validated: it leaves healthy fits bit-for-bit unchanged,
+\emph{and it cannot catch this tail}, because the failure
 is invisible from observed notes. We report the limitation instead of patching it
 post hoc: the principled fixes are a heavy-tailed (Student-$t$) timing likelihood
 or deploy-time predictive floors (\S\ref{ch:future}), and the per-piece median NLL
@@ -2189,7 +2216,7 @@ its place; adopting a channel-dependent metric is a preregistered-confirmation
 question, deliberately left for after this round. Figure~\ref{fig:arch-phase2} makes the claim precise: relative to
 Figure~\ref{fig:arch-phase1}, the coregionalization grows from $3 \times 3$ to
 $k \times k$ as channels join the bundle (re-learned, not carried over), and the
-observation noise $\Sigma_e$ becomes substantive because the targets are now
+observation noise $\Sigma_e$ becomes substantial because the targets are now
 estimates rather than symbolic MIDI values --- the prior's structure and the exact
 conjugate posterior are untouched.
 
@@ -2494,6 +2521,19 @@ the accompanying evidence archive.
   Gaussian Processes Over Graphs. arXiv:1803.05776, 2018.
 \bibitem{blancomulero2021} D.~Blanco-Mulero, M.~Heinonen, V.~Kyrki.
   Evolving-Graph Gaussian Processes. \emph{ICML Time Series Workshop}, 2021.
+\bibitem{smolakondor2003} A.~J.~Smola, R.~Kondor.
+Kernels and regularization on graphs.
+In \emph{Learning Theory and Kernel Machines (COLT/Kernel 2003)}, LNCS 2777,
+pages 144--158, 2003.
+\bibitem{bonilla2008} E.~V.~Bonilla, K.~M.~Chai, C.~K.~I.~Williams.
+Multi-task Gaussian process prediction.
+In \emph{Advances in Neural Information Processing Systems 20}, 2008.
+\bibitem{rubin1976} D.~B.~Rubin.
+Inference and missing data.
+\emph{Biometrika}, 63(3):581--592, 1976.
+\bibitem{nosek2018} B.~A.~Nosek, C.~R.~Ebersole, A.~C.~DeHaven, D.~T.~Mellor.
+The preregistration revolution.
+\emph{Proc.\ Natl.\ Acad.\ Sci.}, 115(11):2600--2606, 2018.
 \bibitem{seashore1936} C.~E.~Seashore (ed.).
 \emph{Psychology of the Vibrato in Voice and Instrument}.
 University of Iowa Studies in the Psychology of Music, Vol.~III, 1936.

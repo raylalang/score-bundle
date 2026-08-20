@@ -2,7 +2,7 @@
 
 For Ray only. Every answer is grounded; pointers name the evidence. The
 frame stays modest: development-labeled results, registered claims, pool
-unspent. Page numbers refer to the current 54-page `docs/thesis/draft.pdf`.
+unspent. Page numbers refer to the current 56-page `docs/thesis/draft.pdf`.
 
 ## Study plan (~75 minutes, in order)
 
@@ -13,7 +13,7 @@ unspent. Page numbers refer to the current 54-page `docs/thesis/draft.pdf`.
    channel decisions are measured (delay in with 95/97% coverage and 18 ms
    truth-agreement; τ via annotated onsets); the τ threat and its diagonal
    -noise limitation are stated, not hidden.
-3. **The figure, p. 25 (10 min).** Practice narrating the four panels aloud
+3. **The figure, p. 26 (10 min).** Practice narrating the four panels aloud
    once — intonation band + hidden circles; extent with GP-filled squares;
    τ with aligner error bars (point at the wide edge note yourself, before
    anyone asks); delay with GP-filled squares (sub-zero excursions are GP
@@ -26,7 +26,7 @@ unspent. Page numbers refer to the current 54-page `docs/thesis/draft.pdf`.
 6. **The Q&A below (20 min).** Read twice; say the loudness and δ_vib
    answers out loud once.
 7. **The asks (5 min).** They are the planning-flavored close.
-   (Optional depth if he digs into Phase 1: §5.3, p. 30 — shares .69/.60/.40,
+   (Optional depth if he digs into Phase 1: §5.3, p. 31 — shares .69/.60/.40,
    graph×embeddings ≈ 0, complements not rivals.)
 
 ## Numbers to know cold (as-given variant, paired vs no-graph, dev)
@@ -76,6 +76,16 @@ A: Adoption and claims are separate gates. The delay is measurable
 the numbers), so it belongs in the bundle; its graph contrasts are neutral
 on dev, so registering a claim on it would be claim-shopping.
 
+**Q: The estimator's missing cells aren't missing at random, are they?**
+A: Correct, and the draft now says so with the mechanism named (Rubin):
+the evaluation's hidden notes are MCAR by construction; the estimator's
+missing cells are informative (missing when vibrato is short or weak).
+Held-out scores are unaffected — they are computed at randomly hidden
+notes. The GP's posteriors at estimator-missing cells are extrapolations
+under the prior, possibly biased toward audible vibrato — the delay
+panel's sub-zero stretches are the visible signature — and the draft says
+to read them as extrapolations, not recovered measurements. (§3.9.)
+
 **Q: Where does alignment error go in τ?**
 A: Into the noise row — the LOO tempo line's predictive variance. A diagonal
 noise carries the error's scale but not its correlation along score time;
@@ -122,7 +132,7 @@ Beyond URMP the alignment problem returns — stated future work.
 3. Next priority: tonal-metric confirmation or Phase-3 scoping?
 
 ## In the room
-- Have open: p. 25 (the figure) and p. 23 (the results paragraph).
+- Have open: p. 26 (the figure) and p. 23 (the results paragraph).
 - Opening line: "I picked things back up and focused on Phase 2."
 - If a question stumps you: "that's measured — let me follow up with the
   exact number" is a fine answer; everything above has a file behind it.
