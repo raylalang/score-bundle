@@ -125,7 +125,8 @@ tracker, per-note estimator, onset-anchored warp, per-(note, channel)
 missingness, heteroscedastic
 likelihood --- runs end to end on a six-channel bundle; the graph prior
 significantly improves recovery on intonation and vibrato and calibration on
-vibrato and timing, with coverage on target on every channel; the claim set
+vibrato and timing (the vibrato-extent calibration star is seed-sensitive),
+with coverage on target on every channel; the claim set
 is registered and its confirmation pool untouched. Phase~3 (audio via a differentiable
 synthesizer) is scoped but not built.
 \end{abstract}
@@ -246,7 +247,7 @@ Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; the plug-in mean 
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened \\
 2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
-$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $\delta^{\mathrm{vib}}$ & \textbf{Running on real data} (URMP, development, six channels): graph value significant on intonation/vibrato recovery and vibrato/timing calibration; claims registered, confirmation pool unspent \\
+$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $\delta^{\mathrm{vib}}$ & \textbf{Running on real data} (URMP, development, six channels): graph value significant on intonation/vibrato recovery and vibrato/timing calibration (extent-calibration star seed-sensitive); claims registered, confirmation pool unspent \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested, inference not started \\
 \bottomrule
@@ -1045,7 +1046,7 @@ identifiability rule and delta-method variance. Note that $c_i$ is \emph{not} th
 the vibrato-free centre only over a whole number of cycles, which a note rarely
 supplies (perceived pitch likewise departs from the curve mean on short
 vibrato tones \cite{dalessandro1994}). The observation rule, with every threshold fixed by the
-development measurements of \S\ref{sec:phase2-real}: note $i$'s sample set is
+development measurements reported below: note $i$'s sample set is
 \begin{equation}
   J_i \;=\; \bigl\{\, \text{frames } j:\; t_j \in [t_i,\, t_i + \delta_i),\;
   \text{voiced}_j,\; P_j \ge q_{0.2}(\text{track}) \,\bigr\},
@@ -1083,7 +1084,7 @@ Kronecker-structured shortcut, not conjugacy. This generalisation is now
 observation masks, exactness is verified against brute-force Gaussian
 conditioning, and the per-note case reproduces the published path; a synthetic
 end-to-end pilot exercises it with real estimator-induced missingness
-(\S\ref{sec:phase2-pilot}).
+(the pilot below).
 
 The missingness \emph{mechanism} deserves naming \cite{rubin1976}. The
 evaluation's hidden notes are missing completely at random by construction
@@ -1091,8 +1092,10 @@ evaluation's hidden notes are missing completely at random by construction
 identifiability rule removes a vibrato cell exactly when the note's vibrato
 is short or weak, so that missingness is informative --- missing
 \emph{not} at random, dependent on the value it hides. Two consequences
-are drawn honestly. The held-out scores are unaffected: they are computed
-at the randomly hidden notes, on cells the estimator could measure. But
+are drawn honestly. The held-out scores stay interpretable, but for the
+identifiable sub-population: random masking inside an informatively
+filtered cell set is unbiased for the notes whose vibrato the estimator
+can measure, not for all notes. And
 the posteriors the model supplies at \emph{estimator-missing} cells borrow
 from vibrato-rich observed neighbours and may therefore be biased toward
 audible vibrato --- the delay posterior's occasional sub-zero stretches
@@ -1117,12 +1120,12 @@ untouched --- a diagonal is a diagonal --- so the posterior and the marginal lik
 are unchanged in form. The noise floor and the safeguard of \S\ref{sec:eb} carry over.
 One decision remains: whether the estimator-supplied variances are used as given, or
 carry a per-channel learned scale, so that the evidence may discover the tracker is
-over- or under-confident. A synthetic pilot (\S\ref{sec:phase2-pilot}) reverses
+over- or under-confident. The synthetic pilot below reverses
 the a-priori guess: with \emph{calibrated} estimator variances, as-given wins on
 every channel and the learned scale over-shrinks the vibrato-extent channel
 (coverage $0.76$--$0.81$ vs $0.86$--$0.87$); the learned scale is therefore the
 \emph{fallback} for a mis-calibrated real-world tracker, not the default. Real
-data re-confirmed this the hard way (\S\ref{sec:phase2-real}): with estimator
+data re-confirmed this the hard way (the real-audio results below): with estimator
 octave-failures present the learned scale collapses catastrophically while
 as-given stays healthy, and after the failure rule as-given remains the
 better-calibrated variant.
@@ -1277,7 +1280,7 @@ are small and not significant ($-0.003$, $-0.002$, $-0.001$), and the
 loudness NLL contrast is $+0.04$ \emph{against} the graph --- small but
 itself significant: the bundle's one significant result \emph{against} the graph. In the
 per-family breakdown (computed under the learned-scale contrast) the
-brass intonation cell is not significant on its own, while the vibrato win
+brass intonation contrast is not significant on its own, while the vibrato win
 holds within every family and the intonation win within strings and
 woodwind. The learned-scale variant
 makes every recovery contrast significant ($-0.92$ cents, $-0.18$, $-0.24$,
@@ -1449,7 +1452,7 @@ the graph's paired contribution is significant from 50\% down to 20\% hidden and
 at the leave-one-out limit; the embeddings' contribution grows monotonically with
 observation density ($-0.005$ RMSE at 50\% hidden to $-0.021$ at leave-one-out,
 paired), as befits context-dependent features; and coverage stays at 0.92--0.93
-throughout --- calibration is insensitive to the masking level. One cell at 30\%
+throughout --- calibration is insensitive to the masking level. One (piece, seed) fit at 30\%
 hidden reproduces the Gaussian-tail NLL failure mode of \S\ref{sec:guard-gp} on a
 development piece, identically across all three systems --- consistent with it
 being a property of the likelihood's tail, not of any one model.
@@ -1785,7 +1788,7 @@ absorbed.
 Two distinct failure modes were found and fixed. First, on a minority of mask
 realisations the fitted noise level collapsed toward zero (overconfident intervals);
 a noise-level floor inside the fit removes it. Second, a rarer knife-edge collapse of
-the fitted coupling itself: one evaluation cell in 120 --- always the same piece ---
+the fitted coupling itself: one (piece, seed) fit in 120 --- always the same piece ---
 produced timing errors of $4.5$ and $17$ in two independent runs, single-handedly
 dominating the pooled average (e.g.\ pooled timing RMSE $0.16 \to 1.58$). The
 self-validating safeguard removes both catastrophic cells ($4.5 \to 0.24$; $17 \to$
@@ -2348,7 +2351,8 @@ A single multi-output Gaussian process on the score graph --- channels coupled,
 side information marginalized into the kernel, every hyperparameter learned by the
 per-piece evidence --- recovers hidden expressive detail better than the strongest
 two-stage pipeline it provably subsumes (as the diagonal-$B$, fixed-graph,
-shared-shape, no-feature slice of its parameter space), a claim preregistered and confirmed once
+plug-in-mean, no-feature slice of its parameter space, on the shared-shape
+restriction), a claim preregistered and confirmed once
 on pieces no modelling decision ever touched. Each ingredient's marginal value is
 isolated: per-piece Bayesian weighting of score features and music-model
 embeddings does the recovering; the graph makes the confidence honest (its
@@ -2423,7 +2427,9 @@ count); $\delta_i$ is the performed duration, $\delta_i^{\mathrm{vib}}$ the
 vibrato onset delay, and $\delta_{\zeta\zeta'}$ the Kronecker delta;
 $\ell_b, \ell_p$ are graph length scales while $\ell_i$ is the Phase-2
 loudness channel; $c$ is a channel index, $c_f$ a feature-kernel scale, and
-$c_i$ the intonation channel in cents; our
+$c_i$ the intonation channel in cents; a \emph{cell} is a (note, channel)
+entry of the Phase-2 mask --- the (piece, seed) evaluation unit of the
+Phase-1 tables is always written out as a fit; our
 $\alpha$ (exponent) and $\nu$ (eigenvalue) differ from the Mat\'ern
 smoothness convention of the graph-GP literature.
 
