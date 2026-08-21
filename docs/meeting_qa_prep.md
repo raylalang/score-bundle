@@ -143,6 +143,21 @@ estimator · *development/confirmation* = validation/test, renamed for the
 one-shot discipline.
 
 **Data and method**
+- *What is the system, in one breath?* Score plus noisy per-note
+  measurements in; one graph-structured Gaussian posterior over every
+  (note, channel) cell out, with honest error bars. The graph encodes one
+  belief — expressive behavior varies smoothly across neighboring notes —
+  and the per-piece evidence decides how much graph, features, coupling,
+  and noise. Evaluation: hide 30% of notes, predict them, score recovery
+  AND calibration.
+- *The figures show MISSING cells — mistake?* Deliberate, and the point:
+  short notes physically cannot contain 1.5 vibrato cycles, so those
+  cells are structurally unmeasurable — the missing entries are the
+  problem statement, and the model's job is to put calibrated posteriors
+  in them (Fig 3.4's case B shows truth agreeing when it does).
+- *Which instruments?* URMP's thirteen, three families: strings
+  (vn/va/vc/db), woodwind (fl/ob/cl/bn/sax), brass (tpt/hn/tbn/tba);
+  violin dominates the dev side (27 of 101 tracks); no piano, no voice.
 - *Targets are estimator outputs — what does recovery mean?* Exactly
   that, and the thesis says so wherever numbers appear: agreement with
   the estimator, weaker in kind than Phase 1. The quasi-truth cross-check
@@ -155,6 +170,15 @@ one-shot discipline.
   are interpretable for the vibrato-identifiable sub-population; filled
   cells are prior extrapolations — the delay panel's sub-zero stretches
   are the visible signature.
+- *Is loudness comparable to velocity?* Not assumed — ℓ is what the
+  microphone heard (log RMS, ≈8.7 dB per unit, per-track centred), v is
+  what the finger did (a keystroke value). Same role in the bundle,
+  different physical quantity; the thesis lists cross-phase
+  comparability as a claim to defend, not a convention.
+- *Where is the loudness equation from?* Our construction from standard
+  ingredients (RMS energy as the textbook loudness proxy, log as the dB
+  convention); the four-chunk design is ours so the channel arrives with
+  a standard error — Fig 3.2's bottom row shows the whole path.
 - *Why as-given noise, not learned?* Measured twice: the pilot preferred
   it, and on real data the learned scale collapses when octave-failure
   cells are present; after the failure rule, as-given is still better
