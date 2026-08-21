@@ -211,7 +211,12 @@ one-shot discipline.
   supplied tempo line; a parametric synthesizer could render it today at
   caricature level. The audio itself, no: envelopes, timbre, and noise
   are the waveform layer, which is precisely Phase 3's likelihood — the
-  one block the architecture marks as changing with the phase.
+  one block the architecture marks as changing with the phase. Mirror on
+  the analysis side: in Phase 2 the model never sees audio (a fixed
+  estimator reduces it to per-note numbers first — hence the
+  recovery-scope caveat and the identifiability missingness); in Phase 3
+  the waveform itself is the observation, which dissolves both at the
+  price of exact inference.
 - *Gaussian tails?* Known Phase-1 limitation (one τ-outlier fit cost the
   confirmation NLL tie). Student-t prototype exists; gated on its own
   future confirmation set.
