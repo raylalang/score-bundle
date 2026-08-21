@@ -1365,6 +1365,34 @@ loudness cell; the stars on the heavy-tailed calibration contrasts move
 significant on the fresh seeds) --- so this variability is known before
 the one-shot confirmation rather than discovered by it.
 
+Table~\ref{tab:phase2-dev} collects the paired contrasts.
+
+\begin{table}[t]\centering
+\caption{Phase-2 development results, paired per (track, seed) against the
+no-graph ablation ($95\%$ bootstrap CIs; $^{*}$ = CI excludes zero;
+$n = 148$--$153$ pairs per channel). The as-given variant is the declared
+default; its coverage at nominal $90\%$ is listed. The learned-scale
+recovery column is the reported fallback. Development-labeled throughout;
+the registered claims (\S\ref{sec:hygiene} discipline) bind the as-given
+columns.}
+\label{tab:phase2-dev}
+\footnotesize
+\begin{tabular}{@{}lrrcr@{}}
+\toprule
+ & \multicolumn{2}{c}{as-given (default)} & & learned scale \\
+\cmidrule(lr){2-3}\cmidrule(lr){5-5}
+channel & $\Delta$RMSE & $\Delta$NLL & cov@90 & $\Delta$RMSE \\
+\midrule
+intonation $c$ (cents) & $-0.891^{*}$ & $-0.020$\phantom{$^{*}$} & 0.89 & $-0.920^{*}$ \\
+extent $\log\gamma$ & $-0.256^{*}$ & $-3.772^{*}$ & 0.90 & $-0.182^{*}$ \\
+rate $\log f^{\mathrm{vib}}$ & $-0.300^{*}$ & $-0.426^{*}$ & 0.88 & $-0.239^{*}$ \\
+loudness $\ell$ & $-0.003$\phantom{$^{*}$} & $+0.042^{*}$ & 0.90 & $-0.006^{*}$ \\
+timing $\tau$ (s) & $-0.002$\phantom{$^{*}$} & $-0.292^{*}$ & 0.91 & $-0.008^{*}$ \\
+delay $\delta^{\mathrm{vib}}$ (s) & $-0.001$\phantom{$^{*}$} & $+0.057$\phantom{$^{*}$} & 0.89 & $-0.004^{*}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 Estimator-missing vibrato cells on visible notes
 receive posteriors --- the capability no per-note method has
 (Fig.~\ref{fig:phase2-real}). All of this is development evidence in the

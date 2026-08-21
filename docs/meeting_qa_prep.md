@@ -13,8 +13,8 @@ runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
 
 **Pages:** phase table 5 · §3.9 17–24 · data-point Fig 3.2 = 20 ·
 tonal Fig 3.3 = 22 · truth/estimate/GP Fig 3.4 = 23 · results 23–24
-(headline and ledger on 24) · channels Fig 3.5 = 26 · §5.3 = 31 ·
-Phase-2 architecture Fig 8.1 = 46.
+(headline, ledger, and results Table 3.3 all on 24) · channels
+Fig 3.5 = 26 · §5.3 = 31 · Phase-2 architecture Fig 8.1 = 46.
 
 **Eight numbers** (as-given variant, paired vs no-graph, development):
 intonation −0.89\* · extent/rate recovery −0.26\*/−0.30\* · vibrato
@@ -82,7 +82,8 @@ declared as default: recovery improves significantly on intonation and
 both vibrato channels — minus 0.89 cents, minus 0.26, minus 0.30 — and
 calibration improves significantly on both vibrato channels and on
 timing — minus 3.8, minus 0.43, minus 0.29 in NLL. Coverage sits at
-0.88 to 0.91 at nominal 90% on every channel of the six."
+0.88 to 0.91 at nominal 90% on every channel of the six. It's all in
+Table 3.3, same page."
 Then the honesty, unprompted: "Three recovery contrasts are not
 significant — loudness, timing, delay — and one cell is significantly
 *against* the graph: loudness calibration, plus 0.04. It replicates on
