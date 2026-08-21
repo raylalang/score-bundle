@@ -1352,11 +1352,10 @@ the bundle's one significant adverse result. In the
 per-family breakdown (computed under the learned-scale contrast) the
 brass intonation contrast is not significant on its own, while the vibrato win
 holds within every family and the intonation win within strings and
-woodwind. The learned-scale variant
-makes every recovery contrast significant ($-0.92$ cents, $-0.18$, $-0.24$,
-$-0.006$, $-0.008$, $-0.004$) but stays the fallback, being the
-worse-calibrated variant against quasi-truth (coverage $0.72$--$0.86$ vs
-$0.82$--$0.86$); the ordering of systems is unchanged when scored against
+woodwind.\footnote{The learned-scale fallback variant stars all six
+recovery contrasts but is the worse-calibrated variant against quasi-truth
+(coverage $0.72$--$0.86$ vs $0.82$--$0.86$); its full rows are in the
+results record.} The ordering of systems is unchanged when scored against
 the quasi-truth targets derived from the provided pitch
 curves. A fresh-mask-seed check (seeds 2, 3, same protocol) reproduces
 every direction, every recovery star to two decimals, and the adverse
@@ -1368,27 +1367,24 @@ the one-shot confirmation rather than discovered by it.
 Table~\ref{tab:phase2-dev} collects the paired contrasts.
 
 \begin{table}[t]\centering
-\caption{Phase-2 development results, paired per (track, seed) against the
-no-graph ablation ($95\%$ bootstrap CIs; $^{*}$ = CI excludes zero;
-$n = 148$--$153$ pairs per channel). The as-given variant is the declared
-default; its coverage at nominal $90\%$ is listed. The learned-scale
-recovery column is the reported fallback. Development-labeled throughout;
-the registered claims (\S\ref{sec:hygiene} discipline) bind the as-given
-columns.}
+\caption{Phase-2 development results (as-given variant, the declared
+default), paired per (track, seed) against the no-graph ablation ($95\%$
+bootstrap CIs; $^{*}$ = CI excludes zero; $n = 148$--$153$ pairs per
+channel); coverage at nominal $90\%$. Development-labeled throughout; the
+registered claims bind these columns. The fallback noise variant is
+reported in the results record.}
 \label{tab:phase2-dev}
 \footnotesize
-\begin{tabular}{@{}lrrcr@{}}
+\begin{tabular}{@{}lrrc@{}}
 \toprule
- & \multicolumn{2}{c}{as-given (default)} & & learned scale \\
-\cmidrule(lr){2-3}\cmidrule(lr){5-5}
-channel & $\Delta$RMSE & $\Delta$NLL & cov@90 & $\Delta$RMSE \\
+channel & $\Delta$RMSE & $\Delta$NLL & cov@90 \\
 \midrule
-intonation $c$ (cents) & $-0.891^{*}$ & $-0.020$\phantom{$^{*}$} & 0.89 & $-0.920^{*}$ \\
-extent $\log\gamma$ & $-0.256^{*}$ & $-3.772^{*}$ & 0.90 & $-0.182^{*}$ \\
-rate $\log f^{\mathrm{vib}}$ & $-0.300^{*}$ & $-0.426^{*}$ & 0.88 & $-0.239^{*}$ \\
-loudness $\ell$ & $-0.003$\phantom{$^{*}$} & $+0.042^{*}$ & 0.90 & $-0.006^{*}$ \\
-timing $\tau$ (s) & $-0.002$\phantom{$^{*}$} & $-0.292^{*}$ & 0.91 & $-0.008^{*}$ \\
-delay $\delta^{\mathrm{vib}}$ (s) & $-0.001$\phantom{$^{*}$} & $+0.057$\phantom{$^{*}$} & 0.89 & $-0.004^{*}$ \\
+intonation $c$ (cents) & $-0.891^{*}$ & $-0.020$\phantom{$^{*}$} & 0.89 \\
+extent $\log\gamma$ & $-0.256^{*}$ & $-3.772^{*}$ & 0.90 \\
+rate $\log f^{\mathrm{vib}}$ & $-0.300^{*}$ & $-0.426^{*}$ & 0.88 \\
+loudness $\ell$ & $-0.003$\phantom{$^{*}$} & $+0.042^{*}$ & 0.90 \\
+timing $\tau$ (s) & $-0.002$\phantom{$^{*}$} & $-0.292^{*}$ & 0.91 \\
+delay $\delta^{\mathrm{vib}}$ (s) & $-0.001$\phantom{$^{*}$} & $+0.057$\phantom{$^{*}$} & 0.89 \\
 \bottomrule
 \end{tabular}
 \end{table}
