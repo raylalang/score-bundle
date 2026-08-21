@@ -954,20 +954,36 @@ geometric sense --- per-note fibres over the score --- is the outlook of
   \;\in\; \R^{k},
   \label{eq:phase2-channels}
 \end{equation}
-where $\tau_i$ and $\log r_i$ are unchanged; $\ell_i$ is a loudness channel replacing
-the MIDI velocity $v_i$: with the note's audio span split into four equal
-chunks of samples $x^{(q)}$, $q = 1, \dots, 4$,
+where each channel is, as in Phase 1, one scalar per note of the known
+score. The first two keep their Phase-1 meaning: $\tau_i$ is the onset
+residual against the score-time warp (re-anchored for this corpus by the
+annotated onsets, below) and $\log r_i$ the articulation ratio. $\ell_i$
+is a loudness channel replacing the MIDI velocity $v_i$, read from the
+note's own audio: the note's span is cut into four equal-length chunks of
+samples $x^{(q)}$, $q = 1, \dots, 4$, each chunk's energy is summarised by
+its log root-mean-square, and
 \begin{align}
   \ell_i &\;=\; \frac{1}{4} \sum_{q=1}^{4} \log \mathrm{rms}\bigl(x^{(q)}\bigr)
   \;-\; \overline{\ell}_{\mathrm{track}},
   \label{eq:loudness}\\
-  \widehat{\operatorname{Var}}[\ell_i] &\;=\; \frac{s^2_{\mathrm{chunks}}}{4},
+  \widehat{\operatorname{Var}}[\ell_i] &\;=\; \frac{s^2_{\mathrm{chunks}}}{4}.
   \nonumber
 \end{align}
-centred per recording because absolute level is arbitrary per track;
-$s^2_{\mathrm{chunks}}$, the sample variance of the four log chunk-RMS values,
-supplies its estimator noise; $c_i$
-is the static intonation offset; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are the
+The chunking is what makes loudness an \emph{estimate} rather than a bare
+number: the four chunks are internal replicates, so their mean is the
+note's level and the sample variance of the four log chunk-RMS values,
+$s^2_{\mathrm{chunks}}$, yields the standard error
+$s^2_{\mathrm{chunks}}/4$ --- automatically larger for notes whose level
+genuinely changes inside the note (attack, decay), which is exactly when
+``one loudness per note'' is least well defined. Four is an untuned small
+default: enough replicates to estimate a spread, with chunks still long
+enough to average over waveform periods on short notes.
+$\overline{\ell}_{\mathrm{track}}$ is the track's mean of the per-note
+values, and subtracting it centres the channel per recording: absolute
+level is arbitrary per track (microphone gain, distance, mastering), so
+only \emph{relative} loudness within a recording is meaningful. $c_i$
+is the static intonation offset --- how sharp or flat the note's held
+centre sits; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are the
 vibrato rate, extent and onset delay defined below (the superscript keeps the delay
 distinct from the performed duration $\delta_i$ of \eqref{eq:logr}).
 
