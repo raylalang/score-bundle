@@ -166,7 +166,10 @@ Beyond URMP the alignment problem returns — stated future work.
 3. Next priority: tonal-metric confirmation or Phase-3 scoping?
 
 ## In the room
-- Have open: p. 26 (the figure) and p. 23–24 (the results paragraph; the headline sentence is on 24).
+- Have open: p. 26 (the figure) and p. 23–24 (the results paragraph; the
+  headline sentence is on 24). If the tonal result comes up, there is a
+  standalone panel to show — `docs/meeting_tonal_panel.png` (deliberately
+  not in the thesis; 153 paired deltas, mean −0.21 cents, 61% improve).
 - Opening line: "I picked things back up and focused on Phase 2." If he
   looks like he needs orientation first, give the 30-second version above,
   then the 2-minute walk of the phase table.
