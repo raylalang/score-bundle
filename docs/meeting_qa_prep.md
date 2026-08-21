@@ -134,7 +134,7 @@ Beyond URMP the alignment problem returns — stated future work.
 3. Next priority: tonal-metric confirmation or Phase-3 scoping?
 
 ## In the room
-- Have open: p. 26 (the figure) and p. 23 (the results paragraph).
+- Have open: p. 26 (the figure) and p. 23–24 (the results paragraph; the headline sentence is on 24).
 - Opening line: "I picked things back up and focused on Phase 2."
 - If a question stumps you: "that's measured — let me follow up with the
   exact number" is a fine answer; everything above has a file behind it.
