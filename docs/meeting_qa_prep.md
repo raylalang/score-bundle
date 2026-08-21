@@ -205,6 +205,13 @@ one-shot discipline.
   alone). Beyond URMP the alignment problem returns — stated future work.
 
 **Process and what's next**
+- *Can you resynthesize the audio from the Phase-2 output?* The expressive
+  skeleton, yes — the six channels reconstruct a pitch curve (Fig 3.4's
+  drawn GP curves are exactly that), per-note levels, and timing around a
+  supplied tempo line; a parametric synthesizer could render it today at
+  caricature level. The audio itself, no: envelopes, timbre, and noise
+  are the waveform layer, which is precisely Phase 3's likelihood — the
+  one block the architecture marks as changing with the phase.
 - *Gaussian tails?* Known Phase-1 limitation (one τ-outlier fit cost the
   confirmation NLL tie). Student-t prototype exists; gated on its own
   future confirmation set.
