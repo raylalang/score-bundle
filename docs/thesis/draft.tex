@@ -1102,7 +1102,20 @@ Kronecker-structured shortcut, not conjugacy. This generalisation is now
 observation masks, exactness is verified against brute-force Gaussian
 conditioning, and the per-note case reproduces the published path; a synthetic
 end-to-end pilot exercises it with real estimator-induced missingness
-(the pilot below).
+(the pilot below). Figure~\ref{fig:phase2-datapoint} shows one data point
+of each kind.
+
+\figph{phase2_datapoint_dev.png}{1.0}{One Phase-2 data point (violin,
+development track). Top: a $1.49$\,s note --- the confidence-kept tracker
+frames (banded at the tracker's $\sim$10-cent frequency grid), the gated
+fit of \eqref{eq:vibrato} riding them, the flat stretch before the fitted
+onset delay (dashed) and the vibrato-free centre (dotted); at right, the
+note's six-cell record with each cell's estimator uncertainty (the wide
+$\pm 37$\,ms on $\tau$ is the warp's honest noise row). Bottom: a
+$0.32$\,s note --- too short for the identifiability rule, so its three
+vibrato cells are \emph{missing} while intonation, loudness and timing
+are still observed. The cell mask, in one example of each
+kind.\label{fig:phase2-datapoint}}
 
 The missingness \emph{mechanism} deserves naming \cite{rubin1976}. The
 evaluation's hidden notes are missing completely at random by construction
@@ -1208,7 +1221,15 @@ where the target is pitch and hurts where it is not: the first evidence in
 this thesis that a music-theoretic \emph{geometry}, rather than merely
 music-theoretic \emph{edges}, earns its place. Adoption into the bundle
 would be a channel-dependent metric choice and needs its own preregistered
-confirmation; nothing in the registered claim set depends on it.
+confirmation; nothing in the registered claim set depends on it
+(Fig.~\ref{fig:tonal-intonation}).
+
+\figph{tonal_intonation_dev.png}{1.0}{The exploratory circle-of-fifths
+contrast on intonation (development): per-(track, seed) paired RMSE
+deltas, tonal minus plain graph, under the as-given variant --- mean
+$-0.21$ cents $[-0.34, -0.09]$, with $61\%$ of pairs improving and the
+full spread shown. Exploratory by the registered design; adoption would
+need its own preregistered confirmation.\label{fig:tonal-intonation}}
 
 \paragraph{Data, and what ``recovery'' can mean here.}
 The corpus is \textbf{URMP}: 44 multi-instrument chamber pieces from

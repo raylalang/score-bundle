@@ -2,31 +2,32 @@
 
 For Ray only. Every answer is grounded; pointers name the evidence. The
 frame stays modest: development-labeled results, registered claims, pool
-unspent. Page numbers refer to the current 56-page `docs/thesis/draft.pdf`.
+unspent. Page numbers refer to the current 57-page `docs/thesis/draft.pdf`.
 
 ## Study plan (~75 minutes, in order)
 
 1. **First (5 min): sync Overleaf with current `main`** — what the professor
    opens must be this state, not July's.
-2. **§3.9, p. 19–24 (20 min).** Read once, slowly. The arc: nothing in the
+2. **§3.9, p. 19–25 (20 min).** Read once, slowly. The arc: nothing in the
    prior changes; the channel set, the targets, and the noise do. The two
    channel decisions are measured (delay in with 95/97% coverage and 18 ms
    truth-agreement; τ via annotated onsets); the τ threat and its diagonal
-   -noise limitation are stated, not hidden.
-3. **The figure, p. 26 (10 min).** Practice narrating the four panels aloud
+   -noise limitation are stated, not hidden. The anatomy-of-one-data-point
+   figure is on p. 22; the tonal panel on p. 23.
+3. **The channels figure, p. 27 (10 min).** Practice narrating the four panels aloud
    once — intonation band + hidden circles; extent with GP-filled squares;
    τ with aligner error bars (point at the wide edge note yourself, before
    anyone asks); delay with GP-filled squares (sub-zero excursions are GP
    extrapolations; every observed delay is nonnegative).
-4. **The results paragraph, p. 23–24 (10 min).** Memorize the know-cold
+4. **The results paragraph, p. 24–25 (10 min).** Memorize the know-cold
    table below, including the adverse cell.
-5. **The tonal passage, p. 22 (5 min).** One sentence to say: "the metric
+5. **The tonal passage + panel, p. 23 (5 min).** One sentence to say: "the metric
    that hurt expression helps exactly where the target is pitch — and it
    re-imposes the timing penalty, which is what the hypothesis predicted."
 6. **The Q&A below (20 min).** Read twice; say the loudness and δ_vib
    answers out loud once.
 7. **The asks (5 min).** They are the planning-flavored close.
-   (Optional depth if he digs into Phase 1: §5.3, p. 31 — shares .69/.60/.40,
+   (Optional depth if he digs into Phase 1: §5.3, p. 32 — shares .69/.60/.40,
    graph×embeddings ≈ 0, complements not rivals.)
 
 ## Numbers to know cold (as-given variant, paired vs no-graph, dev)
@@ -166,16 +167,15 @@ Beyond URMP the alignment problem returns — stated future work.
 3. Next priority: tonal-metric confirmation or Phase-3 scoping?
 
 ## In the room
-- Have open: p. 26 (the figure) and p. 23–24 (the results paragraph; the
-  headline sentence is on 24). If the tonal result comes up, there is a
-  standalone panel to show — `docs/meeting_tonal_panel.png` (deliberately
-  not in the thesis; 153 paired deltas, mean −0.21 cents, 61% improve).
-- If "what does your data actually look like?" comes up:
-  `docs/meeting_datapoint_panel.png` — one long note (pitch frames, the
-  gated fit, the visible pre-vibrato stretch before δ, all six cells with
-  ±σ) next to one short note (three cells observed, three MISSING). If
-  asked why the frames sit in bands: that is pyin's ~10-cent frequency
-  grid; the per-note fit averages across bins.
+- Have open: p. 27 (the channels figure) and p. 24–25 (the results
+  paragraph; the headline sentence is on 25). Everything is IN the PDF now:
+  the tonal result panel is Fig. on p. 23 (153 paired deltas, mean −0.21
+  cents, 61% improve), and "what does your data look like?" is the
+  data-point figure on p. 22 — one long note (frames, gated fit, the
+  visible pre-vibrato stretch, six cells with ±σ) next to one short note
+  (three cells observed, three MISSING). If asked why the frames sit in
+  bands: that is pyin's ~10-cent frequency grid; the per-note fit averages
+  across bins.
 - Opening line: "I picked things back up and focused on Phase 2." If he
   looks like he needs orientation first, give the 30-second version above,
   then the 2-minute walk of the phase table.
