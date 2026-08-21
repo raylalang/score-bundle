@@ -36,8 +36,9 @@ cand_b = [i for i in range(len(d["ident"])) if not d["ident"][i]
           and np.isfinite(d["tau"][i])]
 A, B = cand_a[2], cand_b[2]
 
-fig, axes = plt.subplots(2, 2, figsize=(11.4, 6.4), dpi=200,
-                         width_ratios=[3, 2])
+fig, axes = plt.subplots(3, 2, figsize=(11.4, 8.0), dpi=200,
+                         width_ratios=[3, 2],
+                         height_ratios=[3, 2.6, 1.9])
 for row, (i, tag) in enumerate([(A, "a long note: every cell observed"),
                                 (B, "a short note: vibrato cells missing")]):
     t, f0 = frames(i)
@@ -104,6 +105,69 @@ for row, (i, tag) in enumerate([(A, "a long note: every cell observed"),
                      style="italic")
             axc.text(0.02, y, "○", fontsize=8, color=VERM)
         y -= 0.135
+# --- third row: how the audio becomes the loudness cell (note A) ----------
+import soundfile as sf
+
+from eval_phase2_real import dev_unique_tracks
+
+trk = next(t2 for p2, t2 in dev_unique_tracks()
+           if (p2.index, t2.number) == TRACK)
+audio, sr = sf.read(trk.audio)
+audio = np.asarray(audio, dtype=float)
+a0 = int(notes["onset"][A] * sr)
+a1 = int((notes["onset"][A] + notes["duration"][A]) * sr)
+seg = audio[max(a0, 0):min(a1, audio.size)]
+tt = np.arange(seg.size) / sr * 1e3
+ax = axes[2, 0]
+step = max(1, seg.size // 6000)
+ax.plot(tt[::step], seg[::step], color=MUTED, lw=0.3, alpha=0.8)
+chunks = np.array_split(seg, 4)
+edges = np.cumsum([0] + [c.size for c in chunks])
+logrms = []
+for q in range(4):
+    lo_, hi_ = edges[q] / sr * 1e3, edges[q + 1] / sr * 1e3
+    rms = float(np.sqrt(np.mean(chunks[q] ** 2)))
+    logrms.append(np.log(rms + 1e-8))
+    if q % 2 == 0:
+        ax.axvspan(lo_, hi_, color=GREEN, alpha=0.07, linewidth=0)
+    ax.hlines([rms, -rms], lo_, hi_, color=GREEN, lw=1.6)
+    ax.text((lo_ + hi_) / 2, rms * 1.3,
+            r"$\log\,\mathrm{rms}=" + f"{logrms[-1]:.2f}$",
+            fontsize=7.5, color=GREEN, ha="center")
+ax.set_title(f"note {A}: the audio becomes the loudness cell "
+             "(four equal chunks; eq. 3.31)",
+             fontsize=10, color=INK, loc="left", pad=12)
+ax.set_ylabel("waveform", fontsize=9, color=INK)
+ax.set_xlabel("time from note onset (ms)", fontsize=9, color=INK)
+for s_ in ("top", "right"):
+    ax.spines[s_].set_visible(False)
+for s_ in ("left", "bottom"):
+    ax.spines[s_].set_color(MUTED)
+ax.tick_params(colors=MUTED, labelsize=8)
+
+axc = axes[2, 1]
+axc.axis("off")
+mean_lr = float(np.mean(logrms))
+ell_i = d["ell"][A]
+track_mean = mean_lr - ell_i           # by construction of the centring
+se = float(np.sqrt(d["var_ell"][A]))
+axc.text(0.02, 0.92, "the computation", fontsize=10, color=INK,
+         va="top", weight="bold")
+rows_txt = [
+    ("mean of the four log rms", f"{mean_lr:+.2f}"),
+    (r"$-$ track mean $\overline{\ell}_{\mathrm{track}}$",
+     f"{-track_mean:+.2f}"),
+    (r"$= \ell_i$", f"{ell_i:+.2f}"),
+    (r"chunk spread $\Rightarrow$ SE", f"$\pm${se:.2f}"),
+]
+y = 0.72
+for nm_, val_ in rows_txt:
+    axc.text(0.06, y, nm_, fontsize=9.5, color=INK)
+    axc.text(0.72, y, val_, fontsize=9.5, color=GREEN, family="monospace")
+    y -= 0.17
+axc.text(0.02, 0.06, "(matches the record card above)", fontsize=8,
+         color=MUTED, style="italic")
+
 fig.tight_layout()
 out = "docs/thesis/figures/phase2_datapoint_dev.png"
 fig.savefig(out, bbox_inches="tight")

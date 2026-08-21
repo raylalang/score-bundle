@@ -12,7 +12,7 @@ runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
 ## Pocket card
 
 **Pages:** phase table 5 · §3.9 17–24 · data-point Fig 3.2 = 20 ·
-tonal Fig 3.3 = 21 · truth/estimate/GP Fig 3.4 = 22 · results 23–24
+tonal Fig 3.3 = 22 · truth/estimate/GP Fig 3.4 = 23 · results 23–24
 (headline on 23) · channels Fig 3.5 = 26 · §5.3 = 31.
 
 **Eight numbers** (as-given variant, paired vs no-graph, development):
@@ -68,11 +68,14 @@ line, 144 milliseconds in — that is the delay channel. On the right, the
 note's six-cell record, every cell with its own uncertainty — note the
 honest ±37 ms on timing; that is the warp's noise row. Bottom: a
 third-of-a-second note, too short to identify vibrato — three cells
-missing. That is the cell mask."
+missing. That is the cell mask. And the bottom row: how the audio becomes
+the loudness cell — the note's waveform quartered, log-RMS per chunk,
+mean minus the track mean, and the chunk spread is the error bar; you can
+see the crescendo inside the note widening it."
 (Banded dots question: pyin's ~10-cent frequency grid; the fit averages
 across bins.)
 
-### Beat 4 — What happened (results, p. 23–24; Fig 3.4 p. 22; channels Fig 3.5, p. 26)
+### Beat 4 — What happened (results, p. 23–24; Fig 3.4 p. 23; channels Fig 3.5, p. 26)
 "Paired against the no-graph ablation, under the noise variant we
 declared as default: recovery improves significantly on intonation and
 both vibrato channels — minus 0.89 cents, minus 0.26, minus 0.30 — and
@@ -83,7 +86,7 @@ Then the honesty, unprompted: "Three recovery contrasts are not
 significant — loudness, timing, delay — and one cell is significantly
 *against* the graph: loudness calibration, plus 0.04. It replicates on
 fresh seeds. I'd rather you hear that from me than find it."
-The validation shot, Fig 3.4 (p. 22): "here are all three layers on two
+The validation shot, Fig 3.4 (p. 23): "here are all three layers on two
 notes — the true pitch curve, the equation's estimate, and the GP's
 prediction. On a held-out note the truth falls inside the GP's bands for
 centre, extent, and rate — and the delay prediction misses, which is
@@ -107,7 +110,7 @@ results reproduce to two decimals, but the extent-channel calibration
 star does not — so that half of the vibrato-calibration claim is the one
 the one-shot could honestly fail."
 
-### Beat 6 — The bonus finding (tonal panel, Fig 3.3, p. 21)
+### Beat 6 — The bonus finding (tonal panel, Fig 3.3, p. 22)
 "One exploratory result I like: the circle-of-fifths metric that *hurt*
 piano expression *helps* intonation — minus 0.21 cents with the interval
 clear of zero, and it re-imposes the known penalty on timing, exactly
