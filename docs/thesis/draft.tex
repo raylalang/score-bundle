@@ -1258,6 +1258,26 @@ the same estimator run on the provided ground-truth pitch curves --- used as
 a cross-check below). The claim available in
 Phase 2 is therefore weaker in kind than the Phase-1 claim, and should not
 be reported as though it were the same.
+Figure~\ref{fig:vibrato-compare} shows all three layers --- truth,
+estimate, prediction --- on two notes.
+
+\figph{phase2_vibrato_compare_dev.png}{1.0}{Truth, estimate, and
+prediction at the note level (development track; the same fit and mask as
+Fig.~\ref{fig:phase2-real}). Top: a \emph{held-out} note --- the GP never
+saw its estimate. The eq.~\eqref{eq:cents-curve}/\eqref{eq:vibrato}
+estimate tracks the truth-derived parameters closely (extent $12.7$ vs
+$12.8$ cents); the GP's predictions carry honest widths, with truth inside
+the $90\%$ bands for centre, extent and rate, while the \emph{delay}
+prediction misses (truth $0$\,ms against $136 \pm 48$) --- one
+illustration of why the delay channel carries no registered claim.
+Bottom: a \emph{visible} note whose vibrato the estimator could not
+identify (sparse confidence-kept frames); the GP's filled cells put truth
+within roughly one standard deviation on all three vibrato parameters.
+The centre row shows the stated scope honestly: on this sparse note the
+estimator sits $8$ cents from truth, and the GP recovers \emph{the
+estimator's} value --- recovery is agreement with the estimator. GP
+curves are drawn from predicted parameters; phase is not a
+target.\label{fig:vibrato-compare}}
 
 \paragraph{Evaluation and the discipline that carries over.}
 The protocol is unchanged: held-out imputation, both axes, paired per-piece bootstrap

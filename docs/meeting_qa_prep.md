@@ -11,9 +11,9 @@ runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
 
 ## Pocket card
 
-**Pages:** phase table 5 · §3.9 17–23 · data-point Fig 3.2 = 20 ·
-tonal Fig 3.3 = 21 · results 22–23 (headline on 23) · channels Fig 3.4 = 25
-· §5.3 = 30.
+**Pages:** phase table 5 · §3.9 17–24 · data-point Fig 3.2 = 20 ·
+tonal Fig 3.3 = 21 · truth/estimate/GP Fig 3.4 = 22 · results 23–24
+(headline on 23) · channels Fig 3.5 = 26 · §5.3 = 31.
 
 **Eight numbers** (as-given variant, paired vs no-graph, development):
 intonation −0.89\* · extent/rate recovery −0.26\*/−0.30\* · vibrato
@@ -72,7 +72,7 @@ missing. That is the cell mask."
 (Banded dots question: pyin's ~10-cent frequency grid; the fit averages
 across bins.)
 
-### Beat 4 — What happened (results, p. 22–23; channels Fig 3.4, p. 25)
+### Beat 4 — What happened (results, p. 23–24; Fig 3.4 p. 22; channels Fig 3.5, p. 26)
 "Paired against the no-graph ablation, under the noise variant we
 declared as default: recovery improves significantly on intonation and
 both vibrato channels — minus 0.89 cents, minus 0.26, minus 0.30 — and
@@ -82,10 +82,17 @@ timing — minus 3.8, minus 0.43, minus 0.29 in NLL. Coverage sits at
 Then the honesty, unprompted: "Three recovery contrasts are not
 significant — loudness, timing, delay — and one cell is significantly
 *against* the graph: loudness calibration, plus 0.04. It replicates on
-fresh seeds. I'd rather you hear that from me than find it." Fig 3.4 if
-wanted: the four channels across one track, including the wide-interval
-edge note in timing and the delay panel where sub-zero stretches appear
-only in GP extrapolations, never in observed values.
+fresh seeds. I'd rather you hear that from me than find it."
+The validation shot, Fig 3.4 (p. 22): "here are all three layers on two
+notes — the true pitch curve, the equation's estimate, and the GP's
+prediction. On a held-out note the truth falls inside the GP's bands for
+centre, extent, and rate — and the delay prediction misses, which is
+exactly why the delay carries no claim. On an estimator-missing note the
+GP's fill puts truth within about one standard deviation on all three
+vibrato parameters." Fig 3.5 (p. 26) if wanted: the four channels across
+one track, including the wide-interval edge note in timing and the delay
+panel where sub-zero stretches appear only in GP extrapolations, never in
+observed values.
 
 ### Beat 5 — Where it stands (the discipline)
 "The claim set is preregistered — committed on the seventeenth, before
@@ -137,6 +144,8 @@ one-shot discipline.
   that, and the thesis says so wherever numbers appear: agreement with
   the estimator, weaker in kind than Phase 1. The quasi-truth cross-check
   gives the same ordering on every channel — it isolates tracker error.
+  Fig 3.4's bottom row makes it visible: the estimator sits 8 cents from
+  truth on a sparse note and the GP recovers the estimator's value.
 - *Missing cells aren't missing at random.* Correct; the draft names the
   mechanism (Rubin). Eval mask MCAR by construction; estimator cells
   informative (missing when vibrato is short or weak). Held-out scores
@@ -210,7 +219,7 @@ one-shot discipline.
    seed-sensitive → C2 risk named. `results/phase2_seeds23_dev.md`.
 8. *Circle of fifths.* Hypothesis pre-committed; helps intonation both
    axes, re-imposes the timing penalty. `results/phase2_tonal_dev.md`.
-9. *Phase-1 addendum* (post-lab-talk, §5.3 p. 30): posterior decomposes
+9. *Phase-1 addendum* (post-lab-talk, §5.3 p. 31): posterior decomposes
    exactly by component — features carry the mean, the graph carries
    calibration, graph × embeddings near-orthogonal; coupling earns its
    keep on velocity only; harmonic-edge question closed, no adoption.
@@ -218,8 +227,8 @@ one-shot discipline.
     three math errors fixed; missingness mechanism named; terminology
     checked against the field with four canonical citations added.
 
-**How to study (~90 min):** Overleaf sync → read §3.9 (p. 17–23) slowly →
-say Part 1 aloud twice → read the results pages 22–23 against the pocket
+**How to study (~90 min):** Overleaf sync → read §3.9 (p. 17–24) slowly →
+say Part 1 aloud twice → read the results pages 23–24 against the pocket
 card → skim the ledger → say the loudness, delay, and MNAR answers from
 Part 2 aloud → the asks.
 
