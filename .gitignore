@@ -24,7 +24,7 @@ data/
 # NB no trailing slash on /.cache and the /results/* rule: dir-only patterns
 # do not match symlinks, which let worktree-scaffolding symlinks slip into
 # the index (2026-08-13; same lesson class as the evidence/ episode)
-/checkpoints/
+/checkpoints
 /.cache
 /logs/
 /figures/
