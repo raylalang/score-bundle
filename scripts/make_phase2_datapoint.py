@@ -61,10 +61,11 @@ for row, (i, tag) in enumerate([(A, "a long note: every cell observed"),
                label="vibrato-free centre $c_i$")
     ax.set_ylabel("cents vs written pitch", fontsize=9, color=INK)
     ax.set_title(f"note {i} ({'%.2f' % notes['duration'][i]} s) — {tag}",
-                 fontsize=10, color=INK, loc="left")
+                 fontsize=10, color=INK, loc="left", pad=30)
     if row == 1:
         ax.set_xlabel("time from note onset (ms)", fontsize=9, color=INK)
-    ax.legend(frameon=False, fontsize=7.5, loc="lower right")
+    ax.legend(frameon=False, fontsize=7.5, ncol=3, loc="lower left",
+              bbox_to_anchor=(0.0, 1.0))
     for s_ in ("top", "right"):
         ax.spines[s_].set_visible(False)
     for s_ in ("left", "bottom"):
@@ -103,6 +104,7 @@ for row, (i, tag) in enumerate([(A, "a long note: every cell observed"),
                      style="italic")
             axc.text(0.02, y, "○", fontsize=8, color=VERM)
         y -= 0.135
+fig.tight_layout()
 out = "docs/thesis/figures/phase2_datapoint_dev.png"
 fig.savefig(out, bbox_inches="tight")
 print("wrote", out, "| notes", A, B)
