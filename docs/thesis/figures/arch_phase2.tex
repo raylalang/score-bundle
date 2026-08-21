@@ -1,4 +1,4 @@
-% arch_phase2.tex — Phase 2 (intonation + vibrato; not yet implemented), "architecture-diagram" style (isometric volumes, two branches).
+% arch_phase2.tex — Phase 2 (the real-audio six-channel bundle; running at development level, claims registered), "architecture-diagram" style (isometric volumes, two branches).
 % Standalone TikZ; compile with:  pdflatex arch_phase2.tex
 \documentclass[tikz,border=8pt]{standalone}
 \usepackage{amsmath,amssymb}
@@ -72,7 +72,7 @@
 % music model: stacked blocks = xL
 \node[op=gamber, text width=17mm, fill=gamber!8] (mm3) at (3.42,-3.62) {};
 \node[op=gamber, text width=17mm, fill=gamber!12] (mm2) at (3.36,-3.68) {};
-\node[op=gamber, text width=17mm] (mm1) at (3.30,-3.74) {music model\\ \tiny decoder-only, $\times L$};
+\node[op=gamber, text width=17mm] (mm1) at (3.30,-3.74) {music model\\ \tiny decoder-only, $\times L$\\ \tiny (piano-trained; unused here)};
 \cuboid{5.35}{-4.25}{0.75}{1.0}{0.26}{gamber}{hh}
 \node[dim, below=1.5mm of hhs] {$H$ (embeddings)\\[1pt] $N\!\times\!512$};
 
@@ -104,11 +104,11 @@
   {$\theta=(s,B,\{c_f\},\text{noise scale})$ learned by one\\ exact per-piece marginal likelihood};
 
 % ================= LIKELIHOOD (the changing part) =================
-\node[op=ggray, text width=17mm, dashed] (aud) at (13.75,-5.95) {monophonic audio\\ \tiny $f_0$ extraction};
+\node[op=ggray, text width=17mm] (aud) at (13.75,-5.95) {monophonic audio\\ \tiny $f_0$ tracking $+$ annotated\\ \tiny onsets $\to$ warp};
 \cuboid{16.15}{-5.35}{0.7}{0.95}{0.24}{ggray}{ob}
-\node[dim, below=1.4mm of obs] {derived targets\\[1pt] $c_i$ (cents), vibrato};
+\node[dim, below=1.4mm of obs] {per-note cells, each with variance\\[1pt] $c,\ \log\gamma,\ \log f^{\mathrm{vib}},\ \ell,\ \tau,\ \delta^{\mathrm{vib}}$};
 
-\node[op=gverm, text width=24mm, line width=1.1pt, text=gverm, dashed] (lik) at (19.55,-4.4)
+\node[op=gverm, text width=24mm, line width=1.1pt, text=gverm] (lik) at (19.55,-4.4)
   {\textbf{likelihood}\\[1pt] \tiny $\tilde y=y+e$ on \emph{observed} notes;\\[-1pt] \tiny $\Sigma_e$ now \emph{substantive}};
 \node[sec=gverm, above=1.2mm of lik] {LIKELIHOOD\ \ ---\ \ CHANGES\ \ WITH\ \ THE\ \ PHASE};
 
@@ -123,7 +123,7 @@
   \draw[ggrey, line width=0.3pt, dashed] (-0.25,0) -- (1.30,0);
 \end{scope}
 \node[dim, text=gink] at (23.05,-1.35)
-  {per-note $\tau_i,\log r_i,\ell_i$\\[1pt] $+\ c_i$, vibrato\\[1pt] each with uncertainty};
+  {the six-channel bundle\\[1pt] $[c, \log\gamma, \log f^{\mathrm{vib}}, \ell, \tau, \delta^{\mathrm{vib}}]$\\[1pt] every cell with uncertainty};
 
 % ================= ARROWS =================
 \draw[arr] (sce) .. controls +(0.7,0) and +(-0.7,0) .. (gop.west);

@@ -13,7 +13,8 @@ runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
 
 **Pages:** phase table 5 · §3.9 17–24 · data-point Fig 3.2 = 20 ·
 tonal Fig 3.3 = 22 · truth/estimate/GP Fig 3.4 = 23 · results 23–24
-(headline on 23) · channels Fig 3.5 = 26 · §5.3 = 31.
+(headline and ledger on 24) · channels Fig 3.5 = 26 · §5.3 = 31 ·
+Phase-2 architecture Fig 8.1 = 46.
 
 **Eight numbers** (as-given variant, paired vs no-graph, development):
 intonation −0.89\* · extent/rate recovery −0.26\*/−0.30\* · vibrato

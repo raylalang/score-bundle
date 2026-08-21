@@ -938,7 +938,9 @@ Phase 2 carries the model to voice, strings and winds, where the performer contr
 pitch. \emph{Nothing in the latent prior changes}: the graph and feature kernels
 of \eqref{eq:gpfirst} (its first two terms), the hyperparameter fit
 (\S\ref{sec:eb}) and the exact conjugate posterior (\S\ref{sec:posterior}) are
-reused; the observation-noise term belongs to the likelihood, and the likelihood is
+reused (with one absence: the music model is piano-trained, so its
+embedding kernel takes no part here --- the evidence branch is the
+hand-built score features alone); the observation-noise term belongs to the likelihood, and the likelihood is
 what changes. Three things do change, and this section
 specifies each: the \emph{channel set}, the way the targets are \emph{obtained}, and
 the \emph{observation noise}, which stops being negligible.
@@ -2293,14 +2295,17 @@ observation noise $\Sigma_e$ becomes substantial because the targets are now
 estimates rather than symbolic MIDI values --- the prior's structure and the exact
 conjugate posterior are untouched.
 
-\figph{arch_phase2.pdf}{1.0}{Phase 2 (dashed blocks were prospective when
-drawn; the pipeline now runs on real data at development level,
-\S\ref{sec:phase2-real}). Audio enters only to \emph{derive} per-note
-targets ($c_i$ cents, vibrato, loudness). One structural block changed
+\figph{arch_phase2.pdf}{1.0}{Phase 2 as run (development level,
+\S\ref{sec:phase2-real}). Audio and the annotated onsets enter only to
+\emph{derive} the per-note cells --- $[c, \log\gamma,
+\log f^{\mathrm{vib}}, \ell, \tau, \delta^{\mathrm{vib}}]$, each with
+its own variance. One structural block changed
 relative to Figure~\ref{fig:arch-phase1} --- the likelihood, where
 $\Sigma_e$ is now substantive and heteroscedastic --- while the coregionalization
-is re-learned at $k \times k$. The prior branches and the conjugate posterior
-head are reused unchanged.\label{fig:arch-phase2}}
+is re-learned at $k \times k$. The prior branches and the conjugate
+posterior head are reused unchanged; the music-model kernel is absent
+here (the model is piano-trained), so the evidence branch carries the
+score features alone.\label{fig:arch-phase2}}
 
 \section{Phase 3: a differentiable-synthesizer audio likelihood}
 The intended step to audio: $x = \Phi(z)\,a + \varepsilon$
