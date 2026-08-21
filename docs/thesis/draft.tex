@@ -946,9 +946,9 @@ the \emph{observation noise}, which stops being negligible.
 \paragraph{The channel set.}
 A fixed-pitch keyboard affords no performer-controlled intonation, and its dynamics is
 a MIDI velocity. Neither holds here. We call the per-note vector of channels
-the \emph{bundle} --- the everyday sense of the word; the title's geometric
-sense, per-note fibres over the score, is the outlook of
-\S\ref{sec:future-geom}. The per-note vector becomes
+the \emph{bundle}.\footnote{The everyday sense of the word; the title's
+geometric sense --- per-note fibres over the score --- is the outlook of
+\S\ref{sec:future-geom}.} It becomes
 \begin{equation}
   y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ \delta_i^{\mathrm{vib}} \,\bigr]
   \;\in\; \R^{k},
@@ -969,7 +969,9 @@ $s^2_{\mathrm{chunks}}$, the sample variance of the four log chunk-RMS values,
 supplies its estimator noise; $c_i$
 is the static intonation offset; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are the
 vibrato rate, extent and onset delay defined below (the superscript keeps the delay
-distinct from the performed duration $\delta_i$ of \eqref{eq:logr}). Of the two decisions
+distinct from the performed duration $\delta_i$ of \eqref{eq:logr}).
+
+Of the two decisions
 this vector leaves open, one is now settled by measurement, against a
 criterion fixed before the numbers were computed: the delay is identifiable
 on $95$--$97\%$ of vibrato-identifiable notes on both the ground-truth and
@@ -1268,17 +1270,20 @@ measured justification rather than by assumption: $2.2\%$ of intonation targets
 are octave slips ($|c| \approx 1200$ cents), the ground-truth cross-check
 rejects every one of them (0 of 358 agree with the truth-derived value), and
 they are marked missing --- treated exactly like unidentifiable
-vibrato. The result, paired against the no-graph ablation under the
+vibrato.
+
+The result, paired against the no-graph ablation under the
 \emph{as-given} noise variant (the declared default): \textbf{recovery
 improves significantly on intonation and both vibrato channels}
 ($\Delta$RMSE $-0.89$ cents, $-0.26$, $-0.30$), \textbf{calibration
 improves significantly on both vibrato channels and on timing}
 ($\Delta$NLL $-3.8$, $-0.43$, $-0.29$), and coverage is $0.88$--$0.91$ at
-nominal $90\%$ on every channel of the six. Reported rather than averaged
-away: under this variant the loudness, timing, and delay recovery contrasts
+nominal $90\%$ on every channel of the six.
+
+Reported rather than averaged away: under this variant the loudness, timing, and delay recovery contrasts
 are small and not significant ($-0.003$, $-0.002$, $-0.001$), and the
-loudness NLL contrast is $+0.04$ \emph{against} the graph --- small but
-itself significant: the bundle's one significant result \emph{against} the graph. In the
+loudness NLL contrast is $+0.04$ \emph{against} the graph --- small, but
+the bundle's one significant adverse result. In the
 per-family breakdown (computed under the learned-scale contrast) the
 brass intonation contrast is not significant on its own, while the vibrato win
 holds within every family and the intonation win within strings and
@@ -1293,7 +1298,9 @@ every direction, every recovery star to two decimals, and the adverse
 loudness cell; the stars on the heavy-tailed calibration contrasts move
 (the extent-channel $\Delta$NLL, $-3.8$ starred there, is $-0.22$ and not
 significant on the fresh seeds) --- so this variability is known before
-the one-shot confirmation rather than discovered by it. Estimator-missing vibrato cells on visible notes
+the one-shot confirmation rather than discovered by it.
+
+Estimator-missing vibrato cells on visible notes
 receive posteriors --- the capability no per-note method has
 (Fig.~\ref{fig:phase2-real}). All of this is development evidence in the
 Phase-1 sense: it selected the design defaults above, and any confirmed
