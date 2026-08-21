@@ -170,6 +170,12 @@ Beyond URMP the alignment problem returns — stated future work.
   headline sentence is on 24). If the tonal result comes up, there is a
   standalone panel to show — `docs/meeting_tonal_panel.png` (deliberately
   not in the thesis; 153 paired deltas, mean −0.21 cents, 61% improve).
+- If "what does your data actually look like?" comes up:
+  `docs/meeting_datapoint_panel.png` — one long note (pitch frames, the
+  gated fit, the visible pre-vibrato stretch before δ, all six cells with
+  ±σ) next to one short note (three cells observed, three MISSING). If
+  asked why the frames sit in bands: that is pyin's ~10-cent frequency
+  grid; the per-note fit averages across bins.
 - Opening line: "I picked things back up and focused on Phase 2." If he
   looks like he needs orientation first, give the 30-second version above,
   then the 2-minute walk of the phase table.
