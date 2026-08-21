@@ -42,6 +42,38 @@ unspent. Page numbers refer to the current 56-page `docs/thesis/draft.pdf`.
 | tonal − plain, intonation | −0.21\* RMSE, −0.05\* NLL |
 | registration | tag 2026-08-17; pool of 13 UNSPENT |
 
+## If he wants the big picture first (likely — lead with this if so)
+
+**30 seconds.** "The project: given the score and a performance, infer how
+it was played — per-note timing, dynamics, intonation, vibrato — with
+honest error bars, from one Gaussian-process model built on the score's
+own structure. Phase 1 proved that on piano with a preregistered test.
+Since then I carried the same model, unchanged, to real audio recordings,
+and preregistered the claims for its confirmation."
+
+**2 minutes** (point at the phase table, p. 7):
+- *Goal:* one generative model of expressive performance — forward it
+  synthesizes, inverted it transcribes; the contribution is structure +
+  calibration, not raw accuracy.
+- *Phase 0:* a from-scratch music language model; its per-note embeddings
+  feed the GP as a feature kernel.
+- *Phase 1 (piano, done):* the multi-output graph GP beat the strongest
+  two-stage pipeline on held-out imputation and passed a preregistered
+  one-shot confirmation (0.376 vs 0.393 RMSE, coverage 0.925). Attribution
+  is measured: the features recover, the graph calibrates. Boundaries are
+  documented (excerpt extrapolation; Gaussian tails).
+- *This stretch (Phase 2):* the same prior, unchanged, on real recordings
+  (URMP) — six channels now including timing from annotated onsets and the
+  vibrato onset delay. The graph helps where it should, coverage is on
+  target, the misses are reported. Claims are preregistered; the 13-piece
+  confirmation pool is untouched and the run takes an afternoon.
+- *One bonus finding:* the circle-of-fifths geometry that hurt piano
+  expression helps intonation — the first sign a music-theoretic geometry
+  earns its place.
+- *Next:* spend the confirmation pool on his go; then either confirm the
+  tonal geometry or scope Phase 3 (audio through a differentiable
+  synthesizer).
+
 **Q: The targets are estimator outputs — what does "recovery" even mean?**
 A: Exactly that, and the thesis says so wherever numbers appear: recovery =
 agreement with the estimator, weaker in kind than Phase 1. The quasi-truth
@@ -135,6 +167,8 @@ Beyond URMP the alignment problem returns — stated future work.
 
 ## In the room
 - Have open: p. 26 (the figure) and p. 23–24 (the results paragraph; the headline sentence is on 24).
-- Opening line: "I picked things back up and focused on Phase 2."
+- Opening line: "I picked things back up and focused on Phase 2." If he
+  looks like he needs orientation first, give the 30-second version above,
+  then the 2-minute walk of the phase table.
 - If a question stumps you: "that's measured — let me follow up with the
   exact number" is a fine answer; everything above has a file behind it.
