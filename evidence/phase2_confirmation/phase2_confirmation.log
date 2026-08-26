@@ -1,0 +1,310 @@
+== confirmation pipeline start 2026-08-27T04:25:09+09:00
+40 unique conf tracks
+  09 Jesus        tr1 tpt   218 notes  ident 77%
+  09 Jesus        tr2 vn    482 notes  ident 24%
+  14 Waltz        tr1 fl    294 notes  ident 21%
+  14 Waltz        tr2 fl    215 notes  ident 16%
+  14 Waltz        tr3 cl    274 notes  ident 4%
+  15 Surprise     tr1 tpt   122 notes  ident 17%
+  15 Surprise     tr2 tpt   103 notes  ident 11%
+  15 Surprise     tr3 tpt    65 notes  ident 26%
+  16 Surprise     tr3 sax    65 notes  ident 22%
+  24 Pirates      tr1 vn    133 notes  ident 20%
+  24 Pirates      tr2 vn     87 notes  ident 48%
+  24 Pirates      tr3 va    135 notes  ident 28%
+  24 Pirates      tr4 vc    178 notes  ident 19%
+  25 Pirates      tr4 sax   175 notes  ident 13%
+  28 Fugue        tr1 fl    245 notes  ident 43%
+  28 Fugue        tr2 ob    253 notes  ident 46%
+  28 Fugue        tr3 cl    215 notes  ident 42%
+  28 Fugue        tr4 bn    187 notes  ident 50%
+  29 Fugue        tr1 fl    234 notes  ident 44%
+  29 Fugue        tr2 fl    254 notes  ident 49%
+  29 Fugue        tr3 ob    213 notes  ident 49%
+  29 Fugue        tr4 cl    187 notes  ident 46%
+  30 Fugue        tr4 sax   187 notes  ident 45%
+  32 Fugue        tr1 vn    244 notes  ident 54%
+  32 Fugue        tr2 vn    253 notes  ident 55%
+  32 Fugue        tr3 va    214 notes  ident 48%
+  32 Fugue        tr4 vc    185 notes  ident 55%
+  33 Elise        tr1 tpt    69 notes  ident 22%
+  33 Elise        tr2 tpt    80 notes  ident 24%
+  33 Elise        tr3 hn     36 notes  ident 58%
+  33 Elise        tr4 tbn    67 notes  ident 21%
+  34 Fugue        tr1 tpt   246 notes  ident 41%
+  34 Fugue        tr2 tpt   254 notes  ident 34%
+  34 Fugue        tr3 hn    216 notes  ident 40%
+  34 Fugue        tr4 tbn   189 notes  ident 40%
+  43 Chorale      tr1 tpt   116 notes  ident 24%
+  43 Chorale      tr2 tpt   119 notes  ident 17%
+  43 Chorale      tr3 hn    121 notes  ident 19%
+  43 Chorale      tr4 tbn    72 notes  ident 19%
+  43 Chorale      tr5 tba    73 notes  ident 27%
+wrote .cache/urmp_targets_conf.pkl (40 tracks)
+  (9, 1) ell done (218/218)
+  (9, 2) ell done (482/482)
+  (14, 1) ell done (294/294)
+  (14, 2) ell done (215/215)
+  (14, 3) ell done (274/274)
+  (15, 1) ell done (122/122)
+  (15, 2) ell done (103/103)
+  (15, 3) ell done (65/65)
+  (16, 3) ell done (65/65)
+  (24, 1) ell done (133/133)
+  (24, 2) ell done (87/87)
+  (24, 3) ell done (135/135)
+  (24, 4) ell done (178/178)
+  (25, 4) ell done (175/175)
+  (28, 1) ell done (245/245)
+  (28, 2) ell done (253/253)
+  (28, 3) ell done (215/215)
+  (28, 4) ell done (187/187)
+  (29, 1) ell done (234/234)
+  (29, 2) ell done (254/254)
+  (29, 3) ell done (213/213)
+  (29, 4) ell done (187/187)
+  (30, 4) ell done (187/187)
+  (32, 1) ell done (244/244)
+  (32, 2) ell done (253/253)
+  (32, 3) ell done (214/214)
+  (32, 4) ell done (185/185)
+  (33, 1) ell done (69/69)
+  (33, 2) ell done (80/80)
+  (33, 3) ell done (36/36)
+  (33, 4) ell done (67/67)
+  (34, 1) ell done (246/246)
+  (34, 2) ell done (254/254)
+  (34, 3) ell done (216/216)
+  (34, 4) ell done (189/189)
+  (43, 1) ell done (116/116)
+  (43, 2) ell done (119/119)
+  (43, 3) ell done (121/121)
+  (43, 4) ell done (72/72)
+  (43, 5) ell done (73/73)
+loudness appended
+  (9, 1) tau dtw    (203/218, std 204 ms)
+  (9, 2) tau dtw    (481/482, std 43 ms)
+  (14, 1) tau dtw    (283/294, std 44 ms)
+  (14, 2) tau dtw    (213/215, std 36 ms)
+  (14, 3) tau exact  (274/274, std 47 ms)
+  (15, 1) tau dtw    (119/122, std 39 ms)
+  (15, 2) tau dtw    (100/103, std 58 ms)
+  (15, 3) tau exact  (65/65, std 46 ms)
+  (16, 3) tau exact  (65/65, std 46 ms)
+  (24, 1) tau dtw    (133/133, std 30 ms)
+  (24, 2) tau exact  (87/87, std 27 ms)
+  (24, 3) tau dtw    (131/135, std 30 ms)
+  (24, 4) tau exact  (178/178, std 26 ms)
+  (25, 4) tau dtw    (175/175, std 80 ms)
+  (28, 1) tau dtw    (242/245, std 41 ms)
+  (28, 2) tau exact  (253/253, std 75 ms)
+  (28, 3) tau dtw    (213/215, std 66 ms)
+  (28, 4) tau exact  (187/187, std 34 ms)
+  (29, 1) tau dtw    (219/234, std 93 ms)
+  (29, 2) tau dtw    (252/254, std 105 ms)
+  (29, 3) tau dtw    (213/213, std 58 ms)
+  (29, 4) tau exact  (187/187, std 40 ms)
+  (30, 4) tau dtw    (179/187, std 87 ms)
+  (32, 1) tau exact  (244/244, std 55 ms)
+  (32, 2) tau exact  (253/253, std 71 ms)
+  (32, 3) tau exact  (214/214, std 47 ms)
+  (32, 4) tau dtw    (183/185, std 48 ms)
+  (33, 1) tau dtw    (67/69, std 62 ms)
+  (33, 2) tau dtw    (77/80, std 38 ms)
+  (33, 3) tau exact  (36/36, std 80 ms)
+  (33, 4) tau dtw    (60/67, std 63 ms)
+  (34, 1) tau dtw    (240/246, std 35 ms)
+  (34, 2) tau dtw    (244/254, std 96 ms)
+  (34, 3) tau dtw    (209/216, std 50 ms)
+  (34, 4) tau dtw    (153/189, std 157 ms)
+  (43, 1) tau exact  (116/116, std 43 ms)
+  (43, 2) tau exact  (119/119, std 51 ms)
+  (43, 3) tau dtw    (115/121, std 79 ms)
+  (43, 4) tau dtw    (65/72, std 213 ms)
+  (43, 5) tau exact  (73/73, std 68 ms)
+match methods: {'exact': 15, 'dtw': 25, 'failed': 0}
+tau appended
+  09 tr1 tpt  delta-id 100/105 vib-id
+  09 tr2 vn   delta-id 309/311 vib-id
+  14 tr1 fl   delta-id 77/78 vib-id
+  14 tr2 fl   delta-id 130/130 vib-id
+  14 tr3 cl   delta-id 89/89 vib-id
+  15 tr1 tpt  delta-id 36/36 vib-id
+  15 tr2 tpt  delta-id 27/28 vib-id
+  15 tr3 tpt  delta-id 20/20 vib-id
+  16 tr3 sax  delta-id 17/18 vib-id
+  24 tr1 vn   delta-id 45/45 vib-id
+  24 tr2 vn   delta-id 66/66 vib-id
+  24 tr3 va   delta-id 61/61 vib-id
+  24 tr4 vc   delta-id 50/50 vib-id
+  25 tr4 sax  delta-id 47/51 vib-id
+  28 tr1 fl   delta-id 128/129 vib-id
+  28 tr2 ob   delta-id 139/152 vib-id
+  28 tr3 cl   delta-id 107/119 vib-id
+  28 tr4 bn   delta-id 97/104 vib-id
+  29 tr1 fl   delta-id 107/107 vib-id
+  29 tr2 fl   delta-id 199/202 vib-id
+  29 tr3 ob   delta-id 122/137 vib-id
+  29 tr4 cl   delta-id 93/106 vib-id
+  30 tr4 sax  delta-id 110/123 vib-id
+  32 tr1 vn   delta-id 163/167 vib-id
+  32 tr2 vn   delta-id 202/205 vib-id
+  32 tr3 va   delta-id 140/143 vib-id
+  32 tr4 vc   delta-id 120/122 vib-id
+  33 tr1 tpt  delta-id 39/41 vib-id
+  33 tr2 tpt  delta-id 48/48 vib-id
+  33 tr3 hn   delta-id 12/14 vib-id
+  33 tr4 tbn  delta-id 28/28 vib-id
+  34 tr1 tpt  delta-id 116/123 vib-id
+  34 tr2 tpt  delta-id 136/137 vib-id
+  34 tr3 hn   delta-id 90/94 vib-id
+  34 tr4 tbn  delta-id 114/120 vib-id
+  43 tr1 tpt  delta-id 42/42 vib-id
+  43 tr2 tpt  delta-id 44/44 vib-id
+  43 tr3 hn   delta-id 40/40 vib-id
+  43 tr4 tbn  delta-id 48/48 vib-id
+  43 tr5 tba  delta-id 39/45 vib-id
+wrote .cache/delta_vib_gt_conf.pkl
+  (9, 1) delta-id 104
+  (9, 2) delta-id 278
+  (14, 1) delta-id 74
+  (14, 2) delta-id 112
+  (14, 3) delta-id 46
+  (15, 1) delta-id 39
+  (15, 2) delta-id 21
+  (15, 3) delta-id 24
+  (16, 3) delta-id 14
+  (24, 1) delta-id 36
+  (24, 2) delta-id 54
+  (24, 3) delta-id 58
+  (24, 4) delta-id 46
+  (25, 4) delta-id 27
+  (28, 1) delta-id 102
+  (28, 2) delta-id 131
+  (28, 3) delta-id 87
+  (28, 4) delta-id 99
+  (29, 1) delta-id 100
+  (29, 2) delta-id 175
+  (29, 3) delta-id 109
+  (29, 4) delta-id 75
+  (30, 4) delta-id 98
+  (32, 1) delta-id 144
+  (32, 2) delta-id 188
+  (32, 3) delta-id 125
+  (32, 4) delta-id 112
+  (33, 1) delta-id 37
+  (33, 2) delta-id 53
+  (33, 3) delta-id 12
+  (33, 4) delta-id 23
+  (34, 1) delta-id 133
+  (34, 2) delta-id 123
+  (34, 3) delta-id 93
+  (34, 4) delta-id 88
+  (43, 1) delta-id 45
+  (43, 2) delta-id 51
+  (43, 3) delta-id 40
+  (43, 4) delta-id 39
+  (43, 5) delta-id 40
+wrote .cache/delta_vib_pyin_conf.pkl
+  (9, 1) delta_vib 104/218
+  (9, 2) delta_vib 278/482
+  (14, 1) delta_vib 74/294
+  (14, 2) delta_vib 112/215
+  (14, 3) delta_vib 46/274
+  (15, 1) delta_vib 39/122
+  (15, 2) delta_vib 21/103
+  (15, 3) delta_vib 24/65
+  (16, 3) delta_vib 14/65
+  (24, 1) delta_vib 36/133
+  (24, 2) delta_vib 54/87
+  (24, 3) delta_vib 58/135
+  (24, 4) delta_vib 46/178
+  (25, 4) delta_vib 27/175
+  (28, 1) delta_vib 102/245
+  (28, 2) delta_vib 131/253
+  (28, 3) delta_vib 87/215
+  (28, 4) delta_vib 99/187
+  (29, 1) delta_vib 100/234
+  (29, 2) delta_vib 175/254
+  (29, 3) delta_vib 109/213
+  (29, 4) delta_vib 75/187
+  (30, 4) delta_vib 98/187
+  (32, 1) delta_vib 144/244
+  (32, 2) delta_vib 188/253
+  (32, 3) delta_vib 125/214
+  (32, 4) delta_vib 112/185
+  (33, 1) delta_vib 37/69
+  (33, 2) delta_vib 53/80
+  (33, 3) delta_vib 12/36
+  (33, 4) delta_vib 23/67
+  (34, 1) delta_vib 133/246
+  (34, 2) delta_vib 123/254
+  (34, 3) delta_vib 93/216
+  (34, 4) delta_vib 88/189
+  (43, 1) delta_vib 45/116
+  (43, 2) delta_vib 51/119
+  (43, 3) delta_vib 40/121
+  (43, 4) delta_vib 39/72
+  (43, 5) delta_vib 40/73
+delta_vib appended
+# Phase 2 CONFIRMATION — one-shot on the frozen 13-piece pool (40 unique tracks, 2 seeds, 30% of notes hidden)
+
+> Registered protocol: docs/phase2_prereg_design.md, tag phase2-registration-2026-08-17. Run ONCE; every number reported whatever the outcome.
+
+## vs estimator targets (primary; predictive sd)
+
+| system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | loudness ell RMSE / NLL / cov@90 | tau (s) RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
+|---|---|---|---|---|---|---|
+| graph GP (learned scale) | 12.006 / +3.74 / 0.88 (n=4095) | 1.378 / +7.25 / 0.91 (n=1486) | 0.375 / +0.37 / 0.90 (n=1486) | 0.401 / +0.46 / 0.90 (n=4095) | 0.067 / -1.73 / 0.90 (n=4016) | 0.187 / -0.68 / 0.89 (n=1920) |
+| graph GP (as-given) | 12.058 / +3.77 / 0.88 (n=4095) | 1.367 / +3.03 / 0.89 (n=1486) | 0.381 / +0.30 / 0.89 (n=1486) | 0.403 / +0.46 / 0.90 (n=4095) | 0.065 / -1.72 / 0.91 (n=4016) | 0.194 / -0.63 / 0.88 (n=1920) |
+| no-graph ablation | 12.709 / +3.77 / 0.89 (n=4095) | 1.457 / +8.39 / 0.91 (n=1486) | 0.628 / +0.52 / 0.87 (n=1486) | 0.405 / +0.46 / 0.90 (n=4095) | 0.063 / -1.69 / 0.91 (n=4016) | 0.186 / -0.60 / 0.90 (n=1920) |
+
+## vs ground-truth-derived targets (quasi-truth; latent sd)
+
+| system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
+|---|---|---|---|---|
+| graph GP (learned scale) | 12.243 / +4.15 / 0.81 (n=4095) | 1.669 / +23.77 / 0.72 (n=1643) | 0.391 / +2.32 / 0.73 (n=1643) | 0.177 / -0.65 / 0.86 (n=2079) |
+| graph GP (as-given) | 12.342 / +4.14 / 0.82 (n=4095) | 1.660 / +11.72 / 0.80 (n=1643) | 0.389 / +0.50 / 0.85 (n=1643) | 0.180 / -0.61 / 0.86 (n=2079) |
+| no-graph ablation | 12.742 / +4.05 / 0.82 (n=4095) | 1.590 / +2.63 / 0.70 (n=1643) | 0.643 / +2.30 / 0.72 (n=1643) | 0.174 / -0.62 / 0.86 (n=2079) |
+
+## Median per-(track, seed) RMSE vs estimator targets
+
+| system | c (cents) | log gamma | log f | loudness ell | tau (s) | delta_vib (s) |
+|---|---|---|---|---|---|---|
+| graph GP (learned scale) | 10.575 | 0.575 | 0.361 | 0.352 | 0.046 | 0.102 |
+| graph GP (as-given) | 10.793 | 0.547 | 0.329 | 0.349 | 0.047 | 0.100 |
+| no-graph ablation | 11.412 | 1.097 | 0.525 | 0.360 | 0.047 | 0.101 |
+
+## Paired graph value (learned scale; gp - nograph), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -0.931 [-1.275, -0.606]* | -0.063 [-0.098, -0.031]* (n=80) |
+| log gamma | -0.406 [-0.549, -0.274]* | -0.776 [-2.261, +0.459]  (n=78) |
+| log f | -0.408 [-0.527, -0.297]* | -0.462 [-0.612, -0.322]* (n=78) |
+| loudness ell | -0.002 [-0.010, +0.007]  | +0.014 [-0.020, +0.051]  (n=80) |
+| tau (s) | +0.003 [+0.000, +0.007]* | -0.042 [-0.065, -0.017]* (n=80) |
+| delta_vib (s) | +0.002 [-0.004, +0.009]  | -0.077 [-0.289, +0.053]  (n=78) |
+
+## Paired graph value (as-given, the default; gp_asgiven - nograph), per (track, seed), vs estimator targets
+
+| channel | dRMSE [95% CI] | dNLL [95% CI] |
+|---|---|---|
+| c (cents) | -0.877 [-1.236, -0.538]* | -0.029 [-0.066, +0.006]  (n=80) |
+| log gamma | -0.425 [-0.565, -0.295]* | -2.990 [-6.575, -0.435]* (n=78) |
+| log f | -0.429 [-0.556, -0.312]* | -0.564 [-0.739, -0.392]* (n=78) |
+| loudness ell | -0.002 [-0.009, +0.005]  | +0.015 [-0.011, +0.044]  (n=80) |
+| tau (s) | +0.003 [+0.001, +0.007]* | -0.030 [-0.061, +0.006]  (n=80) |
+| delta_vib (s) | +0.006 [-0.001, +0.014]  | +0.065 [-0.192, +0.331]  (n=78) |
+
+
+## Paired graph value by instrument family (dRMSE, gp - nograph)
+
+| family | c (cents) | log gamma | log f | loudness ell | tau (s) | delta_vib (s) |
+|---|---|---|---|---|---|---|
+| strings | -0.381* (n=18) | -0.053  (n=18) | -0.081* (n=18) | -0.013* (n=18) | -0.001  (n=18) | +0.002  (n=18) |
+| wood | -0.304  (n=28) | -0.138* (n=26) | -0.184* (n=26) | -0.008  (n=28) | +0.004  (n=28) | +0.001  (n=27) |
+| brass | -1.738* (n=34) | -0.797* (n=34) | -0.752* (n=34) | +0.009  (n=34) | +0.005  (n=34) | +0.003  (n=33) |
+
+wrote results/phase2_confirmation_results.md and results/phase2_confirmation_cells.pkl
+== confirmation pipeline done 2026-08-27T05:46:21+09:00

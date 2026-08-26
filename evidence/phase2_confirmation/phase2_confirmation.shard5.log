@@ -1,0 +1,11 @@
+  (14, 1) seed 1: 3 systems in 366s
+  (15, 2) seed 1: 3 systems in 50s
+  (24, 2) seed 1: 3 systems in 57s
+  (28, 1) seed 1: 3 systems in 360s
+  (29, 1) seed 1: 3 systems in 297s
+  (30, 4) seed 1: 3 systems in 190s
+  (32, 4) seed 1: 3 systems in 207s
+  (33, 4) seed 1: 3 systems in 24s
+  (34, 4) seed 1: 3 systems in 181s
+  (43, 4) seed 1: 3 systems in 28s
+wrote results/phase2_cells/conf/cells.shard5of8.pkl (10 cells)

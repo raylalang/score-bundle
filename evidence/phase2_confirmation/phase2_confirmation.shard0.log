@@ -1,0 +1,11 @@
+  (9, 1) seed 0: 3 systems in 354s
+  (14, 3) seed 0: 3 systems in 341s
+  (16, 3) seed 0: 3 systems in 32s
+  (24, 4) seed 0: 3 systems in 125s
+  (28, 3) seed 0: 3 systems in 259s
+  (29, 3) seed 0: 3 systems in 355s
+  (32, 2) seed 0: 3 systems in 476s
+  (33, 2) seed 0: 3 systems in 41s
+  (34, 2) seed 0: 3 systems in 340s
+  (43, 2) seed 0: 3 systems in 61s
+wrote results/phase2_cells/conf/cells.shard0of8.pkl (10 cells)
