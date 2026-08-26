@@ -1169,6 +1169,35 @@ octave-failures present the learned scale collapses catastrophically while
 as-given stays healthy, and after the failure rule as-given remains the
 better-calibrated variant.
 
+\paragraph{What the per-note compression discards (development study, 2026-08).}
+Eqs.~\eqref{eq:loudness}--\eqref{eq:vibrato} hold every parameter fixed within the
+note: the channels are \emph{time-averages}, and it is fair to ask what they
+discard. Refitting every identifiable development note with one added linear
+intonation-drift term answers this quantitatively. The drift is real music, not
+tracker noise: about two thirds of notes carry a significant slope in the tracked
+and the ground-truth curve \emph{independently} (sign agreement $97\%$, rank
+correlation $0.91$ on both-significant notes), with a median total drift of
+$\approx 10$ cents over the note --- an order of magnitude above the $c$ cell's
+median reported standard error, so $c$ is a precise estimate of the note's
+\emph{average} intonation, not of a constant. Loudness moves even more: the median
+within-note change exceeds the across-note spread of $\ell$, though much of it is
+plain decay envelope ($81\%$ of significant brass slopes fall) rather than
+expressive shaping. Three facts keep the per-note resolution defensible rather
+than refuted. First, the mismatch is priced in: the cell variances of
+\eqref{eq:phase2-noise} are residual-based, so a drifting note reports itself as
+more uncertain --- which is why calibration survives. Second, the quasi-truth
+targets pass through the same parameterization, so the graph-vs-no-graph
+contrasts compare like with like. Third, and decisively, the discarded structure
+is \emph{graph-white}: the lag-1 autocorrelation of the drift and loudness slopes
+along the note sequence is $+0.03$ and $+0.06$ (against $+0.59$ for $\tau$), and
+the two slopes are mutually uncorrelated --- a within-note slope channel is
+precisely the kind the graph prior could not help, so the per-note resolution is
+empirically the right level for \emph{this} model. The within-note structure
+itself belongs to the frame-level likelihood of Phase~3, whose amplitude envelope
+$A_i(t)$ and pitch-curve model are built to carry it; slope channels remain
+post-confirmation candidates under the $\delta^{\mathrm{vib}}$ template (included
+as output, claiming nothing).
+
 \paragraph{The warp, and where the alignment error goes.}
 Phase 1 obtained the score-time warp $T(\cdot)$ from an aligned beat grid supplied with
 the MIDI. There is no MIDI here. $T$ must come from audio-to-score alignment, and its

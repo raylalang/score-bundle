@@ -118,6 +118,17 @@ do not create, sync, or reference one.)
   stars all six recovery contrasts but is the worse-calibrated fallback.
   GT-validated octave-failure rule (|c|>150 → missing); learned noise scale
   collapses on real data with failure cells present, as-given healthy.
+  Within-note drift study (2026-08-27, `scripts/eval_drift_dev.py`,
+  `results/phase2_drift_dev.md`, thesis §3.9 ¶"What the per-note compression
+  discards"): the committee's "sine model too simple" comment quantified —
+  intonation drift is real music (two-thirds of notes significant in tracker
+  AND GT independently, 97% sign agreement, ~10 cents/note median) and loudness
+  moves even more (137% of the channel's across-note sd, but 65% is decay
+  envelope); decisively, the slopes are GRAPH-WHITE (lag-1 +0.03/+0.06 vs
+  +0.59 for τ) → no new channel, mismatch priced into residual-based cell
+  variances (why calibration held), per-note resolution is the right level for
+  the graph model; frame-level structure belongs to Phase 3. Registered
+  estimator unchanged.
   Circle-of-fifths EXPLORATORY result (2026-08-18, `results/phase2_tonal_dev.md`):
   tonal metric beats plain on intonation both axes (−0.213*/−0.050*), re-imposes
   the replacement penalty on timing — first geometry-level positive; adoption =
