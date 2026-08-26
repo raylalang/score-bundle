@@ -100,11 +100,11 @@ do not create, sync, or reference one.)
   (`docs/kernel_multirate_results.md`): a density gradient — wins at ≤30% hidden,
   tie at the 40% operating point, nothing + one guard-invisible collapse at 50% —
   so no adoption, no second confirmation set spent.
-- **Phase 2 — intonation/vibrato/loudness/timing/vibrato-delay: REAL-DATA DEVELOPMENT RESULTS + REGISTERED CLAIMS.**
+- **Phase 2 — intonation/vibrato/loudness/timing/vibrato-delay: CONFIRMED (one-shot spent 2026-08-27).**
   `src/score_bundle/phase2/`: `intonation.py` (`extract_f0` = librosa pyin,
   import-guarded; `fit_vibrato_note` = the thesis NLLS estimator), `urmp.py` (loader,
   44/44), `splits.py` (**FROZEN** composition-level dev/confirmation split, unit-pinned;
-  confirmation = 13 pieces, UNTOUCHED), `targets.py` (f0 → per-note channels).
+  confirmation = 13 pieces, SPENT 2026-08-27), `targets.py` (f0 → per-note channels).
   Measured groundwork: tracker calibration vs URMP GT (2–5 cents/instrument, confidence
   predictive → as-given variances + lowest-quintile frame filter,
   `results/tracker_calibration_dev.md`); τ feasibility (onset-anchored warp, 76/78
@@ -141,8 +141,17 @@ do not create, sync, or reference one.)
   eq:vibrato exactly; 95-97% coverage, 18 ms GT agreement) but carries NO
   claim (graph-neutral); claims C1 intonation recovery / C2 vibrato
   calibration / C3 coverage / C4 timing calibration, as-given variant
-  primary, one shot (`docs/phase2_prereg_design.md`). Confirmation pool
-  (13 pieces) UNTOUCHED — spending it is a separate deliberate act.
+  primary, one shot (`docs/phase2_prereg_design.md`). **CONFIRMATION SPENT
+  2026-08-27 (Ray's explicit go; 40 unique tracks, 1h21m sharded;
+  `results/phase2_confirmation_results.md` + verdict section, evidence
+  archived `evidence/phase2_confirmation/`): C1 PASS (c dRMSE −0.877*,
+  dev −0.891* reproduces), C2 PASS both channels (dNLL γ −2.990*,
+  f −0.564* — the seed-sensitive extent star HELD), C3 PASS (cov
+  0.88–0.91 all six), C4 secondary FAIL (τ dNLL −0.030 ns, CI incl. 0;
+  plus starred adverse τ recovery +0.003*) → headline CONFIRMED by the
+  registered rule; adverse dev ℓ cell did NOT replicate (+0.015 ns);
+  δ_vib graph-neutral as registered; as-given stays better-calibrated
+  vs quasi-truth. Thesis §3.9 carries the verdict (tab:phase2-conf).**
   Thesis §3.9 carries the measured state. 2026-08-13 audit: every quoted
   number re-verified against its log; reproduction tolerances recorded in
   `docs/posterior_decomposition_results.md`.
@@ -241,7 +250,8 @@ not a mode (shard equivalence is bit-exact, pinned by
 `tests/test_phase2_eval_shard.py`). The Phase-2 confirmation one-shot has a
 staged, guarded runner: `scripts/run_phase2_confirmation.sh` — it refuses
 without `PHASE2_SPLIT=confirmation` + `PHASE2_CONFIRMATION_I_AM_SURE=yes`
-and is to be run ONCE, on an explicit, agreed decision only.
+and was run ONCE on 2026-08-27 (Ray's explicit go); the pool is spent —
+never run it again.
 
 **Env gotchas (this machine):** activating `score-bundle` sets
 `LD_LIBRARY_PATH=$CONDA_PREFIX/lib` (a conda env var) so numpy/torch find the conda

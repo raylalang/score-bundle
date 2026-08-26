@@ -126,8 +126,11 @@ missingness, heteroscedastic
 likelihood --- runs end to end on a six-channel bundle; the graph prior
 significantly improves recovery on intonation and vibrato and calibration on
 vibrato and timing (the vibrato-extent calibration star is seed-sensitive),
-with coverage on target on every channel; the claim set
-is registered and its confirmation pool untouched. Phase~3 (audio via a differentiable
+with coverage on target on every channel; the registered claim set was then
+\emph{confirmed in a single one-shot} on the frozen 13-piece pool ---
+intonation recovery, vibrato calibration on both channels, coverage on all six
+channels; the secondary timing-calibration claim failed and is reported
+verbatim. Phase~3 (audio via a differentiable
 synthesizer) is scoped but not built.
 \end{abstract}
 
@@ -247,7 +250,7 @@ Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; the plug-in mean 
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened \\
 2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
-$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $\delta^{\mathrm{vib}}$ & \textbf{Running on real data} (URMP, development, six channels): graph value significant on intonation/vibrato recovery and vibrato/timing calibration (extent-calibration star seed-sensitive); claims registered, confirmation pool unspent \\
+$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $\delta^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP; registered one-shot on the frozen 13-piece pool): intonation recovery, vibrato calibration on both channels, coverage on all six channels; the secondary timing-calibration claim failed, reported verbatim \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested, inference not started \\
 \bottomrule
@@ -1282,7 +1285,8 @@ errors (gross octave errors --- `slips' hereafter --- fall from $9.6\%$ to $0.4\
 quintiles), which fixes the estimator chain: variances as given, lowest
 confidence quintile discarded. (ii) The development/confirmation split is
 frozen at the \emph{composition} level, constructed deterministically and
-data-blind (13 of 44 pieces in the untouched confirmation pool) --- and this
+data-blind (13 of 44 pieces in the confirmation pool, spent exactly once
+below) --- and this
 granularity is not merely prudent: arrangements of one composition share
 \emph{identical} track recordings, so any finer split would leak audio
 across sides. (iii) Even so, no clean intonation ground truth exists. This
@@ -1421,13 +1425,61 @@ delay $\delta^{\mathrm{vib}}$ (s) & $-0.001$\phantom{$^{*}$} & $+0.057$\phantom{
 Estimator-missing vibrato cells on visible notes
 receive posteriors --- the capability no per-note method has
 (Fig.~\ref{fig:phase2-real}). All of this is development evidence in the
-Phase-1 sense: it selected the design defaults above, and any confirmed
-Phase-2 claim awaits the frozen confirmation pool under the registered
-claim set: recovery on intonation; calibration on \emph{both} vibrato
-channels; coverage within $[0.85, 0.95]$ on all six channels; and timing
-calibration as a secondary claim that does not gate the others --- the
-delay channel deliberately carries no claim, and the rule is one-shot with
-every number reported.
+Phase-1 sense: it selected the design defaults above and froze the
+registered claim set: recovery on intonation; calibration on \emph{both}
+vibrato channels; coverage within $[0.85, 0.95]$ on all six channels; and
+timing calibration as a secondary claim that does not gate the others ---
+the delay channel deliberately carries no claim, and the rule is one-shot
+with every number reported.
+
+\paragraph{The one-shot confirmation (run once, 2026-08-27).}
+The frozen 13-piece pool --- 40 unique tracks after recording
+deduplication, two seeds, the registered protocol verbatim --- was then
+spent in a single run. Scored against the registered rule
+(Table~\ref{tab:phase2-conf}): \textbf{C1 confirmed} --- intonation
+recovery $-0.877\,[-1.236, -0.538]^{*}$, reproducing the development basis
+($-0.891^{*}$) almost exactly; \textbf{C2 confirmed on both vibrato
+channels} --- calibration $-2.990\,[-6.575, -0.435]^{*}$ on extent and
+$-0.564\,[-0.739, -0.392]^{*}$ on rate, the extent star being precisely
+the seed-sensitive contrast flagged above, which held; \textbf{C3
+confirmed} --- coverage $0.88$--$0.91$ on all six channels; \textbf{C4
+(secondary) failed} --- timing calibration $-0.030\,[-0.061, +0.006]$,
+the right sign but a confidence interval including zero (development basis
+$-0.292^{*}$), accompanied by a small starred \emph{adverse} timing
+recovery cell ($+0.003\,[+0.000, +0.007]^{*}$, three milliseconds against
+a 65-millisecond RMSE): the graph's value on the adopted timing channel did
+not confirm on this pool, and is reported as such. The development set's
+adverse loudness cell did \emph{not} replicate ($+0.015$, not
+significant); the delay channel stayed graph-neutral as registered; and the
+quasi-truth ordering is unchanged --- as-given remains the better-calibrated
+variant (vibrato coverage $0.80/0.85$ vs the learned scale's $0.72/0.73$).
+By the registered decision rule (C1, C2, C3 all pass), \textbf{the Phase-2
+headline is confirmed: the unchanged graph prior extends to real audio with
+calibrated uncertainty, at confirmation level.} Every number of the run,
+all three systems, and the raw per-cell evidence are archived with the run
+logs.
+
+\begin{table}[t]\centering
+\caption{Phase-2 \textbf{confirmation} results (one-shot on the frozen
+pool, as-given variant, registered protocol; paired per (track, seed)
+against the no-graph ablation, $95\%$ bootstrap CIs; $^{*}$ = CI excludes
+zero; $n = 78$--$80$ pairs per channel); coverage at nominal $90\%$.
+Adverse and null cells reported verbatim per the registered rule.}
+\label{tab:phase2-conf}
+\footnotesize
+\begin{tabular}{@{}lrrc@{}}
+\toprule
+channel & $\Delta$RMSE & $\Delta$NLL & cov@90 \\
+\midrule
+intonation $c$ (cents) & $-0.877^{*}$ & $-0.029$\phantom{$^{*}$} & 0.88 \\
+extent $\log\gamma$ & $-0.425^{*}$ & $-2.990^{*}$ & 0.89 \\
+rate $\log f^{\mathrm{vib}}$ & $-0.429^{*}$ & $-0.564^{*}$ & 0.89 \\
+loudness $\ell$ & $-0.002$\phantom{$^{*}$} & $+0.015$\phantom{$^{*}$} & 0.90 \\
+timing $\tau$ (s) & $+0.003^{*}$ & $-0.030$\phantom{$^{*}$} & 0.91 \\
+delay $\delta^{\mathrm{vib}}$ (s) & $+0.006$\phantom{$^{*}$} & $+0.065$\phantom{$^{*}$} & 0.88 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \figph{phase2_real_example.png}{1.0}{Phase 2 on one real development track
 (violin), 30\% of notes hidden; four of the six channels. First panel:
@@ -1450,8 +1502,8 @@ non-result under the default noise variant.\label{fig:phase2-real}}
 \paragraph{Gate.} Phase 2 remains gated. It is scoped so that a negative result costs
 the thesis nothing: the Phase-1 contribution stands on its own, and Phase 2's value is
 the demonstration that the same prior, unchanged, extends to channels it was never
-designed for --- now shown on real recordings at development level, with the
-confirmation-grade version deliberately still unspent.
+designed for --- now shown on real recordings and \emph{confirmed} once on the frozen pool
+(C1--C3; the secondary timing claim failed and is reported verbatim).
 
 \section{Phase 3: waveform likelihood}\label{sec:phase3-math}
 The optional audio likelihood replaces $\tilde y$ with the waveform $x \in \R^{M}$:
