@@ -252,7 +252,7 @@ Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
 $f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $\delta^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP; registered one-shot on the frozen 13-piece pool): intonation recovery, vibrato calibration on both channels, coverage on all six channels; the secondary timing-calibration claim failed, reported verbatim \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
-Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested, inference not started \\
+Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested; first single-note waveform-likelihood inference demonstrated on real audio (development, exploratory) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1541,6 +1541,29 @@ helpers. Inference over the nonlinear $z$ (Laplace approximation or
 variational inference, initialised from the nominal score) is the open Phase-3 step;
 the coupled graph prior --- the first two terms of \eqref{eq:gpfirst} --- plays the
 role of $p(z)$'s structured component.
+
+\paragraph{A first measurement (development, exploratory, 2026-08).}
+The collapsed likelihood \eqref{eq:collapsed} has now been evaluated on real
+audio once, in the smallest honest configuration: one development violin
+track, the note's $f_0$ curve parameterized by the Phase-2 channel variables,
+amplitudes piecewise-constant over the four chunks of \eqref{eq:loudness},
+and the likelihood gridded over the intonation centre $c$ (exact 1-D
+inference up to a $0.02$-cent step; an $O(mp^2)$ Woodbury form of
+\eqref{eq:collapsed} makes the $10^4$-sample segments tractable, equality
+with the dense form unit-pinned). With no tracker in the loop, the waveform
+posterior lands within $0.7$--$1.6$ cents of the ground-truth-derived centre
+on both probe notes --- on par with the full pyin-plus-NLLS estimator chain
+--- confirming that the phase-coherent basis carries the intonation
+information directly. The instructive failure is the posterior \emph{width}:
+$\pm 0.04$--$0.17$ cents, several times smaller than the actual distance to
+truth. The collapsed likelihood conditions on the parametric curve being
+exactly right, so the within-note time variation measured in \S\ref{sec:phase2}
+(the drift study) returns here as structured residual that a $10^4$-sample
+likelihood cannot ignore and stay calibrated: the Phase-3 position model must
+carry within-note structure (at minimum the drift term), or the noise model
+must be robust to it --- otherwise Phase 3 would trade Phase 2's honest error
+bars for sharper wrong ones. This measured constraint, not the synthesis
+sketch, is what the phase's design now starts from.
 
 \paragraph{From imputation to audio: the task structure across phases.}
 It is worth being explicit that the \emph{visible/hidden partition of

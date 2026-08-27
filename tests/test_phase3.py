@@ -34,3 +34,18 @@ def test_position_inference_is_stub():
         assert False
     except NotImplementedError:
         pass
+
+
+def test_collapsed_loglik_lowrank_matches_dense():
+    rng = np.random.default_rng(2)
+    t = np.linspace(0, 0.5, 900)
+    f0 = np.full_like(t, 7.0)
+    Phi = synth.harmonic_design_matrix(f0, t, 3)
+    a_true = rng.standard_normal(6)
+    x = Phi @ a_true + 0.05 * rng.standard_normal(t.size)
+    Sigma_a = np.diag(rng.uniform(0.5, 3.0, 6))
+    mu_a = rng.standard_normal(6) * 0.1
+    for nv in (1e-3, 0.7):
+        dense = waveform_model.collapsed_loglik(x, Phi, Sigma_a, mu_a, nv)
+        low = waveform_model.collapsed_loglik_lowrank(x, Phi, Sigma_a, mu_a, nv)
+        assert abs(dense - low) < 1e-6 * max(1.0, abs(dense))

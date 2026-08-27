@@ -155,7 +155,18 @@ do not create, sync, or reference one.)
   Thesis §3.9 carries the measured state. 2026-08-13 audit: every quoted
   number re-verified against its log; reproduction tolerances recorded in
   `docs/posterior_decomposition_results.md`.
-- **Phase 3 — waveform likelihood (stubs + helpers).** `src/score_bundle/phase3/`.
+- **Phase 3 — waveform likelihood (helpers + first real-audio inference).**
+  `src/score_bundle/phase3/`. `collapsed_loglik_lowrank` = Woodbury form of the
+  exact amplitude-marginalized likelihood (dense-equality unit-pinned). First
+  feasibility measurement (2026-08-27, `scripts/demo_phase3_waveform.py`,
+  `results/phase3_waveform_feasibility.md`, dev-only exploratory): gridded
+  collapsed likelihood over intonation c on 2 real violin notes, NO tracker —
+  lands 0.7–1.6 cents from GT (on par with the estimator chain) but posteriors
+  are OVERCONFIDENT (±0.04–0.17 cents, 4–18σ from truth) because the likelihood
+  conditions on the exact parametric curve — the drift-study mismatch returning
+  at waveform scale. Design consequence (thesis §phase3-math ¶"A first
+  measurement"): the z model needs within-note structure or a
+  mismatch-robust noise model. Outer-loop inference over z still open.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,

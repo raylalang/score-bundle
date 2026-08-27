@@ -59,6 +59,37 @@ def collapsed_loglik(
     return float(-0.5 * (r @ np.linalg.solve(C, r) + logdet + m * _LOG2PI))
 
 
+def collapsed_loglik_lowrank(
+    x: np.ndarray,
+    Phi: np.ndarray,
+    Sigma_a: np.ndarray,
+    mu_a: Optional[np.ndarray] = None,
+    noise_var: float = 1.0,
+) -> float:
+    """log p(x | z), identical to :func:`collapsed_loglik`, in O(m p^2).
+
+    Woodbury + matrix-determinant lemma on C = noise_var I + Phi Sigma_a Phi^T:
+    never forms the (m, m) covariance, so real audio segments (m ~ 10^4..10^5
+    samples, p ~ 10^1..10^2 amplitude columns) are tractable.  Equality with
+    the dense form is unit-pinned.
+    """
+    x = np.asarray(x, dtype=float)
+    Phi = np.asarray(Phi, dtype=float)
+    m, p = Phi.shape
+    if mu_a is None:
+        mu_a = np.zeros(p)
+    r = x - Phi @ mu_a
+    s2 = float(noise_var)
+    G = Phi.T @ Phi                       # (p, p)
+    A = np.linalg.inv(Sigma_a) + G / s2   # Woodbury inner matrix
+    Phir = Phi.T @ r
+    quad = (r @ r - Phir @ np.linalg.solve(A, Phir) / s2) / s2
+    sign_a, logdet_a = np.linalg.slogdet(A)
+    sign_s, logdet_s = np.linalg.slogdet(Sigma_a)
+    logdet = m * np.log(s2) + logdet_a + logdet_s
+    return float(-0.5 * (quad + logdet + m * _LOG2PI))
+
+
 def infer_positions(*args, **kwargs):  # pragma: no cover - research stub
     """Inverse inference over the nonlinear positions z (Laplace / VI).
 
