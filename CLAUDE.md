@@ -172,8 +172,11 @@ do not create, sync, or reference one.)
   waveform median 2.4 cents from quasi-truth (estimator chain 2.0; waveform
   BEATS it on winds 2.75 vs 3.27); drift term improves accuracy (−0.18
   paired) but does NOT fix calibration (cov@90 = 1–3% both variants — mean
-  fixes shrink sd as fast as error) ⇒ Phase-3 calibration must come from the
-  NOISE side (structured-residual model), the design theorem going forward.
+  fixes shrink sd as fast as error) ; AR(1) whitening (3rd variant, median ρ 0.944) ALSO fails —
+  coverage 2%, |z| worse (45) — the misfit is IN-BAND at the harmonics ⇒ the
+  design theorem in final form: calibration needs a marginalized pitch-curve
+  DEVIATION PRIOR (J Σ_dev Jᵀ along the curve Jacobian), not a richer point
+  model (measured: no) nor a generic colored floor (measured: no).
   Outer-loop inference over z still open.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,

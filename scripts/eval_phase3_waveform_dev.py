@@ -98,32 +98,76 @@ def posterior_stats(grid, lls):
     return mean, max(sd, 1e-6)
 
 
-def infer_c(x, t, midi, drift, scaffold):
-    """Score-centred grid inference; returns (mean, sd, slope_hat)."""
+def make_whitener(rho):
+    """AR(1) whitening filter: y_t = x_t - rho x_{t-1} (first sample scaled).
+
+    Applied identically to the audio and every column of Phi, this maps the
+    AR(1)-noise likelihood to the white-noise one; the Jacobian is constant
+    across the c grid (rho fixed per note), so posterior comparisons stand.
+    """
+    def w(v):
+        out = v.copy()
+        out[1:] = v[1:] - rho * v[:-1]
+        out[0] = v[0] * np.sqrt(max(1.0 - rho * rho, 1e-6))
+        return out
+    return w
+
+
+def fit_rho(x, t, midi, c, **kw):
+    """Residual lag-1 autocorrelation at the given curve (the AR(1) fit)."""
+    Phi = chunked_design(f0_curve(t, midi, c, **kw), t)
+    beta, *_ = np.linalg.lstsq(Phi, x, rcond=None)
+    r = x - Phi @ beta
+    rho = float(r[1:] @ r[:-1] / max(r @ r, 1e-12))
+    return float(np.clip(rho, 0.0, 0.999))
+
+
+def infer_c(x, t, midi, drift, scaffold, ar1=False):
+    """Score-centred grid inference; returns (mean, sd, slope_hat, rho)."""
+    rho = fit_rho(x, t, midi, 0.0, **scaffold) if ar1 else 0.0
+    wh = make_whitener(rho) if ar1 else None
+    xw = wh(x) if ar1 else x
+
+    def ll(c, nv, **kw):
+        Phi = chunked_design(f0_curve(t, midi, c, **kw), t)
+        if wh is not None:
+            Phi = np.apply_along_axis(wh, 0, Phi)
+        from score_bundle.phase3.waveform_model import \
+            collapsed_loglik_lowrank
+        Sigma_a = np.eye(Phi.shape[1]) * AMP_VAR
+        return collapsed_loglik_lowrank(xw, Phi, Sigma_a, noise_var=nv)
+
+    def noise(c, **kw):
+        Phi = chunked_design(f0_curve(t, midi, c, **kw), t)
+        if wh is not None:
+            Phi = np.apply_along_axis(wh, 0, Phi)
+        beta, *_ = np.linalg.lstsq(Phi, xw, rcond=None)
+        r = xw - Phi @ beta
+        return float(r @ r / max(xw.size - Phi.shape[1], 1))
+
     coarse = np.arange(-50.0, 50.0 + 1e-9, 1.0)
     slopes = np.linspace(-40.0, 40.0, 9) if drift else np.array([0.0])
-    nv = fit_noise(x, t, midi, 0.0, **scaffold)
+    nv = noise(0.0, **scaffold)
     best = (-np.inf, 0.0, 0.0)
     for s in slopes:
         kw = dict(scaffold, slope=float(s))
-        lls = np.array([loglik(x, t, midi, c, nv, **kw) for c in coarse])
+        lls = np.array([ll(c, nv, **kw) for c in coarse])
         j = int(np.argmax(lls))
         if lls[j] > best[0]:
             best = (float(lls[j]), float(coarse[j]), float(s))
     _, c0, s_hat = best
     kw = dict(scaffold, slope=s_hat)
-    nv = fit_noise(x, t, midi, c0, **kw)
+    nv = noise(c0, **kw)
     if drift:                        # refine the slope at the coarse c
         sfine = s_hat + np.linspace(-6.0, 6.0, 13)
-        lls = np.array([loglik(x, t, midi, c0, nv,
-                               **dict(scaffold, slope=float(s)))
+        lls = np.array([ll(c0, nv, **dict(scaffold, slope=float(s)))
                         for s in sfine])
         s_hat = float(sfine[int(np.argmax(lls))])
         kw = dict(scaffold, slope=s_hat)
     fine = c0 + np.arange(-3.0, 3.0 + 1e-9, 0.03)
-    lls = np.array([loglik(x, t, midi, c, nv, **kw) for c in fine])
+    lls = np.array([ll(c, nv, **kw) for c in fine])
     mean, sd = posterior_stats(fine, lls)
-    return mean, sd, s_hat
+    return mean, sd, s_hat, rho
 
 
 def eligible_notes(d, notes):
@@ -192,14 +236,16 @@ def stage_run(shard: str) -> None:
                    "est_c": float(d["est"][i, 0]),
                    "est_sd": float(np.sqrt(d["var"][i, 0]))
                    if np.isfinite(d["var"][i, 0]) else np.nan}
-            for name, drift in (("flat", False), ("drift", True)):
-                mean, sd, s_hat = infer_c(x, t, midi, drift, scaffold)
-                rec[name] = (mean, sd, s_hat)
+            for name, drift, ar1 in (("flat", False, False),
+                                     ("drift", True, False),
+                                     ("ar1", True, True)):
+                rec[name] = infer_c(x, t, midi, drift, scaffold, ar1)
             rows.append(rec)
             print(f"{key} note {i} ({d['instrument']}): flat "
                   f"{rec['flat'][0]:+.2f}+/-{rec['flat'][1]:.2f}, drift "
-                  f"{rec['drift'][0]:+.2f}+/-{rec['drift'][1]:.2f} "
-                  f"(s={rec['drift'][2]:+.0f}) gt {rec['gt_c']:+.2f} "
+                  f"{rec['drift'][0]:+.2f}+/-{rec['drift'][1]:.2f}, ar1 "
+                  f"{rec['ar1'][0]:+.2f}+/-{rec['ar1'][1]:.2f} "
+                  f"(rho={rec['ar1'][3]:.3f}) gt {rec['gt_c']:+.2f} "
                   f"[{time.time() - t0:.0f}s]", flush=True)
     out = f"{CELLS_DIR}/wave.shard{k}of{nsh}.pkl"
     pickle.dump(rows, open(out, "wb"))
@@ -228,7 +274,7 @@ def stage_report() -> None:
                                  for r in rows})) + "\n",
              "\n| variant | median abs err (cents) | q90 | median sd | "
              "median abs z | cov@90 |\n|---|---|---|---|---|---|\n"]
-    for v in ("flat", "drift"):
+    for v in ("flat", "drift", "ar1"):
         err, z, cov = stats(v)
         sd = np.array([r[v][1] for r in rows])
         lines.append(f"| {v} | {np.median(err):.2f} | "
@@ -242,6 +288,10 @@ def stage_report() -> None:
                       - abs(r["flat"][0] - r["gt_c"]) for r in rows])
     lines.append(f"drift-flat paired |err|: median {np.median(d_err):+.3f}, "
                  f"drift better on {np.mean(d_err < 0):.0%} of notes\n")
+    rhos = np.array([r["ar1"][3] for r in rows])
+    lines.append(f"AR(1) residual rho: median {np.median(rhos):.3f}, "
+                 f"q10/q90 {np.quantile(rhos, .1):.3f}/"
+                 f"{np.quantile(rhos, .9):.3f}\n")
     lines.append("\nPer family (median abs err flat / drift / estimator):\n")
     for fam, mem in (("strings", ("vn", "va", "vc", "db")),
                      ("winds", ("fl", "cl", "ob", "sax", "bn")),
