@@ -52,3 +52,37 @@ one estimator ingredient, recorded as such).
 
 No claims; single study, dev only. Next: the deviation prior, then the
 joint prior over z across notes.
+
+## Round 3 (same day): deviation prior + self-consistency — the diagnosis closes
+
+**Deviation prior** (`rundev` verb: coarse drift search, then fine pass
+with 8 zero-mean Hann-bump pitch deviations marginalized along the curve
+Jacobian, prior sd 5 cents/coeff): n=376, median |err| **2.29** cents
+(q90 6.77) — the best accuracy of all variants — median sd 0.063,
+median |z| 31.7, **cov@90 0.03**. Calibration against quasi-truth is
+invariant again.
+
+**Self-consistency check** (`scripts/eval_phase3_selfcheck.py`, 40
+synthetic notes built from real notes' fitted structure, model true by
+construction): median |z| 0.53, mean z −0.19, **cov@90 = 0.90 exactly**.
+The inference machinery is internally calibrated.
+
+**Synthesis.** Accuracy climbs with every model improvement
+(2.81 → 2.73 → 2.40 → 2.29, approaching the estimator chain's 2.01);
+cross-estimand coverage is invariant (~0.01–0.03) under a mean fix, a
+colored floor, and a deviation prior; and the posterior is exactly
+calibrated for its own estimand. Conclusion: the residual ~2.3-cent gap
+IS the estimand/model mismatch between "the c the harmonic model wants"
+and "the NLLS-on-GT-curve c" — a bridge problem, not an inference
+problem. No within-model fix can close it, which is why all three didn't.
+
+**Design resolution (the Phase-3 integration path):** treat the waveform
+posterior exactly the way Phase 2 treats every estimator — as a
+measurement with an honest noise row. The waveform-derived c enters the
+Phase-2 bundle as an additional observation channel whose variance is
+its (tiny) posterior variance PLUS an empirically calibrated per-note
+discrepancy floor at the measured ~2-cent scale — restoring calibration
+by construction, in the same as-given discipline the thesis already
+runs on. Phase 3 then feeds the bundle rather than replacing it; full
+waveform-native calibration (a bridge model for the estimand gap)
+remains the research frontier beyond that.

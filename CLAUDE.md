@@ -173,10 +173,16 @@ do not create, sync, or reference one.)
   BEATS it on winds 2.75 vs 3.27); drift term improves accuracy (−0.18
   paired) but does NOT fix calibration (cov@90 = 1–3% both variants — mean
   fixes shrink sd as fast as error) ; AR(1) whitening (3rd variant, median ρ 0.944) ALSO fails —
-  coverage 2%, |z| worse (45) — the misfit is IN-BAND at the harmonics ⇒ the
-  design theorem in final form: calibration needs a marginalized pitch-curve
-  DEVIATION PRIOR (J Σ_dev Jᵀ along the curve Jacobian), not a richer point
-  model (measured: no) nor a generic colored floor (measured: no).
+  coverage 2%, |z| worse (45) — the misfit is IN-BAND at the harmonics ; deviation
+  prior (rundev verb, 8 zero-mean bumps marginalized along the Jacobian) =
+  BEST accuracy (2.29) and coverage STILL 0.03; self-consistency check
+  (eval_phase3_selfcheck.py, model-true synthetics) covers at 0.90 EXACTLY ⇒
+  machinery internally calibrated, the invariant overconfidence is an
+  ESTIMAND gap (harmonic-model c ≠ NLLS-on-GT c, ~2 cents), unfixable
+  within-model. Resolution (in thesis): waveform c joins the Phase-2 bundle
+  as an observation channel with posterior var + empirically calibrated
+  ~2-cent discrepancy floor (as-given discipline); waveform-native
+  calibration = frontier.
   Outer-loop inference over z still open.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,

@@ -170,6 +170,81 @@ def infer_c(x, t, midi, drift, scaffold, ar1=False):
     return mean, sd, s_hat, rho
 
 
+def infer_c_devprior(x, t, midi, scaffold, n_bump=8, dev_sd=5.0):
+    """Deviation-prior variant: coarse pass as in `drift`, then a fine pass
+    with the collapsed likelihood augmented by marginalized smooth pitch-curve
+    deviations.
+
+    Deviations delta(t) live on a zero-mean Hann-bump basis (n_bump windows,
+    50% overlap, each de-meaned so a constant shift stays identified as c);
+    the waveform Jacobian wrt each coefficient is finite-differenced at the
+    per-candidate LS amplitudes and appended to Phi with prior sd `dev_sd`
+    cents per coefficient --- marginalized exactly like the amplitudes.
+    Returns (mean, sd, slope_hat, 0.0).
+    """
+    from score_bundle.phase3.waveform_model import collapsed_loglik_lowrank
+
+    # coarse: reuse the white-noise drift search for location only
+    def ll_white(c, nv, **kw):
+        Phi = chunked_design(f0_curve(t, midi, c, **kw), t)
+        Sigma_a = np.eye(Phi.shape[1]) * AMP_VAR
+        return collapsed_loglik_lowrank(x, Phi, Sigma_a, noise_var=nv)
+
+    def noise_at(c, **kw):
+        Phi = chunked_design(f0_curve(t, midi, c, **kw), t)
+        beta, *_ = np.linalg.lstsq(Phi, x, rcond=None)
+        r = x - Phi @ beta
+        return float(r @ r / max(x.size - Phi.shape[1], 1))
+
+    coarse = np.arange(-50.0, 50.0 + 1e-9, 1.0)
+    nv = noise_at(0.0, **scaffold)
+    best = (-np.inf, 0.0, 0.0)
+    for s in np.linspace(-40.0, 40.0, 9):
+        kw = dict(scaffold, slope=float(s))
+        lls = np.array([ll_white(c, nv, **kw) for c in coarse])
+        j = int(np.argmax(lls))
+        if lls[j] > best[0]:
+            best = (float(lls[j]), float(coarse[j]), float(s))
+    _, c0, s_hat = best
+    kw = dict(scaffold, slope=s_hat)
+
+    # zero-mean Hann bump basis over the note
+    m = t.size
+    centers = np.linspace(0, m - 1, n_bump + 2)[1:-1]
+    half = (centers[1] - centers[0]) if n_bump > 1 else m / 2.0
+    bumps = []
+    idx = np.arange(m)
+    for cm in centers:
+        b = np.clip(1.0 - np.abs(idx - cm) / half, 0.0, None)
+        b = 0.5 - 0.5 * np.cos(np.pi * np.clip(
+            1.0 - np.abs(idx - cm) / half, 0.0, 1.0) * 2.0)
+        b -= b.mean()
+        bumps.append(b)
+
+    def ll_dev(c, nv):
+        f0 = f0_curve(t, midi, c, **kw)
+        Phi = chunked_design(f0, t)
+        a_hat, *_ = np.linalg.lstsq(Phi, x, rcond=None)
+        mean_wave = Phi @ a_hat
+        eps = 1.0
+        J = np.empty((m, len(bumps)))
+        base_cents_extra = np.zeros(m)
+        for jb, b in enumerate(bumps):
+            f0p = f0 * 2.0 ** (eps * b / 1200.0)
+            J[:, jb] = (chunked_design(f0p, t) @ a_hat - mean_wave) / eps
+        Phi_aug = np.concatenate([Phi, J], axis=1)
+        p_amp = Phi.shape[1]
+        Sig = np.diag(np.concatenate([np.full(p_amp, AMP_VAR),
+                                      np.full(len(bumps), dev_sd ** 2)]))
+        return collapsed_loglik_lowrank(x, Phi_aug, Sig, noise_var=nv)
+
+    nv = noise_at(c0, **kw)
+    fine = c0 + np.arange(-3.0, 3.0 + 1e-9, 0.06)
+    lls = np.array([ll_dev(c, nv) for c in fine])
+    mean, sd = posterior_stats(fine, lls)
+    return mean, sd, s_hat, 0.0
+
+
 def eligible_notes(d, notes):
     n = len(d["ident"])
     gt_c = d["est_gt"][:, 0]
@@ -310,10 +385,56 @@ def stage_report() -> None:
     print(f"wrote {OUT_MD}")
 
 
+def stage_rundev(shard: str) -> None:
+    import soundfile as sf
+    from scipy.signal import resample_poly
+
+    from score_bundle.phase2.urmp import read_notes_annotation
+
+    k, nsh = (int(v) for v in shard.split("/"))
+    os.makedirs(CELLS_DIR, exist_ok=True)
+    rows = []
+    gidx = 0
+    for key, d, tr in selected():
+        notes = read_notes_annotation(tr.notes)
+        idx = eligible_notes(d, notes)
+        mine = [i for i in idx if (gidx + idx.index(i)) % nsh == k]
+        gidx += len(idx)
+        if not mine:
+            continue
+        audio48, sr48 = sf.read(tr.audio)
+        audio = resample_poly(np.asarray(audio48, dtype=float), SR, int(sr48))
+        for i in mine:
+            t0 = time.time()
+            on, du = notes["onset"][i], min(notes["duration"][i], MAX_SEG_S)
+            a, b = int((on + 0.02) * SR), int((on + du - 0.02) * SR)
+            x = audio[max(a, 0):min(b, audio.size)]
+            if x.size < SR // 8:
+                continue
+            t = np.arange(x.size) / SR
+            scaffold = {}
+            if d["ident"][i] and np.isfinite(d["est"][i, 1]):
+                scaffold = dict(gamma=float(np.exp(d["est"][i, 1])),
+                                f=float(np.exp(d["est"][i, 2])),
+                                delta=float(d["dvib"][i])
+                                if np.isfinite(d["dvib"][i]) else 0.0)
+            r = infer_c_devprior(x, t, float(d["midi"][i]), scaffold)
+            rows.append({"key": key, "i": i, "dev8": r,
+                         "gt_c": float(d["est_gt"][i, 0])})
+            print(f"{key} note {i}: dev8 {r[0]:+.2f}+/-{r[1]:.2f} gt "
+                  f"{d['est_gt'][i, 0]:+.2f} [{time.time() - t0:.0f}s]",
+                  flush=True)
+    out = f"{CELLS_DIR}/wavedev.shard{k}of{nsh}.pkl"
+    pickle.dump(rows, open(out, "wb"))
+    print(f"wrote {out} ({len(rows)} notes)")
+
+
 if __name__ == "__main__":
     verb = sys.argv[1] if len(sys.argv) > 1 else "report"
     if verb == "run":
         stage_run(sys.argv[2])
+    elif verb == "rundev":
+        stage_rundev(sys.argv[2])
     elif verb == "report":
         stage_report()
     else:

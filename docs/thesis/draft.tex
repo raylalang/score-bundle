@@ -1573,13 +1573,23 @@ error. A generic noise-side fix fails as well, diagnostically: AR(1)
 residual whitening (median fitted correlation $0.944$) leaves coverage
 unrepaired and sharpens the overconfidence, because the structured misfit
 is concentrated \emph{in band}, at the harmonics themselves, where a
-stationary colored floor cannot reach. The constraint therefore sharpens to
-its final form: calibration in Phase~3 requires residual structure
-correlated with the model's own directions --- a marginalized pitch-curve
-deviation prior around the parametric curve, in the spirit of the amplitude
-marginalization of \eqref{eq:collapsed} --- not a richer point model
-(measured: insufficient) and not a generic colored noise floor (measured:
-insufficient). This measured
+stationary colored floor cannot reach. A marginalized pitch-curve deviation prior (smooth zero-mean
+deviations along the curve Jacobian, treated like the amplitudes) was
+measured as well: it delivers the best accuracy of all variants (median
+$2.29$ cents, approaching the estimator chain's $2.01$) and leaves coverage
+unmoved. The resolving measurement is a self-consistency check: on
+synthetic notes where the model is true by construction, the same posterior
+covers at exactly $0.90$ --- the machinery is internally calibrated, so the
+invariant overconfidence against quasi-truth is an \emph{estimand} gap
+(the constant the harmonic model estimates versus the constant the NLLS
+estimator defines on the ground-truth curve), not an inference failure.
+The design conclusion follows: the waveform posterior should enter the
+Phase-2 bundle the way every estimator does --- as a measurement whose
+noise row is its posterior variance plus an empirically calibrated
+per-note discrepancy floor at the measured $\sim 2$-cent scale ---
+restoring calibration by construction under the as-given discipline the
+thesis already runs on; waveform-native calibration (a bridge model for
+the estimand gap) is the frontier beyond that. This measured
 constraint, not the synthesis sketch, is what the phase's design now
 starts from.
 
