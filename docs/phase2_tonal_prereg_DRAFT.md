@@ -54,8 +54,29 @@ characterized:
 3. **Both:** register Bach10 as primary, the reused URMP pool as a
    disclosed secondary replication. Most complete; most work.
 
-Recommendation to bring to the meeting: **option 3 if the power check
-passes on Bach10's n; otherwise option 1 with prominent disclosure.**
+**Power check (RUN, 2026-08-27, dev subsampling; piece-level
+subsamples of the 31 dev pieces / 153 pairs, 95% CI star criterion):**
+
+| pieces | P(T1 dRMSE stars) | P(T2 dNLL stars) |
+|---|---|---|
+| 6 | 0.47 | 0.61 |
+| 10 (≈ Bach10) | 0.52 | 0.72 |
+| 15 | 0.63 | 0.90 |
+| 20 | 0.80 | 0.99 |
+
+(Dev subsamples carry ~2.5 tracks/piece; Bach10 has 4 stems/piece, so
+its true power sits somewhat above its row; the spent URMP pool — 13
+pieces, ~3 tracks/piece — sits between the 10- and 15-piece rows.)
+
+**Revised recommendation from the power check:** a 10-piece one-shot on
+T1 is a coin flip on a *true* effect — registering it as primary would
+set the confirmation up to fail for sample-size reasons. Therefore:
+lead with **T2 (calibration) as the primary claim** (0.72–0.90 power at
+the candidate sizes — and calibration-first matches the thesis's whole
+posture), demote T1 to secondary (reported, non-gating, like C4), and
+prefer **option 3 (Bach10 + reused-URMP combined, disclosed)** to get
+past 15 effective pieces. This is the concrete proposal for the
+meeting.
 
 ## Protocol constants (would be frozen at registration)
 
@@ -72,8 +93,7 @@ One shot, every number reported.
 - [ ] If Bach10: loader + MD5 manifest; tracker calibration table
       (dev-side); composition-level split N/A (10 distinct pieces) but
       contamination check vs URMP/MAESTRO repertoire.
-- [ ] Power check: subsample dev to the confirmation's expected n and
-      verify T1's dev effect would still star (else the registration is
-      set up to fail for sample-size reasons, not truth reasons).
+- [x] Power check: RUN (table above) — T1 underpowered below ~20
+      pieces; T2 primary is the viable design.
 - [ ] Freeze claims T1–T3 verbatim + decision rule + this protocol in
       the registration commit; tag `phase2-tonal-registration-<date>`.

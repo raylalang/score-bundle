@@ -28,8 +28,9 @@ failed** · adverse cell: timing recovery +0.003\* (≈3 ms) · drift:
 
 **Three asks:** (1) how prominent should the failed timing claim be in
 the narrative — honesty exhibit or one line?; (2) the next registration
-is the tonal metric — but URMP's pool is spent: reuse it disclosed, or a
-fresh corpus (Bach10)?; (3) Phase 3 now? — the drift study says the
+is the tonal metric — power check says: calibration as primary claim
+(recovery is a coin flip below ~20 pieces), Bach10 + reused-URMP
+combined, disclosed; (3) Phase 3 now? — the drift study says the
 remaining structure is frame-level, which is Phase 3's object.
 
 ---
@@ -122,11 +123,13 @@ raises a question I want your view on."
 ### Beat 6 — Close (the asks)
 1. "How prominently do you want the failed timing claim in the thesis
    narrative — I lean toward keeping it visible as the honesty exhibit."
-2. "The tonal metric deserves a confirmation, but URMP's pool is now
-   spent. Two options: reuse the pool with the reuse disclosed — the
-   tonal contrast was never evaluated there, but the data are no longer
-   untouched — or bring in a fresh corpus; Bach10 is the natural
-   candidate. Which discipline do you prefer?"
+2. "The tonal metric deserves a confirmation, and I ran the power
+   check: at Bach10's size the recovery claim would star only half the
+   time even though the effect is real — so the honest design is
+   calibration as the primary claim, recovery secondary, on Bach10 plus
+   the reused URMP pool with the reuse disclosed. Draft design is
+   written; I'd like your sign-off on the corpus choice before I freeze
+   anything."
 3. "Phase 3: the drift study says the structure we're not modelling is
    frame-level. I'd like to start the waveform likelihood next."
 
