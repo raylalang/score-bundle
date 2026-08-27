@@ -1,4 +1,4 @@
-# Meeting prep (2026-08, private)
+# Meeting prep (2026-08, private) — post-confirmation edition
 
 **How to use this document.** To study: read top to bottom, then say
 Part 1 aloud twice. In the room: the pocket card is your glance-sheet,
@@ -12,122 +12,123 @@ runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
 ## Pocket card
 
 **Pages:** phase table 5 · §3.9 17–25 · data-point Fig 3.2 = 20 ·
-tonal Fig 3.3 = 22 · truth/estimate/GP Fig 3.4 = 23 · results 23–24
-(headline + ledger on 24, results Table 3.3 on 25) · channels
-Fig 3.5 = 26 · §5.3 = 31 · Phase-2 architecture Fig 8.1 = 46.
+tonal Fig 3.3 = 22 · truth/estimate/GP Fig 3.4 = 23 · results 23–25
+(headline + ledger 24 · dev Table 3.3 AND confirmation Table 3.4 both
+on 25) · drift paragraph 20 · channels Fig 3.5 = 27 · §5.3 = 32 ·
+Phase-2 architecture Fig 8.1 = 46.
 
-**Eight numbers** (as-given variant, paired vs no-graph, development):
-intonation −0.89\* · extent/rate recovery −0.26\*/−0.30\* · vibrato
-calibration −3.8\*/−0.43\* · timing calibration −0.29\* · coverage
-0.88–0.91 (all six) · adverse cell: loudness NLL +0.04\* against · tonal
-−0.21\*/−0.05\* · Phase-1 confirmed 0.376 vs 0.393\*.
+**Eight numbers** (CONFIRMATION, as-given, paired vs no-graph, one-shot):
+intonation −0.88\* (dev basis −0.89\* — reproduced) · vibrato
+calibration −3.0\*/−0.56\* (the seed-sensitive extent star HELD) ·
+coverage 0.88–0.91 (all six) · timing calibration −0.03 ns = **C4
+failed** · adverse cell: timing recovery +0.003\* (≈3 ms) · drift:
+10 cents/note, 97% GT sign agreement, graph-white (lag-1 +0.03 vs τ's
++0.59) · tonal (dev, exploratory) −0.21\*/−0.05\* · Phase-1 confirmed
+0.376 vs 0.393\*.
 
-**Three asks:** (1) review the registered claims — when do we spend the
-pool? (note: C2's extent half is seed-sensitive); (2) is the modest claim
-posture right?; (3) tonal confirmation vs Phase-3 scoping next.
+**Three asks:** (1) how prominent should the failed timing claim be in
+the narrative — honesty exhibit or one line?; (2) the next registration
+is the tonal metric — but URMP's pool is spent: reuse it disclosed, or a
+fresh corpus (Bach10)?; (3) Phase 3 now? — the drift study says the
+remaining structure is frame-level, which is Phase 3's object.
 
 ---
 
 # Part 1 — The story you tell (the spine, ~10 minutes of talk)
 
 ### Beat 0 — Open
-"I picked things back up and focused on Phase 2." If he needs
-orientation first, give Beat 1 in full; otherwise one sentence of it and
-move on.
+"Two things since we spoke. First, your point about the sine model being
+too simple — I didn't argue with it, I measured it, and you were right
+in a specific way I can show you. Second: the registered claims are no
+longer pending — I ran the one-shot confirmation. Three of the four
+claims confirmed; the fourth failed and is reported verbatim."
+Then let him pick which thread first. Default order below: verdict,
+then drift, then asks.
 
-### Beat 1 — The big picture (phase table, p. 5)
+### Beat 1 — The big picture, if he wants orientation (phase table, p. 5)
 Thirty seconds: "The project: given the score and a performance, infer
 how it was played — per-note timing, dynamics, intonation, vibrato — with
 honest error bars, from one Gaussian-process model built on the score's
 own structure. Phase 1 proved that on piano with a preregistered test:
 0.376 vs 0.393 RMSE against the strongest two-stage pipeline, coverage
-0.925. Since then I carried the same model, unchanged, to real audio."
-If he wants more, walk the table: Phase 0 = the music model whose
-embeddings feed the GP; Phase 1 = confirmed, attribution measured
-(features recover, the graph calibrates); Phase 2 = this stretch;
-Phase 3 = scoped.
+0.925. Phase 2 carried the same model, unchanged, to real audio — and is
+now confirmed the same way Phase 1 was."
 
-### Beat 2 — What Phase 2 is (§3.9, p. 17–19)
+### Beat 2 — What Phase 2 is, if needed (§3.9, p. 17–19)
 "Nothing in the prior changes — what changes is the channel set, how the
 targets are obtained, and the noise, which stops being negligible. The
-per-note vector is now six evaluated channels: intonation, vibrato extent
+per-note vector is six evaluated channels: intonation, vibrato extent
 and rate, loudness, timing, and the vibrato onset delay. Every value is
-estimated from the recording, each with its own uncertainty — that is the
-point: the observation noise becomes a modelling term."
-Two channel decisions were settled by measurement, not taste: timing
-comes from the corpus's annotated onsets through a leave-one-out tempo
-line (no audio aligner; the aligner error goes into the noise row), and
-the onset delay passed a criterion committed before its numbers existed
-(identifiable on 95%/97% of vibrato-identifiable notes, 18 ms agreement
-with ground truth).
+estimated from the recording, each with its own uncertainty — that is
+the point: the observation noise becomes a modelling term."
+(Fig 3.2 p. 20 for what one data point looks like; the walkthrough is in
+the previous edition's Beat 3 muscle memory: long note with the 144 ms
+delay, short note with missing vibrato cells, waveform → loudness cell.)
 
-### Beat 3 — What one data point looks like (Fig 3.2, p. 20)
-"This is one observation. Top: a one-and-a-half-second violin note — the
-tracker's confidence-kept pitch frames, the fitted model riding them, and
-you can see the note starts straight: vibrato begins only at the dashed
-line, 144 milliseconds in — that is the delay channel. On the right, the
-note's six-cell record, every cell with its own uncertainty — note the
-honest ±37 ms on timing; that is the warp's noise row. Bottom: a
-third-of-a-second note, too short to identify vibrato — three cells
-missing. That is the cell mask. And the bottom row: how the audio becomes
-the loudness cell — the note's waveform quartered, log-RMS per chunk,
-mean minus the track mean, and the chunk spread is the error bar; you can
-see the crescendo inside the note widening it."
-(Banded dots question: pyin's ~10-cent frequency grid; the fit averages
-across bins.)
+### Beat 3 — The confirmation verdict (THE beat; Table 3.4, p. 25)
+"On the seventeenth I registered four claims and froze the protocol —
+git tag, one shot, every number reported whatever it says. I then spent
+the pool: 13 pieces held back since the split was frozen in early
+August, 40 unique tracks, the registered protocol verbatim, about an
+hour and a half sharded.
+Claim one, intonation recovery: minus 0.877, interval clear of zero —
+the development basis was minus 0.891, so it reproduced almost exactly.
+Claim two, vibrato calibration on BOTH channels: minus 3.0 on extent,
+minus 0.56 on rate, both starred — and the extent half was the one I had
+flagged to you as seed-sensitive, the claim I said could honestly fail.
+It held. Claim three, coverage: 0.88 to 0.91 on all six channels, inside
+the registered band. By the decision rule those three passing means the
+Phase-2 headline is confirmed: the unchanged graph prior extends to real
+audio with calibrated uncertainty, at confirmation level.
+Claim four — timing calibration, the secondary claim — failed. Minus
+0.03 with the interval touching zero, against a development basis of
+minus 0.29. And there's a small starred cell *against* the graph on
+timing recovery: plus three milliseconds on a 65-millisecond RMSE. Both
+are in the table verbatim. So the honest summary of timing on this
+corpus: coverage on target, but no confirmed graph win — the aligner
+error we always said lives in that channel is presumably where the
+development signal went."
+If asked why trust the rest: "the failure is precisely why the
+confirmations mean something — the rule was written before the data,
+and it was allowed to say no. It said no once."
 
-### Beat 4 — What happened (results, p. 23–25; Fig 3.4 p. 23; channels Fig 3.5, p. 27)
-"Paired against the no-graph ablation, under the noise variant we
-declared as default: recovery improves significantly on intonation and
-both vibrato channels — minus 0.89 cents, minus 0.26, minus 0.30 — and
-calibration improves significantly on both vibrato channels and on
-timing — minus 3.8, minus 0.43, minus 0.29 in NLL. Coverage sits at
-0.88 to 0.91 at nominal 90% on every channel of the six. It's all in
-Table 3.3, next page (25)."
-Then the honesty, unprompted: "Three recovery contrasts are not
-significant — loudness, timing, delay — and one cell is significantly
-*against* the graph: loudness calibration, plus 0.04. It replicates on
-fresh seeds. I'd rather you hear that from me than find it."
-The validation shot, Fig 3.4 (p. 23): "here are all three layers on two
-notes — the true pitch curve, the equation's estimate, and the GP's
-prediction. On a held-out note the truth falls inside the GP's bands for
-centre, extent, and rate — and the delay prediction misses, which is
-exactly why the delay carries no claim. On an estimator-missing note the
-GP's fill puts truth within about one standard deviation on all three
-vibrato parameters." Fig 3.5 (p. 27) if wanted: the four channels across
-one track, including the wide-interval edge note in timing and the delay
-panel where sub-zero stretches appear only in GP extrapolations, never in
-observed values.
+### Beat 4 — The drift study (his comment, answered; ¶ p. 20)
+"You asked whether the sine model is too simple — loudness and
+intonation shifting over time. I refit every identifiable note in the
+development set with an added drift term, in both our tracker's curve
+and the ground-truth curve independently. You were right: the drift is
+real music, not tracker noise — two-thirds of notes have a significant
+slope, the two curves agree on its direction 97% of the time, and the
+median note drifts about 10 cents — an order of magnitude above the
+intonation cell's reported precision. Loudness moves even more, though
+most of that is decay envelope, not expression.
+But the decisive measurement is the second one: those within-note slopes
+carry essentially zero correlation from note to note — lag-1 of +0.03,
+where timing sits at +0.59. The structure the sine model discards is
+real, but it is exactly the structure a graph across notes cannot help
+with. So the per-note resolution is the right level for *this* model —
+and the discarded part is precisely what Phase 3's frame-level
+likelihood is designed to carry. Your comment, measured, turns into the
+argument for the next phase."
 
-### Beat 5 — Where it stands (the discipline)
-"The claim set is preregistered — committed on the seventeenth, before
-any confirmation piece was touched: intonation recovery; vibrato
-calibration on both channels; coverage inside 0.85 to 0.95 on all six;
-timing calibration as a secondary claim. The delay channel deliberately
-carries no claim — its graph contrasts are neutral, and adoption and
-claims are separate gates. One shot, every number reported; the 13-piece
-pool is untouched and the run is staged to take an afternoon. One thing I
-know already and want on the table: on fresh mask seeds the recovery
-results reproduce to two decimals, but the extent-channel calibration
-star does not — so that half of the vibrato-calibration claim is the one
-the one-shot could honestly fail."
+### Beat 5 — The bonus finding, if time (tonal, Fig 3.3, p. 22)
+"One exploratory result: the circle-of-fifths metric that *hurt* piano
+expression *helps* intonation — minus 0.21 cents, interval clear of
+zero, and it re-imposes the known penalty on timing, exactly what the
+hypothesis predicted. First sign that a music-theoretic geometry earns
+its place. Adopting it needs its own preregistered confirmation — which
+raises a question I want your view on."
 
-### Beat 6 — The bonus finding (tonal panel, Fig 3.3, p. 22)
-"One exploratory result I like: the circle-of-fifths metric that *hurt*
-piano expression *helps* intonation — minus 0.21 cents with the interval
-clear of zero, and it re-imposes the known penalty on timing, exactly
-what the hypothesis predicted. First sign in this thesis that a
-music-theoretic geometry, not just music-theoretic edges, earns its
-place. Exploratory by design — adopting it would take its own
-preregistered confirmation."
-
-### Beat 7 — Close (the asks)
-1. "The claims are registered — do you want to review them before the
-   pool is spent, and when should we run it?"
-2. "Is the modest posture right for the committee — no delay claim,
-   calibration first?"
-3. "After the confirmation: tonal-metric confirmation, or Phase-3
-   scoping?"
+### Beat 6 — Close (the asks)
+1. "How prominently do you want the failed timing claim in the thesis
+   narrative — I lean toward keeping it visible as the honesty exhibit."
+2. "The tonal metric deserves a confirmation, but URMP's pool is now
+   spent. Two options: reuse the pool with the reuse disclosed — the
+   tonal contrast was never evaluated there, but the data are no longer
+   untouched — or bring in a fresh corpus; Bach10 is the natural
+   candidate. Which discipline do you prefer?"
+3. "Phase 3: the drift study says the structure we're not modelling is
+   frame-level. I'd like to start the waveform likelihood next."
 
 ---
 
@@ -141,137 +142,152 @@ of the value (eval mask is the first, estimator cells the second) ·
 *gated fit* = the eq:vibrato-exact estimator, flat until the delay
 (the ungated fit's "delay" is only a phase) · *quasi-truth* = same
 estimator run on ground-truth pitch; independent of the tracker, not the
-estimator · *development/confirmation* = validation/test, renamed for the
-one-shot discipline.
+estimator · *development/confirmation* = validation/test, renamed for
+the one-shot discipline · *one-shot* = the pool is spent whatever the
+outcome; no reruns, no added seeds.
+
+**The confirmation**
+- *What does "confirmed" mean exactly?* The claims and the decision rule
+  were committed (git tag) before any confirmation piece was touched;
+  the pool was then evaluated once, under the frozen protocol, and the
+  pre-stated rule — C1, C2, C3 all pass — was met. It is confirmation in
+  the preregistration sense: the result was predicted, not found.
+- *Why did timing fail?* Three honest hypotheses, stated in the thesis's
+  order: the development star (−0.29\*) sat partly on alignment-error
+  structure the pool doesn't share (the pool warped *better*: all 40
+  tracks, 15 exact — dev had failures and wider residuals); the τ noise
+  row is diagonal, carrying scale but not correlation along score time
+  — the stated limitation; and dev calibration stars on heavy-tailed
+  channels were already known to move (the extent star was the flagged
+  one — it held; τ's didn't). Coverage on τ stayed at 0.91, so the
+  posterior is honest there — it just isn't better than no-graph.
+- *A starred cell against you?* Yes, timing recovery +0.003\* — about
+  three milliseconds against a 65 ms RMSE. Reported next to C4's
+  failure. Notably the development set's adverse cell (loudness NLL
+  +0.04\*) did NOT replicate at confirmation (+0.015 ns) — adverse
+  cells move too, in both directions.
+- *Could you have re-run with more seeds?* No — the registered rule is
+  one shot, no added seeds. That is what makes the three passes worth
+  something.
+- *Brass?* At confirmation, brass is the *strongest* intonation family
+  (−1.74\*), where on dev it was the ns one — family-level splits are
+  noisy at n=13 instruments; the bundle-level claims are the stable
+  ones.
 
 **Data and method**
 - *What is the system, in one breath?* Score plus noisy per-note
   measurements in; one graph-structured Gaussian posterior over every
-  (note, channel) cell out, with honest error bars. The graph encodes one
-  belief — expressive behavior varies smoothly across neighboring notes —
-  and the per-piece evidence decides how much graph, features, coupling,
-  and noise. Evaluation: hide 30% of notes, predict them, score recovery
-  AND calibration.
-- *The figures show MISSING cells — mistake?* Deliberate, and the point:
-  short notes physically cannot contain 1.5 vibrato cycles, so those
-  cells are structurally unmeasurable — the missing entries are the
-  problem statement, and the model's job is to put calibrated posteriors
-  in them (Fig 3.4's case B shows truth agreeing when it does).
+  (note, channel) cell out, with honest error bars. The graph encodes
+  one belief — expressive behavior varies smoothly across neighboring
+  notes — and the per-piece evidence decides how much graph, features,
+  coupling, and noise. Evaluation: hide 30% of notes, predict them,
+  score recovery AND calibration.
+- *The figures show MISSING cells — mistake?* Deliberate, and the
+  point: short notes physically cannot contain 1.5 vibrato cycles, so
+  those cells are structurally unmeasurable — the missing entries are
+  the problem statement, and the model's job is to put calibrated
+  posteriors in them (Fig 3.4's case B shows truth agreeing when it
+  does).
 - *Which instruments?* URMP's thirteen, three families: strings
   (vn/va/vc/db), woodwind (fl/ob/cl/bn/sax), brass (tpt/hn/tbn/tba);
-  violin dominates the dev side (27 of 101 tracks); no piano, no voice.
+  violin dominates the dev side; no piano, no voice.
 - *Targets are estimator outputs — what does recovery mean?* Exactly
   that, and the thesis says so wherever numbers appear: agreement with
-  the estimator, weaker in kind than Phase 1. The quasi-truth cross-check
-  gives the same ordering on every channel — it isolates tracker error.
-  Fig 3.4's bottom row makes it visible: the estimator sits 8 cents from
-  truth on a sparse note and the GP recovers the estimator's value.
-- *Missing cells aren't missing at random.* Correct; the draft names the
-  mechanism (Rubin). Eval mask MCAR by construction; estimator cells
-  informative (missing when vibrato is short or weak). Held-out scores
-  are interpretable for the vibrato-identifiable sub-population; filled
-  cells are prior extrapolations — the delay panel's sub-zero stretches
-  are the visible signature.
+  the estimator, weaker in kind than Phase 1. The quasi-truth
+  cross-check gives the same ordering — and at confirmation as-given
+  again beat the learned scale on quasi-truth calibration (0.80/0.85 vs
+  0.72/0.73), closing that design question at confirmation level too.
+- *Missing cells aren't missing at random.* Correct; the draft names
+  the mechanism (Rubin). Eval mask MCAR by construction; estimator
+  cells informative (missing when vibrato is short or weak). Held-out
+  scores are interpretable for the vibrato-identifiable sub-population;
+  filled cells are prior extrapolations.
+- *Isn't the sine model too simple? (his own point)* Measured, ¶ p. 20:
+  drift real (10 cents/note median, 97% direction agreement with GT),
+  loudness moves even more (137% of the channel's across-note spread,
+  mostly decay envelope — 81% of brass slopes fall). Priced into the
+  residual-based cell variances — which is why calibration held at
+  confirmation. And graph-white across notes, so it belongs to Phase
+  3's frame-level likelihood, not to a new GP channel.
 - *Is loudness comparable to velocity?* Not assumed — ℓ is what the
   microphone heard (log RMS, ≈8.7 dB per unit, per-track centred), v is
-  what the finger did (a keystroke value). Same role in the bundle,
-  different physical quantity; the thesis lists cross-phase
-  comparability as a claim to defend, not a convention.
-- *Where is the loudness equation from?* Our construction from standard
-  ingredients (RMS energy as the textbook loudness proxy, log as the dB
-  convention); the four-chunk design is ours so the channel arrives with
-  a standard error — Fig 3.2's bottom row shows the whole path.
-- *Why as-given noise, not learned?* Measured twice: the pilot preferred
-  it, and on real data the learned scale collapses when octave-failure
-  cells are present; after the failure rule, as-given is still better
-  calibrated vs quasi-truth (0.82–0.86 vs 0.72–0.86).
-- *Where does alignment error go?* Into τ's noise row — the tempo line's
-  predictive variance. Diagonal noise carries scale, not correlation
-  along score time; that stated limitation is why the τ claim is
-  calibration-only.
-
-**Results and honesty**
-- *Any cell against you?* One: loudness calibration, +0.04 significantly
-  against, replicating on fresh seeds. Loudness carries no claim.
-- *Two seeds enough?* Fresh seeds 2, 3: every direction reproduces,
-  recovery to two decimals, adverse cell replicates. What moves: the
-  heavy-tailed calibration stars (extent −3.8\* → −0.22 ns). Known
-  before the pool is spent.
-- *Why no claim on the delay if you adopted it?* Adoption and claims are
-  separate gates: measurable (pre-stated criterion), so it is in the
-  bundle; graph-neutral on dev, so claiming it would be claim-shopping.
-- *External validity?* 13 instruments, three families; vibrato win
-  inside every family, intonation inside strings and woodwind (brass ns
-  alone). Beyond URMP the alignment problem returns — stated future work.
+  what the finger did. Same role in the bundle, different physical
+  quantity.
+- *Why as-given noise, not learned?* Measured three times now: the
+  pilot preferred it, the learned scale collapses with octave-failure
+  cells present, and at confirmation as-given was again the
+  better-calibrated variant vs quasi-truth.
+- *Where does alignment error go?* Into τ's noise row — the tempo
+  line's predictive variance. Diagonal noise carries scale, not
+  correlation along score time; that stated limitation is the leading
+  explanation for C4's failure.
 
 **Process and what's next**
-- *Can you resynthesize the audio from the Phase-2 output?* The expressive
-  skeleton, yes — the six channels reconstruct a pitch curve (Fig 3.4's
-  drawn GP curves are exactly that), per-note levels, and timing around a
-  supplied tempo line; a parametric synthesizer could render it today at
-  caricature level. The audio itself, no: envelopes, timbre, and noise
-  are the waveform layer, which is precisely Phase 3's likelihood — the
-  one block the architecture marks as changing with the phase. Mirror on
-  the analysis side: in Phase 2 the model never sees audio (a fixed
-  estimator reduces it to per-note numbers first — hence the
-  recovery-scope caveat and the identifiability missingness); in Phase 3
-  the waveform itself is the observation, which dissolves both at the
-  price of exact inference.
-- *Gaussian tails?* Known Phase-1 limitation (one τ-outlier fit cost the
-  confirmation NLL tie). Student-t prototype exists; gated on its own
-  future confirmation set.
-- *What if a registered claim fails?* Reported verbatim next to the
-  claim; the pool is spent either way; Phase 2 was scoped so a negative
-  costs the thesis nothing.
+- *Can you resynthesize audio from the Phase-2 output?* The expressive
+  skeleton, yes — pitch curve, per-note levels, timing around a
+  supplied tempo line; a parametric synthesizer could render a
+  caricature today. The audio itself, no: envelopes, timbre, noise are
+  the waveform layer — Phase 3's likelihood, the one block the
+  architecture marks as changing. In Phase 2 the model never sees audio
+  (a fixed estimator reduces it first); in Phase 3 the waveform is the
+  observation.
+- *Gaussian tails?* Known Phase-1 limitation. Student-t prototype
+  exists; gated on its own future confirmation set.
 - *Will you adopt the tonal metric?* Only through its own preregistered
-  confirmation; it is exploratory by the registered design.
+  confirmation — and that needs a decision on the confirmation data
+  (ask 2): URMP's pool is spent; reuse-with-disclosure or Bach10.
 - *Why did it hurt piano but help intonation?* Expression travels
   register proximity; temperament travels the circle of fifths.
-  Intonation is the first channel whose target IS pitch — which is why
-  this was pre-committed as the cheap decisive test.
+  Intonation is the first channel whose target IS pitch.
 
 ---
 
 # Part 3 — Background depth (study only)
 
-**The study ledger — what was actually done this stretch:**
+**The study ledger — what was actually done:**
 1. *Tracker calibration.* pyin vs URMP ground truth before trusting it:
-   2–5 cents median per instrument; confidence predicts errors (gross
-   9.6%→0.4% across quintiles) → variances as-given + lowest quintile
-   dropped. `results/tracker_calibration_dev.md`.
-2. *Frozen split.* Composition-level, data-blind, unit-pinned — forced,
-   not just prudent: arrangements share byte-identical recordings.
-   13-piece pool untouched. `phase2/splits.py`.
-3. *Evaluation grown 4→6 channels.* 77/78 unique dev tracks, 30% hidden,
-   three systems, both axes + coverage + quasi-truth cross-check.
+   2–5 cents median per instrument; confidence predicts errors →
+   variances as-given + lowest quintile dropped.
+   `results/tracker_calibration_dev.md`.
+2. *Frozen split.* Composition-level, data-blind, unit-pinned — forced:
+   arrangements share byte-identical recordings. `phase2/splits.py`.
+3. *Evaluation grown 4→6 channels.* 77/78 unique dev tracks, 30%
+   hidden, three systems, both axes + quasi-truth cross-check.
    `results/phase2_real_results.md`.
 4. *τ adopted.* Feasibility first (76/78 tracks, 79 ms residual, lag-1
-   +0.59), then the LOO tempo line with aligner σ in the noise row; the
-   two no-warp tracks keep their other channels, τ cells missing.
+   +0.59), then the LOO tempo line with aligner σ in the noise row.
    `phase2/warp.py`.
-5. *δ_vib decided.* The audit found the ungated fit's delay is a phase →
-   gated estimator built to match eq:vibrato exactly; criterion committed
-   before numbers; 95%/97% coverage, 18 ms truth-agreement → IN, no
-   claim. `results/delta_vib_dev.md`.
+5. *δ_vib decided.* Gated estimator built to match eq:vibrato exactly;
+   criterion committed before numbers; IN, no claim.
+   `results/delta_vib_dev.md`.
 6. *Registration.* C1–C4 + decision rule frozen 2026-08-17 (tag), one
-   dated non-claim-altering erratum; guarded afternoon runner staged.
-   `docs/phase2_prereg_design.md`.
+   dated erratum; guarded runner. `docs/phase2_prereg_design.md`.
 7. *Fresh-seed robustness.* Recovery to two decimals; extent NLL star
-   seed-sensitive → C2 risk named. `results/phase2_seeds23_dev.md`.
+   seed-sensitive → C2 risk named in advance.
+   `results/phase2_seeds23_dev.md`.
 8. *Circle of fifths.* Hypothesis pre-committed; helps intonation both
    axes, re-imposes the timing penalty. `results/phase2_tonal_dev.md`.
-9. *Phase-1 addendum* (post-lab-talk, §5.3 p. 32): posterior decomposes
-   exactly by component — features carry the mean, the graph carries
-   calibration, graph × embeddings near-orthogonal; coupling earns its
-   keep on velocity only; harmonic-edge question closed, no adoption.
-10. *Full audit + math pass.* Every number re-verified against its log;
-    three math errors fixed; missingness mechanism named; terminology
-    checked against the field with four canonical citations added.
+9. *Drift study (his comment).* Drift real in both curves (97% sign
+   agreement, Spearman 0.91 — quote the robust statistics, the raw
+   Pearson is tail-dominated); graph-white; no new channel; §3.9 ¶.
+   `results/phase2_drift_dev.md`.
+10. *CONFIRMATION SPENT (2026-08-27).* 40 unique tracks, 1h21m, all 40
+    warped (15 exact/25 DTW/0 failed). C1 −0.877\*, C2 −2.990\*/−0.564\*,
+    C3 0.88–0.91 → headline CONFIRMED; C4 −0.030 ns FAILED + adverse τ
+    recovery +0.003\*. Evidence archived the moment it existed.
+    `results/phase2_confirmation_results.md` (verdict section at the
+    bottom).
+11. *Phase-1 addendum* (§5.3 p. 32): posterior decomposes exactly by
+    component — features carry the mean, the graph carries calibration;
+    coupling earns its keep on velocity only.
+12. *Full audit + math pass.* Every number re-verified against its log;
+    three math errors fixed; terminology checked against the field.
 
-**How to study (~90 min):** Overleaf sync → read §3.9 (p. 17–25) slowly →
-say Part 1 aloud twice → read the results pages 23–25 against the pocket
-card → skim the ledger → say the loudness, delay, and MNAR answers from
-Part 2 aloud → the asks.
+**How to study (~90 min):** Overleaf sync → read §3.9 (p. 17–25) slowly,
+ending on the confirmation paragraph + Table 3.4 (p. 25) → say Part 1
+aloud twice, Beat 3 a third time → read the drift ¶ (p. 20) → say the
+"why did timing fail" and "what does confirmed mean" answers aloud →
+the asks.
 
 **If a question stumps you:** "that's measured — let me follow up with
 the exact number." Everything here has a file behind it.
