@@ -1658,9 +1658,18 @@ Phase-2 bundle the way every estimator does: as a measurement whose
 noise row is its posterior variance \emph{plus} an empirically
 calibrated per-note discrepancy floor at the measured $\sim 2$-cent
 scale --- restoring calibration by construction under the as-given
-discipline the thesis already runs on. Waveform-native calibration --- a
-bridge model for the estimand gap --- is the frontier beyond that. This
-measured constraint, not the synthesis sketch, is what the phase's
+discipline the thesis already runs on. A first integration study
+(development, exploratory; same seven tracks) measures exactly this
+design: with the waveform posterior as a seventh bundle channel ---
+coupling learned per piece by the evidence, discrepancy floor calibrated
+from visible notes only (median $3.1$ cents: the estimand-gap scale,
+found automatically) --- held-out intonation recovery improves on
+\emph{every} track-seed pair ($-1.21$ cents$^{*}$, NLL $-0.24^{*}$,
+coverage held), and removing the floor degrades calibration against
+quasi-truth significantly ($+0.22^{*}$) while helping nothing --- the
+floor doing precisely its designed job. Waveform-native calibration ---
+a bridge model for the estimand gap --- is the frontier beyond that.
+This measured constraint, not the synthesis sketch, is what the phase's
 design now starts from.
 
 \paragraph{From imputation to audio: the task structure across phases.}

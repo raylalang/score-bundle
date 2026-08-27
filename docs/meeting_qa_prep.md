@@ -154,8 +154,11 @@ raises a question I want your view on."
    winds — and a self-consistency check shows the machinery is exactly
    calibrated; the residual overconfidence is an estimand gap, and the
    design answer is to feed the waveform into the Phase-2 bundle under
-   the same as-given noise discipline. Priority next: that integration,
-   or the tonal confirmation first?"
+   the same as-given noise discipline — and I measured that too: as a
+   seventh channel with its calibrated floor, held-out intonation
+   improves on every single track-seed pair, minus 1.2 cents starred,
+   and the floor is provably what keeps it honest. Priority next:
+   registering that integration, or the tonal confirmation first?"
 
 ---
 
@@ -271,12 +274,15 @@ outcome; no reruns, no added seeds.
   no within-model fix closes it (better mean model: accuracy improves,
   coverage doesn't; colored noise: worse; deviation prior: best
   accuracy, coverage unmoved). That's Fig 3.6's panel B.
-- *So what's the Phase-3 plan?* Near term: the waveform posterior joins
-  the Phase-2 bundle as another measurement channel with its posterior
-  variance plus an empirically calibrated ~2-cent discrepancy floor —
-  calibration by construction, same as-given discipline. Frontier: a
-  bridge model for the estimand gap, then the joint prior over all
-  notes' position variables.
+- *So what's the Phase-3 plan?* The near-term design is already
+  measured (dev, exploratory, `results/phase3_integration_dev.md`): the
+  waveform posterior as a 7th bundle channel with its calibrated
+  discrepancy floor improves held-out intonation on 14 of 14 track-seed
+  pairs (−1.2 cents\*, NLL −0.24\*), and the no-floor control is
+  significantly worse-calibrated against truth — the floor works.
+  Frontier: a bridge model for the estimand gap, then the joint prior
+  over all notes' position variables. Any claim needs its own
+  registration.
 - *Gaussian tails?* Known Phase-1 limitation. Student-t prototype
   exists; gated on its own future confirmation set.
 - *Will you adopt the tonal metric?* Only through its own preregistered

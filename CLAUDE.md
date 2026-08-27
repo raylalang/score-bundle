@@ -183,7 +183,15 @@ do not create, sync, or reference one.)
   as an observation channel with posterior var + empirically calibrated
   ~2-cent discrepancy floor (as-given discipline); waveform-native
   calibration = frontier.
-  Outer-loop inference over z still open.
+  INTEGRATION MEASURED
+  (`scripts/eval_phase3_integration.py`, `results/phase3_integration_dev.md`,
+  dev exploratory, 7 tracks × 2 seeds): waveform c as 7th bundle channel
+  (B 7×7, floor from visible notes only, median 3.1 cents = the estimand-gap
+  scale found automatically) improves held-out intonation on 14/14 pairs
+  (dRMSE −1.21*, dNLL −0.24*, coverage held); no-floor control significantly
+  worse-calibrated vs quasi-truth (dNLL +0.22*) — the floor does its designed
+  job. Any claim needs its own registration. Outer-loop inference over z
+  still open.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,
