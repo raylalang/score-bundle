@@ -1562,8 +1562,18 @@ exactly right, so the within-note time variation measured in \S\ref{sec:phase2}
 likelihood cannot ignore and stay calibrated: the Phase-3 position model must
 carry within-note structure (at minimum the drift term), or the noise model
 must be robust to it --- otherwise Phase 3 would trade Phase 2's honest error
-bars for sharper wrong ones. This measured constraint, not the synthesis
-sketch, is what the phase's design now starts from.
+bars for sharper wrong ones. A 376-note development study across all three
+instrument families then confirmed both halves at scale: the waveform
+posterior sits a median $2.4$ cents from the quasi-truth centre with no
+tracker in the loop --- beating the dedicated estimator chain on the wind
+family --- and adding the drift term improves accuracy but leaves the
+overconfidence exactly in place (coverage at nominal $90\%$: $1$--$3\%$),
+because a better mean model shrinks the posterior width as fast as the
+error. The constraint therefore sharpens: calibration in Phase 3 must come
+from the noise side --- a residual model that carries the structured misfit
+--- not from enriching the point parameterization. This measured
+constraint, not the synthesis sketch, is what the phase's design now
+starts from.
 
 \paragraph{From imputation to audio: the task structure across phases.}
 It is worth being explicit that the \emph{visible/hidden partition of

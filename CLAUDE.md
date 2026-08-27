@@ -166,7 +166,15 @@ do not create, sync, or reference one.)
   conditions on the exact parametric curve — the drift-study mismatch returning
   at waveform scale. Design consequence (thesis §phase3-math ¶"A first
   measurement"): the z model needs within-note structure or a
-  mismatch-robust noise model. Outer-loop inference over z still open.
+  mismatch-robust noise model. SCALE STUDY (same day,
+  `scripts/eval_phase3_waveform_dev.py` sharded 8x,
+  `results/phase3_waveform_dev.md`, 376 notes / 7 tracks / 3 families):
+  waveform median 2.4 cents from quasi-truth (estimator chain 2.0; waveform
+  BEATS it on winds 2.75 vs 3.27); drift term improves accuracy (−0.18
+  paired) but does NOT fix calibration (cov@90 = 1–3% both variants — mean
+  fixes shrink sd as fast as error) ⇒ Phase-3 calibration must come from the
+  NOISE side (structured-residual model), the design theorem going forward.
+  Outer-loop inference over z still open.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,
