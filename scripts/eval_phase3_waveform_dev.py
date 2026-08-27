@@ -335,6 +335,13 @@ def stage_report() -> None:
     if not rows:
         print("no shards found")
         return
+    dev = {}
+    for f in sorted(glob.glob(f"{CELLS_DIR}/wavedev.shard*.pkl")):
+        for r in pickle.load(open(f, "rb")):
+            dev[(tuple(r["key"]), r["i"])] = r["dev8"]
+    for r in rows:                       # join the deviation-prior variant
+        r["dev8"] = dev.get((tuple(r["key"]), r["i"]))
+    rows = [r for r in rows if r.get("dev8") is not None] or rows
 
     def stats(variant):
         err = np.array([abs(r[variant][0] - r["gt_c"]) for r in rows])
@@ -349,7 +356,7 @@ def stage_report() -> None:
                                  for r in rows})) + "\n",
              "\n| variant | median abs err (cents) | q90 | median sd | "
              "median abs z | cov@90 |\n|---|---|---|---|---|---|\n"]
-    for v in ("flat", "drift", "ar1"):
+    for v in ("flat", "drift", "ar1", "dev8"):
         err, z, cov = stats(v)
         sd = np.array([r[v][1] for r in rows])
         lines.append(f"| {v} | {np.median(err):.2f} | "
@@ -367,7 +374,8 @@ def stage_report() -> None:
     lines.append(f"AR(1) residual rho: median {np.median(rhos):.3f}, "
                  f"q10/q90 {np.quantile(rhos, .1):.3f}/"
                  f"{np.quantile(rhos, .9):.3f}\n")
-    lines.append("\nPer family (median abs err flat / drift / estimator):\n")
+    lines.append("\nPer family, median abs err "
+                 "(flat / drift / dev-prior / estimator):\n")
     for fam, mem in (("strings", ("vn", "va", "vc", "db")),
                      ("winds", ("fl", "cl", "ob", "sax", "bn")),
                      ("brass", ("tpt", "hn", "tbn", "tba"))):
@@ -376,10 +384,11 @@ def stage_report() -> None:
             continue
         ef = np.median([abs(r["flat"][0] - r["gt_c"]) for r in sub])
         ed = np.median([abs(r["drift"][0] - r["gt_c"]) for r in sub])
+        ev8 = np.median([abs(r["dev8"][0] - r["gt_c"]) for r in sub])
         ee = np.median([abs(r["est_c"] - r["gt_c"]) for r in sub
                         if np.isfinite(r["est_c"])])
         lines.append(f"- {fam} (n={len(sub)}): {ef:.2f} / {ed:.2f} / "
-                     f"{ee:.2f}\n")
+                     f"{ev8:.2f} / {ee:.2f}\n")
     open(OUT_MD, "w").writelines(lines)
     print("".join(lines))
     print(f"wrote {OUT_MD}")

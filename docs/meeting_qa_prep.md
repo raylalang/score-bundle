@@ -14,8 +14,9 @@ runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
 **Pages:** phase table 5 · §3.9 17–25 · data-point Fig 3.2 = 20 ·
 tonal Fig 3.3 = 22 · truth/estimate/GP Fig 3.4 = 23 · results 23–25
 (headline + ledger 24 · dev Table 3.3 AND confirmation Table 3.4 both
-on 25) · drift paragraph 20 · channels Fig 3.5 = 27 · §5.3 = 32 ·
-Phase-2 architecture Fig 8.1 = 46.
+on 25) · drift paragraph 20 · **Phase-3 study §3.10 = 26–28, its
+Table 3.5 = 27, its Fig 3.6 = 30** · channels Fig 3.5 = 29 · §5.3 = 35
+· Phase-2 architecture Fig 8.1 = 50.
 
 **Eight numbers** (CONFIRMATION, as-given, paired vs no-graph, one-shot):
 intonation −0.88\* (dev basis −0.89\* — reproduced) · vibrato
@@ -23,8 +24,9 @@ calibration −3.0\*/−0.56\* (the seed-sensitive extent star HELD) ·
 coverage 0.88–0.91 (all six) · timing calibration −0.03 ns = **C4
 failed** · adverse cell: timing recovery +0.003\* (≈3 ms) · drift:
 10 cents/note, 97% GT sign agreement, graph-white (lag-1 +0.03 vs τ's
-+0.59) · tonal (dev, exploratory) −0.21\*/−0.05\* · Phase-1 confirmed
-0.376 vs 0.393\*.
++0.59) · tonal (dev, exploratory) −0.21\*/−0.05\* · waveform (dev): 2.3 cents
+from truth with NO tracker, beats the estimator on winds, self-check
+coverage 0.90 exactly · Phase-1 confirmed 0.376 vs 0.393\*.
 
 **Three asks:** (1) how prominent should the failed timing claim be in
 the narrative — honesty exhibit or one line?; (2) the next registration
@@ -114,7 +116,21 @@ and the discarded part is precisely what Phase 3's frame-level
 likelihood is designed to carry. Your comment, measured, turns into the
 argument for the next phase."
 
-### Beat 5 — The bonus finding, if time (tonal, Fig 3.3, p. 22)
+### Beat 5 — Phase 3 opened (§3.10 pp. 26–28, Table 3.5 p. 27, Fig 3.6 p. 30)
+"And Phase 3 is no longer a sketch. I ran the waveform likelihood — the
+audio itself as the observation, no tracker anywhere — on 376 real notes
+across all three families. It gets within 2.3 cents of ground truth,
+which is on par with the whole tracker-plus-fitting chain, and *better*
+than it on winds, where trackers struggle. The instructive part: the
+posteriors are overconfident against ground truth, and I can prove it's
+not a bug — on synthetic notes where the model is true, coverage is
+exactly 90%. The gap is between two *definitions* of intonation, the
+harmonic model's and the estimator's. So the design conclusion is the
+figure's panel B: the waveform should enter the Phase-2 bundle as one
+more measurement with an honestly calibrated noise row — the same
+as-given discipline we just confirmed."
+
+### Beat 6 — The bonus finding, if time (tonal, Fig 3.3, p. 22)
 "One exploratory result: the circle-of-fifths metric that *hurt* piano
 expression *helps* intonation — minus 0.21 cents, interval clear of
 zero, and it re-imposes the known penalty on timing, exactly what the
@@ -122,7 +138,7 @@ hypothesis predicted. First sign that a music-theoretic geometry earns
 its place. Adopting it needs its own preregistered confirmation — which
 raises a question I want your view on."
 
-### Beat 6 — Close (the asks)
+### Beat 7 — Close (the asks)
 1. "How prominently do you want the failed timing claim in the thesis
    narrative — I lean toward keeping it visible as the honesty exhibit."
 2. "The tonal metric deserves a confirmation, and I ran the power
@@ -132,13 +148,14 @@ raises a question I want your view on."
    the reused URMP pool with the reuse disclosed. Draft design is
    written; I'd like your sign-off on the corpus choice before I freeze
    anything."
-3. "Phase 3 is opened: I ran the first waveform-likelihood inference on
-   a real note — no tracker, the audio as the observation — and it
-   localizes intonation within about a cent of ground truth. It also
-   showed exactly the failure mode the drift study predicted:
-   overconfidence under the constant-parameter curve. So the phase
-   starts from a measured design constraint, not a sketch. Priority
-   next: the joint model over z, or the tonal confirmation first?"
+3. "Phase 3 is opened, with a 376-note study already in the draft
+   (§3.10, Table 3.5, Fig 3.6): the waveform likelihood, no tracker,
+   gets within 2.3 cents of ground truth — beating the tracker chain on
+   winds — and a self-consistency check shows the machinery is exactly
+   calibrated; the residual overconfidence is an estimand gap, and the
+   design answer is to feed the waveform into the Phase-2 bundle under
+   the same as-given noise discipline. Priority next: that integration,
+   or the tonal confirmation first?"
 
 ---
 
@@ -241,6 +258,25 @@ outcome; no reruns, no added seeds.
   architecture marks as changing. In Phase 2 the model never sees audio
   (a fixed estimator reduces it first); in Phase 3 the waveform is the
   observation.
+- *How does the waveform study work, in one breath?* Cut one note's
+  audio at the annotated boundaries; the pitch curve is the Phase-2
+  channel model; harmonic amplitudes (8 harmonics × 4 chunks) are
+  marginalized exactly; slide the intonation centre over a grid and read
+  the likelihood — exact 1-D inference, no tracker anywhere.
+- *Why are the waveform posteriors overconfident?* Provably not a bug:
+  on model-true synthetics the same machinery covers at exactly 90%.
+  The overconfidence against ground truth is an estimand gap — the
+  harmonic model's c and the NLLS estimator's c are different
+  functionals of the same performance, ~2 cents apart — and we showed
+  no within-model fix closes it (better mean model: accuracy improves,
+  coverage doesn't; colored noise: worse; deviation prior: best
+  accuracy, coverage unmoved). That's Fig 3.6's panel B.
+- *So what's the Phase-3 plan?* Near term: the waveform posterior joins
+  the Phase-2 bundle as another measurement channel with its posterior
+  variance plus an empirically calibrated ~2-cent discrepancy floor —
+  calibration by construction, same as-given discipline. Frontier: a
+  bridge model for the estimand gap, then the joint prior over all
+  notes' position variables.
 - *Gaussian tails?* Known Phase-1 limitation. Student-t prototype
   exists; gated on its own future confirmation set.
 - *Will you adopt the tonal metric?* Only through its own preregistered
@@ -287,17 +323,24 @@ outcome; no reruns, no added seeds.
     recovery +0.003\*. Evidence archived the moment it existed.
     `results/phase2_confirmation_results.md` (verdict section at the
     bottom).
-11. *Phase-1 addendum* (§5.3 p. 32): posterior decomposes exactly by
+11. *Phase-1 addendum* (§5.3 p. 35): posterior decomposes exactly by
     component — features carry the mean, the graph carries calibration;
     coupling earns its keep on velocity only.
 12. *Full audit + math pass.* Every number re-verified against its log;
     three math errors fixed; terminology checked against the field.
+13. *Phase 3 opened + scale study (2026-08-27..28).* Woodbury collapsed
+    likelihood (unit-pinned); 376-note study, 4 position models:
+    accuracy ladder 2.81→2.29 cents (estimator 2.01, waveform wins on
+    winds), coverage invariant ~0.02 vs quasi-truth, self-check = 0.90
+    exactly ⇒ estimand gap; discrepancy-floor integration designed.
+    `results/phase3_waveform_dev.md`, thesis §3.10.1.
 
-**How to study (~90 min):** Overleaf sync → read §3.9 (p. 17–25) slowly,
-ending on the confirmation paragraph + Table 3.4 (p. 25) → say Part 1
-aloud twice, Beat 3 a third time → read the drift ¶ (p. 20) → say the
-"why did timing fail" and "what does confirmed mean" answers aloud →
-the asks.
+**How to study (~100 min):** Overleaf sync → read §3.9 (p. 17–25)
+slowly, ending on the confirmation paragraph + Table 3.4 (p. 25) → read
+§3.10.1 (pp. 26–28) with Fig 3.6 (p. 30) — the study design paragraph is
+the methodology if he probes → say Part 1 aloud twice, Beat 3 a third
+time → read the drift ¶ (p. 20) → say the "why did timing fail", "what
+does confirmed mean", and "why overconfident" answers aloud → the asks.
 
 **If a question stumps you:** "that's measured — let me follow up with
 the exact number." Everything here has a file behind it.

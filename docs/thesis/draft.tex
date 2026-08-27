@@ -1542,56 +1542,116 @@ variational inference, initialised from the nominal score) is the open Phase-3 s
 the coupled graph prior --- the first two terms of \eqref{eq:gpfirst} --- plays the
 role of $p(z)$'s structured component.
 
-\paragraph{A first measurement (development, exploratory, 2026-08).}
-The collapsed likelihood \eqref{eq:collapsed} has now been evaluated on real
-audio once, in the smallest honest configuration: one development violin
-track, the note's $f_0$ curve parameterized by the Phase-2 channel variables,
-amplitudes piecewise-constant over the four chunks of \eqref{eq:loudness},
-and the likelihood gridded over the intonation centre $c$ (exact 1-D
-inference up to a $0.02$-cent step; an $O(mp^2)$ Woodbury form of
-\eqref{eq:collapsed} makes the $10^4$-sample segments tractable, equality
-with the dense form unit-pinned). With no tracker in the loop, the waveform
-posterior lands within $0.7$--$1.6$ cents of the ground-truth-derived centre
-on both probe notes --- on par with the full pyin-plus-NLLS estimator chain
---- confirming that the phase-coherent basis carries the intonation
-information directly. The instructive failure is the posterior \emph{width}:
-$\pm 0.04$--$0.17$ cents, several times smaller than the actual distance to
-truth. The collapsed likelihood conditions on the parametric curve being
-exactly right, so the within-note time variation measured in \S\ref{sec:phase2}
-(the drift study) returns here as structured residual that a $10^4$-sample
-likelihood cannot ignore and stay calibrated: the Phase-3 position model must
-carry within-note structure (at minimum the drift term), or the noise model
-must be robust to it --- otherwise Phase 3 would trade Phase 2's honest error
-bars for sharper wrong ones. A 376-note development study across all three
-instrument families then confirmed both halves at scale: the waveform
-posterior sits a median $2.4$ cents from the quasi-truth centre with no
-tracker in the loop --- beating the dedicated estimator chain on the wind
-family --- and adding the drift term improves accuracy but leaves the
-overconfidence exactly in place (coverage at nominal $90\%$: $1$--$3\%$),
-because a better mean model shrinks the posterior width as fast as the
-error. A generic noise-side fix fails as well, diagnostically: AR(1)
-residual whitening (median fitted correlation $0.944$) leaves coverage
-unrepaired and sharpens the overconfidence, because the structured misfit
-is concentrated \emph{in band}, at the harmonics themselves, where a
-stationary colored floor cannot reach. A marginalized pitch-curve deviation prior (smooth zero-mean
-deviations along the curve Jacobian, treated like the amplitudes) was
-measured as well: it delivers the best accuracy of all variants (median
-$2.29$ cents, approaching the estimator chain's $2.01$) and leaves coverage
-unmoved. The resolving measurement is a self-consistency check: on
-synthetic notes where the model is true by construction, the same posterior
-covers at exactly $0.90$ --- the machinery is internally calibrated, so the
-invariant overconfidence against quasi-truth is an \emph{estimand} gap
-(the constant the harmonic model estimates versus the constant the NLLS
-estimator defines on the ground-truth curve), not an inference failure.
-The design conclusion follows: the waveform posterior should enter the
-Phase-2 bundle the way every estimator does --- as a measurement whose
-noise row is its posterior variance plus an empirically calibrated
-per-note discrepancy floor at the measured $\sim 2$-cent scale ---
-restoring calibration by construction under the as-given discipline the
-thesis already runs on; waveform-native calibration (a bridge model for
-the estimand gap) is the frontier beyond that. This measured
-constraint, not the synthesis sketch, is what the phase's design now
-starts from.
+\subsection{The measured constraint (development study, 2026-08)}
+\label{sec:phase3-study}
+
+The collapsed likelihood \eqref{eq:collapsed} has now met real audio, in a
+development study built to answer two questions: does the waveform carry
+the per-note expressive information directly, with no tracker in the loop
+--- and is the resulting posterior honest?
+
+\paragraph{Design.} One observation is one note's audio segment: $m$
+samples at $16$\,kHz (up to two seconds; $m \approx 10^{3.5}$--$10^{4.5}$),
+cut at the annotated note boundaries of a development URMP track. The
+study covers $376$ notes from seven tracks spanning all three instrument
+families. Per note, the $f_0$ curve is parameterized by the Phase-2
+channel variables (eqs.~\eqref{eq:cents-curve}--\eqref{eq:vibrato}; on
+vibrato-identifiable notes the extent/rate/delay scaffold is taken from
+the Phase-2 estimator --- the one estimator-supplied ingredient, recorded
+as such), and the design matrix is the harmonic basis of
+\eqref{eq:waveform} with amplitudes piecewise-constant over the four
+chunks of \eqref{eq:loudness}: $p = 2K \times 4 = 64$ columns at $K=8$
+harmonics. Amplitudes are marginalized exactly; an $O(mp^{2})$ Woodbury
+form of \eqref{eq:collapsed} (equality with the dense form unit-pinned)
+makes the segment-length likelihoods tractable. Inference over the
+intonation centre $c$ is by grid --- coarse $1$-cent pass over
+$\pm 50$ cents around the \emph{score-nominal} pitch, then a
+fine refinement ($0.03$ cents; $0.06$ for the deviation variant) ---
+i.e.\ exact 1-D inference up to discretization, with no Laplace
+machinery claimed. Four position models
+are compared: constant $c$; $c$ plus AR(1) observation noise (residual
+whitening, correlation fit per note); $c$ plus the linear drift term of
+the \S\ref{sec:phase2} drift study (slope profiled on a grid); and $c$
+plus a marginalized pitch-curve deviation prior (eight zero-mean Hann
+bumps along the curve Jacobian, prior standard deviation $5$ cents per
+coefficient, treated exactly like the amplitudes).
+Each posterior is scored against the quasi-truth centre (the Phase-2
+NLLS estimator applied to URMP's ground-truth curve): absolute error and
+coverage at nominal $90\%$. A fifth condition calibrates the machinery
+itself: synthetic notes built from real notes' fitted structure, where
+the model is true by construction.
+
+\begin{table}[t]\centering
+\caption{Phase-3 development study: waveform-likelihood inference of the
+intonation centre on $376$ real notes (seven tracks, three families), no
+tracker in the loop. Score: distance to the quasi-truth centre; coverage
+at nominal $90\%$. The estimator row is the full pyin-plus-NLLS chain.
+Development, exploratory; no claims registered.}
+\label{tab:phase3-study}
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+position model & median $|$err$|$ (cents) & q90 & coverage@90 \\
+\midrule
+constant $c$ & 2.81 & 8.72 & 0.03 \\
+$+$ AR(1) noise & 2.73 & 8.37 & 0.02 \\
+$+$ drift term & 2.40 & 7.23 & 0.01 \\
+$+$ deviation prior & 2.29 & 6.77 & 0.03 \\
+\midrule
+pyin $+$ NLLS estimator chain & 2.01 & --- & (supplies its own $\sigma$) \\
+model-true synthetics (self-check) & --- & --- & \textbf{0.90} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/phase3_study_dev.png}
+  \caption{The Phase-3 study at a glance (development, exploratory).
+  \textbf{A}: median distance to the quasi-truth intonation centre falls
+  with every position-model refinement, approaching the dedicated
+  estimator chain (dashed) --- with no tracker in the loop, and beating
+  the estimator on the wind family ($2.67$ vs $3.27$ cents). \textbf{B}:
+  coverage against quasi-truth is invariantly near zero for every
+  variant, while the same machinery covers at exactly nominal on
+  model-true synthetics (green) --- locating the failure in the estimand
+  gap, not the inference.}
+  \label{fig:phase3-study}
+\end{figure}
+
+\paragraph{Findings.} Three facts, visible in
+Table~\ref{tab:phase3-study} and Figure~\ref{fig:phase3-study}. First,
+\textbf{the waveform carries the information}: median $2.29$ cents from
+quasi-truth in the best variant, approaching the estimator chain's
+$2.01$ overall and beating it on winds ($2.67$ vs $3.27$), where the
+tracker's failure modes live. The two-note pilot that seeded the study
+showed the same at $0.7$--$1.6$ cents on long clean notes. Second,
+\textbf{every model refinement improves accuracy} --- the drift term of
+the \S\ref{sec:phase2} study transfers to the waveform domain (paired
+median $-0.18$ cents), and the deviation prior improves it further ---
+\textbf{yet coverage against quasi-truth is invariant at $0.01$--$0.03$}:
+a better mean model shrinks the posterior width as fast as the error,
+and the AR(1) floor fails diagnostically because the structured misfit
+is concentrated \emph{in band}, at the harmonics, where a stationary
+colored floor cannot reach. Third, \textbf{the machinery itself is
+calibrated}: on model-true synthetics the same posterior covers at
+exactly $0.90$ (median $|z| = 0.53$).
+
+\paragraph{Diagnosis and design consequence.} Together these locate the
+overconfidence precisely: it is an \emph{estimand} gap --- the constant
+the harmonic model estimates and the constant the NLLS estimator defines
+on the ground-truth curve are different functionals of the same
+performance, about two cents apart --- and no within-model refinement can
+close a between-question gap, which is why all three failed to. The
+design conclusion follows. The waveform posterior should enter the
+Phase-2 bundle the way every estimator does: as a measurement whose
+noise row is its posterior variance \emph{plus} an empirically
+calibrated per-note discrepancy floor at the measured $\sim 2$-cent
+scale --- restoring calibration by construction under the as-given
+discipline the thesis already runs on. Waveform-native calibration --- a
+bridge model for the estimand gap --- is the frontier beyond that. This
+measured constraint, not the synthesis sketch, is what the phase's
+design now starts from.
 
 \paragraph{From imputation to audio: the task structure across phases.}
 It is worth being explicit that the \emph{visible/hidden partition of

@@ -40,6 +40,8 @@ for key, d, tr in ev.selected()[:4]:            # 4 tracks x 10 notes
         mean, sd, _, _ = ev.infer_c(x_syn, t, midi, False, {})
         zs.append((mean - c_true) / sd)
 zs = np.array(zs)
+os.makedirs("results/phase3_cells", exist_ok=True)
+pickle.dump(zs, open("results/phase3_cells/selfcheck_z.pkl", "wb"))
 print(f"n={zs.size}  median |z| = {np.median(np.abs(zs)):.2f}  "
       f"cov@90 = {np.mean(np.abs(zs) <= 1.6449):.2f}  "
       f"mean z = {zs.mean():+.2f}  [{time.time()-t_start:.0f}s]")

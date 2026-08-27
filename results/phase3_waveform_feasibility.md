@@ -1,5 +1,10 @@
 # Phase 3: first waveform-likelihood inference on real audio
 
+> Superseded in scope by the 376-note study
+> `results/phase3_waveform_dev.md` (same day), which scales this
+> pilot, tests three calibration fixes, and closes the diagnosis
+> (estimand gap). This file remains the record of the pilot.
+
 **DEV ONLY — EXPLORATORY / FEASIBILITY.** 2026-08-27. Script:
 `scripts/demo_phase3_waveform.py` (URMP dev track (1,1), violin; reads
 the dev caches + audio; no tracker in the inference loop). New machinery:
