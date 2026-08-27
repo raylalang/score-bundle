@@ -175,7 +175,8 @@ A \emph{win} is defined before any test number is seen, and requires improvement
 \section{Terminology: the proposed model and the two-stage pipeline}\label{sec:twostage}
 Two names recur throughout. \textbf{The proposed model} is the thesis model: one
 multi-output Gaussian process over all notes and all three expressive channels, in
-which the score graph, the hand-built score features, and the music model's per-note
+which the score graph, the hand-built score features, and the music model's
+(the small from-scratch symbolic language model of Phase 0) per-note
 representation all enter a single kernel, and every hyperparameter is learned from
 one per-piece marginal likelihood (\S\ref{sec:gpfirst}). \textbf{The two-stage
 pipeline} is the earlier system it subsumes and is compared against: a \emph{plug-in
@@ -1004,7 +1005,9 @@ on $95$--$97\%$ of vibrato-identifiable notes on both the ground-truth and
 the tracked pitch curves, with median tracker-versus-truth agreement of
 $18$\,ms --- so $\delta_i^{\mathrm{vib}}$ is a channel and $k = 7$ as
 written. On the evaluation corpus below, articulation has no measured
-offset chain, so the bundle evaluated there is the remaining six. The
+offset chain --- the sequence of annotated \emph{performed note ends}
+that $\log r_i$ would require --- so the bundle evaluated there is the
+remaining six. The
 second decision stays open: whether $\ell_i$,
 which is an amplitude rather than a keystroke, is comparable enough with $v_i$ for
 the two to be discussed as one channel across phases. We do not assume they are.
@@ -1022,7 +1025,7 @@ players, and wind players add to sustained notes \cite{seashore1936}. Three numb
 per note: the rate $f_i^{\mathrm{vib}}$ (how many oscillations per second,
 typically five to eight, mean $6.0$\,Hz \cite{prame1994}), the extent $\gamma_i$ (how far the pitch swings
 from the centre at its peak, in cents --- tens of cents on strings and winds
-here, and $\pm 71$ on average in professional singing \cite{prame1997}), and the
+here, and $\approx 71$ cents on average in professional singing \cite{prame1997}), and the
 onset delay $\delta_i^{\mathrm{vib}}$ (how long after the note begins the
 oscillation starts --- performers often begin a note straight and let the
 vibrato grow). \emph{Loudness} $\ell_i$ is how strongly the note sounds,
@@ -1222,7 +1225,8 @@ largest threat to validity in Phase 2 and it has no analogue in Phase 1.
 On the chosen corpus the threat has a measured resolution: URMP's note-level
 onset annotations anchor the warp \emph{without any audio aligner} on 76 of
 78 development tracks (half by exact score-order matching, half by a pitch
-DTW). The feasibility statistic uses a local leave-one-out warp: with
+DTW); the two tracks without a usable warp remain in the evaluation with
+their $\tau$ cells missing, not dropped. The feasibility statistic uses a local leave-one-out warp: with
 score-onset/performed-onset pairs $(b_j, t_j)$, each note gets a tempo line
 --- slope $\hat\varphi_i$, intercept $\hat\psi_i$ ---
 fitted from its neighbours alone,
@@ -1300,7 +1304,8 @@ must be said plainly, because it changes what a result means: the targets
 ability to recover \emph{the estimator's} targets at masked notes, not
 agreement with a gold standard (the provided pitch curves supply an
 independent \emph{quasi-truth} --- a pseudo-ground-truth in the usual sense:
-the same estimator run on the provided ground-truth pitch curves --- used as
+the same estimator run on the provided ground-truth pitch curves, hence
+independent of the tracker though not of the estimator --- used as
 a cross-check below). The claim available in
 Phase 2 is therefore weaker in kind than the Phase-1 claim, and should not
 be reported as though it were the same.
@@ -1811,8 +1816,8 @@ Development used \nPieces{} held-out pieces, which necessarily also served model
 selection. The final claims were therefore \emph{preregistered} (systems, metrics,
 decision rule fixed in advance) and evaluated \emph{exactly once} on \nConfPieces{}
 further ASAP pieces untouched by any decision
-(Table~\ref{tab:headline-conf}). The proposed model (\S\ref{sec:twostage}) beats the strongest two-stage
-pipeline on accuracy (paired per-piece \dRmseConf, significant), its intervals
+(Table~\ref{tab:headline-conf}). The proposed model (\S\ref{sec:twostage}) beats the adopted two-stage
+headline on accuracy (paired per-piece \dRmseConf, significant), its intervals
 cover $\approx\covGP$ at the nominal 90\%, and the graph's contribution to
 confidence quality is confirmed inside the model (paired NLL \dNllGraphConf,
 significant). Pooled NLL between the new and old systems tied on the confirmation
@@ -1866,7 +1871,7 @@ Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & 
 Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{}  & \covHead \\
 Music-model mean $+$ graph (two-stage) & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} & \covHead \\
 Features $+$ music-model mean $+$ graph (two-stage) & \rmseStack{}    & \nllStack{}   & \covHead \\
-Features $+$ music-model $+$ harmonic graph (strongest two-stage) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
+Features $+$ music-model $+$ harmonic graph (adopted headline) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
 Coregionalized GP, zero mean                  & 0.403 & $-0.316$ & 92\% \\
 \ + features as kernel             & 0.368 & $-0.370$ & 92\% \\
 \textbf{\ + music-model embeddings (= the proposed model)} & \textbf{\rmseGPdev} & \nllGPdev & 92.7\% \\
@@ -1878,7 +1883,7 @@ Coregionalized GP, zero mean                  & 0.403 & $-0.316$ & 92\% \\
 Three steps, in order, produced the headline system. \textbf{(1) Development
 optimum of the two-stage pipeline:} after the kernel and edge-family study
 (\S\ref{sec:kernels}), \emph{features + music-model mean + harmonic graph}
-(RMSE~\rmseHeadline{} development) was the strongest configuration --- every ingredient
+(RMSE~\rmseHeadline{} development) was the adopted headline --- the only variant with every ingredient
 significant on both axes. \textbf{(2) Reformulation:} the graph-GP literature
 prescribes three things the pipeline lacked --- coupled outputs, evidence-learned
 kernel parameters, a marginalized rather than plug-in mean --- and closing them
@@ -2212,8 +2217,8 @@ therefore not a separate row. A $\mu = 0$ block (not shown) repeats every conclu
 without the learned mean. Full protocol and numbers: the accompanying evidence archive.
 
 Three findings (Table~\ref{tab:kernels}). \textbf{First, the additive Laplacian
-survives every classical alternative profile}: Mat\'ern at every
-$\alpha \ge 2$ (at $\alpha = 1$ the profile \emph{is} the additive baseline
+survives every classical alternative profile}: Mat\'ern at
+$\alpha = 2$ and $3$ (at $\alpha = 1$ the profile \emph{is} the additive baseline
 under $s \mapsto 1/s$, \S\ref{sec:graphgp}), diffusion,
 and the normalized Laplacian
 are statistically indistinguishable from it on RMSE and do not improve NLL --- among
@@ -2701,7 +2706,7 @@ $K_{oo}$, $C$ & observed block of $K$ (noise included); latent covariance \eqref
 $\beta$ & feature weights of the marginalized Bayesian linear mean (\S\ref{sec:features}) \\
 $X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
 $\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
-$m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior std (only) \\
+$m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior standard deviation ($\sigma$ has no other use in this thesis) \\
 $y^{(\zeta)}$, $C^{(\zeta)}$, $m^{(\zeta)}$ & prior components ($\zeta \in \{G, \mathrm{feat}, \mathrm{emb}\}$ in Phase 1), their covariances, posterior-mean components \eqref{eq:components}--\eqref{eq:decomp} \\
 $\omega^{(\zeta)}$, $\rho^{(\zeta\zeta')}_i$ & covariance share \eqref{eq:share}; per-note component correlation \eqref{eq:compcorr} \\
 $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
