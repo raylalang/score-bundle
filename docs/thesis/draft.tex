@@ -130,8 +130,11 @@ with coverage on target on every channel; the registered claim set was then
 \emph{confirmed in a single one-shot} on the frozen 13-piece pool ---
 intonation recovery, vibrato calibration on both channels, coverage on all six
 channels; the secondary timing-calibration claim failed and is reported
-verbatim. Phase~3 (audio via a differentiable
-synthesizer) is scoped but not built.
+verbatim. Phase~3 (audio via a differentiable synthesizer) is scoped,
+with a first development study of its waveform likelihood measured: the
+audio alone localizes intonation to within about two cents of the
+ground-truth-derived centre, and the study fixes the phase's central
+design constraint (calibration must bridge the estimand gap).
 \end{abstract}
 
 \tableofcontents
@@ -232,9 +235,11 @@ score onsets, score durations); held-out evaluation with calibration.
 Audio input/output and continuously pitched instruments enter only in Phases~2--3.
 The work is phased so that each stage produces a defensible result before the next
 risk is taken (Table~\ref{tab:phases}); Phase~0 (the from-scratch music model) and
-Phase~1 (the score-graph prior and its evaluation) are complete, Phase~2 has
-development-set results on real recordings with its confirmation set frozen but
-not yet spent, and Phase~3 is scoped and not built.
+Phase~1 (the score-graph prior and its evaluation) are complete, Phase~2 is
+confirmed on real recordings by its own preregistered one-shot (the
+secondary timing claim failed and is reported verbatim), and Phase~3 is
+scoped, with a first development study of its waveform likelihood
+measured.
 
 \begin{table}[h]\centering
 \caption{The four phases and their status.}
@@ -252,7 +257,7 @@ Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
 $f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $\delta^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP; registered one-shot on the frozen 13-piece pool): intonation recovery, vibrato calibration on both channels, coverage on all six channels; the secondary timing-calibration claim failed, reported verbatim \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
-Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested; first single-note waveform-likelihood inference demonstrated on real audio (development, exploratory) \\
+Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested; waveform-likelihood study on 376 real notes (development, exploratory): accuracy competitive with the estimator chain, calibration constraint measured \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -2420,9 +2425,12 @@ variance), and articulation is comparatively idiosyncratic, so the music model's
 information has least to add there.
 
 \section{Limitations}
-The \emph{confirmed} result is symbolic and piano-only (no performer-controlled
-intonation or vibrato); the Phase-2 real-audio results are development
-evidence on one corpus and their confirmation set is deliberately unspent.
+Two results are \emph{confirmed}, each by its own preregistered
+one-shot: the symbolic piano result (Phase 1) and the real-audio
+six-channel result (Phase 2) --- the latter on a single corpus (URMP, 13
+confirmation pieces), with the secondary timing-calibration claim failed
+and a small starred adverse timing-recovery cell, both reported verbatim.
+Phase-3 evidence is development-level and exploratory throughout.
 Targets depend on the quality of a single corpus's
 score$\leftrightarrow$performance alignment (ASAP), and the evaluation sets, while
 held-out and contamination-filtered, are modest in size (30 development + 20
@@ -2652,13 +2660,14 @@ feature provider inside the kernel. Six downstream tasks draw two clean boundari
 --- structure helps note-by-note, not for whole-performance summaries; per-piece
 adaptation helps interpolation, not excerpt extrapolation --- and the evaluation is
 hardened against leakage, contamination, fit collapse, and selection inflation.
-The validated Phase-1 contribution stands on its own; the same prior has now
-been carried, unchanged in form, to intonation, vibrato, loudness, timing,
-and vibrato onset delay on real
-recordings --- at development level, with the claim set registered and the
-frozen confirmation pool
-deliberately unspent --- and the step to audio through a differentiable
-synthesizer is where the most novel work still lies.
+The validated Phase-1 contribution stands on its own; the same prior has
+now been carried, unchanged in form, to intonation, vibrato, loudness,
+timing, and vibrato onset delay on real recordings --- and confirmed at
+one-shot level on the frozen pool (intonation recovery, vibrato
+calibration, coverage; the secondary timing claim failed and is reported
+verbatim). The step to audio through a differentiable synthesizer is
+where the most novel work still lies; its first development study
+already fixes the design constraint the phase must solve.
 
 % =====================================================================
 \appendix
