@@ -30,8 +30,10 @@ failed** · adverse cell: timing recovery +0.003\* (≈3 ms) · drift:
 the narrative — honesty exhibit or one line?; (2) the next registration
 is the tonal metric — power check says: calibration as primary claim
 (recovery is a coin flip below ~20 pieces), Bach10 + reused-URMP
-combined, disclosed; (3) Phase 3 now? — the drift study says the
-remaining structure is frame-level, which is Phase 3's object.
+combined, disclosed; (3) Phase 3 OPENED — first
+waveform inference on a real note: 0.7–1.6 cents from GT, no tracker;
+overconfident widths = the drift mismatch, now the phase's measured
+starting constraint.
 
 ---
 
@@ -130,8 +132,13 @@ raises a question I want your view on."
    the reused URMP pool with the reuse disclosed. Draft design is
    written; I'd like your sign-off on the corpus choice before I freeze
    anything."
-3. "Phase 3: the drift study says the structure we're not modelling is
-   frame-level. I'd like to start the waveform likelihood next."
+3. "Phase 3 is opened: I ran the first waveform-likelihood inference on
+   a real note — no tracker, the audio as the observation — and it
+   localizes intonation within about a cent of ground truth. It also
+   showed exactly the failure mode the drift study predicted:
+   overconfidence under the constant-parameter curve. So the phase
+   starts from a measured design constraint, not a sketch. Priority
+   next: the joint model over z, or the tonal confirmation first?"
 
 ---
 
