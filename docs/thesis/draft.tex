@@ -70,7 +70,7 @@
 \newcommand{\covGP}{92.5\%}
 \newcommand{\rmseConfOldHead}{0.393}   % two-stage-era headline on confirmation
 \newcommand{\nllConfOldHead}{$-0.311$}
-\newcommand{\dRmseConf}{$-0.014$}      % paired, proposed model vs. strongest two-stage configuration, RMSE (sig.)
+\newcommand{\dRmseConf}{$-0.014$}      % paired, proposed model vs. adopted two-stage headline, RMSE (sig.)
 \newcommand{\dNllGraphConf}{$-0.074$}  % paired graph contribution inside proposed model, NLL (sig.)
 
 % --- notation (must match CLAUDE.md's canonical table) ----------------
@@ -2464,8 +2464,8 @@ collapse} (safeguarded and made visible by median-and-worst reporting,
 \S\ref{sec:eb}); \emph{multiple-comparison and selection} pressure (per-piece
 paired significance throughout, and --- decisively --- the preregistered one-shot
 confirmation set of \S\ref{sec:hygiene}, which caught one development-set advantage
-failing to replicate). The remaining open threat is external validity beyond ASAP
-piano.
+failing to replicate). The remaining open threat is external validity beyond the two
+studied corpora (ASAP piano; URMP chamber ensembles).
 
 % =====================================================================
 \chapter{Future Work}\label{ch:future}
@@ -2481,57 +2481,37 @@ the observed excerpt does not cover the feature space (a Mahalanobis coverage te
 would do) --- would close the adaptation boundary of \S\ref{sec:boundary}.
 
 \section{Phase 2: intonation and vibrato}
-The formulation is given in full in \S\ref{sec:phase2}, and the pipeline now
-runs end to end on real recordings with development-level results
-(\S\ref{sec:phase2-real}). Of the four questions that had to be settled,
-the first three now have measured answers; the fourth is unchanged:
-\begin{enumerate}[leftmargin=*,noitemsep]
-  \item \textbf{Per-channel missingness --- resolved in code and exercised
-        on real data.} Short notes support an intonation offset but not
-        vibrato parameters; the per-(note, channel) mask interface is
-        unit-pinned exact, and on real tracks the missingness regime is the
-        norm --- the per-track vibrato-identifiable fraction runs from
-        $2\%$ to $97\%$ with median $38\%$ (\S\ref{sec:phase2-real}).
-  \item \textbf{Where alignment error goes --- measured.} On URMP the
-        annotated note onsets anchor the warp without an audio aligner
-        (76/78 development tracks; residual $\tau$ at 79\,ms with $+0.59$
-        neighbour correlation), and $\tau$ is now a channel of the
-        evaluated bundle there;
-        the general audio-alignment problem returns on any corpus without
-        note-level annotations.
-  \item \textbf{The loudness channel --- in the bundle, commensurability
-        still a claim.} $\ell_i$ (log RMS) is now measured and in the
-        bundle (its graph contrast is small, and not significant under the
-        as-given default), but whether it may be discussed as one channel
-        with the
-        MIDI velocity $v_i$ across phases remains a claim to defend, not a
-        convention.
-  \item \textbf{What a result would mean.} Unchanged, and load-bearing: the
-        targets are estimator outputs, so recovery measures agreement with
-        the estimator; the quasi-truth cross-check softens but does not
-        remove this. The Phase-2 claim stays weaker \emph{in kind} than the
-        Phase-1 claim.
-\end{enumerate}
-Beyond those answers, the three former blockers of a
-confirmable Phase-2 result are closed:
-$\tau$ is adopted into the evaluated bundle; the vibrato delay is adopted
-by a criterion fixed before its numbers were computed (it carries no
-registered claim --- its graph contrasts are neutral); and the claim set is
-frozen in the preregistration document. What remains is the deliberate,
-one-shot act of spending the 13-piece confirmation pool.
-The nearly-free experiment flagged here in earlier drafts is now run
-(\S\ref{sec:phase2}; development, exploratory): the circle-of-fifths metric
-\eqref{eq:tonaladj} that \emph{hurt} on piano expression \emph{helps} on
-intonation, whose target is pitch itself, on both axes --- and re-imposes
-the replacement penalty on timing. It is the first evidence
-here that a music-theoretic \emph{geometry}, and not only music-theoretic edges, earns
-its place; adopting a channel-dependent metric is a preregistered-confirmation
-question, deliberately left for after this round. Figure~\ref{fig:arch-phase2} makes the claim precise: relative to
-Figure~\ref{fig:arch-phase1}, the coregionalization grows from $3 \times 3$ to
-$k \times k$ as channels join the bundle (re-learned, not carried over), and the
-observation noise $\Sigma_e$ becomes substantial because the targets are now
-estimates rather than symbolic MIDI values --- the prior's structure and the exact
-conjugate posterior are untouched.
+The formulation (\S\ref{sec:phase2}) is no longer future work: the
+pipeline runs end to end on real recordings, the four questions this
+section once posed (per-channel missingness, where alignment error goes,
+the loudness channel, what a result would mean) are settled by
+measurement and recorded where they belong (\S\ref{sec:phase2},
+\S\ref{sec:phase2-real}), and the registered claim set has been spent
+on its one-shot confirmation. What is genuinely future here is fourfold.
+\textbf{Beyond URMP:} on any corpus without note-level onset
+annotations the general audio-alignment problem returns, and $\tau$'s
+noise row must then carry an aligner's error. \textbf{The timing
+claim:} the one registered claim that failed at confirmation ---
+$\tau$ calibration --- names its own follow-up: a correlated (or
+heavy-tailed) $\tau$ noise row that can represent alignment error's
+structure along score time, which the diagonal row provably cannot.
+\textbf{The tonal metric:} the circle-of-fifths \emph{replacement}
+geometry \eqref{eq:tonaladj} that hurt piano expression helps
+intonation on both axes (\S\ref{sec:phase2}, development,
+exploratory); adopting it channel-scoped requires its own preregistered
+confirmation, and the power analysis for that design is drafted
+(calibration as the primary claim --- the recovery contrast is
+underpowered below ${\sim}20$ pieces). \textbf{New channels:} the
+within-note drift and decay slopes measured in \S\ref{sec:phase2}
+remain candidates under the $\delta^{\mathrm{vib}}$ template (adopt as
+output, claim nothing) if a transcription use-case wants them.
+Figure~\ref{fig:arch-phase2} records the architectural claim: relative
+to Figure~\ref{fig:arch-phase1}, the coregionalization grows from
+$3 \times 3$ to $k \times k$ as channels join the bundle (re-learned,
+not carried over), and the observation noise $\Sigma_e$ becomes
+substantial because the targets are estimates rather than symbolic MIDI
+values --- the prior's structure and the exact conjugate posterior are
+untouched.
 
 \figph{arch_phase2.pdf}{1.0}{Phase 2 as run (development level,
 \S\ref{sec:phase2-real}). Audio and the annotated onsets enter only to
@@ -2552,14 +2532,19 @@ analytically and the nonlinear positions $z$ inferred approximately (Laplace/VI,
 score-based initialisation). This is the most novel part of the programme. Its
 conjugate inner blocks exist as tested helpers --- the synthesis basis $\Phi(z)$
 and the amplitude marginalisation \eqref{eq:amp-post}--\eqref{eq:collapsed} are
-implemented and unit-tested --- while the $z$-inference loop, the hard part, is not
-started. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
+implemented and unit-tested --- and a first slice of the $z$-inference is
+now measured (\S\ref{sec:phase3-study}): exact grid inference over the
+intonation coordinate of $z$ on real notes, and the waveform posterior's
+integration into the Phase-2 bundle. The \emph{joint} loop --- all notes
+and coordinates at once under the graph prior (Laplace/VI), with the
+estimand bridge and the amplitude envelope $A_i(t)$ under the prior ---
+is the open work. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
 the whole prior --- graph branch, evidence branch, joint kernel --- carries over
 as the structured component of $p(z)$, but with no performance MIDI there are no
 per-note observations and no visible/hidden split; every note's expression is
 latent, and the audio likelihood costs conjugacy.
 
-\figph{arch_phase3.pdf}{1.0}{Phase 3 (not yet implemented; dashed). The
+\figph{arch_phase3.pdf}{1.0}{Phase 3 (dashed: the joint system is not yet implemented; the likelihood block is the part exercised in \S\ref{sec:phase3-study}). The
 observation is the waveform itself: the same joint kernel now serves as the
 prior over $z$, the likelihood block becomes the marginalised audio likelihood
 $p(x \mid z) = \N\bigl(\Phi\mu_a,\ \Phi\Sigma_a\Phi^{\top} + K_n\bigr)$, and the
@@ -2582,8 +2567,12 @@ measured (\S\ref{sec:kernels}, Table~\ref{tab:kernels}), and they came apart cle
 expressive behaviour travels with register proximity, not tonal proximity.
 \emph{Adding} same-onset (chord) and stepwise voice-leading edges \eqref{eq:harmadj}
 on top of the plain graph is the one intervention significant on both axes. The
-lesson is worth stating in general form: music theory earns its place in the kernel as
-\emph{extra relations}, not as a substitute geometry.
+lesson is worth stating in general form --- with the qualifier Phase~2
+measured: music theory earns its place in the kernel as \emph{extra
+relations}, not as a substitute geometry, \emph{for channels whose
+target is not pitch}; on intonation, where the target is pitch itself,
+the same substitute geometry helps (\S\ref{sec:phase2}) --- the rule is
+channel-relative.
 
 What remains open in this route is the part the score alone cannot supply.
 \emph{Cadential and functional edges} (tonic/dominant relations) require a harmonic
