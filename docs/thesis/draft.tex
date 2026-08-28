@@ -327,6 +327,25 @@ latent performance variables to a waveform while keeping the amplitudes
 conditionally Gaussian, so they can be marginalised in closed form
 (\S\ref{sec:phase3-math}).
 
+A complementary line puts the periodicity itself into a Gaussian-process
+\emph{kernel} rather than a deterministic basis. Spectral mixture
+kernels learn a stationary covariance as a Gaussian mixture over
+frequencies \cite{wilson2013}; their non-stationary generalization ---
+the \emph{generalized spectral mixture} kernel --- lets the frequencies,
+amplitudes, and coherence lengths vary with the input, each modeled as a
+latent function \cite{remes2017}. Applied to music audio, per-note
+change-windows gating GPs with harmonic (exponentiated-cosine)
+covariances support pitch estimation and gap imputation directly on the
+waveform \cite{alvarado2016}. These families are the natural priors for
+the \emph{within-note} structure this thesis measures but does not yet
+model --- a quasi-periodic vibrato whose rate and extent drift --- and
+\S\ref{ch:future} names the two slots where they would enter: a
+curve-level estimator and the Phase-3 pitch-curve prior. The design
+difference is deliberate and worth stating: kernel-side constructions
+marginalize the note's structure away, while this thesis keeps named
+per-note variables ($c$, $\gamma$, $f^{\mathrm{vib}}$, \dots) because
+the variables themselves are the object of study.
+
 % =====================================================================
 \chapter{Model and Formulation}\label{ch:model}
 \emph{This chapter gives the complete model derivation. Notation is summarised in
@@ -2593,7 +2612,13 @@ intonation coordinate of $z$ on real notes, and the waveform posterior's
 integration into the Phase-2 bundle. The \emph{joint} loop --- all notes
 and coordinates at once under the graph prior (Laplace/VI), with the
 estimand bridge and the amplitude envelope $A_i(t)$ under the prior ---
-is the open work. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
+is the open work. The reviewed spectral-kernel families
+(\cite{wilson2013,remes2017,alvarado2016}; supervisor-suggested) supply
+the missing ingredient's principled form: a quasi-periodic,
+drift-capable prior on the within-note pitch curve, Gaussian and hence
+compatible with the collapsed likelihood --- the deviation prior of
+\S\ref{sec:phase3-study} with a spectral mixture in place of the bump
+basis. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
 the whole prior --- graph branch, evidence branch, joint kernel --- carries over
 as the structured component of $p(z)$, but with no performance MIDI there are no
 per-note observations and no visible/hidden split; every note's expression is
@@ -2895,6 +2920,14 @@ In \emph{Advances in Neural Information Processing Systems 20}, 2008.
 \bibitem{rubin1976} D.~B.~Rubin.
 Inference and missing data.
 \emph{Biometrika}, 63(3):581--592, 1976.
+\bibitem{wilson2013} A.~G.~Wilson, R.~P.~Adams.
+Gaussian process kernels for pattern discovery and extrapolation.
+\emph{ICML}, 2013.
+\bibitem{remes2017} S.~Remes, M.~Heinonen, S.~Kaski.
+Non-stationary spectral kernels. \emph{NeurIPS}, 2017.
+\bibitem{alvarado2016} P.~A.~Alvarado, D.~Stowell.
+Gaussian processes for music audio modelling and content analysis.
+arXiv:1606.01039, 2016.
 \bibitem{nosek2018} B.~A.~Nosek, C.~R.~Ebersole, A.~C.~DeHaven, D.~T.~Mellor.
 The preregistration revolution.
 \emph{Proc.\ Natl.\ Acad.\ Sci.}, 115(11):2600--2606, 2018.

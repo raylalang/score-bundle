@@ -1,4 +1,4 @@
-# Meeting prep (2026-08, private) — post-confirmation edition
+# Meeting prep (2026-08, private) — literature-review framing
 
 **How to use this document.** To study: read top to bottom, then say
 Part 1 aloud twice. In the room: the pocket card is your glance-sheet,
@@ -28,16 +28,97 @@ failed** · adverse cell: timing recovery +0.003\* (≈3 ms) · drift:
 from truth with NO tracker, beats the estimator on winds, self-check
 coverage 0.90 exactly · Phase-1 confirmed 0.376 vs 0.393\*.
 
-**The meeting = Beat 4 → Beat 5** (drift → Phase 3). The confirmation
-is TO THE SIDE: one breath + Table 3.5 (p. 26) only if it comes up.
-Asks: (1) next registration: waveform-integration channel or tonal
-metric (tonal needs his corpus sign-off; power check says
-calibration-primary); (2) only if the confirmation is discussed: how
-prominent should the failed timing claim be?
+**FRAMING: this week = literature review** (his two pointers → the
+three papers). The meeting = the review: papers → mapping → proposal.
+Everything measured (drift, Phase 3, confirmation) is RESERVE — deploy
+only if Ray chooses. Study source: `docs/kernel_papers_review.md`;
+thesis carries the papers in related work (§2.5) + Future Work.
+Asks: (1) which slot first — curve-level estimator v2 or the Phase-3
+curve prior?; (2) were these the papers he meant / any others?
 
 ---
 
-# Part 1 — The story you tell (Beat 4 → Beat 5; confirmation to the side)
+# Part 1 — The story you tell (the literature review)
+
+- **Opening line (memorize):** "You pointed me at periodic-kernel GPs
+  and generalized spectral mixtures. I spent the week with the three
+  key papers — here's what they are, and exactly where they'd fit our
+  model."
+
+### THE LADDER — three papers, one story
+
+**Rung 1 — Wilson & Adams 2013, the spectral mixture (SM) kernel:**
+
+- the idea in one line: don't pick a kernel — model its SPECTRUM as a
+  Gaussian mixture; the kernel comes out in closed form (a sum of
+  damped cosines: frequency, coherence decay, weight per component)
+- dense: enough components approximate ANY stationary kernel; unused
+  components get pruned by the marginal likelihood (their Q=10 runs
+  keep ~7) — the same evidence discipline our per-piece fits use
+- what they show: pattern discovery + long-range extrapolation (CO2,
+  airline) where SE/Matérn/periodic kernels only interpolate
+- the mapping to say: "the periodic kernel you named is one SM
+  component in the sharp-peak limit; a note's vibrato is one component
+  at f-vib with finite coherence, and the drift is a near-zero-frequency
+  component — so vibrato-plus-drift is a two-component SM prior on the
+  cents curve"
+
+**Rung 2 — Remes, Heinonen & Kaski 2017, the GENERALIZED spectral
+mixture (GSM):**
+
+- the extension: the SM parameters become FUNCTIONS of time — each
+  frequency, weight, and coherence length is itself a latent GP; SM is
+  the constant-function special case
+- their very first experiment is our problem in miniature: an
+  oscillation whose frequency changes over time, recovered where SM
+  cannot
+- the mapping: "this is the principled version of what the sine model
+  lacks — vibrato rate that drifts, extent that grows, within one note,
+  as smooth functions. Our gated sine fit is the degenerate limit: one
+  component, constant functions, hard onset gate."
+- honest cost to name: every hyperparameter is a latent function → much
+  heavier inference (their whitened-gradient MAP), and on short notes a
+  free frequency function can absorb drift and vice versa — the
+  identifiability problem our hard rules currently manage
+
+**Rung 3 — Alvarado & Stowell 2016, GPs for music audio:**
+
+- the assembly, at WAVEFORM level: a recording = per-note sigmoid
+  change-windows gating independent GPs; each note's kernel is an
+  exponentiated-cosine — a genuinely harmonic spectrum (fundamental +
+  partials from one parameter), times an SE term so the envelope can
+  move
+- their pitch estimation = maximize the marginal likelihood over each
+  note's fundamental — procedurally the same inference our Phase-3
+  sketch uses (grid over the collapsed likelihood)
+- two mappings to say:
+    - "they must hand-specify the note windows — we have the score;
+      the score-informed setting removes their main practical burden"
+    - "and a deliberate design difference: they put the structure in
+      the kernel and marginalize the note away; we keep named per-note
+      variables — c, gamma, f — because those variables ARE the object
+      of study. Both are valid; ours is chosen, not naive."
+
+### THE PROPOSAL — where the kernels plug in (two slots)
+
+- Slot A, curve-level estimator v2: GP regression with an SM/GSM prior
+  on a note's cents curve, replacing the parametric sine fit; outputs
+  distributions over slowly-varying (c, gamma, f)(t)
+- Slot B, the Phase-3 pitch-curve prior: the waveform likelihood needs
+  a prior over curve deviations, and these families are the principled
+  choice — still Gaussian, so the closed-form machinery carries over
+- boundary to state: these kernels model WITHIN-note structure; the
+  graph prior's across-note role is untouched
+- close: "I'd like your read on priority — the curve-level estimator,
+  or the Phase-3 prior first? And were these the papers you meant?"
+
+---
+
+# RESERVE — measured results (deploy ONLY if Ray chooses to open them)
+*(everything below is intact from the results-week prep: drift study →
+Phase 3 → confirmation to the side)*
+
+## (was Part 1) Beat 4 → Beat 5; confirmation to the side
 
 - The meeting = Beat 4, then Beat 5. Start directly on Beat 4 — it
   answers HIS comment, so it's the natural opening.
