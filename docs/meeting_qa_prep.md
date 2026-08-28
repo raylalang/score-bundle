@@ -11,12 +11,12 @@ runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
 
 ## Pocket card
 
-**Pages:** phase table 5 · §3.9 17–25 · data-point Fig 3.2 = 20 ·
-tonal Fig 3.3 = 22 · truth/estimate/GP Fig 3.4 = 23 · results 23–25
-(headline + ledger 24 · dev Table 3.3 AND confirmation Table 3.4 both
-on 25) · drift paragraph 20 · **Phase-3 study §3.10 = 26–28, its
-Table 3.5 = 27, its Fig 3.6 = 30** · channels Fig 3.5 = 29 · §5.3 = 35
-· Phase-2 architecture Fig 8.1 = 50.
+**Pages:** phase table 5 · §3.9 17–26 · data-point Fig 3.2 = 20 ·
+**drift ¶ + Table 3.3 + Fig 3.3 = 20–21** · tonal Fig 3.4 = 23 ·
+truth/estimate/GP Fig 3.5 = 24 · results 24–26 (headline + ledger 25 ·
+dev Table 3.4 = 25 · confirmation Table 3.5 = 26) · **Phase-3 study
+§3.10.1 = 27–28, its Table 3.6 = 28, its Fig 3.7 = 30** · channels
+Fig 3.6 = 29 · §5.3 = 35 · Phase-2 architecture Fig 8.1 = 50.
 
 **Eight numbers** (CONFIRMATION, as-given, paired vs no-graph, one-shot):
 intonation −0.88\* (dev basis −0.89\* — reproduced) · vibrato
@@ -29,7 +29,7 @@ from truth with NO tracker, beats the estimator on winds, self-check
 coverage 0.90 exactly · Phase-1 confirmed 0.376 vs 0.393\*.
 
 **The meeting = Beat 4 → Beat 5** (drift → Phase 3). The confirmation
-is TO THE SIDE: one breath + Table 3.4 (p. 25) only if it comes up.
+is TO THE SIDE: one breath + Table 3.5 (p. 26) only if it comes up.
 Asks: (1) next registration: waveform-integration channel or tonal
 metric (tonal needs his corpus sign-off; power check says
 calibration-primary); (2) only if the confirmation is discussed: how
@@ -56,7 +56,7 @@ prominent should the failed timing claim be?
 ---
 
 ### TO THE SIDE — the confirmation (deploy only if it comes up)
-*(Table 3.4 p. 25 · headline + ledger p. 24 · full detail: Part 2
+*(confirmation Table 3.5 p. 26 · headline + ledger p. 25 · full detail: Part 2
 "The confirmation" block)*
 
 **One breath:** "I registered four claims before touching the held-back
@@ -80,12 +80,14 @@ cell against us."
 ---
 
 ### BEAT 4 — The drift study: his comment, answered
-*(¶ "What the per-note compression discards", p. 20)*
+*(¶ "What the per-note compression discards" + Table 3.3 + Fig 3.3,
+pp. 20–21 — the figure IS the beat: A = the centre moving, B = two
+witnesses, C vs D = graph-white vs the structure the graph uses)*
 
 **Headline:** "You were right — I measured it — and the missing structure
 is exactly the part a graph across notes cannot help with."
 
-**What "drift" is — the concrete picture (have this ready):**
+**What "drift" is — the concrete picture (Fig 3.3 A — have it open):**
 
 - our sine model assumes a note has ONE pitch centre c, held flat for
   the whole note, with vibrato wiggling around it
@@ -135,7 +137,8 @@ at the direction:**
   not the player's phrasing
 - strings are ~50/50 rising/falling — that's where genuine swells live
 
-**Finding 4 — the decisive one: could OUR model even use this?**
+**Finding 4 — the decisive one (Fig 3.3 C vs D): could OUR model even
+use this?**
 
 - what the graph prior does, in one line: it lets neighbouring notes
   share information — so it can only help with quantities that are
@@ -177,7 +180,7 @@ argument for the next phase — the last beat."
 ---
 
 ### BEAT 5 — Phase 3 is open, with results
-*(§3.10.1 pp. 26–28 · Table 3.5 p. 27 · Fig 3.6 p. 30)*
+*(§3.10.1 pp. 27–28 · Table 3.6 p. 28 · Fig 3.7 p. 30)*
 
 **Headline:** "The audio itself as the observation — no tracker — gets
 within ~2 cents of ground truth; I can prove the machinery is calibrated;
@@ -194,7 +197,7 @@ test pair."
   intonation centre, centred on the SCORE → exact 1-D inference
 - four position models compared
 
-**Result 1 — accuracy (Fig 3.6 panel A):**
+**Result 1 — accuracy (Fig 3.7 panel A):**
 
 - the ladder, median cents from ground-truth centre:
     - constant c: 2.81
@@ -206,7 +209,7 @@ test pair."
   tracker chain where trackers struggle"
 - the drift term helps here too: paired −0.18 cents, better on 57%
 
-**Result 2 — the calibration diagnosis (Fig 3.6 panel B):**
+**Result 2 — the calibration diagnosis (Fig 3.7 panel B):**
 
 - every variant: coverage **1–3%** at nominal 90% vs ground truth —
   INVARIANT under all three fixes
@@ -370,7 +373,7 @@ outcome; no reruns, no added seeds.
   point: short notes physically cannot contain 1.5 vibrato cycles, so
   those cells are structurally unmeasurable — the missing entries are
   the problem statement, and the model's job is to put calibrated
-  posteriors in them (Fig 3.4's case B shows truth agreeing when it
+  posteriors in them (Fig 3.5's case B shows truth agreeing when it
   does).
 - *Which instruments?* URMP's thirteen, three families: strings
   (vn/va/vc/db), woodwind (fl/ob/cl/bn/sax), brass (tpt/hn/tbn/tba);
@@ -386,7 +389,8 @@ outcome; no reruns, no added seeds.
   cells informative (missing when vibrato is short or weak). Held-out
   scores are interpretable for the vibrato-identifiable sub-population;
   filled cells are prior extrapolations.
-- *Isn't the sine model too simple? (his own point)* Measured, ¶ p. 20:
+- *Isn't the sine model too simple? (his own point)* Measured — ¶ +
+  Table 3.3 + Fig 3.3, pp. 20–21:
   drift real (10 cents/note median, 97% direction agreement with GT),
   loudness moves even more (137% of the channel's across-note spread,
   mostly decay envelope — 81% of brass slopes fall). Priced into the
@@ -428,7 +432,7 @@ outcome; no reruns, no added seeds.
   functionals of the same performance, ~2 cents apart — and we showed
   no within-model fix closes it (better mean model: accuracy improves,
   coverage doesn't; colored noise: worse; deviation prior: best
-  accuracy, coverage unmoved). That's Fig 3.6's panel B.
+  accuracy, coverage unmoved). That's Fig 3.7's panel B.
 - *So what's the Phase-3 plan?* The near-term design is already
   measured (dev, exploratory, `results/phase3_integration_dev.md`): the
   waveform posterior as a 7th bundle channel with its calibrated
@@ -497,8 +501,9 @@ outcome; no reruns, no added seeds.
     `results/phase3_waveform_dev.md`, thesis §3.10.1.
 
 **How to study (~90 min, Beat 4 → Beat 5):** Overleaf sync → read the
-drift ¶ (p. 20) → say Beat 4 aloud twice (the opening line + Finding 4
-a third time) → read §3.10.1 (pp. 26–28) with Fig 3.6 (p. 30) → say
+drift ¶ + Table 3.3 + Fig 3.3 (pp. 20–21) → say Beat 4 aloud twice
+(the opening line + Finding 4 a third time, with Fig 3.3 C/D in view) →
+read §3.10.1 (pp. 27–28) with Fig 3.7 (p. 30) → say
 Beat 5 aloud, punchlines once more → say the confirmation one-breath
 aloud once (that's all it needs) → the asks → from Part 2, say aloud:
 "why overconfident", "what's the Phase-3 plan", "what does confirmed
