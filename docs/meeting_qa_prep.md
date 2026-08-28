@@ -14,9 +14,8 @@ runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
 **Pages:** phase table 5 · §3.9 17–25 · data-point Fig 3.2 = 20 ·
 tonal Fig 3.3 = 22 · truth/estimate/GP Fig 3.4 = 23 · results 23–25
 (headline + ledger 24 · dev Table 3.3 AND confirmation Table 3.4 both
-on 25) · **verdict Fig 3.5 = 26** · drift paragraph 20 · **Phase-3
-study §3.10.1 = 27–28, its Table 3.5 = 28, its Fig 3.7 = 30** ·
-channels Fig 3.6 = 29 · §5.3 = 35
+on 25) · drift paragraph 20 · **Phase-3 study §3.10 = 26–28, its
+Table 3.5 = 27, its Fig 3.6 = 30** · channels Fig 3.5 = 29 · §5.3 = 35
 · Phase-2 architecture Fig 8.1 = 50.
 
 **Eight numbers** (CONFIRMATION, as-given, paired vs no-graph, one-shot):
@@ -51,8 +50,7 @@ says calibration-primary).
 ---
 
 ### BEAT 3 — The confirmation verdict
-*(verdict figure: Fig 3.5 p. 26 — the wall + the four intervals ·
-Table 3.4 p. 25 · headline + ledger p. 24)*
+*(Table 3.4 p. 25 · headline + ledger p. 24)*
 
 **Headline:** "Three of the four registered claims confirmed; the fourth
 failed and is reported verbatim."
@@ -175,7 +173,7 @@ argument for the next phase — the last beat."
 ---
 
 ### BEAT 5 — Phase 3 is open, with results
-*(§3.10.1 pp. 27–28 · Table 3.5 p. 28 · Fig 3.7 p. 30)*
+*(§3.10.1 pp. 26–28 · Table 3.5 p. 27 · Fig 3.6 p. 30)*
 
 **Headline:** "The audio itself as the observation — no tracker — gets
 within ~2 cents of ground truth; I can prove the machinery is calibrated;
@@ -192,7 +190,7 @@ test pair."
   intonation centre, centred on the SCORE → exact 1-D inference
 - four position models compared
 
-**Result 1 — accuracy (Fig 3.7 panel A):**
+**Result 1 — accuracy (Fig 3.6 panel A):**
 
 - the ladder, median cents from ground-truth centre:
     - constant c: 2.81
@@ -204,7 +202,7 @@ test pair."
   tracker chain where trackers struggle"
 - the drift term helps here too: paired −0.18 cents, better on 57%
 
-**Result 2 — the calibration diagnosis (Fig 3.7 panel B):**
+**Result 2 — the calibration diagnosis (Fig 3.6 panel B):**
 
 - every variant: coverage **1–3%** at nominal 90% vs ground truth —
   INVARIANT under all three fixes
@@ -378,7 +376,7 @@ outcome; no reruns, no added seeds.
   functionals of the same performance, ~2 cents apart — and we showed
   no within-model fix closes it (better mean model: accuracy improves,
   coverage doesn't; colored noise: worse; deviation prior: best
-  accuracy, coverage unmoved). That's Fig 3.7's panel B.
+  accuracy, coverage unmoved). That's Fig 3.6's panel B.
 - *So what's the Phase-3 plan?* The near-term design is already
   measured (dev, exploratory, `results/phase3_integration_dev.md`): the
   waveform posterior as a 7th bundle channel with its calibrated
@@ -449,7 +447,7 @@ outcome; no reruns, no added seeds.
 **How to study (~100 min, three beats only):** Overleaf sync → read the
 confirmation paragraph + Tables 3.3/3.4 (pp. 24–25) → say Beat 3 aloud
 twice, the claim-by-claim sequence a third time → read the drift ¶
-(p. 20) → say Beat 4 aloud → read §3.10.1 (pp. 27–28) with Fig 3.7
+(p. 20) → say Beat 4 aloud → read §3.10.1 (pp. 26–28) with Fig 3.6
 (p. 30) → say Beat 5 aloud, the three punchline lines once more → the
 two asks → from Part 2, say aloud: "why did timing fail", "what does
 confirmed mean", "why overconfident", "what's the Phase-3 plan".
