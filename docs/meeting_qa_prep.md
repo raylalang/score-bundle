@@ -113,51 +113,83 @@ failed and is reported verbatim."
 **Headline:** "You were right — I measured it — and the missing structure
 is exactly the part a graph across notes cannot help with."
 
-**Setup:**
+**What "drift" is — the concrete picture (have this ready):**
 
-- his comment: the sine model may be too simple; loudness and intonation
-  shift over time within a note
-- response: refit every identifiable dev note with an added linear drift
-  term — on the tracker curve AND the ground-truth curve, independently
-- n = 5,145 notes measurable in both curves
+- our sine model assumes a note has ONE pitch centre c, held flat for
+  the whole note, with vibrato wiggling around it
+- drift = the centre itself sliding while the note is held
+- example: a note that starts 5 cents flat and ends 5 cents sharp has
+  10 cents of drift — and the model reports c ≈ 0, a precise number for
+  a pitch the player never actually held
+- his comment was exactly this: "loudness and even intonation can shift
+  over time" — the model pretends they don't, within a note
 
-**The drift is real music, not tracker noise:**
+**What I actually did (the experiment, step by step):**
 
-- significant slope in each curve independently: 65.5% (tracker) /
-  67.1% (ground truth) of notes
-- direction agreement between the two curves: **97%**
-- rank correlation: **0.91**
+- take every note with identifiable vibrato that exists in both curves:
+  n = 5,145
+- refit each note's sine model with ONE extra ingredient: a straight
+  tilt under the vibrato (the drift term) — nothing else changes
+- do it on TWO pitch curves independently: our tracker's output AND the
+  human-corrected ground-truth curve
+- why two: if drift showed up only in the tracker's curve it could be
+  measurement noise; if two independent measurements of the same note
+  show the same tilt, it's the player
 
-**How big:**
+**Finding 1 — the drift is real music:**
 
-- median drift across a note: **10.5 cents** (top tenth: >30)
-- our c cell's reported precision: **0.9 cents**
-- → c is a precise average of a moving quantity
+- the tilt is statistically significant (slope > 2× its own SE) on
+  about two thirds of notes — in EACH curve separately (65.5% tracker,
+  67.1% ground truth)
+- the two curves agree on the tilt's DIRECTION on **97%** of notes;
+  rank correlation **0.91**
+- two independent witnesses, same story → the player really slides
 
-**Loudness moves even more — but it's mostly envelope:**
+**Finding 2 — it's big relative to our precision:**
 
-- median within-note change ≈ **1.4×** the across-note spread of ℓ
-- 65% of significant slopes are FALLING (brass 81%) → decay envelope,
-  not expression
-- strings nearly balanced (57/43) → where real swells live
+- median total drift across a note: **10.5 cents** (top tenth: >30)
+- the c cell's reported precision: **0.9 cents**
+- so: c is a precisely-measured AVERAGE of a moving quantity — precise
+  about the average, silent about the movement
 
-**The decisive measurement — the slopes are graph-white:**
+**Finding 3 — loudness (his other example) moves even more, but look
+at the direction:**
 
-- lag-1 autocorrelation along the note sequence: **+0.03** (intonation),
-  **+0.06** (loudness)
-- compare **+0.59** for timing — the channel where the graph earns its
-  keep
+- same check via the four chunk levels: median within-note change ≈
+  **1.4×** the note-to-note spread of the loudness channel — so yes,
+  bigger than what we model
+- but 65% of the significant slopes FALL — and 81% in brass: a note
+  naturally decays after its attack; that is the instrument's envelope,
+  not the player's phrasing
+- strings are ~50/50 rising/falling — that's where genuine swells live
 
-**Why this defends the model (all three):**
+**Finding 4 — the decisive one: could OUR model even use this?**
 
-- mismatch is priced in: cell variances are residual-based → drifting
-  notes report more uncertainty → why calibration held at confirmation
-- quasi-truth uses the same ruler → graph contrasts compare like with
+- what the graph prior does, in one line: it lets neighbouring notes
+  share information — so it can only help with quantities that are
+  CORRELATED between neighbours
+- the test: does note i's drift predict note i+1's drift? (lag-1
+  autocorrelation along the piece)
+- answer: **no** — +0.03 for intonation drift, +0.06 for loudness
+  slope; each note's drift is its own private event
+- the contrast that makes it vivid: timing sits at **+0.59** —
+  neighbours strongly share timing, and that is exactly the channel
+  where the graph earns its keep
+- conclusion: a "drift channel" would be data the graph cannot smooth,
+  denoise, or fill in — dead weight in THIS model
+
+**Why the confirmed results survive his criticism (all three):**
+
+- the drift is already PRICED IN: a drifting note fits the sine model
+  worse → its residual is bigger → its cells carry bigger error bars →
+  the GP trusts it less → that is WHY coverage stayed honest at
+  confirmation
+- the contrasts are fair: the "truth" we score against was made with
+  the same flat-centre ruler, so graph-vs-no-graph compares like with
   like
-- the discarded structure is within-note and graph-white across notes →
-  a drift channel is one the graph could not help → per-note resolution
-  is the right level for THIS model
-- where it belongs: Phase 3's frame-level likelihood
+- the resolution argument: structure that lives WITHIN notes and is
+  uncorrelated ACROSS notes belongs to a frame-level model — which is
+  literally Phase 3's likelihood (next beat)
 
 **Punchline (memorize):** "Your comment, measured, turned into the
 argument for the next phase — the last beat."
