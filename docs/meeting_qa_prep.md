@@ -56,6 +56,7 @@ says calibration-primary).
 failed and is reported verbatim."
 
 **Setup — say briefly:**
+
 - claims + protocol frozen on the 17th: git tag, one shot, every number
   reported whatever it says
 - pool: 13 pieces, untouched since the split was frozen in early August
@@ -63,23 +64,25 @@ failed and is reported verbatim."
 - run: ~1.5 h, sharded; estimator code byte-identical to the tag
 
 **The verdict — claim by claim:**
+
 - C1 intonation recovery: **−0.877 [−1.236, −0.538]\*** → PASS
-  - dev basis was −0.891\* → reproduced almost exactly
+    - dev basis was −0.891\* → reproduced almost exactly
 - C2 vibrato calibration, BOTH channels required:
-  - extent: **−2.990 [−6.575, −0.435]\*** → PASS
-  - rate: **−0.564 [−0.739, −0.392]\*** → PASS
-  - say: "the extent half was the one I flagged as seed-sensitive — the
+    - extent: **−2.990 [−6.575, −0.435]\*** → PASS
+    - rate: **−0.564 [−0.739, −0.392]\*** → PASS
+    - say: "the extent half was the one I flagged as seed-sensitive — the
     claim I said could honestly fail. It held."
 - C3 coverage: **0.88–0.91 on all six channels** (band was [0.85, 0.95])
   → PASS
 - decision rule (fixed in advance): C1 ∧ C2 ∧ C3 ⇒ **headline CONFIRMED**
-  - the headline: "the unchanged graph prior extends to real audio with
+    - the headline: "the unchanged graph prior extends to real audio with
     calibrated uncertainty, at confirmation level"
 
 **The honest part — volunteer, don't wait:**
+
 - C4 timing calibration (secondary, non-gating): **FAILED**
-  - −0.030 [−0.061, +0.006] — right sign, CI includes zero
-  - dev basis was −0.292\*
+    - −0.030 [−0.061, +0.006] — right sign, CI includes zero
+    - dev basis was −0.292\*
 - starred cell AGAINST the graph: timing recovery **+0.003 [+0.000,
   +0.007]\*** (≈3 ms on a 65 ms RMSE)
 - timing summary sentence: "coverage on target (0.91), but no confirmed
@@ -88,10 +91,12 @@ failed and is reported verbatim."
   → adverse cells move in both directions too
 
 **If he asks why trust the rest:**
+
 - "The rule was written before the data and was allowed to say no.
   It said no once."
 
 **If he pushes on why timing failed:**
+
 - the pool warped BETTER than dev (40/40 tracks, 15 exact, 0 failures;
   dev had 2 failures) → the alignment-error structure the dev star sat
   on isn't there
@@ -109,6 +114,7 @@ failed and is reported verbatim."
 is exactly the part a graph across notes cannot help with."
 
 **Setup:**
+
 - his comment: the sine model may be too simple; loudness and intonation
   shift over time within a note
 - response: refit every identifiable dev note with an added linear drift
@@ -116,29 +122,34 @@ is exactly the part a graph across notes cannot help with."
 - n = 5,145 notes measurable in both curves
 
 **The drift is real music, not tracker noise:**
+
 - significant slope in each curve independently: 65.5% (tracker) /
   67.1% (ground truth) of notes
 - direction agreement between the two curves: **97%**
 - rank correlation: **0.91**
 
 **How big:**
+
 - median drift across a note: **10.5 cents** (top tenth: >30)
 - our c cell's reported precision: **0.9 cents**
 - → c is a precise average of a moving quantity
 
 **Loudness moves even more — but it's mostly envelope:**
+
 - median within-note change ≈ **1.4×** the across-note spread of ℓ
 - 65% of significant slopes are FALLING (brass 81%) → decay envelope,
   not expression
 - strings nearly balanced (57/43) → where real swells live
 
 **The decisive measurement — the slopes are graph-white:**
+
 - lag-1 autocorrelation along the note sequence: **+0.03** (intonation),
   **+0.06** (loudness)
 - compare **+0.59** for timing — the channel where the graph earns its
   keep
 
 **Why this defends the model (all three):**
+
 - mismatch is priced in: cell variances are residual-based → drifting
   notes report more uncertainty → why calibration held at confirmation
 - quasi-truth uses the same ruler → graph contrasts compare like with
@@ -152,6 +163,7 @@ is exactly the part a graph across notes cannot help with."
 argument for the next phase — the last beat."
 
 **If he pushes:**
+
 - changed the estimator? → no; frozen under the tag; the confirmation
   ran it as registered; the drift study is the reason NOT to add a
   channel
@@ -169,6 +181,7 @@ and feeding it back into the bundle already improves inference on every
 test pair."
 
 **Setup:**
+
 - premise: stop deriving targets through a tracker; the waveform IS the
   observation
 - likelihood: harmonic basis, amplitudes marginalized in closed form,
@@ -178,17 +191,19 @@ test pair."
 - four position models compared
 
 **Result 1 — accuracy (Fig 3.6 panel A):**
+
 - the ladder, median cents from ground-truth centre:
-  - constant c: 2.81
-  - + AR(1) noise: 2.73
-  - + drift term (Beat 4's!): 2.40
-  - + deviation prior: **2.29**
+    - constant c: 2.81
+    - + AR(1) noise: 2.73
+    - + drift term (Beat 4's!): 2.40
+    - + deviation prior: **2.29**
 - reference: full pyin+NLLS estimator chain = **2.01**
 - winds: waveform **2.67 vs estimator 3.27** → "the waveform BEATS the
   tracker chain where trackers struggle"
 - the drift term helps here too: paired −0.18 cents, better on 57%
 
 **Result 2 — the calibration diagnosis (Fig 3.6 panel B):**
+
 - every variant: coverage **1–3%** at nominal 90% vs ground truth —
   INVARIANT under all three fixes
 - accuracy climbs every time; coverage never moves
@@ -202,14 +217,15 @@ test pair."
   a stationary floor's reach)
 
 **Result 3 — the integration (the closer):**
+
 - design: the waveform posterior enters the bundle like every estimator
   — a measurement with an honest noise row = posterior variance + a
   discrepancy floor at the ~2-cent scale
 - measured, as a 7th channel (coupling learned per piece):
-  - floor self-calibrates at **3.1 cents** from visible notes only —
+    - floor self-calibrates at **3.1 cents** from visible notes only —
     the estimand-gap scale, found automatically
-  - held-out intonation improves on **14 of 14** track-seed pairs
-  - **−1.21 cents\*** · NLL **−0.24\*** · coverage held at 0.87
+    - held-out intonation improves on **14 of 14** track-seed pairs
+    - **−1.21 cents\*** · NLL **−0.24\*** · coverage held at 0.87
 - the control: remove the floor → calibration vs truth degrades
   (+0.22\*), nothing improves → the floor is provably what keeps it
   honest
@@ -218,11 +234,13 @@ test pair."
 discipline — it feeds it."
 
 **Honest labels — say once:**
+
 - all of Beat 5: development-level, exploratory, one corpus, intonation
   only, no claims registered
 - any claim gets its own registration — same discipline as always
 
 **If he pushes:**
+
 - why grid inference? → 1-D, exact to a 0.03-cent step; no Laplace
   claimed; the joint loop over all notes = the named open work
 - vibrato scaffold is from the estimator? → yes, on identifiable notes,
@@ -238,9 +256,9 @@ discipline — it feeds it."
   three passes credible."
 - from Beat 5: "Next registration — the waveform-integration channel, or
   the tonal metric first?"
-  - tonal: needs his corpus sign-off (pool is spent; draft proposes
+    - tonal: needs his corpus sign-off (pool is spent; draft proposes
     Bach10 + reused pool, disclosed; power check ⇒ calibration-primary)
-  - integration: feasibility evidence is in; same discipline applies
+    - integration: feasibility evidence is in; same discipline applies
 
 ---
 
@@ -259,6 +277,7 @@ the one-shot discipline · *one-shot* = the pool is spent whatever the
 outcome; no reruns, no added seeds.
 
 **The confirmation**
+
 - *What does "confirmed" mean exactly?* The claims and the decision rule
   were committed (git tag) before any confirmation piece was touched;
   the pool was then evaluated once, under the frozen protocol, and the
@@ -287,6 +306,7 @@ outcome; no reruns, no added seeds.
   ones.
 
 **Data and method**
+
 - *What is the system, in one breath?* Score plus noisy per-note
   measurements in; one graph-structured Gaussian posterior over every
   (note, channel) cell out, with honest error bars. The graph encodes
@@ -335,6 +355,7 @@ outcome; no reruns, no added seeds.
   explanation for C4's failure.
 
 **Process and what's next**
+
 - *Can you resynthesize audio from the Phase-2 output?* The expressive
   skeleton, yes — pitch curve, per-note levels, timing around a
   supplied tempo line; a parametric synthesizer could render a
