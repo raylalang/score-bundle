@@ -253,6 +253,54 @@ discipline — it feeds it."
 
 ---
 
+### HIS TWO KERNEL POINTERS (discuss in the meeting; papers found)
+
+**What he most likely meant:**
+
+- "periodic kernel Gaussian process" → the classic periodic
+  (exp-sine-squared) kernel, MacKay 1998 / Rasmussen–Williams §4.3;
+  in practice the QUASI-periodic form (periodic × Matérn decay), which
+  lets amplitude and phase drift
+- "generalized spectral mixture" → the spectral-mixture (SM) kernel of
+  Wilson & Adams (ICML 2013) — kernel = learned Gaussian mixture over
+  frequencies — and its non-stationary extension literally NAMED the
+  generalized spectral mixture (GSM) kernel: Remes, Heinonen & Kaski,
+  "Non-Stationary Spectral Kernels" (NeurIPS 2017) — frequencies and
+  lengthscales become input-dependent functions
+- closest to OUR domain: Alvarado & Stowell — GPs for music audio with
+  quasi-periodic component × amplitude envelope (arXiv 1606.01039) and
+  Matérn spectral mixture harmonic priors for pitch detection (arXiv
+  1705.07104)
+
+**How they fit our problem (the mapping to say):**
+
+- both pointers name the SAME move: replace the parametric sine vibrato
+  model with a GP PRIOR on the within-note pitch curve
+    - kernel = quasi-periodic (vibrato) + smooth trend (the drift term)
+    - our constant-c + fixed sine = the degenerate limit of that prior
+- the GSM kernel is precisely the "sine too simple" fix: input-dependent
+  frequency/amplitude = vibrato rate and extent that drift within the
+  note — the structure the drift study measured
+- and we already built the slot it plugs into: the Phase-3 deviation
+  prior IS a GP on curve deviations with a crude bump kernel; his
+  kernels are the principled family for exactly that slot — Gaussian,
+  so the collapsed waveform likelihood machinery carries over
+- honest boundary to state: within-note curves are where this lives;
+  ACROSS notes the drift study says the structure is white, so the
+  graph prior's role is untouched
+- secondary connections if he goes there: our graph kernel g(ν) is
+  already spectral (on the Laplacian spectrum) — a spectral MIXTURE
+  there would generalize the additive/Matérn family; and multi-output
+  SM kernels (Parra & Tobar, NeurIPS 2017; multi-task GSM, Chen et al.)
+  generalize our ICM coupling B
+
+**The line to close it:** "So your two pointers are the right family for
+the two slots we just measured as open — the estimator's sine model and
+the waveform likelihood's curve prior. I'd fold them into the Phase-3
+design rather than re-open the frozen Phase-2 estimator."
+
+---
+
 ### CLOSE — the asks
 
 - from Beat 5 (the main ask): "Next registration — the
