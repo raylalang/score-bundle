@@ -1180,34 +1180,89 @@ octave-failures present the learned scale collapses catastrophically while
 as-given stays healthy, and after the failure rule as-given remains the
 better-calibrated variant.
 
-\paragraph{What the per-note compression discards (development study, 2026-08).}
-Eqs.~\eqref{eq:loudness}--\eqref{eq:vibrato} hold every parameter fixed within the
-note: the channels are \emph{time-averages}, and it is fair to ask what they
-discard. Refitting every identifiable development note with one added linear
-intonation-drift term answers this quantitatively. The drift is real music, not
-tracker noise: about two thirds of notes carry a significant slope in the tracked
-and the ground-truth curve \emph{independently} (sign agreement $97\%$, rank
-correlation $0.91$ on both-significant notes), with a median total drift of
-$\approx 10$ cents over the note --- an order of magnitude above the $c$ cell's
-median reported standard error, so $c$ is a precise estimate of the note's
-\emph{average} intonation, not of a constant. Loudness moves even more: the median
-within-note change exceeds the across-note spread of $\ell$, though much of it is
-plain decay envelope ($81\%$ of significant brass slopes fall) rather than
-expressive shaping. Three facts keep the per-note resolution defensible rather
-than refuted. First, the mismatch is priced in: the cell variances of
-\eqref{eq:phase2-noise} are residual-based, so a drifting note reports itself as
-more uncertain --- which is why calibration survives. Second, the quasi-truth
-targets pass through the same parameterization, so the graph-vs-no-graph
-contrasts compare like with like. Third, and decisively, the discarded structure
-is \emph{graph-white}: the lag-1 autocorrelation of the drift and loudness slopes
-along the note sequence is $+0.03$ and $+0.06$ (against $+0.59$ for $\tau$), and
-the two slopes are mutually uncorrelated --- a within-note slope channel is
-precisely the kind the graph prior could not help, so the per-note resolution is
-empirically the right level for \emph{this} model. The within-note structure
-itself belongs to the frame-level likelihood of Phase~3, whose amplitude envelope
-$A_i(t)$ and pitch-curve model are built to carry it; slope channels remain
-post-confirmation candidates under the $\delta^{\mathrm{vib}}$ template (included
-as output, claiming nothing).
+\paragraph{What the per-note compression discards (development study).}
+Eqs.~\eqref{eq:loudness}--\eqref{eq:vibrato} hold every parameter fixed
+within the note: the channels are \emph{time-averages}, and it is fair to
+ask what the averaging discards. The study answering this is simple. Every
+vibrato-identifiable development note that both pitch curves can measure
+($n = 5{,}145$) is refit with the eq:vibrato model plus \emph{one} added
+ingredient --- a linear drift of the centre, $c + s\,(t - \bar t)$ under
+the vibrato --- and the fit is run twice per note, \emph{independently} on
+the tracked curve and on the ground-truth curve. The two-curve design is
+the control: a slope appearing in one curve only would be measurement
+noise; a slope two independent measurements agree on is the player.
+Loudness gets the same check through the four chunk levels of
+\eqref{eq:loudness}. Table~\ref{tab:drift-study} collects the numbers;
+Figure~\ref{fig:drift-study} shows the argument.
+
+\begin{table}[t]\centering
+\caption{The drift study: within-note time variation, measured
+(development set). Intonation slopes are fit independently on the tracked
+and ground-truth curves; loudness slopes on the four chunk levels of
+\eqref{eq:loudness}. The last row is the across-note test that decides
+whether the discarded structure is one a graph over notes could use.}
+\label{tab:drift-study}
+\footnotesize
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & intonation drift & loudness slope \\
+\midrule
+notes with a significant slope & $65.5\%$ / $67.1\%$ (tracker / truth) & $41.3\%$ \\
+the two curves agree on direction & $97\%$ (rank corr.\ $0.91$) & --- \\
+typical size (median) & $10.5$ cents per note (q90 $32$) & $1.4\times$ the across-note sd of $\ell$ \\
+share falling (decay envelope) & --- & $65\%$ (brass $81\%$, strings $57\%$) \\
+across-note lag-1 correlation & $+0.03$ & $+0.06$ \\
+\quad (reference: timing $\tau$) & \multicolumn{2}{c}{$+0.59$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/drift_study_dev.png}
+  \caption{The drift study in four panels (development set).
+  \textbf{A}: a $2.7$-second violin note --- the constant-centre sine
+  (dashed) holds the centre flat; the drift term reveals the centre
+  climbing at $+17$ cents/s under the vibrato. \textbf{B}: on notes where
+  both curves fit a significant slope, the tracker's slope against the
+  ground-truth curve's --- two independent witnesses agreeing on
+  direction $97\%$ of the time. \textbf{C}: note $i$'s drift slope
+  against note $i{+}1$'s (per-track standardized, pooled): no across-note
+  structure. \textbf{D}: the same plot for the timing residual $\tau$ ---
+  the across-note correlation the graph prior actually uses. The
+  structure the sine model discards (A--B) is real but lives only within
+  notes (C); the graph operates across notes (D).}
+  \label{fig:drift-study}
+\end{figure}
+
+The findings, in the order they matter. \emph{The drift is real music,
+not tracker noise}: about two thirds of notes carry a significant slope
+in each curve independently, and the two curves agree on its direction
+$97\%$ of the time (Fig.~\ref{fig:drift-study}B). \emph{It is large
+relative to the reported precision}: the median note drifts $10.5$ cents
+--- an order of magnitude above the $c$ cell's median reported standard
+error of $0.9$ cents --- so $c$ is a precise estimate of the note's
+\emph{average} intonation, not of a constant
+(Fig.~\ref{fig:drift-study}A). Loudness moves even more, though the
+falling shares in Table~\ref{tab:drift-study} say most of it is decay
+envelope rather than expressive shaping. \emph{And the discarded
+structure is graph-white}: the within-note slopes carry essentially no
+correlation from one note to the next, where timing --- the channel the
+graph demonstrably helps --- carries $+0.59$
+(Fig.~\ref{fig:drift-study}C--D). Three consequences keep the per-note
+resolution defensible rather than refuted. The mismatch is priced in:
+the cell variances of \eqref{eq:phase2-noise} are residual-based, so a
+drifting note reports itself as more uncertain --- which is why
+calibration survived at confirmation. The quasi-truth targets pass
+through the same parameterization, so the graph-vs-no-graph contrasts
+compare like with like. And a within-note slope channel is precisely the
+kind the graph prior could not help --- so the per-note resolution is
+empirically the right level for \emph{this} model, while the discarded
+structure itself belongs to the frame-level likelihood of Phase~3, whose
+amplitude envelope $A_i(t)$ and pitch-curve model are built to carry it;
+slope channels remain post-confirmation candidates under the
+$\delta^{\mathrm{vib}}$ template (included as output, claiming
+nothing).
 
 \paragraph{The warp, and where the alignment error goes.}
 Phase 1 obtained the score-time warp $T(\cdot)$ from an aligned beat grid supplied with
