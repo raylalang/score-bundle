@@ -28,82 +28,54 @@ failed** · adverse cell: timing recovery +0.003\* (≈3 ms) · drift:
 from truth with NO tracker, beats the estimator on winds, self-check
 coverage 0.90 exactly · Phase-1 confirmed 0.376 vs 0.393\*.
 
-**The meeting = Beats 3, 4, 5 ONLY** (verdict → drift → Phase 3), then
-two asks: (1) how prominent should the failed timing claim be — honesty
-exhibit or one line?; (2) next registration: waveform-integration
-channel or tonal metric (tonal needs his corpus sign-off; power check
-says calibration-primary).
+**The meeting = Beat 4 → Beat 5** (drift → Phase 3). The confirmation
+is TO THE SIDE: one breath + Table 3.4 (p. 25) only if it comes up.
+Asks: (1) next registration: waveform-integration channel or tonal
+metric (tonal needs his corpus sign-off; power check says
+calibration-primary); (2) only if the confirmation is discussed: how
+prominent should the failed timing claim be?
 
 ---
 
-# Part 1 — The story you tell (THREE beats, exclusively)
+# Part 1 — The story you tell (Beat 4 → Beat 5; confirmation to the side)
 
-- The meeting = Beats 3, 4, 5. Nothing else.
+- The meeting = Beat 4, then Beat 5. Start directly on Beat 4 — it
+  answers HIS comment, so it's the natural opening.
 - If he wants orientation first: ONE sentence — "score + performance in,
-  per-note expressive variables with honest error bars out, one GP on the
-  score graph; Phase 1 confirmed it on piano" (phase table p. 5) — then
-  straight to Beat 3.
-- **Opening line (memorize):** "Three results since we spoke: I spent the
-  confirmation and it passed; I measured your comment about the sine
-  model; and Phase 3 is open, with its first results. In that order?"
+  per-note expressive variables with honest error bars out, one GP on
+  the score graph; Phase 1 confirmed it on piano" (phase table p. 5) —
+  then into Beat 4.
+- **Opening line (memorize):** "Last time you said the sine model might
+  be too simple — that loudness and even intonation shift over time.
+  I didn't argue; I measured it. And the measurement ended up opening
+  Phase 3."
+- The confirmation: mention in passing where it supports a point
+  ("...which is why calibration held at confirmation"), and give the
+  one-breath version below ONLY if he asks. Don't open with it.
 
 ---
 
-### BEAT 3 — The confirmation verdict
-*(Table 3.4 p. 25 · headline + ledger p. 24)*
+### TO THE SIDE — the confirmation (deploy only if it comes up)
+*(Table 3.4 p. 25 · headline + ledger p. 24 · full detail: Part 2
+"The confirmation" block)*
 
-**Headline:** "Three of the four registered claims confirmed; the fourth
-failed and is reported verbatim."
+**One breath:** "I registered four claims before touching the held-back
+pool, then spent it — once, protocol frozen under a git tag. Three
+confirmed: intonation recovery reproduced the dev number almost exactly
+(−0.88\*), vibrato calibration passed on both channels — including the
+extent star I'd flagged as the one that could fail — and coverage sat at
+0.88–0.91 on all six. The fourth, timing calibration, failed — CI
+includes zero — and it's in the table verbatim, next to a small starred
+cell against us."
 
-**Setup — say briefly:**
+**If he wants one more level:**
 
-- claims + protocol frozen on the 17th: git tag, one shot, every number
-  reported whatever it says
-- pool: 13 pieces, untouched since the split was frozen in early August
-- 40 unique tracks (after recording dedup) · 2 seeds · 30% of notes hidden
-- run: ~1.5 h, sharded; estimator code byte-identical to the tag
-
-**The verdict — claim by claim:**
-
-- C1 intonation recovery: **−0.877 [−1.236, −0.538]\*** → PASS
-    - dev basis was −0.891\* → reproduced almost exactly
-- C2 vibrato calibration, BOTH channels required:
-    - extent: **−2.990 [−6.575, −0.435]\*** → PASS
-    - rate: **−0.564 [−0.739, −0.392]\*** → PASS
-    - say: "the extent half was the one I flagged as seed-sensitive — the
-    claim I said could honestly fail. It held."
-- C3 coverage: **0.88–0.91 on all six channels** (band was [0.85, 0.95])
-  → PASS
-- decision rule (fixed in advance): C1 ∧ C2 ∧ C3 ⇒ **headline CONFIRMED**
-    - the headline: "the unchanged graph prior extends to real audio with
-    calibrated uncertainty, at confirmation level"
-
-**The honest part — volunteer, don't wait:**
-
-- C4 timing calibration (secondary, non-gating): **FAILED**
-    - −0.030 [−0.061, +0.006] — right sign, CI includes zero
-    - dev basis was −0.292\*
-- starred cell AGAINST the graph: timing recovery **+0.003 [+0.000,
-  +0.007]\*** (≈3 ms on a 65 ms RMSE)
-- timing summary sentence: "coverage on target (0.91), but no confirmed
-  graph win on timing"
-- dev's adverse loudness cell (+0.042\*) did NOT replicate: +0.015 ns
-  → adverse cells move in both directions too
-
-**If he asks why trust the rest:**
-
-- "The rule was written before the data and was allowed to say no.
-  It said no once."
-
-**If he pushes on why timing failed:**
-
-- the pool warped BETTER than dev (40/40 tracks, 15 exact, 0 failures;
-  dev had 2 failures) → the alignment-error structure the dev star sat
-  on isn't there
-- τ's noise row is diagonal: carries scale, not correlation along score
-  time (stated limitation; Future Work names the fix: correlated row)
-- heavy-tailed calibration stars were known to move — extent was the
-  flagged one (held), τ's wasn't (didn't)
+- the pool: 13 pieces / 40 unique tracks, untouched since the
+  data-blind split of Aug 6
+- decision rule fixed in advance: C1 ∧ C2 ∧ C3 ⇒ headline confirmed —
+  and it was
+- trust line: "the rule was allowed to say no; it said no once"
+- why timing failed, three hypotheses → Part 2
 
 ---
 
@@ -281,16 +253,16 @@ discipline — it feeds it."
 
 ---
 
-### CLOSE — the two asks (both arise from the beats)
+### CLOSE — the asks
 
-- from Beat 3: "The failed timing claim — how prominent in the thesis
-  narrative? I lean visible: it's the honesty exhibit that makes the
-  three passes credible."
-- from Beat 5: "Next registration — the waveform-integration channel, or
-  the tonal metric first?"
+- from Beat 5 (the main ask): "Next registration — the
+  waveform-integration channel, or the tonal metric first?"
     - tonal: needs his corpus sign-off (pool is spent; draft proposes
     Bach10 + reused pool, disclosed; power check ⇒ calibration-primary)
     - integration: feasibility evidence is in; same discipline applies
+- only if the confirmation was discussed: "The failed timing claim —
+  how prominent in the thesis narrative? I lean visible: it's the
+  honesty exhibit that makes the three passes credible."
 
 ---
 
@@ -476,13 +448,13 @@ outcome; no reruns, no added seeds.
     exactly ⇒ estimand gap; discrepancy-floor integration designed.
     `results/phase3_waveform_dev.md`, thesis §3.10.1.
 
-**How to study (~100 min, three beats only):** Overleaf sync → read the
-confirmation paragraph + Tables 3.3/3.4 (pp. 24–25) → say Beat 3 aloud
-twice, the claim-by-claim sequence a third time → read the drift ¶
-(p. 20) → say Beat 4 aloud → read §3.10.1 (pp. 26–28) with Fig 3.6
-(p. 30) → say Beat 5 aloud, the three punchline lines once more → the
-two asks → from Part 2, say aloud: "why did timing fail", "what does
-confirmed mean", "why overconfident", "what's the Phase-3 plan".
+**How to study (~90 min, Beat 4 → Beat 5):** Overleaf sync → read the
+drift ¶ (p. 20) → say Beat 4 aloud twice (the opening line + Finding 4
+a third time) → read §3.10.1 (pp. 26–28) with Fig 3.6 (p. 30) → say
+Beat 5 aloud, punchlines once more → say the confirmation one-breath
+aloud once (that's all it needs) → the asks → from Part 2, say aloud:
+"why overconfident", "what's the Phase-3 plan", "what does confirmed
+mean", "why did timing fail".
 
 **If a question stumps you:** "that's measured — let me follow up with
 the exact number." Everything here has a file behind it.
