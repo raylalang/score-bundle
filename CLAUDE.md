@@ -100,98 +100,59 @@ do not create, sync, or reference one.)
   (`docs/kernel_multirate_results.md`): a density gradient — wins at ≤30% hidden,
   tie at the 40% operating point, nothing + one guard-invisible collapse at 50% —
   so no adoption, no second confirmation set spent.
-- **Phase 2 — intonation/vibrato/loudness/timing/vibrato-delay: CONFIRMED (one-shot spent 2026-08-27).**
-  `src/score_bundle/phase2/`: `intonation.py` (`extract_f0` = librosa pyin,
-  import-guarded; `fit_vibrato_note` = the thesis NLLS estimator), `urmp.py` (loader,
-  44/44), `splits.py` (**FROZEN** composition-level dev/confirmation split, unit-pinned;
-  confirmation = 13 pieces, SPENT 2026-08-27), `targets.py` (f0 → per-note channels).
-  Measured groundwork: tracker calibration vs URMP GT (2–5 cents/instrument, confidence
-  predictive → as-given variances + lowest-quintile frame filter,
-  `results/tracker_calibration_dev.md`); τ feasibility (onset-anchored warp, 76/78
-  tracks, 79 ms, lag-1 +0.59, `scripts/eval_tau_feasibility.py`). Real-audio
-  results (`scripts/eval_phase2_real.py`, `results/phase2_real_results.md`,
-  6-channel, as-given default): graph value significant on intonation/vibrato
-  recovery (−0.89*/−0.26*/−0.30*) and vibrato/timing calibration, coverage
-  0.88–0.91 on all six; honest cells reported (ℓ recovery ns with NLL +0.042*
-  against — starred adverse; τ recovery ns; δ_vib graph-neutral; brass
-  intonation ns in the learned-scale family table); learned-scale variant
-  stars all six recovery contrasts but is the worse-calibrated fallback.
-  GT-validated octave-failure rule (|c|>150 → missing); learned noise scale
-  collapses on real data with failure cells present, as-given healthy.
-  Within-note drift study (2026-08-27, `scripts/eval_drift_dev.py`,
-  `results/phase2_drift_dev.md`, thesis §3.9 ¶"What the per-note compression
-  discards"): the committee's "sine model too simple" comment quantified —
-  intonation drift is real music (two-thirds of notes significant in tracker
-  AND GT independently, 97% sign agreement, ~10 cents/note median) and loudness
-  moves even more (137% of the channel's across-note sd, but 65% is decay
-  envelope); decisively, the slopes are GRAPH-WHITE (lag-1 +0.03/+0.06 vs
-  +0.59 for τ) → no new channel, mismatch priced into residual-based cell
-  variances (why calibration held), per-note resolution is the right level for
-  the graph model; frame-level structure belongs to Phase 3. Registered
-  estimator unchanged.
-  Circle-of-fifths EXPLORATORY result (2026-08-18, `results/phase2_tonal_dev.md`):
-  tonal metric beats plain on intonation both axes (−0.213*/−0.050*), re-imposes
-  the replacement penalty on timing — first geometry-level positive; adoption =
-  future preregistered confirmation.
-  All DEV-labeled. **REGISTERED 2026-08-17** (tag `phase2-registration-2026-08-17`,
-  commit = frozen claims): 6-channel bundle [c, log γ, log f, ℓ, τ, δ_vib];
-  τ adopted (onset-anchored LOO warp, `phase2/warp.py`, noise row = OLS
-  predictive variance); δ_vib IN by pre-stated criterion
-  (`scripts/eval_delta_vib.py`, gated estimator `fit_vibrato_note_gated` =
-  eq:vibrato exactly; 95-97% coverage, 18 ms GT agreement) but carries NO
-  claim (graph-neutral); claims C1 intonation recovery / C2 vibrato
-  calibration / C3 coverage / C4 timing calibration, as-given variant
-  primary, one shot (`docs/phase2_prereg_design.md`). **CONFIRMATION SPENT
-  2026-08-27 (Ray's explicit go; 40 unique tracks, 1h21m sharded;
-  `results/phase2_confirmation_results.md` + verdict section, evidence
-  archived `evidence/phase2_confirmation/`): C1 PASS (c dRMSE −0.877*,
-  dev −0.891* reproduces), C2 PASS both channels (dNLL γ −2.990*,
-  f −0.564* — the seed-sensitive extent star HELD), C3 PASS (cov
-  0.88–0.91 all six), C4 secondary FAIL (τ dNLL −0.030 ns, CI incl. 0;
-  plus starred adverse τ recovery +0.003*) → headline CONFIRMED by the
-  registered rule; adverse dev ℓ cell did NOT replicate (+0.015 ns);
-  δ_vib graph-neutral as registered; as-given stays better-calibrated
-  vs quasi-truth. Thesis §3.9 carries the verdict (tab:phase2-conf).**
-  Thesis §3.9 carries the measured state. 2026-08-13 audit: every quoted
-  number re-verified against its log; reproduction tolerances recorded in
-  `docs/posterior_decomposition_results.md`.
-- **Phase 3 — waveform likelihood (helpers + first real-audio inference).**
-  `src/score_bundle/phase3/`. `collapsed_loglik_lowrank` = Woodbury form of the
-  exact amplitude-marginalized likelihood (dense-equality unit-pinned). First
-  feasibility measurement (2026-08-27, `scripts/demo_phase3_waveform.py`,
-  `results/phase3_waveform_feasibility.md`, dev-only exploratory): gridded
-  collapsed likelihood over intonation c on 2 real violin notes, NO tracker —
-  lands 0.7–1.6 cents from GT (on par with the estimator chain) but posteriors
-  are OVERCONFIDENT (±0.04–0.17 cents, 4–18σ from truth) because the likelihood
-  conditions on the exact parametric curve — the drift-study mismatch returning
-  at waveform scale. Design consequence (thesis §phase3-math ¶"A first
-  measurement"): the z model needs within-note structure or a
-  mismatch-robust noise model. SCALE STUDY (same day,
-  `scripts/eval_phase3_waveform_dev.py` sharded 8x,
-  `results/phase3_waveform_dev.md`, 376 notes / 7 tracks / 3 families):
-  waveform median 2.4 cents from quasi-truth (estimator chain 2.0; waveform
-  BEATS it on winds 2.75 vs 3.27); drift term improves accuracy (−0.18
-  paired) but does NOT fix calibration (cov@90 = 1–3% both variants — mean
-  fixes shrink sd as fast as error) ; AR(1) whitening (3rd variant, median ρ 0.944) ALSO fails —
-  coverage 2%, |z| worse (45) — the misfit is IN-BAND at the harmonics ; deviation
-  prior (rundev verb, 8 zero-mean bumps marginalized along the Jacobian) =
-  BEST accuracy (2.29) and coverage STILL 0.03; self-consistency check
-  (eval_phase3_selfcheck.py, model-true synthetics) covers at 0.90 EXACTLY ⇒
-  machinery internally calibrated, the invariant overconfidence is an
-  ESTIMAND gap (harmonic-model c ≠ NLLS-on-GT c, ~2 cents), unfixable
-  within-model. Resolution (in thesis): waveform c joins the Phase-2 bundle
-  as an observation channel with posterior var + empirically calibrated
-  ~2-cent discrepancy floor (as-given discipline); waveform-native
-  calibration = frontier.
-  INTEGRATION MEASURED
-  (`scripts/eval_phase3_integration.py`, `results/phase3_integration_dev.md`,
-  dev exploratory, 7 tracks × 2 seeds): waveform c as 7th bundle channel
-  (B 7×7, floor from visible notes only, median 3.1 cents = the estimand-gap
-  scale found automatically) improves held-out intonation on 14/14 pairs
-  (dRMSE −1.21*, dNLL −0.24*, coverage held); no-floor control significantly
-  worse-calibrated vs quasi-truth (dNLL +0.22*) — the floor does its designed
-  job. Any claim needs its own registration. Outer-loop inference over z
-  still open.
+- **Phase 2 — intonation/vibrato/loudness/timing/vibrato-delay:
+  CONFIRMED (one-shot spent 2026-08-27; the pool is GONE — never rerun).**
+  Code: `src/score_bundle/phase2/` — `intonation.py` (pyin `extract_f0`,
+  import-guarded; `fit_vibrato_note` ungated for [c, log γ, log f];
+  `fit_vibrato_note_gated` = eq:vibrato exactly, supplies δ_vib),
+  `urmp.py` (loader 44/44), `splits.py` (**FROZEN** composition-level
+  split; confirmation = 13 pieces, SPENT), `targets.py`, `warp.py`
+  (onset-anchored LOO warp = τ; OLS predictive variance = its noise row).
+  Six-channel bundle [c, log γ, log f, ℓ, τ, δ_vib]; estimator variances
+  used AS GIVEN (learned scale = documented fallback, worse-calibrated —
+  three times measured); |c|>150 octave rule → missing; cell masks
+  everywhere.
+  **Registration**: tag `phase2-registration-2026-08-17`
+  (`docs/phase2_prereg_design.md`, frozen + one dated erratum); claims
+  C1–C4, as-given primary, one shot.
+  **Confirmation verdict (2026-08-27,
+  `results/phase2_confirmation_results.md` incl. the scored verdict
+  section; evidence archived `evidence/phase2_confirmation/`):**
+  C1 intonation recovery PASS (−0.877*, dev −0.891* reproduced);
+  C2 vibrato calibration PASS both channels (−2.990*/−0.564*; the
+  flagged seed-sensitive extent star HELD); C3 coverage PASS (0.88–0.91
+  all six); C4 timing calibration FAIL (−0.030 ns; plus starred adverse
+  τ recovery +0.003*) — reported verbatim. Headline CONFIRMED by the
+  registered rule. Thesis §3.9 carries it (tab:phase2-conf).
+  Dev record: `results/phase2_real_results.md` (registration-grade,
+  diff-clean vs tag). Post-adoption dev studies, all results-doc'd:
+  drift study (`results/phase2_drift_dev.md` — committee's "sine too
+  simple" quantified; drift real but graph-white → no new channel);
+  tonal metric exploratory win on intonation
+  (`results/phase2_tonal_dev.md`; adoption = own registration; power
+  check in `docs/phase2_tonal_prereg_DRAFT.md`: calibration-primary,
+  recovery underpowered <~20 pieces); fresh-seed robustness
+  (`results/phase2_seeds23_dev.md`); δ_vib decision
+  (`results/delta_vib_dev.md`); tracker calibration
+  (`results/tracker_calibration_dev.md`).
+- **Phase 3 — waveform likelihood: dev studies exist (all exploratory,
+  no claims).** `src/score_bundle/phase3/`: synthesis basis Φ(z) +
+  exact amplitude marginalization incl. the O(mp²) Woodbury form
+  (`collapsed_loglik_lowrank`, dense-equality unit-pinned). Measured
+  record: `results/phase3_waveform_feasibility.md` (2-note pilot),
+  `results/phase3_waveform_dev.md` (376 notes / 7 tracks: waveform
+  median 2.29 cents from quasi-truth with NO tracker, beats the
+  estimator chain on winds; coverage vs quasi-truth invariant ~0.02
+  under mean/noise/deviation-prior fixes; self-check on model-true
+  synthetics covers at 0.90 exactly ⇒ the gap is an ESTIMAND gap),
+  `results/phase3_integration_dev.md` (waveform c as 7th bundle channel
+  + visible-notes discrepancy floor: better on 14/14 pairs, −1.21*;
+  no-floor control worse-calibrated ⇒ the floor is necessary). Thesis
+  §3.10 carries the study; joint inference over z remains open. The
+  three spectral-kernel papers (`related_works/`, reviewed in
+  `docs/kernel_papers_review.md`; unification option in
+  `docs/gp_everywhere_memo.md`) are the design vocabulary for the
+  within-note curve prior.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,
