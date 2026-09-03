@@ -176,12 +176,16 @@ do not create, sync, or reference one.)
 | `μ_LM`, `h_i` | LM-predicted plug-in mean (development form), LM per-note embedding (GP feature kernel) |
 | `ζ`, `y^(ζ)`, `C^(ζ)`, `m^(ζ)` | posterior-decomposition component index (`ζ ∈ {G, feat, emb}` in Phase 1; `ζ′` the paired index — NOT a/b, which are amplitudes/beat onset), component draw/prior covariance/posterior mean |
 | `ω^(ζ)`, `ρ^(ζζ′)` | covariance share of a component (sums to 1); per-note component correlation |
-| `J_i`, `P_j`, `q_0.2`, `f_ref` | Phase-2 frame rule: note-i frame set, tracker per-frame confidence (capital — `p_i` is pitch), lowest-quintile threshold, tuning reference 440 Hz = A4 (MIDI 69) |
+| `J_i`, `π_j`, `q_0.2`, `f_ref` | Phase-2 frame rule: note-i frame set, tracker per-frame confidence, lowest-quintile threshold, tuning reference 440 Hz = A4 (MIDI 69) |
 | `φ̂_i, ψ̂_i` | Phase-2 local tempo-line slope/intercept at note i (eq:localwarp) |
-| `z, a, Φ(z), x, ε, A_i(t)` | Phase-3 positions, amplitudes, synth, audio, noise, amp envelope |
+| `z, a, Φ(z), x, ε, A_i(t)`, `H` | Phase-3 positions, amplitudes, synth, audio, noise, amp envelope, harmonic count |
 
 Do **not** reuse `S` for a covariance, `σ` for a prior scale, `α` for the additive weight,
 or `a_i(t)` for the amplitude envelope. (These were deliberately disambiguated.)
+Thesis renames (2026-09-04 confusion audit; code identifiers and results docs
+unchanged): the vibrato onset delay is typeset `d_i^vib` (was `δ^vib`), the
+tracker confidence `π_j` (was `P_j`), the Phase-3 harmonic count `H` (was `K`),
+and the chord+voice-leading graph is the **chord graph** (was "harmonic graph").
 
 ## Conventions
 

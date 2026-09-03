@@ -46,7 +46,7 @@
 \newcommand{\rmseGraph}{0.404}
 \newcommand{\rmseNetGraph}{0.393}      % music-model mean + plain graph (development, strict)
 \newcommand{\rmseStack}{0.388}         % features + music-model mean + plain graph (development, strict)
-\newcommand{\rmseHeadline}{0.379}      % two-stage-era headline: feat+net+harmonic graph (development; superseded by \rmseGP)
+\newcommand{\rmseHeadline}{0.379}      % two-stage-era headline: feat+net+chord graph (development; superseded by \rmseGP)
 \newcommand{\nllHeadline}{$-0.346$}
 \newcommand{\nllZero}{$-0.007$}
 \newcommand{\nllGraph}{$-0.308$}
@@ -96,45 +96,43 @@
 \maketitle
 
 \begin{abstract}
-\noindent Given a printed score and a recording of a performance (as piano MIDI in
-this work), we recover \emph{how} each written note was played --- its
-micro-timing, articulation, and dynamics --- together with a calibrated statement
-of confidence. The model is \textbf{one multi-output Gaussian process on the score
-graph}: notes related in the score are related in performance (a graph GP in the
-sense of Borovitskiy et al.), the three expressive channels are coupled by a
-coregionalization matrix, and all side information --- hand-built score features
-and per-note embeddings from a small, from-scratch symbolic music language model
-(hereafter the \emph{music model})
---- enters as linear kernels, i.e.\ as a marginalized Bayesian linear mean. One
-exact marginal likelihood per piece learns every hyperparameter. Development used
-\nPieces{} held-out ASAP pieces; the headline claims were then \emph{preregistered
-and confirmed exactly once} on \nConfPieces{} further pieces untouched by any
-modelling decision: the model recovers hidden notes with lower error than the
-strongest \emph{two-stage} pipeline it subsumes --- a plug-in mean followed by a
-graph GP on the residual (RMSE~\rmseGP{} vs.\ \rmseConfOldHead,
-paired difference \dRmseConf{} significant), the graph's contribution to
-calibration is confirmed (paired NLL \dNllGraphConf), and nominal-90\% intervals
-cover $\approx\covGP$ of the truth. Six downstream tasks map where the structure
-helps (per-note recovery, confidence, error spotting) and where it does not
-(whole-performance summaries; extrapolation from a short excerpt, where a
-cross-piece head remains the honest tool). Phase~2 carries the same prior,
-unchanged, to intonation, vibrato, loudness, timing, and vibrato onset delay
-on continuously pitched
-instruments: on real recordings (URMP, development set) the full pipeline ---
-tracker, per-note estimator, onset-anchored warp, per-(note, channel)
-missingness, heteroscedastic
-likelihood --- runs end to end on a six-channel bundle; the graph prior
-significantly improves recovery on intonation and vibrato and calibration on
-vibrato and timing (the vibrato-extent calibration star is seed-sensitive),
-with coverage on target on every channel; the registered claim set was then
-\emph{confirmed in a single one-shot} on the frozen 13-piece pool ---
-intonation recovery, vibrato calibration on both channels, coverage on all six
-channels; the secondary timing-calibration claim failed and is reported
-verbatim. Phase~3 (audio via a differentiable synthesizer) is scoped,
-with a first development study of its waveform likelihood measured: the
-audio alone localizes intonation to within about two cents of the
-ground-truth-derived centre, and the study fixes the phase's central
-design constraint (calibration must bridge the estimand gap).
+\noindent Given a printed score and a recording of a performance (as piano
+MIDI in this work), we recover \emph{how} each written note was played ---
+its micro-timing, articulation, and dynamics --- together with a calibrated
+statement of confidence. The model is \textbf{one multi-output Gaussian
+process on the score graph}: notes related in the score are related in
+performance (a graph GP in the sense of Borovitskiy et al.), the expressive
+channels are coupled by a coregionalization matrix, and all side
+information --- hand-built score features and per-note embeddings from a
+small, from-scratch symbolic music language model (the \emph{music model})
+--- enters as linear kernels, i.e.\ as a marginalized Bayesian linear mean.
+One exact marginal likelihood per piece learns every hyperparameter.
+
+Development used \nPieces{} held-out ASAP pieces; the headline claims were
+then \emph{preregistered and confirmed exactly once} on \nConfPieces{}
+further pieces untouched by any modelling decision: the model recovers
+hidden notes with lower error than the strongest \emph{two-stage} pipeline
+it subsumes --- a plug-in mean followed by a graph GP on the residual
+(RMSE~\rmseGP{} vs.\ \rmseConfOldHead, paired difference \dRmseConf{}
+significant) --- the graph's contribution to calibration is confirmed
+(paired NLL \dNllGraphConf), and nominal-90\% intervals cover
+$\approx\covGP$ of the truth. Six downstream tasks map where the structure
+helps (per-note recovery, confidence, error spotting) and where it does
+not (whole-performance summaries; extrapolation from a short excerpt).
+
+Phase~2 carries the same prior, unchanged, to intonation, vibrato,
+loudness, timing, and vibrato onset delay on continuously pitched
+instruments (URMP): the full estimator pipeline runs end to end on a
+six-channel bundle with heteroscedastic per-(note, channel) observation
+noise, and the registered claim set was \emph{confirmed in a single
+one-shot} on the frozen 13-piece pool --- intonation recovery, vibrato
+calibration on both channels, coverage on target on all six channels; the
+secondary timing-calibration claim failed and is reported verbatim.
+Phase~3 (audio via a differentiable synthesizer) is scoped, with a first
+development study measured: the waveform alone localizes intonation to
+within about two cents of the ground-truth-derived centre, and the study
+fixes the phase's central design constraint --- calibration must bridge
+the estimand gap.
 \end{abstract}
 
 \tableofcontents
@@ -152,6 +150,15 @@ score is treated as \emph{known}: we solve the inverse of expressive synthesis, 
 full transcription. Second, \emph{uncertainty is a primary output}: a per-note
 estimate is only actionable with a calibrated error bar, and calibration is
 evaluated as rigorously as accuracy.
+
+The title names the object of study. With each note of the known score we
+associate a small \emph{bundle} of expressive variables --- timing,
+articulation, dynamics; later intonation, vibrato, loudness --- so a
+performance is a per-note field over the score support, and transcription
+is posterior inference over that field. ``Bundle'' is used in this
+everyday sense throughout; the geometric reading (per-note fibres with a
+connection over the score graph) is a deliberate outlook reserved for
+future work (\S\ref{sec:future-geom}).
 
 \section{Problem statement}
 Let a symbolic score fix, for each note, its pitch, score onset, and notated
@@ -214,10 +221,12 @@ a plug-in estimate, and the equality is pinned by unit tests (\S\ref{sec:special
         filtering, self-validating robustness safeguards, and a
         development/confirmation split that caught selection inflation in the act
         (\S\ref{sec:hygiene}).
-  \item \placeholder{(Planned / future)} A path to audio via a
-        differentiable-synthesizer likelihood (Phase~3) and a geometric
-        ``connection-Laplacian'' generalisation of the graph prior.
 \end{enumerate}
+A path to audio via a differentiable-synthesizer likelihood (Phase~3) and
+a geometric ``connection-Laplacian'' generalisation of the graph prior are
+deliberately \emph{not} claimed as contributions: both are future work
+(Chapter~\ref{ch:future}), the former with a first development study
+already measured (Appendix~\ref{app:phase3}).
 
 \section{Scope and non-goals}\label{sec:scope}
 In scope (Phase~1): piano; symbolic (MIDI) performance variables --- onset timing
@@ -256,7 +265,7 @@ Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; the plug-in mean 
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened \\
 2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
-$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $\delta^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP; registered one-shot on the frozen 13-piece pool): intonation recovery, vibrato calibration on both channels, coverage on all six channels; the secondary timing-calibration claim failed, reported verbatim \\
+$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP; registered one-shot on the frozen 13-piece pool): intonation recovery, vibrato calibration on both channels, coverage on all six channels; the secondary timing-calibration claim failed, reported verbatim \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested; waveform-likelihood study on 376 real notes (development, exploratory): accuracy competitive with the estimator chain, calibration constraint measured \\
 \bottomrule
@@ -402,7 +411,9 @@ forward, synthesises a performance.
 
 {\footnotesize
 \begin{longtable}{@{}p{3.1cm}p{2.0cm}p{2.0cm}p{0.9cm}p{4.4cm}@{}}
-\caption{Performance variables by phase, with what they are realistic for.}
+\caption{Performance variables by phase (Phases 1--2), with what they are
+realistic for. Phase-3 quantities --- harmonic amplitudes $\mathbf a_i$,
+amplitude envelope $A_i(t)$ --- are defined in Appendix~\ref{app:phase3}.}
 \label{tab:variables}\\
 \toprule
 Variable & Symbol & Unit & Phase & Realistic for \\
@@ -420,10 +431,8 @@ Articulation / duration ratio & $\log r_i$ & dimensionless & 1 & all (esp.\ pian
 Velocity / dynamics & $v_i$ & norm.\ MIDI & 1 & keyboard reliable; others approximate \\
 Intonation deviation & $c_i$ & cents & 2 & voice, strings, winds --- \emph{not} piano \\
 Instantaneous $f_0$ curve & $f_{0,i}(t)$ & Hz & 2 & monophonic pitched \\
-Vibrato (rate, extent, delay) & $f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}}$ & Hz, cents, s & 2 & voice, strings, winds \\
+Vibrato (rate, extent, delay) & $f_i^{\mathrm{vib}}, \gamma_i, d_i^{\mathrm{vib}}$ & Hz, cents, s & 2 & voice, strings, winds \\
 Loudness (audio) & $\ell_i$ & log RMS & 2 & monophonic pitched \\
-Amplitude envelope & $A_i(t)$ & normalised & 2--3 & monophonic \\
-Harmonic amplitudes / timbre & $\mathbf a_i$ & --- & 3 & narrow / monophonic only \\
 Posterior uncertainty & $\sigma_i$ / CI & same as variable & all & all \\
 \end{longtable}}
 
@@ -497,7 +506,7 @@ Here the base graph is kept and two edge families are added (a third,
 sustain-overlap family exists in code, was evaluated on development data,
 and was not adopted),
 \begin{equation}
-  W^{\mathrm{harm}}_{ij} \;=\; W_{ij}
+  W^{\mathrm{chord}}_{ij} \;=\; W_{ij}
     \;+\; w_{\mathrm{ch}}\, \mathbf{1}\bigl[\, b_i = b_j \,\bigr]
     \;+\; w_{\mathrm{vl}}\, \mathbf{1}\bigl[\, b_i \neq b_j,\;
         |b_i - b_j| \le \Delta_{\mathrm{vl}},\;
@@ -520,14 +529,14 @@ weight to zero. The edge weights $w_{\mathrm{ch}}, w_{\mathrm{vl}}$ are untuned 
 a six-variant sensitivity sweep ($\times 3$ / $\div 3$ on each family, \S\ref{sec:kernels})
 shows the resulting gain is not a knife-edge in either weight.
 
-\paragraph{A word on the word ``harmonic''.}
-We call the graph augmented by \eqref{eq:harmadj} the \emph{harmonic graph}, and its two
-families the \emph{chord} and \emph{voice-leading} edges. ``Harmonic'' here means
-\emph{of harmony} --- which notes sound together, and which move by step. It has nothing
-to do with the \emph{harmonic amplitudes} $a$ of the Phase-3 synthesiser
-(Appendix~\ref{app:phase3}), which are overtones of a single note's fundamental. The two
-senses are unrelated and never interact; where confusion is possible we prefer
-\emph{chord edges} to \emph{harmonic edges}.
+\paragraph{Naming.}
+We call the graph augmented by \eqref{eq:harmadj} the \emph{chord graph}, its
+two families the \emph{chord} and \emph{voice-leading} edges --- edges
+\emph{of harmony}: which notes sound together, and which move by step. The
+name deliberately avoids ``harmonic'', which this thesis reserves for the
+\emph{harmonic amplitudes} $a$ of the Phase-3 synthesiser
+(Appendix~\ref{app:phase3}), the overtones of a single note's fundamental;
+the two senses never interact.
 
 \paragraph{Two design axes.}
 Together with \S\ref{sec:graphgp} this fixes the graph kernel completely. It has two
@@ -1004,7 +1013,7 @@ System & RMSE & NLL & cov@90\% \\
 \textbf{Proposed model (graph + features + music model, fitted jointly)} & \textbf{\rmseGP} & \nllGP & \covGP \\
 \quad without the graph & 0.405 & $-0.226$ & 92\% \\
 \quad without the music model & 0.385 & $-0.264$ & 92\% \\
-two-stage pipeline, strongest (feat+music-model mean, harmonic graph) & \rmseConfOldHead & \nllConfOldHead & 92\% \\
+two-stage pipeline, strongest (feat+music-model mean, chord graph) & \rmseConfOldHead & \nllConfOldHead & 92\% \\
 two-stage pipeline, plain (music-model mean, plain graph) & 0.401 & $-0.289$ & 92\% \\
 \bottomrule
 \end{tabular}
@@ -1029,7 +1038,7 @@ Two development-set attribution controls pin the mechanism. (i) \emph{Fixed-mean
 inserting the two-stage pipeline's cross-piece mean as a fixed mean inside the
 coupled GP scores 0.390 / $-0.327$ --- statistically at the level of the matching
 two-stage configuration (features, music model and plain graph; the adopted
-two-stage headline with harmonic edges remains significantly ahead of this
+two-stage headline with chord edges remains significantly ahead of this
 control). Coregionalization and joint fitting per se contribute almost nothing.
 (ii) \emph{Component removal (paired, development):} removing the graph from the full model
 costs $+0.017$ RMSE / $+0.067$ NLL; removing the music-model embeddings costs
@@ -1434,7 +1443,7 @@ the \emph{bundle}.\footnote{The everyday sense of the word; the title's
 geometric sense --- per-note fibres over the score --- is the outlook of
 \S\ref{sec:future-geom}.} It becomes
 \begin{equation}
-  y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ \delta_i^{\mathrm{vib}} \,\bigr]
+  y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ d_i^{\mathrm{vib}} \,\bigr]
   \;\in\; \R^{k},
   \label{eq:phase2-channels}
 \end{equation}
@@ -1467,7 +1476,7 @@ values, and subtracting it centres the channel per recording: absolute
 level is arbitrary per track (microphone gain, distance, mastering), so
 only \emph{relative} loudness within a recording is meaningful. $c_i$
 is the static intonation offset --- how sharp or flat the note's held
-centre sits; and $(f_i^{\mathrm{vib}}, \gamma_i, \delta_i^{\mathrm{vib}})$ are the
+centre sits; and $(f_i^{\mathrm{vib}}, \gamma_i, d_i^{\mathrm{vib}})$ are the
 vibrato rate, extent and onset delay defined below (the superscript keeps the delay
 distinct from the performed duration $\delta_i$ of \eqref{eq:logr}).
 
@@ -1476,7 +1485,7 @@ this vector leaves open, one is now settled by measurement, against a
 criterion fixed before the numbers were computed: the delay is identifiable
 on $95$--$97\%$ of vibrato-identifiable notes on both the ground-truth and
 the tracked pitch curves, with median tracker-versus-truth agreement of
-$18$\,ms --- so $\delta_i^{\mathrm{vib}}$ is a channel and $k = 7$ as
+$18$\,ms --- so $d_i^{\mathrm{vib}}$ is a channel and $k = 7$ as
 written. On the evaluation corpus (\S\ref{sec:urmp}), articulation has no measured
 offset chain --- the sequence of annotated \emph{performed note ends}
 that $\log r_i$ would require --- so the bundle evaluated there is the
@@ -1517,22 +1526,22 @@ decompose it, following the standard sinusoidal description of vibrato
   \qquad
   u_i(t) \;=\;
   \begin{cases}
-    \gamma_i \sin\!\bigl(2\pi f_i^{\mathrm{vib}}\,(t - t_i - \delta_i^{\mathrm{vib}})\bigr), & t \ge t_i + \delta_i^{\mathrm{vib}},\\[2pt]
+    \gamma_i \sin\!\bigl(2\pi f_i^{\mathrm{vib}}\,(t - t_i - d_i^{\mathrm{vib}})\bigr), & t \ge t_i + d_i^{\mathrm{vib}},\\[2pt]
     0, & \text{otherwise},
   \end{cases}
   \label{eq:vibrato}
 \end{equation}
 with $t_i$ the performed onset. So $c_i$ (cents) is the \emph{vibrato-free centre},
 $\gamma_i$ (cents) the vibrato extent, $f_i^{\mathrm{vib}}$ (Hz) its rate, and
-$\delta_i^{\mathrm{vib}}$ (s) the delay before it begins. Estimating $(c_i, f_i^{\mathrm{vib}},
-\gamma_i, \delta_i^{\mathrm{vib}})$ is a small nonlinear least-squares fit per note on the voiced
+$d_i^{\mathrm{vib}}$ (s) the delay before it begins. Estimating $(c_i, f_i^{\mathrm{vib}},
+\gamma_i, d_i^{\mathrm{vib}})$ is a small nonlinear least-squares fit per note on the voiced
 samples; per-note vibrato parameter estimation from recordings is an
 established analysis task \cite{driedger2016}. In implementation the fit
 runs in two forms: an ungated sinusoid supplies
 $(c_i, \gamma_i, f_i^{\mathrm{vib}})$ --- in that form the delay coordinate
 is only a phase, identified modulo one period --- while the gated form of
 \eqref{eq:vibrato}, the oscillation growing out of the centre at
-$t_i + \delta_i^{\mathrm{vib}}$, supplies the delay itself, with its own
+$t_i + d_i^{\mathrm{vib}}$, supplies the delay itself, with its own
 identifiability rule and delta-method variance. Note that $c_i$ is \emph{not} the mean of $c_i(t)$: the mean coincides with
 the vibrato-free centre only over a whole number of cycles, which a note rarely
 supplies (perceived pitch likewise departs from the curve mean on short
@@ -1540,11 +1549,10 @@ vibrato tones \cite{dalessandro1994}). The observation rule, with every threshol
 development measurements of \S\ref{sec:urmp}: note $i$'s sample set is
 \begin{equation}
   J_i \;=\; \bigl\{\, \text{frames } j:\; t_j \in [t_i,\, t_i + \delta_i),\;
-  \text{voiced}_j,\; P_j \ge q_{0.2}(\text{track}) \,\bigr\},
+  \text{voiced}_j,\; \pi_j \ge q_{0.2}(\text{track}) \,\bigr\},
   \label{eq:framerule}
 \end{equation}
---- the tracker's per-frame confidence $P_j$ (capital, to keep it clear of
-the pitches $p_i$) thresholded at the track's
+--- the tracker's per-frame confidence $\pi_j$ thresholded at the track's
 lowest quintile, the measured gross-error filter. From it, three observation
 decisions, stated separately:
 \begin{itemize}[leftmargin=*,noitemsep]
@@ -1554,7 +1562,7 @@ decisions, stated separately:
   \item the vibrato cells additionally require \emph{identifiability}: at
         least $8$ voiced frames \emph{and} at least $1.5$ cycles at the
         fitted rate, else $(\gamma_i, f_i^{\mathrm{vib}},
-        \delta_i^{\mathrm{vib}})$ cannot be read from the note at all;
+        d_i^{\mathrm{vib}})$ cannot be read from the note at all;
   \item everything else is a \emph{missing} cell for the GP.
 \end{itemize}
 Remaining open choice: a robust loss rather than least squares inside the
@@ -1656,7 +1664,7 @@ residual-based cell variances, which is why calibration survived at
 confirmation --- while the discarded structure itself belongs to
 Phase~3's frame-level likelihood, whose amplitude envelope $A_i(t)$ and
 pitch-curve model are built to carry it; slope channels remain
-post-confirmation candidates under the $\delta^{\mathrm{vib}}$ template
+post-confirmation candidates under the $d^{\mathrm{vib}}$ template
 (included as output, claiming nothing).
 
 \paragraph{The warp, and where the alignment error goes.}
@@ -1758,7 +1766,7 @@ The full pipeline then ran end to end on real recordings: tracked $f_0$,
 confidence-filtered per-note estimation of $[c, \log\gamma, \log
 f^{\mathrm{vib}}]$, per-note loudness $\ell$ (log RMS, centred per
 recording), the onset-anchored timing channel $\tau$, and the gated-fit
-delay $\delta^{\mathrm{vib}}$ --- the six-channel bundle. Estimator variances
+delay $d^{\mathrm{vib}}$ --- the six-channel bundle. Estimator variances
 enter as given, with per-(note, channel) missingness from the
 identifiability rule and the heteroscedastic cell-mask GP; the per-track
 vibrato-identifiable fraction ranges from $2\%$ to $97\%$ with median
@@ -1819,7 +1827,7 @@ extent $\log\gamma$ & $-0.256^{*}$ & $-3.772^{*}$ & 0.90 \\
 rate $\log f^{\mathrm{vib}}$ & $-0.300^{*}$ & $-0.426^{*}$ & 0.88 \\
 loudness $\ell$ & $-0.003$\phantom{$^{*}$} & $+0.042^{*}$ & 0.90 \\
 timing $\tau$ (s) & $-0.002$\phantom{$^{*}$} & $-0.292^{*}$ & 0.91 \\
-delay $\delta^{\mathrm{vib}}$ (s) & $-0.001$\phantom{$^{*}$} & $+0.057$\phantom{$^{*}$} & 0.89 \\
+delay $d^{\mathrm{vib}}$ (s) & $-0.001$\phantom{$^{*}$} & $+0.057$\phantom{$^{*}$} & 0.89 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1879,7 +1887,7 @@ extent $\log\gamma$ & $-0.425^{*}$ & $-2.990^{*}$ & 0.89 \\
 rate $\log f^{\mathrm{vib}}$ & $-0.429^{*}$ & $-0.564^{*}$ & 0.89 \\
 loudness $\ell$ & $-0.002$\phantom{$^{*}$} & $+0.015$\phantom{$^{*}$} & 0.90 \\
 timing $\tau$ (s) & $+0.003^{*}$ & $-0.030$\phantom{$^{*}$} & 0.91 \\
-delay $\delta^{\mathrm{vib}}$ (s) & $+0.006$\phantom{$^{*}$} & $+0.065$\phantom{$^{*}$} & 0.88 \\
+delay $d^{\mathrm{vib}}$ (s) & $+0.006$\phantom{$^{*}$} & $+0.065$\phantom{$^{*}$} & 0.88 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1913,7 +1921,7 @@ untouched.
 \figph{arch_phase2.pdf}{1.0}{Phase 2 as run (development level,
 \S\ref{sec:phase2-real}). Audio and the annotated onsets enter only to
 \emph{derive} the per-note cells --- $[c, \log\gamma,
-\log f^{\mathrm{vib}}, \ell, \tau, \delta^{\mathrm{vib}}]$, each with
+\log f^{\mathrm{vib}}, \ell, \tau, d^{\mathrm{vib}}]$, each with
 its own variance. One structural block changed
 relative to Figure~\ref{fig:arch-phase1} --- the likelihood, where
 $\Sigma_e$ is now substantive and heteroscedastic --- while the coregionalization
@@ -2014,7 +2022,7 @@ analysis for that design is drafted (calibration as the primary claim ---
 the recovery contrast is underpowered below ${\sim}20$ pieces).
 \textbf{New channels:} the within-note drift and decay slopes measured in
 \S\ref{sec:phase2-delta} remain candidates under the
-$\delta^{\mathrm{vib}}$ template (adopt as output, claim nothing) if a
+$d^{\mathrm{vib}}$ template (adopt as output, claim nothing) if a
 transcription use-case wants them.
 
 \section{Phase 3: a differentiable-synthesizer audio likelihood}
@@ -2185,12 +2193,12 @@ $y^{(\zeta)}$, $C^{(\zeta)}$, $m^{(\zeta)}$ & prior components ($\zeta \in \{G, 
 $\omega^{(\zeta)}$, $\rho^{(\zeta\zeta')}_i$ & covariance share \eqref{eq:share}; per-note component correlation \eqref{eq:compcorr} \\
 $\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
 $c_i$, $f_0$ & intonation (cents), fundamental frequency (Phase 2) \\
-$\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $\delta_i^{\mathrm{vib}}$ & Phase-2 loudness (log RMS); vibrato rate, extent, onset delay \\
+$\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $d_i^{\mathrm{vib}}$ & Phase-2 loudness (log RMS); vibrato rate, extent, onset delay \\
 $\sigma_{e,ij}^2$ & per-(note, channel) observation-noise variance (Phase 2) \\
-$J_i$, $P_j$, $q_{0.2}$ & note-$i$ frame set; tracker per-frame confidence; its lowest-quintile threshold \eqref{eq:framerule} \\
+$J_i$, $\pi_j$, $q_{0.2}$ & note-$i$ frame set; tracker per-frame confidence; its lowest-quintile threshold \eqref{eq:framerule} \\
 $\hat\varphi_i$, $\hat\psi_i$ & local tempo-line slope and intercept at note $i$ \eqref{eq:localwarp} \\
 $f_{\mathrm{ref}}$ & tuning reference, $440$\,Hz $=$ A4 (MIDI $69$) \eqref{eq:cents-curve} \\
-$x$, $z$, $a$, $\Phi(z)$, $\epsilon$, $K_n$ & audio, nonlinear positions, amplitudes, synth basis, noise, noise cov (Phase 3) \\
+$x$, $z$, $a$, $\Phi(z)$, $\epsilon$, $K_n$, $H$ & audio, nonlinear positions, amplitudes, synth basis, noise, noise cov, harmonic count (Phase 3) \\
 $A_i(t)$ & amplitude envelope of note $i$ (Phase 3) \\
 \end{longtable}
 \end{center}
@@ -2200,10 +2208,11 @@ the additive weight ($\eta$ is); $A_i(t)$ (capital) is the amplitude envelope, n
 lowercase $a_i(t)$; $\Phi(z)$ is the synthesis operator, $\Phi_{\N}$ the normal CDF.
 Further live overloads, context-disambiguated: $s$ is the spectral shape
 parameter, while $s_i$ is a score event; capital $P$ is the per-note
-observation precision and $P_j$ the tracker confidence; $B$ is the
+observation precision; $\pi(p)$ is the circle-of-fifths position map while
+$\pi_j$ is a tracker confidence; $B$ is the
 coregionalization matrix ($B = 2000$ appears only as the bootstrap replicate
-count); $\delta_i$ is the performed duration, $\delta_i^{\mathrm{vib}}$ the
-vibrato onset delay, and $\delta_{\zeta\zeta'}$ the Kronecker delta;
+count); $\delta_i$ is the performed duration and $\delta_{\zeta\zeta'}$ the
+Kronecker delta (the vibrato onset delay is $d_i^{\mathrm{vib}}$);
 $\ell_b, \ell_p$ are graph length scales while $\ell_i$ is the Phase-2
 loudness channel; $c$ is a channel index, $c_f$ a feature-kernel scale, and
 $c_i$ the intonation channel in cents; a \emph{cell} is a (note, channel)
@@ -2330,7 +2339,7 @@ Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & 
 Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{}  & \covHead \\
 Music-model mean $+$ graph (two-stage) & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} & \covHead \\
 Features $+$ music-model mean $+$ graph (two-stage) & \rmseStack{}    & \nllStack{}   & \covHead \\
-Features $+$ music-model $+$ harmonic graph (adopted headline) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
+Features $+$ music-model $+$ chord graph (adopted headline) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
 Coregionalized GP, zero mean                  & 0.403 & $-0.316$ & 92\% \\
 \ + features as kernel             & 0.368 & $-0.370$ & 92\% \\
 \textbf{\ + music-model embeddings (= the proposed model)} & \textbf{\rmseGPdev} & \nllGPdev & 92.7\% \\
@@ -2361,7 +2370,7 @@ Music-model mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0
 \section{How the final model was selected}\label{app:selection}
 Three steps, in order, produced the headline system. \textbf{(1) Development
 optimum of the two-stage pipeline:} after the kernel and edge-family study
-(\S\ref{sec:kernels}), \emph{features + music-model mean + harmonic graph}
+(\S\ref{sec:kernels}), \emph{features + music-model mean + chord graph}
 (RMSE~\rmseHeadline{} development) was the adopted headline --- the only variant with every ingredient
 significant on both axes. \textbf{(2) Reformulation:} the graph-GP literature
 prescribes three things the pipeline lacked --- coupled outputs, evidence-learned
@@ -2582,10 +2591,10 @@ register proximity, not tonal proximity), while \emph{adding} chord + voice-lead
 edges gives the only significant both-axes win over the baseline
 ($\Delta$RMSE $-0.008^{*}$, $\Delta$NLL $-0.013^{*}$; chord edges carry the recovery
 gain, concentrated in articulation and velocity --- $\tau$ stays at its
-plateau). The harmonic graph with the plain music-model mean (chord+VL, RMSE $0.3852$)
+plateau). The chord graph with the plain music-model mean (chord+VL, RMSE $0.3852$)
 even edges out
 the feature-stacked candidate on the plain graph (\rmseStack) --- and the two upgrades
-\emph{compose}: on the feat+music-model mean the harmonic graphs still gain, independently
+\emph{compose}: on the feat+music-model mean the chord graphs still gain, independently
 measured at $\Delta$RMSE $-0.0082^{*}$ / $\Delta$NLL $-0.0129^{*}$, giving the
 strongest two-stage cells, RMSE $0.3784$ (chord edges) and NLL $-0.3459$
 (chord + voice-leading).
@@ -2594,13 +2603,13 @@ was the two-stage pipeline's strongest configuration (zero-leak audited
 bitwise, \S\ref{sec:hygiene}). The edge weights are untuned defaults, and a
 six-variant sensitivity sweep ($\times 3$ / $\div 3$ on each family) shows no
 knife-edge. \textbf{Under the final model, the decision first:} the thesis model
-keeps the plain graph at its operating point; the harmonic edges stand as
+keeps the plain graph at its operating point; the chord edges stand as
 a measured dense-observation refinement, and any future adoption would be
 a question for a second preregistered confirmation set
 (\S\ref{sec:hygiene}), not a development decision. The evidence: once the
-music-model embeddings enter the kernel as features, the harmonic edge
+music-model embeddings enter the kernel as features, the chord edge
 families are measured-redundant \emph{at the 40\% operating point} (learned-graph and
-harmonic variants statistically tie the plain graph, development). Two
+chord variants statistically tie the plain graph, development). Two
 post-adoption development studies scope that tie by masking level. First, the
 two-stage comparison repeated at every level of \S\ref{sec:masksweep} finds
 the added-edges win present at each level and growing with observation
@@ -2676,7 +2685,7 @@ channel is significant in either regime. The verdict is not specific to the
 40\% operating point: repeated at every masking level of \S\ref{sec:masksweep},
 the columns stay non-significant beside the embeddings at each level, and reach
 (marginal) significance on the plain model only at 10\% hidden
-($-0.004$ RMSE, paired) --- the same pattern as the harmonic edges: where the
+($-0.004$ RMSE, paired) --- the same pattern as the chord edges: where the
 per-piece weights are best determined, explicit theory shows a small signal
 that the embeddings already cover.
 
@@ -2719,7 +2728,7 @@ per note: the rate $f_i^{\mathrm{vib}}$ (how many oscillations per second,
 typically five to eight, mean $6.0$\,Hz \cite{prame1994}), the extent $\gamma_i$ (how far the pitch swings
 from the centre at its peak, in cents --- tens of cents on strings and winds
 here, and $\approx 71$ cents on average in professional singing \cite{prame1997}), and the
-onset delay $\delta_i^{\mathrm{vib}}$ (how long after the note begins the
+onset delay $d_i^{\mathrm{vib}}$ (how long after the note begins the
 oscillation starts --- performers often begin a note straight and let the
 vibrato grow). \emph{Loudness} $\ell_i$ is how strongly the note sounds,
 read from the audio's energy via \eqref{eq:loudness}, relative to the
@@ -2832,7 +2841,7 @@ empirically the right level for \emph{this} model, while the discarded
 structure itself belongs to the frame-level likelihood of Phase~3, whose
 amplitude envelope $A_i(t)$ and pitch-curve model are built to carry it;
 slope channels remain post-confirmation candidates under the
-$\delta^{\mathrm{vib}}$ template (included as output, claiming
+$d^{\mathrm{vib}}$ template (included as output, claiming
 nothing).
 
 \section{The tonal-metric exploratory test on intonation}\label{app:tonal}
@@ -2864,12 +2873,12 @@ The optional audio likelihood replaces $\tilde y$ with the waveform $x \in \R^{M
   \label{eq:waveform}
 \end{equation}
 where $z$ collects the \emph{nonlinear position variables} (tempo, timing,
-intonation, vibrato), $\Phi(z) \in \R^{M \times 2KN}$ is the deterministic harmonic
+intonation, vibrato), $\Phi(z) \in \R^{M \times 2HN}$ is the deterministic harmonic
 synthesis basis --- the horizontal concatenation of one $M \times 2K$ block per note,
 quadrature columns $\cos\phi_k(t), \sin\phi_k(t)$ with cumulative phase
-$\phi_k(t) = 2\pi k \int_0^t f_0(s)\, ds$ determined by $z$ ($K$ counts harmonics
-here, distinct from the joint kernel of \eqref{eq:gpfirst}) --- and
-$a \in \R^{2KN}$ are the stacked per-note harmonic amplitudes. Per-note amplitudes
+$\phi_k(t) = 2\pi k \int_0^t f_0(s)\, ds$ determined by $z$ ($H$ counts
+harmonics) --- and
+$a \in \R^{2HN}$ are the stacked per-note harmonic amplitudes. Per-note amplitudes
 are shaped in time by an amplitude envelope $A_i(t)$, which multiplies the columns
 of $\Phi(z)$ belonging to note $i$. An honest asymmetry must be recorded: in this
 sketch loudness lives in the amplitudes $a$ and articulation in the envelope
@@ -2885,8 +2894,8 @@ $a \sim \N(\mu_a, \Sigma_a)$, the amplitudes marginalise exactly:
   p(x \mid z) &= \N\bigl( x;\; \Phi\, \mu_a,\; \Phi\, \Sigma_a\, \Phi^\top + K_n \bigr),
   \label{eq:collapsed}
 \end{align}
-writing $\Phi = \Phi(z)$, with $\mu_a \in \R^{2KN}$ and
-$\Sigma_a \in \R^{2KN \times 2KN}$ for $K$ harmonics (two quadrature columns
+writing $\Phi = \Phi(z)$, with $\mu_a \in \R^{2HN}$ and
+$\Sigma_a \in \R^{2HN \times 2HN}$ for $H$ harmonics (two quadrature columns
 each); the implemented helpers specialize $K_n = \sigma^2 I$, and the
 amplitude envelope $A_i(t)$ belongs to the specification, not yet to the
 helpers. Inference over the nonlinear $z$ (Laplace approximation or
@@ -2912,7 +2921,7 @@ vibrato-identifiable notes the extent/rate/delay scaffold is taken from
 the Phase-2 estimator --- the one estimator-supplied ingredient, recorded
 as such), and the design matrix is the harmonic basis of
 \eqref{eq:waveform} with amplitudes piecewise-constant over the four
-chunks of \eqref{eq:loudness}: $p = 2K \times 4 = 64$ columns at $K=8$
+chunks of \eqref{eq:loudness}: $p = 2H \times 4 = 64$ columns at $H=8$
 harmonics. Amplitudes are marginalized exactly; an $O(mp^{2})$ Woodbury
 form of \eqref{eq:collapsed} (equality with the dense form unit-pinned)
 makes the segment-length likelihoods tractable. Inference over the
@@ -3071,7 +3080,7 @@ configuration evaluated on the development set under a single code version.
 \begin{table}[h]\centering
 \caption{Per-channel RMSE / coverage@0.9, development set, all configurations.
 Bold marks the thesis model's row, not the column optimum (individual cells are
-edged by specialised variants, e.g.\ corpus-frozen $\tau$ 0.150, harmonic learned graph $v$ 0.071).}
+edged by specialised variants, e.g.\ corpus-frozen $\tau$ 0.150, chord learned graph $v$ 0.071).}
 \label{tab:perchannel-full}
 \footnotesize
 \begin{tabular}{@{}lcccccc@{}}
@@ -3088,7 +3097,7 @@ Coregionalized, zero mean                & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 &
 \textbf{+ embeddings (proposed model)}       & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
 fixed two-stage mean inside the proposed model & 0.158 & 0.94 & 0.652 & 0.91 & 0.080 & 0.91 \\
 learned graph               & 0.153 & 0.94 & 0.609 & 0.91 & 0.074 & 0.90 \\
-harmonic learned graph       & 0.152 & 0.94 & 0.601 & 0.90 & 0.071 & 0.90 \\
+chord learned graph       & 0.152 & 0.94 & 0.601 & 0.90 & 0.071 & 0.90 \\
 everything               & 0.153 & 0.95 & 0.593 & 0.91 & 0.075 & 0.91 \\
 corpus-frozen hyperparameters          & 0.150 & 0.96 & 0.613 & 0.91 & 0.074 & 0.91 \\
 frozen + per-piece noise   & 0.151 & 0.97 & 0.613 & 0.91 & 0.075 & 0.94 \\
