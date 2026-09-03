@@ -1,0 +1,204 @@
+% =====================================================================
+%  deck_kernels.tex  --  meeting deck, 2026-09-04 (beamer, 16:9)
+%
+%  Framing: reading week. The supervisor's two pointers, the three
+%  papers in related_works/, and where they would fit our model.
+%  NO measured results appear here (those are RESERVE material in
+%  docs/meeting_qa_prep.md, deployed only if Ray chooses in the room).
+%
+%  Style: house rules from the July lab talk. No em-dashes, no
+%  semicolons, no asterisks on slides. One term per concept. Symbols
+%  defined with role and units. Only show what is used.
+%
+%  Compile:  cd docs/slides && tectonic deck_kernels.tex
+% =====================================================================
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{default}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}{\textcolor{okblue}{\scriptsize$\blacksquare$}}
+\setbeamertemplate{footline}{%
+  \hfill\scriptsize\textcolor{muted}{\insertframenumber\,/\,\inserttotalframenumber}\hspace{2mm}\vspace{2mm}}
+
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+\definecolor{okblue}{HTML}{0072B2}
+\definecolor{okverm}{HTML}{D55E00}
+\definecolor{okgreen}{HTML}{009E73}
+\definecolor{okamber}{HTML}{E69F00}
+\definecolor{muted}{HTML}{6B7280}
+\definecolor{ink}{HTML}{1A1A1A}
+\setbeamercolor{frametitle}{fg=ink}
+\setbeamercolor{normal text}{fg=ink}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+
+\title{\textbf{Reading week: spectral kernels for pitch curves}}
+\subtitle{Three papers, and where they fit the score graph model}
+\author{Raynaldi Lalang}
+\institute{Kyoto University}
+\date{September 4, 2026}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Why these papers}
+  \textbf{Your two pointers last time:}
+  \begin{itemize}
+    \item periodic kernel Gaussian processes
+    \item generalized spectral mixtures
+  \end{itemize}
+  \vspace{2mm}
+  \textbf{The question they answer.} Our model summarizes a note's pitch
+  curve with one parametric shape,
+  \[
+    \mathrm{cents}(t) \;=\; c \;+\;
+    \mathbf{1}[t \ge \delta]\,\gamma \sin\!\bigl(2\pi f (t-\delta)\bigr)
+  \]
+  \begin{itemize}
+    \item $c$ is the pitch centre in cents, $\gamma$ the vibrato extent
+          in cents, $f$ the vibrato rate in Hz, $\delta$ the onset delay
+          in seconds
+    \item every parameter is held constant across the note
+    \item the papers ask instead: what if the curve itself gets a
+          Gaussian process prior, and the kernel carries the structure
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Paper 1. Wilson and Adams 2013, the spectral mixture kernel}
+  \textbf{Idea.} Do not pick a kernel. Model its spectrum as a Gaussian
+  mixture, the kernel follows in closed form,
+  \[
+    k(\tau) \;=\; \sum_{q=1}^{Q} w_q\,
+      \exp\!\bigl(-2\pi^2 \tau^2 v_q\bigr)\,
+      \cos\!\bigl(2\pi \tau \mu_q\bigr)
+  \]
+  \begin{itemize}
+    \item $\mu_q$ is a frequency in Hz, $v_q$ its spread, so
+          $1/\sqrt{v_q}$ is how long the oscillation stays coherent,
+          $w_q$ its weight
+    \item enough components approximate any stationary kernel
+    \item the marginal likelihood prunes components that the data does
+          not need
+    \item their demos extrapolate CO$_2$ and airline data where the
+          squared exponential kernel only interpolates
+  \end{itemize}
+  \vspace{1mm}
+  \textbf{Fit to us.} A note's vibrato is one component at $\mu \approx f$
+  with finite coherence. Drift is a second component near zero frequency.
+  Vibrato plus drift is a two component spectral mixture prior on the
+  cents curve.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Paper 2. Remes, Heinonen, Kaski 2017, the generalized spectral mixture}
+  \textbf{Idea.} Promote the mixture constants to functions of time,
+  each with its own Gaussian process prior,
+  \[
+    \log w_i(t), \quad \log \ell_i(t), \quad \operatorname{logit} \mu_i(t)
+    \;\sim\; \mathcal{GP}
+  \]
+  \begin{itemize}
+    \item frequency, weight and coherence length may all drift smoothly
+    \item the stationary spectral mixture is the constant function
+          special case
+    \item their first experiment recovers an oscillation whose frequency
+          changes over time
+  \end{itemize}
+  \vspace{1mm}
+  \textbf{Fit to us.} Vibrato rate that wanders and extent that grows
+  within one note, as smooth functions. Our sine fit is the degenerate
+  limit, one component with constant functions and a hard onset gate.
+  \vspace{1mm}
+
+  \textbf{Honest cost.} Hyperparameters become latent functions, so
+  inference is a heavier optimization. On a short note a free frequency
+  function can imitate a drift, which is the confound our hard
+  identifiability rules currently manage.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Paper 3. Alvarado and Stowell 2016, Gaussian processes for music audio}
+  \textbf{Idea.} A recording is a sum of per note processes gated by
+  smooth on and off windows. Each note's kernel is an exponentiated
+  cosine,
+  \[
+    k_{\mathrm{EC}}(\tau) \;=\; \sigma^2 \exp\!\bigl(z \cos(\omega \tau)\bigr)
+  \]
+  \begin{itemize}
+    \item $\omega$ is the fundamental in rad/s and $z$ the spectral
+          richness, the spectrum is a harmonic comb, fundamental plus
+          partials
+    \item multiplying by a squared exponential term lets the envelope
+          move
+    \item pitch estimation slides $\omega$ and reads the marginal
+          likelihood
+  \end{itemize}
+  \vspace{1mm}
+  \textbf{Fit to us.} They must hand specify every note window. The
+  score gives us onsets and durations for free. Their evidence scan over
+  $\omega$ is the same inference pattern as our collapsed audio
+  likelihood.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{One story, and one deliberate difference}
+  \textbf{The ladder.}
+  \begin{itemize}
+    \item Wilson and Adams give the right prior family for a quasi
+          periodic curve
+    \item Remes et al.\ extend it to rates and extents that drift, which
+          is what real vibrato does
+    \item Alvarado and Stowell assemble the same ideas at audio level
+          with per note gating
+  \end{itemize}
+  \vspace{2mm}
+  \textbf{The design axis to be explicit about.} Kernel side
+  constructions marginalize the note's structure away. We keep named per
+  note variables, $c$, $\gamma$, $f$, because the variables themselves
+  are the object of study, the transcription output, and the thing the
+  graph couples across notes. Both designs are valid. Ours is chosen,
+  not naive.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Where the kernels would plug in}
+  \textbf{Slot A, a curve level estimator.} Gaussian process regression
+  with a spectral mixture prior on each note's cents curve, replacing
+  the parametric sine fit. The output is a posterior over slowly varying
+  centre, extent and rate rather than point values with delta method
+  variances.
+  \vspace{2mm}
+
+  \textbf{Slot B, the audio model's curve prior.} The waveform
+  likelihood needs a prior over pitch curve deviations. These kernel
+  families are the principled choice, they stay Gaussian, so the closed
+  form machinery carries over.
+  \vspace{2mm}
+
+  \textbf{Boundary.} Both slots concern structure within a note. The
+  graph prior across notes is a separate, already validated layer and is
+  untouched by this.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{What I would like from you today}
+  \begin{itemize}
+    \item were these the three papers you had in mind, and are there
+          others you would add
+    \item which slot deserves priority, the curve level estimator or
+          the audio model's curve prior
+    \item my own next steps either way: consolidate fundamentals with a
+          structured study plan, and simplify the thesis draft so the
+          main line is readable before new modelling work
+  \end{itemize}
+\end{frame}
+
+\end{document}
