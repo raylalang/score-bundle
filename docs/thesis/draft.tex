@@ -779,7 +779,7 @@ bars.\label{fig:arch-phase1}}
 A held-out \emph{observation} at entry $i$ is $\tilde y_i = y_i + e_i$, so its
 predictive variance must include the observation-noise variance of that entry ---
 written $\sigma_e^2$ throughout (the channel's $\varsigma_c^2$ here; the per-note
-$(\Sigma_e)_{ii}$ in the per-channel form of \S\ref{sec:special-cases}):
+$(\Sigma_e)_{ii}$ in the per-channel form of Appendix~\ref{app:lineage}):
 \begin{equation}
   \operatorname{Var}\bigl[\tilde y_i \mid \tilde y_{o}\bigr]
   \;=\; (\Sy)_{ii} + \sigma_e^2 .
@@ -862,99 +862,22 @@ standard construction rather than about our own history; and in one regime ---
 rendering from a short excerpt, where per-piece adaptation has too little to adapt
 to --- it remains the better tool (\S\ref{sec:boundary}).
 
-\paragraph{The per-channel form, precision-side.}
-With $B$ diagonal and the feature kernels off, the joint GP factorises into three
-scalar graph GPs, and each is more naturally written through its \emph{precision}
-(inverse covariance) $\Qg = K_G^{-1}$ scaled per channel:
-\begin{align}
-  \text{additive:} \quad & \Qg = \lambda I + \eta\, \Lg,
-      && \lambda > 0,\;\; \eta \ge 0;
-  \label{eq:additive-prec}\\[2pt]
-  \text{graph Mat\'ern / SPDE:} \quad & \Qg = \sigma_g^{-2}\,(\kappa^2 I + \Lg)^{\alpha},
-      && \sigma_g > 0,\;\; \kappa > 0,\;\; \alpha \in \mathbb{Z}_{\ge 1},
-  \label{eq:matern-prec}
-\end{align}
-the additive form matching \eqref{eq:additive} with shape $s = \eta / \lambda$ and
-scale $1/\lambda$ (carried by $B_{cc}$ in the normalised parameterisation), and the
-Mat\'ern form matching \eqref{eq:matern} likewise. Reading the additive precision:
-the $\eta\,\Lg$ term penalises differences between connected notes, while the
-$\lambda I$ ridge pulls the field toward its mean and sets the overall scale.
-Precision versus kernel is a computational choice, not a modelling one: $\Qg$ is
-\emph{sparse} --- each note couples only to its graph neighbours, precisely the
-Markov property of a \emph{Gaussian Markov random field} (GMRF) --- which makes the
-per-channel posterior below cheap, whereas the full model is naturally
-covariance-side (the coregionalization and feature kernels add dense terms) and is
-evaluated spectrally through \eqref{eq:spectral}, one eigendecomposition per piece.
-
-With a plug-in mean $\mu$ and a diagonal observation precision $P$ ($1/\sigma_e^2$
-on observed notes, $0$ on masked notes), the per-channel posterior is
-\begin{equation}
-  \Sy \;=\; \bigl(\Qg + P\bigr)^{-1}, \qquad
-  m \;=\; \Sy \bigl(\Qg\, \mu + P\, \tilde y\bigr)
-  \label{eq:posterior-chan}
-\end{equation}
---- the precision-side counterpart of \eqref{eq:posterior}, to which it reduces
-under the constraints. The plug-in mean itself is one of three choices: $\mu = 0$;
-a ridge regression on the hand-built features $X_{\mathrm{feat}}$; or the
-\emph{music-model mean} $\muLM$, a ridge head $W_{\mathrm{head}}$ (fit once, on a
-piece-disjoint split) applied to the embeddings of \S\ref{sec:features},
-\begin{equation}
-  \mu_{\mathrm{LM},i} = W_{\mathrm{head}}^{\top}\,[\, h_i;\, 1\,],
-  \qquad
-  y = \muLM + \xi, \qquad \xi \sim \N\!\bigl(0,\, \Qg^{-1}\bigr),
-  \label{eq:lm-mean}
-\end{equation}
-with the graph modelling the residual $y - \muLM$. Hyperparameters
-$\theta = (\lambda, \eta, \sigma_e^2)$ are fitted per channel by the same marginal
-likelihood \eqref{eq:marglik} restricted to that channel (with the
-plug-in mean subtracted from $\tilde y$), with the same noise floor, and with the
-per-channel safeguard
-(fallback sequence: marginal likelihood $\to$ the calibration-split objective
-$\to$ the conservative decoupled fit $\eta = 0$,
-$\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$). One honest
-asymmetry: the per-channel screen tests \emph{recovery} only (error against
-the mean-only fallback); the overconfidence screen of \S\ref{sec:eb} exists
-only in the joint model's safeguard --- the two screens are related, not identical.
-
-\paragraph{The constrained systems, by their switches.}
-The constrained systems compared in Chapter~\ref{ch:results} are choices of the
-plug-in mean $\mu \in \{0,\ \muLM\}$ and of whether the graph coupling is on
-($\eta > 0$) or off ($\eta = 0$, making $\Qg = \lambda I$ diagonal, so each note
-decouples). Writing $[\,\cdot\,]_h$ for the entries at held-out notes, the
-posterior mean \eqref{eq:posterior-chan} specialises as in
-Table~\ref{tab:system-posteriors}.
-
-\begin{table}[h]\centering
-\caption{Constrained special cases of the posterior mean
-$m = \Sy(\Qg\,\mu + P\,\tilde y)$, $\Sy = (\Qg + P)^{-1}$, with
-$\Qg = \lambda I + \eta\Lg$ and $P$ the observation precision ($1/\sigma_e^2$ on
-observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the
-notes, so a held-out note returns its prior mean with a single shared predictive
-std; ``graph on'' propagates the observed values $\tilde y$ through the graph,
-giving a per-note mean and per-note std $\sqrt{(\Sy)_{ii} + \sigma_e^2}$.}
-\label{tab:system-posteriors}
-\begin{tabular}{@{}llcl@{}}
-\toprule
-Constraints & $\mu$ & $\eta$ & Prediction $m_h$ at held-out notes \\
-\midrule
-Zero mean, graph off (fully constrained)     & $0$     & $0$   & $0$ \\
-Zero mean, graph on (pure graph smoother)      & $0$     & $>0$  & $\bigl[(\Qg+P)^{-1}P\,\tilde y\bigr]_h$ \\
-Plug-in mean, graph off (mean only)  & $\muLM$ & $0$   & $\mu_{\mathrm{LM},h}$ \\
-Plug-in mean, graph on (two-stage baseline)    & $\muLM$ & $>0$  & $\bigl[(\Qg+P)^{-1}(\Qg\,\muLM+P\,\tilde y)\bigr]_h$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+Its per-channel precision-side form ($\Qg = \lambda I + \eta \Lg$ per
+channel, the sparse-GMRF computational route), the plug-in-mean choices,
+and the constrained systems' posterior formulas are recorded in
+Appendix~\ref{app:lineage}.
 
 \paragraph{Exact nesting.}
 Constraining $B$ diagonal, dropping the feature kernels, and fixing the graph
-recovers the per-channel model exactly \emph{on the shared-shape slice}:
+recovers the two-stage pipeline's per-channel model
+(Appendix~\ref{app:lineage}) exactly \emph{on the shared-shape slice}:
 the joint marginal likelihood \eqref{eq:marglik} equals the sum of the
 per-channel ones under $(\lambda_c, \eta_c) = (1/B_{cc},\, s/B_{cc})$, and
 the equality is pinned by a unit test. The per-channel pipeline, fit
 independently, may select three different shapes; the nesting statement is
 about the model \emph{family}, not about coinciding optima. The constrained systems are therefore not
 merely \emph{analogous} baselines but points in the proposed model's own parameter
-space, which is what makes the ablation tables of Chapter~\ref{ch:results} an
+space, which is what makes the lineage tables of Appendix~\ref{app:lineage} an
 ablation of one model rather than a comparison of two. Re-inserting the two-stage
 baseline's own cross-piece mean as a fixed mean inside \eqref{eq:gpfirst}
 reproduces its results almost unchanged --- which is how we know the proposed
@@ -1177,49 +1100,15 @@ two-stage pipeline, plain (music-model mean, plain graph) & 0.401 & $-0.289$ & 9
 proposed model against its own ablations and the two-stage pipeline, on pieces no
 modelling decision ever touched.}
 
-The development ablation sequence (Table~\ref{tab:headline-exec}) isolates every
-ingredient: the two-stage pipeline rows are the model's own special cases
-(\S\ref{sec:special-cases}), so the project's earlier headline systems appear as
-ablations rather than as a competing narrative. The attribution controls of
-\S\ref{sec:attribution} trace these differences to their mechanism.
+The full development lineage --- the nested ablation sequence from
+zero-mean graph-off up to the proposed model (development RMSE \rmseGPdev,
+NLL \nllGPdev), with the two-stage pipeline rows as its special cases, and
+the three-step account of how the final model was selected --- is recorded
+in Appendix~\ref{app:lineage}; development numbers flatter every system,
+which is why the confirmation table above is the headline. The attribution
+controls of \S\ref{sec:attribution} trace the differences to their
+mechanism.
 
-\begin{table}[h]\centering
-\caption{DEVELOPMENT set (\nPieces{} pieces $\times$ 4 seeds; used for all model
-selection, so these numbers flatter every system --- the confirmation table above
-is the headline). Nested ablation sequence of the proposed model; the two-stage pipeline rows
-are its special cases. Brackets: per-piece bootstrap 95\% CIs where computed
-(the accompanying evidence archive).}
-\label{tab:headline-exec}
-\footnotesize
-\begin{tabular}{lccc}
-\toprule
-System (development) & RMSE & NLL & cov@90\% \\
-\midrule
-Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & \nllZero{}   & \covZero \\
-Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{}  & \covHead \\
-Music-model mean $+$ graph (two-stage) & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} & \covHead \\
-Features $+$ music-model mean $+$ graph (two-stage) & \rmseStack{}    & \nllStack{}   & \covHead \\
-Features $+$ music-model $+$ harmonic graph (adopted headline) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
-Coregionalized GP, zero mean                  & 0.403 & $-0.316$ & 92\% \\
-\ + features as kernel             & 0.368 & $-0.370$ & 92\% \\
-\textbf{\ + music-model embeddings (= the proposed model)} & \textbf{\rmseGPdev} & \nllGPdev & 92.7\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{How the final model was selected}
-Three steps, in order, produced the headline system. \textbf{(1) Development
-optimum of the two-stage pipeline:} after the kernel and edge-family study
-(\S\ref{sec:kernels}), \emph{features + music-model mean + harmonic graph}
-(RMSE~\rmseHeadline{} development) was the adopted headline --- the only variant with every ingredient
-significant on both axes. \textbf{(2) Reformulation:} the graph-GP literature
-prescribes three things the pipeline lacked --- coupled outputs, evidence-learned
-kernel parameters, a marginalized rather than plug-in mean --- and closing them
-yields the proposed model, of which the pipeline is provably a special case.
-\textbf{(3) Preregistered confirmation} (Table~\ref{tab:headline-conf}) decided
-between them on untouched data: the proposed model wins recovery significantly, ties
-pooled calibration, and its graph contribution is confirmed --- so it is the
-thesis model.
 
 \section{Attribution: posterior decomposition}\label{sec:attribution}
 Two development-set attribution controls pin the mechanism. (i) \emph{Fixed-mean control:}
@@ -1327,7 +1216,7 @@ embedding component, the graph nearly flat.
 \label{fig:component-contrast}}
 
 \section{Per-channel breakdown: where the graph earns its keep}\label{sec:perchannel}
-The pooled headline (Table~\ref{tab:headline-exec}) averages three normalised
+The pooled headline averages three normalised
 channels, but the effect is far from uniform (Table~\ref{tab:perchannel}). Timing
 ($\tau$) is the channel where structure moves least: the graph barely changes it and it
 slightly over-covers --- most of the remaining onset variance appears note-local
@@ -1343,7 +1232,8 @@ the hand-built features lack.
 
 \begin{table}[h]\centering
 \caption{Per-channel recovery (RMSE) and 90\%-interval coverage, development set
-($\nPieces \times 4$ masks). The proposed model ablation sequence above the line; two-stage development rows below it for lineage.}
+($\nPieces \times 4$ masks), the proposed model's own ablation sequence;
+the two-stage lineage rows are in Appendix~\ref{app:lineage}.}
 \label{tab:perchannel}
 \footnotesize
 \begin{tabular}{@{}lcccccc@{}}
@@ -1356,9 +1246,6 @@ Coregionalized GP, zero mean                  & 0.156 & 0.94 & 0.676 & 0.91 & 0.
 \ + features (no graph)            & 0.154 & 0.95 & 0.626 & 0.91 & 0.088 & 0.90 \\
 \ + features, full                 & 0.153 & 0.95 & 0.615 & 0.91 & 0.075 & 0.91 \\
 \textbf{\ + embeddings (proposed model)} & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
-\midrule
-Zero mean $+$ graph (two-stage)    & 0.156 & 0.95 & 0.678 & 0.91 & 0.080 & 0.92 \\
-Music-model mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0.91 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1434,7 +1321,7 @@ the pooled average --- which is why the confirmation's pooled-NLL comparison tie
 while the \emph{median} piece is better calibrated under the proposed model. A safeguarded fit in
 the same spirit as the two-stage safeguard --- now with a calibration-split
 screen that \emph{adds} the overconfidence check the per-channel form lacks
-(\S\ref{sec:special-cases}), and a fixed fallback sequence --- was built and
+(Appendix~\ref{app:lineage}), and a fixed fallback sequence --- was built and
 validated: it leaves healthy fits bit-for-bit unchanged,
 \emph{and it cannot catch this tail}, because the failure
 is invisible from observed notes. We report the limitation instead of patching it
@@ -1645,25 +1532,28 @@ added chord/voice-leading edges are the only both-axes win. The independent
 % =====================================================================
 \chapter{Downstream Tasks}\label{ch:downstream}
 Six tasks with objective metrics and honest baselines; all outcomes reported
-(summary in Table~\ref{tab:downstream-both}). Every task was run under the
+(summary in Table~\ref{tab:downstream}; both verdict columns in
+Appendix~\ref{app:lineage}). Every task was run under the
 two-stage pipeline during development and \emph{re-validated under the proposed model} --- with identical corruptions and masks where the task permits pairing;
 performer-ID uses the features-only variant, since Vienna provides no music-model embeddings
 (the accompanying evidence archive). Both verdicts are given.
 
 \begin{table}[h]\centering
-\caption{Downstream tasks: two-stage development verdict and proposed model re-validation.}\label{tab:downstream-both}
+\caption{Downstream tasks: verdicts under the proposed model. The
+two-stage development verdicts are recorded in Appendix~\ref{app:lineage}.}
+\label{tab:downstream}
 \footnotesize
-\begin{tabular}{@{}p{4.1cm}p{4.3cm}p{4.6cm}@{}}
+\begin{tabular}{@{}p{4.6cm}p{8.2cm}@{}}
 \toprule
-Task & Two-stage (development study) & Proposed model (re-run) \\
+Task & Verdict (proposed model) \\
 \midrule
-Error spotting (anomaly) & clear win (AUROC $\to$0.98) & \textbf{stronger}: best on all channels ($v$ 0.995) \\
-Denoising, known noise & win (8/8 contrasts) & slightly better (0.182/0.276, cov 0.90) \\
-Denoising, blind noise & failure & failure in both parameterizations \\
-Completion from excerpt & partial (interp.\ wins) & partial + \textbf{extrapolation boundary} (\S\ref{sec:boundary}) \\
-Selective prediction & qualified win & transfers (RMSE on the confident half 0.076) \\
-Era classification & honest negative (0.37 vs 0.49) & still negative (0.20 vs 0.60, n=30) \\
-Performer-ID (Vienna) & mixed (raw 0.14 $>$ denoised 0.08) & mixed, milder (GP-denoised 0.11) \\
+Error spotting (anomaly) & \textbf{clear win}: best on all channels ($v$ 0.995) \\
+Denoising, known noise & win (0.182/0.276, cov 0.90) \\
+Denoising, blind noise & failure in both parameterizations \\
+Completion from excerpt & partial $+$ \textbf{extrapolation boundary} (\S\ref{sec:boundary}) \\
+Selective prediction & qualified win, transfers (confident-half RMSE 0.076) \\
+Era classification & honest negative (0.20 vs 0.60 majority, n=30) \\
+Performer-ID (Vienna) & mixed (raw 0.136 $>$ GP-denoised 0.114) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -2651,6 +2541,189 @@ entry of the Phase-2 mask --- the (piece, seed) evaluation unit of the
 Phase-1 tables is always written out as a fit; our
 $\alpha$ (exponent) and $\nu$ (eigenvalue) differ from the Mat\'ern
 smoothness convention of the graph-GP literature.
+
+% =====================================================================
+\chapter{Development lineage: the two-stage pipeline}\label{app:lineage}
+The proposed model was reached through a \emph{two-stage} development
+system --- a plug-in mean plus a per-channel graph GP on the residual ---
+which the final model provably contains as the all-switches-on corner of
+its constraint space (\S\ref{sec:special-cases}). This appendix records
+that lineage: the per-channel precision-side formulation, the constrained
+systems' posteriors, the development ablation sequence, the selection
+history, and the two-stage verdicts of the downstream tasks. Everything
+here is development-level record; the main line carries the confirmation
+comparison (Table~\ref{tab:headline-conf}).
+
+\section{The per-channel form, precision-side}
+With $B$ diagonal and the feature kernels off, the joint GP factorises into three
+scalar graph GPs, and each is more naturally written through its \emph{precision}
+(inverse covariance) $\Qg = K_G^{-1}$ scaled per channel:
+\begin{align}
+  \text{additive:} \quad & \Qg = \lambda I + \eta\, \Lg,
+      && \lambda > 0,\;\; \eta \ge 0;
+  \label{eq:additive-prec}\\[2pt]
+  \text{graph Mat\'ern / SPDE:} \quad & \Qg = \sigma_g^{-2}\,(\kappa^2 I + \Lg)^{\alpha},
+      && \sigma_g > 0,\;\; \kappa > 0,\;\; \alpha \in \mathbb{Z}_{\ge 1},
+  \label{eq:matern-prec}
+\end{align}
+the additive form matching \eqref{eq:additive} with shape $s = \eta / \lambda$ and
+scale $1/\lambda$ (carried by $B_{cc}$ in the normalised parameterisation), and the
+Mat\'ern form matching \eqref{eq:matern} likewise. Reading the additive precision:
+the $\eta\,\Lg$ term penalises differences between connected notes, while the
+$\lambda I$ ridge pulls the field toward its mean and sets the overall scale.
+Precision versus kernel is a computational choice, not a modelling one: $\Qg$ is
+\emph{sparse} --- each note couples only to its graph neighbours, precisely the
+Markov property of a \emph{Gaussian Markov random field} (GMRF) --- which makes the
+per-channel posterior below cheap, whereas the full model is naturally
+covariance-side (the coregionalization and feature kernels add dense terms) and is
+evaluated spectrally through \eqref{eq:spectral}, one eigendecomposition per piece.
+
+With a plug-in mean $\mu$ and a diagonal observation precision $P$ ($1/\sigma_e^2$
+on observed notes, $0$ on masked notes), the per-channel posterior is
+\begin{equation}
+  \Sy \;=\; \bigl(\Qg + P\bigr)^{-1}, \qquad
+  m \;=\; \Sy \bigl(\Qg\, \mu + P\, \tilde y\bigr)
+  \label{eq:posterior-chan}
+\end{equation}
+--- the precision-side counterpart of \eqref{eq:posterior}, to which it reduces
+under the constraints. The plug-in mean itself is one of three choices: $\mu = 0$;
+a ridge regression on the hand-built features $X_{\mathrm{feat}}$; or the
+\emph{music-model mean} $\muLM$, a ridge head $W_{\mathrm{head}}$ (fit once, on a
+piece-disjoint split) applied to the embeddings of \S\ref{sec:features},
+\begin{equation}
+  \mu_{\mathrm{LM},i} = W_{\mathrm{head}}^{\top}\,[\, h_i;\, 1\,],
+  \qquad
+  y = \muLM + \xi, \qquad \xi \sim \N\!\bigl(0,\, \Qg^{-1}\bigr),
+  \label{eq:lm-mean}
+\end{equation}
+with the graph modelling the residual $y - \muLM$. Hyperparameters
+$\theta = (\lambda, \eta, \sigma_e^2)$ are fitted per channel by the same marginal
+likelihood \eqref{eq:marglik} restricted to that channel (with the
+plug-in mean subtracted from $\tilde y$), with the same noise floor, and with the
+per-channel safeguard
+(fallback sequence: marginal likelihood $\to$ the calibration-split objective
+$\to$ the conservative decoupled fit $\eta = 0$,
+$\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$). One honest
+asymmetry: the per-channel screen tests \emph{recovery} only (error against
+the mean-only fallback); the overconfidence screen of \S\ref{sec:eb} exists
+only in the joint model's safeguard --- the two screens are related, not identical.
+
+\section{The constrained systems, by their switches}
+The constrained systems compared in Chapter~\ref{ch:results} are choices of the
+plug-in mean $\mu \in \{0,\ \muLM\}$ and of whether the graph coupling is on
+($\eta > 0$) or off ($\eta = 0$, making $\Qg = \lambda I$ diagonal, so each note
+decouples). Writing $[\,\cdot\,]_h$ for the entries at held-out notes, the
+posterior mean \eqref{eq:posterior-chan} specialises as in
+Table~\ref{tab:system-posteriors}.
+
+\begin{table}[h]\centering
+\caption{Constrained special cases of the posterior mean
+$m = \Sy(\Qg\,\mu + P\,\tilde y)$, $\Sy = (\Qg + P)^{-1}$, with
+$\Qg = \lambda I + \eta\Lg$ and $P$ the observation precision ($1/\sigma_e^2$ on
+observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the
+notes, so a held-out note returns its prior mean with a single shared predictive
+std; ``graph on'' propagates the observed values $\tilde y$ through the graph,
+giving a per-note mean and per-note std $\sqrt{(\Sy)_{ii} + \sigma_e^2}$.}
+\label{tab:system-posteriors}
+\begin{tabular}{@{}llcl@{}}
+\toprule
+Constraints & $\mu$ & $\eta$ & Prediction $m_h$ at held-out notes \\
+\midrule
+Zero mean, graph off (fully constrained)     & $0$     & $0$   & $0$ \\
+Zero mean, graph on (pure graph smoother)      & $0$     & $>0$  & $\bigl[(\Qg+P)^{-1}P\,\tilde y\bigr]_h$ \\
+Plug-in mean, graph off (mean only)  & $\muLM$ & $0$   & $\mu_{\mathrm{LM},h}$ \\
+Plug-in mean, graph on (two-stage baseline)    & $\muLM$ & $>0$  & $\bigl[(\Qg+P)^{-1}(\Qg\,\muLM+P\,\tilde y)\bigr]_h$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The development ablation sequence}\label{app:devabl}
+The development ablation sequence (Table~\ref{tab:headline-exec}) isolates every
+ingredient: the two-stage pipeline rows are the model's own special cases
+(\S\ref{sec:special-cases}), so the project's earlier headline systems appear as
+ablations rather than as a competing narrative. The attribution controls of
+\S\ref{sec:attribution} trace these differences to their mechanism.
+
+\begin{table}[h]\centering
+\caption{DEVELOPMENT set (\nPieces{} pieces $\times$ 4 seeds; used for all model
+selection, so these numbers flatter every system --- the confirmation table above
+is the headline). Nested ablation sequence of the proposed model; the two-stage pipeline rows
+are its special cases. Brackets: per-piece bootstrap 95\% CIs where computed
+(the accompanying evidence archive).}
+\label{tab:headline-exec}
+\footnotesize
+\begin{tabular}{lccc}
+\toprule
+System (development) & RMSE & NLL & cov@90\% \\
+\midrule
+Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & \nllZero{}   & \covZero \\
+Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{}  & \covHead \\
+Music-model mean $+$ graph (two-stage) & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} & \covHead \\
+Features $+$ music-model mean $+$ graph (two-stage) & \rmseStack{}    & \nllStack{}   & \covHead \\
+Features $+$ music-model $+$ harmonic graph (adopted headline) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
+Coregionalized GP, zero mean                  & 0.403 & $-0.316$ & 92\% \\
+\ + features as kernel             & 0.368 & $-0.370$ & 92\% \\
+\textbf{\ + music-model embeddings (= the proposed model)} & \textbf{\rmseGPdev} & \nllGPdev & 92.7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Per channel, the two-stage rows sit at the head of the same lineage
+(cf.\ Table~\ref{tab:perchannel}):
+
+\begin{table}[h]\centering
+\caption{Per-channel two-stage lineage rows (development set), the rows
+formerly beneath the line of Table~\ref{tab:perchannel}.}
+\label{tab:perchannel-lineage}
+\footnotesize
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Articulation $\log r$} & \multicolumn{2}{c}{Velocity $v$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+System (development) & RMSE & cov & RMSE & cov & RMSE & cov \\
+\midrule
+Zero mean $+$ graph (two-stage)    & 0.156 & 0.95 & 0.678 & 0.91 & 0.080 & 0.92 \\
+Music-model mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0.91 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{How the final model was selected}\label{app:selection}
+Three steps, in order, produced the headline system. \textbf{(1) Development
+optimum of the two-stage pipeline:} after the kernel and edge-family study
+(\S\ref{sec:kernels}), \emph{features + music-model mean + harmonic graph}
+(RMSE~\rmseHeadline{} development) was the adopted headline --- the only variant with every ingredient
+significant on both axes. \textbf{(2) Reformulation:} the graph-GP literature
+prescribes three things the pipeline lacked --- coupled outputs, evidence-learned
+kernel parameters, a marginalized rather than plug-in mean --- and closing them
+yields the proposed model, of which the pipeline is provably a special case.
+\textbf{(3) Preregistered confirmation} (Table~\ref{tab:headline-conf}) decided
+between them on untouched data: the proposed model wins recovery significantly, ties
+pooled calibration, and its graph contribution is confirmed --- so it is the
+thesis model.
+
+\section{Downstream verdicts under the two-stage system}
+Every downstream task of Chapter~\ref{ch:downstream} was first run under
+the two-stage pipeline during development; Table~\ref{tab:downstream-both}
+gives both verdict columns side by side.
+
+\begin{table}[h]\centering
+\caption{Downstream tasks: two-stage development verdict and proposed model re-validation.}\label{tab:downstream-both}
+\footnotesize
+\begin{tabular}{@{}p{4.1cm}p{4.3cm}p{4.6cm}@{}}
+\toprule
+Task & Two-stage (development study) & Proposed model (re-run) \\
+\midrule
+Error spotting (anomaly) & clear win (AUROC $\to$0.98) & \textbf{stronger}: best on all channels ($v$ 0.995) \\
+Denoising, known noise & win (8/8 contrasts) & slightly better (0.182/0.276, cov 0.90) \\
+Denoising, blind noise & failure & failure in both parameterizations \\
+Completion from excerpt & partial (interp.\ wins) & partial + \textbf{extrapolation boundary} (\S\ref{sec:boundary}) \\
+Selective prediction & qualified win & transfers (RMSE on the confident half 0.076) \\
+Era classification & honest negative (0.37 vs 0.49) & still negative (0.20 vs 0.60, n=30) \\
+Performer-ID (Vienna) & mixed (raw 0.14 $>$ denoised 0.08) & mixed, milder (GP-denoised 0.11) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \chapter{Additional results}\label{app:extra}
 
