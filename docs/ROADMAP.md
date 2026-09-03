@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 2026-09-04. One ongoing task at a time. Order is deliberate:
+Updated 2026-09-04. One ongoing task at a time. The professor update comes LAST, after the work is done, not before. Order is deliberate:
 understanding, then legibility, then modelling. New results work is
 parked until all three say otherwise.
 
@@ -40,6 +40,13 @@ curve prior. Decision inputs, all already written: the review
 costs and the minimal cheap test (`docs/gp_everywhere_memo.md`), and
 the slot choice (curve-level estimator vs the audio model's curve
 prior). Any evaluated claim gets its own registration.
+
+## FINALLY — update the professor
+
+Only after the work above is done. A short declarative note (drafts
+exist in the 2026-09-04 session; plan-only, no attributions): what was
+consolidated, the simplified draft, and the modelling direction. No
+update is sent before then.
 
 ## Parked (done or deliberately idle — not to be picked up unprompted)
 
