@@ -4,7 +4,7 @@ Updated 2026-09-04. One ongoing task at a time. The professor update comes LAST,
 understanding, then legibility, then modelling. New results work is
 parked until all three say otherwise.
 
-## NOW — Consolidate (the only ongoing task)
+## DONE — Consolidate (Ray, 2026-09-04)
 
 Work through `docs/gp_curriculum.md`, in order, one stage per sitting.
 Exit criterion: the Stage-6 one-sheet test (redraw the whole model from
@@ -23,7 +23,7 @@ if needed. Self-check answers are at the bottom of the curriculum file.
 Questions raised while studying are welcome any time and are never
 treated as edit requests.
 
-## NEXT — Simplify the thesis draft (starts only when NOW is done and Ray says go)
+## NOW — Simplify the thesis draft (OPEN as of 2026-09-04)
 
 Execute the structural simplification specified in
 `docs/thesis_confusion_audit.md` (main line ~30 pages from the current
