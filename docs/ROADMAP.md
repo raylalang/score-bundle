@@ -23,14 +23,21 @@ if needed. Self-check answers are at the bottom of the curriculum file.
 Questions raised while studying are welcome any time and are never
 treated as edit requests.
 
-## NOW — Simplify the thesis draft (OPEN as of 2026-09-04)
+## DONE — Simplify the thesis draft (executed 2026-09-04)
 
-Execute the structural simplification specified in
-`docs/thesis_confusion_audit.md` (main line ~30 pages from the current
-62; everything relocated to appendices, nothing deleted; the audit's
-six-move list is the work order). Verification: number-multiset audit
-before/after, dev/confirmation labels intact, compile clean, page map
-re-verified, prep pointers re-synced, tests green.
+The six-move restructure of `docs/thesis_confusion_audit.md` is executed,
+one move per commit (cc5c801..ec917c9 on worktree-audit-week-0813): main
+line = Intro / Background / Model (Phase-1 only) / Data (+URMP) / Phase-1
+Results / Downstream / **Phase-2 Results (new Ch 7)** / Discussion /
+Future / Conclusion, pp. 4–45; appendices A–G hold notation, two-stage
+lineage, methodology record, Phase-1 + Phase-2 dev studies, Phase-3, and
+extra tables (pp. 46–70). Verification passed: number-multiset audit
+before/after = zero numbers lost; dev/confirmation labels intact; compile
+clean x2, 0 overfull; page map re-verified from the compiled ToC; prep
+pointers re-synced (`docs/meeting_qa_prep.md`); 179 tests green. The main
+line is ~42 pp, not the audit's ~30 estimate — the Phase-2 chapter keeps
+its mandated content (~10 pp); further shrinking would mean deleting, which
+the rule forbids.
 
 ## THEN — The spectral-kernel modelling step (only after NEXT, and after discussing with the professor)
 
