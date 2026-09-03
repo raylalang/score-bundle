@@ -180,19 +180,16 @@ A \emph{win} is defined before any test number is seen, and requires improvement
 \emph{both} axes at once (\S\ref{sec:metrics}).
 
 \section{Terminology: the proposed model and the two-stage pipeline}\label{sec:twostage}
-Two names recur throughout. \textbf{The proposed model} is the thesis model: one
-multi-output Gaussian process over all notes and all three expressive channels, in
-which the score graph, the hand-built score features, and the music model's
-(the small from-scratch symbolic language model of Phase 0) per-note
-representation all enter a single kernel, and every hyperparameter is learned from
-one per-piece marginal likelihood (\S\ref{sec:gpfirst}). \textbf{The two-stage
-pipeline} is the earlier system it subsumes and is compared against: a \emph{plug-in
-mean} --- a point estimate of each note's expression, fitted once across pieces from
-the features and the music model --- followed by a \emph{separate} graph GP fitted to
-the residual, one scalar GP per channel. Its numbers are the development record;
-formally it is a special case of the proposed model, recovered by fixing the
-coregionalization to be diagonal, the graph parameters to constants, and the mean to
-a plug-in estimate, and the equality is pinned by unit tests (\S\ref{sec:special-cases}).
+Two names recur throughout. \textbf{The proposed model} is the thesis model:
+one multi-output Gaussian process over all notes and channels, in which the
+score graph, the hand-built score features, and the per-note representation of
+the music model (the small from-scratch symbolic language model of Phase 0)
+enter a single kernel, every hyperparameter learned from one per-piece
+marginal likelihood (\S\ref{sec:gpfirst}). \textbf{The two-stage pipeline} is
+the earlier development system it provably contains as a special case
+(\S\ref{sec:special-cases}): a \emph{plug-in mean} --- a cross-piece point
+estimate of each note's expression --- followed by a separate per-channel
+graph GP on the residual.
 
 \section{Contributions}
 \begin{enumerate}[leftmargin=*]
@@ -243,13 +240,9 @@ score onsets, score durations); held-out evaluation with calibration.
   \item any claim that the model performs general automatic music transcription.
 \end{itemize}
 Audio input/output and continuously pitched instruments enter only in Phases~2--3.
-The work is phased so that each stage produces a defensible result before the next
-risk is taken (Table~\ref{tab:phases}); Phase~0 (the from-scratch music model) and
-Phase~1 (the score-graph prior and its evaluation) are complete, Phase~2 is
-confirmed on real recordings by its own preregistered one-shot (the
-secondary timing claim failed and is reported verbatim), and Phase~3 is
-scoped, with a first development study of its waveform likelihood
-measured.
+The work is phased so that each stage produces a defensible result before the
+next risk is taken; Table~\ref{tab:phases} records the phases and their
+status.
 
 \begin{table}[h]\centering
 \caption{The four phases and their status.}
@@ -265,9 +258,9 @@ Per-note embeddings $h_i$ (a feature kernel of the Phase-1 GP; the plug-in mean 
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened \\
 2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
-$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP; registered one-shot on the frozen 13-piece pool): intonation recovery, vibrato calibration on both channels, coverage on all six channels; the secondary timing-calibration claim failed, reported verbatim \\
+$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP, registered one-shot: intonation recovery, vibrato calibration, coverage; the secondary timing claim failed, reported verbatim --- Chapter~\ref{ch:phase2}) \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
-Harmonic amplitudes $a$, audio $x$ & Scoped; conjugate helpers tested; waveform-likelihood study on 376 real notes (development, exploratory): accuracy competitive with the estimator chain, calibration constraint measured \\
+Harmonic amplitudes $a$, audio $x$ & Scoped; first waveform study measured (development, exploratory --- Appendix~\ref{app:phase3}) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -594,7 +587,7 @@ additive profile is the default throughout; the kernel comparison of
 \S\ref{sec:kernels} shows the classical alternatives tie it. Throughout, $\alpha$
 is \emph{only} the Mat\'ern exponent and $\sigma_g$ the Mat\'ern prior scale ---
 plain $\sigma$ is reserved for the posterior standard deviation
-(\S\ref{sec:posterior}).
+(\S\ref{sec:gpfirst}).
 
 \section{Coupling the channels}\label{sec:coreg}
 Timing, articulation, and velocity are not independent: a stressed note tends to be
@@ -618,7 +611,7 @@ $B$ to be diagonal severs exactly this coupling, making the three channels
 independent scalar graph GPs --- one of the constraint switches of
 \S\ref{sec:special-cases}.
 
-\section{Side information as kernels}\label{sec:features}\label{sec:prior-mean}
+\section{Side information as kernels}\label{sec:features}
 Two per-note feature sets summarise what is known about each note beyond the graph:
 \begin{enumerate}[leftmargin=*,noitemsep]
   \item \textbf{hand-built score features} $X_{\mathrm{feat}}$ --- $\sim$25
@@ -661,13 +654,12 @@ their uncertainty flows into the predictive variance.
 The classical alternative fixes the weights once: fit a point estimate $\hat\beta$
 across pieces, subtract the resulting \emph{plug-in mean} $\mu = X_f \hat\beta$,
 and model the residual with the graph GP. That construction is one of the
-constraint switches of \S\ref{sec:special-cases}, and the attribution experiments
-(\S\ref{sec:attribution}) locate most of the proposed model's accuracy gain
-precisely here: per-piece Bayesian weighting adapts the same information sources to
-each piece, where a cross-piece point estimate cannot.
+constraint switches of \S\ref{sec:special-cases}; the attribution experiments
+locate most of the proposed model's accuracy gain precisely at this switch
+(\S\ref{sec:attribution}).
 
 \section{Observation model and posterior}
-\label{sec:gpfirst}\label{sec:posterior}
+\label{sec:gpfirst}
 Assembling \S\S\ref{sec:graphgp}--\ref{sec:features}: the latent field is observed
 through independent Gaussian noise,
 \begin{equation}
@@ -1425,7 +1417,7 @@ the thesis, bounded by evidence on both sides.
 Phase 2 carries the model to voice, strings and winds, where the performer controls
 pitch. \emph{Nothing in the latent prior changes}: the graph and feature kernels
 of \eqref{eq:gpfirst} (its first two terms), the hyperparameter fit
-(\S\ref{sec:eb}) and the exact conjugate posterior (\S\ref{sec:posterior}) are
+(\S\ref{sec:eb}) and the exact conjugate posterior (\S\ref{sec:gpfirst}) are
 reused (with one absence: the music model is piano-trained, so its
 embedding kernel takes no part here --- the evidence branch is the
 hand-built score features alone); the observation-noise term belongs to the likelihood, and the likelihood is
@@ -1439,9 +1431,7 @@ the \emph{observation noise}, which stops being negligible.
 \paragraph{The channel set.}
 A fixed-pitch keyboard affords no performer-controlled intonation, and its dynamics is
 a MIDI velocity. Neither holds here. We call the per-note vector of channels
-the \emph{bundle}.\footnote{The everyday sense of the word; the title's
-geometric sense --- per-note fibres over the score --- is the outlook of
-\S\ref{sec:future-geom}.} It becomes
+the \emph{bundle}, in the everyday sense fixed in the Introduction. It becomes
 \begin{equation}
   y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ d_i^{\mathrm{vib}} \,\bigr]
   \;\in\; \R^{k},
@@ -1573,7 +1563,7 @@ The identifiability rule makes missingness structural, not incidental. A
 short note may support $c_i$ but no vibrato
 parameters, so a target can be missing \emph{for some channels of a note and not
 others}. We call each (note, channel) entry a \emph{cell}, and the resulting
-per-cell observation pattern the \emph{cell mask}. The conjugate posterior of \S\ref{sec:posterior} assumes \emph{per-note}
+per-cell observation pattern the \emph{cell mask}. The conjugate posterior of \S\ref{sec:gpfirst} assumes \emph{per-note}
 masks, which is exactly what keeps the observed block Kronecker-compatible
 (\S\ref{sec:gpfirst}). Per-(note, channel) missingness breaks that bookkeeping ---
 though not the exactness: the conjugate posterior conditions on an arbitrary
@@ -1940,11 +1930,9 @@ designed for --- now shown on real recordings and \emph{confirmed} once on the f
 \chapter{Discussion}\label{ch:discussion}
 
 \section{Interpretation}
-The attribution study (\S\ref{sec:attribution}) splits the labour cleanly:
-\emph{recovery} is won by per-piece Bayesian weighting of informative per-note
-features under one joint marginal likelihood --- each piece decides for itself how much its timing,
-articulation, and velocity follow the score features and the music model's
-representation --- while \emph{calibration} is won by the graph. The posterior
+The attribution split (\S\ref{sec:attribution}) --- per-piece feature
+weighting recovers, the graph calibrates --- invites two questions the
+numbers alone do not answer. The posterior
 decomposition sharpens this from inside a single fit: the graph and the
 music-model components act nearly orthogonally per note (component correlation
 $\approx 0$), so the two are complements, not rivals --- and which component
@@ -3025,7 +3013,7 @@ design now starts from.
 
 \paragraph{From imputation to audio: the task structure across phases.}
 It is worth being explicit that the \emph{visible/hidden partition of
-\S\ref{sec:posterior} is a Phase-1 evaluation device, not a feature of the method}.
+\S\ref{sec:gpfirst} is a Phase-1 evaluation device, not a feature of the method}.
 In Phase 1 the performance is supplied as clean MIDI, so the per-note targets are
 read off almost exactly ($\Sigma_e \approx 0$); there is nothing to infer unless we
 manufacture a prediction task, which is why we \emph{mask} a fraction of notes and
