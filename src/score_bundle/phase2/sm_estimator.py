@@ -95,7 +95,7 @@ def _decimate(t: np.ndarray, y: np.ndarray, n_max: int):
 
 def fit_sm_note(t: np.ndarray, cents: np.ndarray,
                 f_lo: float = 2.5, f_hi: float = 9.0,
-                n_grid: int = 33, n_max: int = 400,
+                n_grid: int = 66, n_max: int = 400,
                 nm_iter: int = 400) -> Dict[str, float]:
     """Fit the SM-GP to one note's voiced cents frames.
 
@@ -139,13 +139,22 @@ def fit_sm_note(t: np.ndarray, cents: np.ndarray,
     span = max(float(t.max() - t.min()), 1e-3)
     v2_min = 0.025 / span ** 2
     v_max = 25.0
-    w_max = 1e3 * vy
+    w_max = 50.0 * vy
 
     def neg(p: np.ndarray) -> float:
         w1, mu1, v1, w2, v2, s2 = _unpack(p)
         if not (f_lo - 0.5 <= mu1 <= f_hi + 0.5):
             return _SENTINEL
-        if v2 < v2_min or v2 > v_max or v1 > v_max:
+        # Coherence bound: the vibrato component must BE an oscillation.
+        # Unconstrained, the evidence on real curves often prefers a broad
+        # incoherent band (bandwidth ~ rate), under which mu1 is weakly
+        # identified and wanders -- but the channel's estimand is the
+        # realized oscillation's rate.  Bandwidth <= rate/8 keeps ~73% of
+        # the component's phase coherence over one period; broader-band
+        # variation belongs to the drift and noise terms.
+        if v1 > (mu1 / 8.0) ** 2:
+            return _SENTINEL
+        if v2 < v2_min or v2 > v_max:
             return _SENTINEL
         if w1 > w_max or w2 > w_max or s2 > 10.0 * vy or s2 < 1e-4 * vy:
             return _SENTINEL
@@ -164,93 +173,136 @@ def fit_sm_note(t: np.ndarray, cents: np.ndarray,
         return float(beta[1] ** 2 + beta[2] ** 2)
 
     v2_0 = max(0.1, 2.0 * v2_min)
-    grid = np.linspace(f_lo, f_hi, n_grid)
-    best = (np.inf, None)
-    for f in grid:
+
+    def p0_at(f: float) -> np.ndarray:
         w1_0 = float(np.clip(amp2_at(f) / 2.0, 1e-3 * vy, 0.5 * w_max))
         w2_0 = float(np.clip(vy - w1_0 - s2_0, 0.05 * vy, 0.5 * w_max))
-        p0 = np.array([np.log(w1_0), f, np.log(0.25),
-                       np.log(w2_0), np.log(v2_0), np.log(s2_0)])
-        val = neg(p0)
-        if val < best[0]:
-            best = (val, p0)
-    if best[1] is None:                       # pragma: no cover - defensive
-        best = (np.inf, np.array([np.log(vy / 2), 0.5 * (f_lo + f_hi),
-                                  np.log(0.25), np.log(vy / 4),
-                                  np.log(v2_0), np.log(s2_0)]))
+        v1_0 = min(0.1, 0.5 * (f / 8.0) ** 2)
+        return np.array([np.log(w1_0), f, np.log(v1_0),
+                         np.log(w2_0), np.log(v2_0), np.log(s2_0)])
 
-    p_hat = nelder_mead(neg, best[1], step=0.4, max_iter=nm_iter)
-    p_hat = nelder_mead(neg, p_hat, step=0.1, max_iter=nm_iter // 2)
+    # Restart set for mu1: the evidence's own coarse-grid winner PLUS the
+    # top frequencies of the sine-fit SSE profile (initializers only; the
+    # estimator remains the GP evidence).  The (mu1, v1) trade-off makes
+    # the evidence surface shallow around its peak, so a single init
+    # mode-hops; the SSE profile is a sharp, cheap frequency locator.
+    grid = np.linspace(f_lo, f_hi, n_grid)
+    ev_grid = np.array([neg(p0_at(f)) for f in grid])
+    sse = np.empty(grid.size)
+    for i, f in enumerate(grid):
+        th = 2.0 * np.pi * f * ts
+        A = np.stack([np.ones(ts.size), np.sin(th), np.cos(th)], axis=1)
+        beta, *_ = np.linalg.lstsq(A, ys, rcond=None)
+        r = ys - A @ beta
+        sse[i] = float(r @ r)
+    seeds = {float(grid[int(np.argmin(ev_grid))]),
+             float(grid[int(np.argmin(sse))])}
+
+    p_hat, best_val = None, np.inf
+    for f0_seed in seeds:
+        p = nelder_mead(neg, p0_at(f0_seed), step=0.4, max_iter=nm_iter)
+        p = nelder_mead(neg, p, step=0.1, max_iter=nm_iter // 2)
+        val = neg(p)
+        if val < best_val:
+            p_hat, best_val = p, val
+
+    # fine profile refinement of mu1 (others fixed), then a last polish
+    f_fine = p_hat[1] + np.linspace(-0.3, 0.3, 31)
+    vals = []
+    for f in f_fine:
+        q = p_hat.copy()
+        q[1] = f
+        vals.append(neg(q))
+    p_hat = p_hat.copy()
+    p_hat[1] = float(f_fine[int(np.argmin(vals))])
+    p_hat = nelder_mead(neg, p_hat, step=0.05, max_iter=nm_iter // 2)
     ev = -neg(p_hat)
 
     # --- Laplace: central-difference Hessian of -log evidence ---------
+    # Coordinates whose own +-h stencil crosses a bound are dropped from
+    # the Hessian (a fit at a bound has no curvature there); (log w1, mu1)
+    # curvature comes from the surviving sub-Hessian.  ``wide`` fires only
+    # when those two coordinates themselves are unusable.
     h = np.array([0.05, 0.05, 0.1, 0.1, 0.1, 0.05])
     m = p_hat.size
-    H = np.zeros((m, m))
     f0 = neg(p_hat)
-    at_boundary = [f0 >= 0.5 * _SENTINEL]
-
-    def ev_at(dp):
-        val = neg(p_hat + dp)
-        if val >= 0.5 * _SENTINEL:            # FD stencil crossed a bound:
-            at_boundary[0] = True             # curvature is meaningless there
-        return val
-
+    keep = []
     for i in range(m):
         ei = np.zeros(m)
         ei[i] = h[i]
-        H[i, i] = (ev_at(ei) - 2 * f0 + ev_at(-ei)) / h[i] ** 2
-        for j in range(i + 1, m):
-            ej = np.zeros(m)
-            ej[j] = h[j]
-            H[i, j] = H[j, i] = (
-                ev_at(ei + ej) - ev_at(ei - ej)
-                - ev_at(-ei + ej) + ev_at(-ei - ej)
-            ) / (4 * h[i] * h[j])
-
-    wide = bool(at_boundary[0])
+        if (f0 < 0.5 * _SENTINEL and neg(p_hat + ei) < 0.5 * _SENTINEL
+                and neg(p_hat - ei) < 0.5 * _SENTINEL):
+            keep.append(i)
+    wide = not (0 in keep and 1 in keep)
+    var_log_w1 = var_mu1 = np.inf
     if not wide:
+        k = len(keep)
+        H = np.zeros((k, k))
+        for a_i, i in enumerate(keep):
+            ei = np.zeros(m)
+            ei[i] = h[i]
+            H[a_i, a_i] = (neg(p_hat + ei) - 2 * f0
+                           + neg(p_hat - ei)) / h[i] ** 2
+            for a_j in range(a_i + 1, k):
+                j = keep[a_j]
+                ej = np.zeros(m)
+                ej[j] = h[j]
+                H[a_i, a_j] = H[a_j, a_i] = (
+                    neg(p_hat + ei + ej) - neg(p_hat + ei - ej)
+                    - neg(p_hat - ei + ej) + neg(p_hat - ei - ej)
+                ) / (4 * h[i] * h[j])
         try:
             Sig = np.linalg.inv(H)
-            d = np.diag(Sig)
-            if not np.all(np.isfinite(d)) or np.any(d[[0, 1]] <= 0):
+            i0, i1 = keep.index(0), keep.index(1)
+            if (np.isfinite(Sig[i0, i0]) and Sig[i0, i0] > 0
+                    and np.isfinite(Sig[i1, i1]) and Sig[i1, i1] > 0):
+                var_log_w1 = float(Sig[i0, i0])
+                var_mu1 = float(Sig[i1, i1])
+            else:
                 wide = True
         except np.linalg.LinAlgError:
             wide = True
-    if wide:
-        var_log_w1 = np.inf
-        var_mu1 = np.inf
-    else:
-        var_log_w1 = float(Sig[0, 0])
-        var_mu1 = float(Sig[1, 1])
 
     w1, mu1, v1, w2, v2, s2 = _unpack(p_hat)
 
-    # exact GLS centre on the FULL frames at the fitted kernel, and the
-    # realized-amplitude extent read-out.  The channel's estimand is THIS
-    # note's realized vibrato amplitude (what the sine fit reports), not
-    # the ensemble scale sqrt(2 w1): for a near-coherent component w1 is
-    # informed by only ~2 effective degrees of freedom (the realized
-    # sin/cos amplitudes), so sqrt(2 w1) is chi^2_2-spread around the
-    # realized value (median ~0.83 of it).  The posterior mean of the
-    # vibrato component m1 = K1 K^-1 (y - c 1) recovers the realized
-    # oscillation directly; its empirical std over the frames times
-    # sqrt(2) is the amplitude (shrunk toward 0 only when the evidence
-    # for the component is genuinely weak).
+    # Realized read-outs on the FULL frames at the fitted kernel.  Both
+    # channels mean THIS note's realized quantity, which is what the sine
+    # fit reports; process-level parameters differ from them in a
+    # measured, systematic way:
+    # - extent: for a near-coherent component w1 has only ~2 effective
+    #   degrees of freedom (the realized sin/cos amplitudes), so
+    #   sqrt(2 w1) is chi^2_2-spread around the realized amplitude
+    #   (median ~0.83 of it).  Read gamma from the posterior vibrato
+    #   component m1 = K1 K^-1 (y - c 1) instead.
+    # - centre: the process constant c and the slow drift component split
+    #   a note-level offset almost arbitrarily (the GLS c is honest but
+    #   wide, and two curves of the same note can split differently).
+    #   The channel's centre is the realized average, c plus the drift
+    #   component's mean over the note: c_ch = c_hat + mean(m2), with the
+    #   universal-kriging variance of the functional c + mean(g2).
     terms = _chol_terms(t, y, p_hat)
     if terms is None:                         # pragma: no cover - defensive
         c_hat, var_c = float(y.mean()), float(y.var(ddof=1) / n_full)
         gamma = float(np.sqrt(2.0 * w1))
     else:
         L, a, b, _, _ = terms
-        c_hat, var_c = b / a, 1.0 / a
+        c_gls = b / a
         tau_full = t[:, None] - t[None, :]
         K1 = (w1 * np.exp(-2.0 * np.pi ** 2 * v1 * tau_full ** 2)
               * np.cos(2.0 * np.pi * mu1 * tau_full))
-        r1 = np.linalg.solve(L, y - c_hat)
+        K2 = w2 * np.exp(-2.0 * np.pi ** 2 * v2 * tau_full ** 2)
+        r1 = np.linalg.solve(L, y - c_gls)
         r2 = np.linalg.solve(L.T, r1)         # K^-1 (y - c 1)
         m1 = K1 @ r2
         gamma = float(np.sqrt(2.0) * m1.std())
+        # functional Phi = c + mean_j g2(t_j): kriging mean and variance
+        ks = K2.mean(axis=0)                  # cov(Phi_g2, latent frames)
+        kss = float(K2.mean())                # var of mean_j g2(t_j)
+        A = np.linalg.solve(L, ks)
+        one_w = np.linalg.solve(L, np.ones(n_full))
+        c_hat = c_gls + float(ks @ r2)
+        var_c = kss - float(A @ A) + (1.0 - float(A @ one_w)) ** 2 / a
+        var_c = max(var_c, 1e-12)
 
     var_log_gamma = 0.25 * var_log_w1        # scale uncertainty from w1
     var_gamma = gamma ** 2 * var_log_gamma
