@@ -1,0 +1,178 @@
+% Technical note: intonation & vibrato estimation via a spectral-mixture GP.
+% Style: math-problem solution — definitions, facts, procedure, outputs.
+% Shareable: self-contained, no project-internal terminology.
+% Compile: tectonic sm_estimator_note.tex
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=2.1cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{enumitem}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\pagestyle{empty}
+
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\GP}{\mathcal{GP}}
+\newcommand{\one}{\mathbf{1}}
+
+\begin{document}
+
+\begin{center}
+{\large\bfseries Intonation and vibrato estimation with a spectral-mixture Gaussian process}\\[2pt]
+{\small Raynaldi Lalang, September 2026}
+\end{center}
+
+\textbf{1. Problem.}
+A pitch tracker converts one played note into frames
+$\{(t_j, y_j)\}_{j=1}^{n}$, where $y_j$ is the pitch at time $t_j$,
+expressed as the deviation in cents from the note's written
+(equal-tempered) pitch. Typically $n \in [30, 10^3]$ at a 10\,ms hop.
+Estimate, with a variance for each:
+\begin{itemize}[nosep,leftmargin=2em]
+  \item[] $c$ \quad intonation: the curve's constant centre (cents),
+  \item[] $f$ \quad vibrato rate: the oscillation frequency (Hz),
+  \item[] $\gamma$ \quad vibrato extent: the oscillation amplitude (cents).
+\end{itemize}
+
+\textbf{2. Model.}
+\begin{equation}
+y_j \;=\; c + g(t_j) + \varepsilon_j, \qquad
+g \sim \GP\bigl(0,\, k_\theta\bigr), \qquad
+\varepsilon_j \overset{\text{iid}}{\sim} \N(0, \sigma^2),
+\label{eq:model}
+\end{equation}
+\begin{equation}
+k_\theta(\tau) \;=\;
+\underbrace{w_1\, e^{-2\pi^2 v_1 \tau^2} \cos(2\pi \mu_1 \tau)}_{\text{vibrato component}}
+\;+\;
+\underbrace{w_2\, e^{-2\pi^2 v_2 \tau^2}}_{\text{drift component}},
+\qquad \theta = (w_1, \mu_1, v_1, w_2, v_2, \sigma^2).
+\label{eq:kernel}
+\end{equation}
+This is the spectral-mixture (SM) kernel of Wilson \& Adams (ICML 2013)
+with $Q = 2$ components, the second at zero frequency.
+
+\textbf{Fact 1 (spectral reading).}
+A stationary kernel and a symmetric spectral density are a Fourier pair.
+For \eqref{eq:kernel},
+\begin{equation}
+S(s) \;=\; \sum_{q=1}^{2} \frac{w_q}{2}
+\Bigl[ \N(s;\, \mu_q, v_q) + \N(s;\, -\mu_q, v_q) \Bigr],
+\qquad \mu_2 = 0 .
+\end{equation}
+So the prior states exactly: the curve's energy sits in a band of width
+$\sqrt{v_1}$ around the vibrato rate $\mu_1$ (power $w_1$) and in a
+low-frequency band around $0$ (the drift, power $w_2$). Nothing else is
+assumed.
+
+\textbf{Fact 2 (why $\gamma = \sqrt{2 w_1}$).}
+Let $u(t) = a \sin(2\pi f t + \varphi)$ with $\varphi \sim
+\mathrm{Unif}[0, 2\pi)$. Then $\mathbb{E}[u(t)] = 0$ and
+\begin{equation}
+\operatorname{Cov}\bigl(u(t), u(t')\bigr) \;=\; \tfrac{a^2}{2}\,
+\cos\bigl(2\pi f (t - t')\bigr).
+\end{equation}
+Hence the vibrato component of \eqref{eq:kernel} in the coherent limit
+$v_1 \to 0$ is precisely a random-phase sinusoid of amplitude
+$\sqrt{2 w_1}$ and frequency $\mu_1$; finite $v_1$ spreads the frequency
+as $\N(\mu_1, v_1)$, i.e.\ lets the oscillation lose phase coherence over
+lags of order $1/\sqrt{v_1}$. Consequences: (i) the extent read-out is
+$\gamma = \sqrt{2 w_1}$; (ii) the classical parametric fit (constant plus
+phase-locked sinusoid) is the degenerate sub-model $v_1 \to 0$, $w_2 = 0$,
+with the phase treated as known rather than marginalized.
+
+\textbf{3. Fitting.}
+Let $K(\theta) \in \mathbb{R}^{n \times n}$,
+$K_{jj'} = k_\theta(t_j - t_{j'}) + \sigma^2 \delta_{jj'}$.
+Under a flat prior on $c$, the marginal likelihood is available in closed
+form: with
+\begin{equation}
+\hat c(\theta) = \frac{\one^\top K^{-1} y}{\one^\top K^{-1} \one},
+\qquad
+s_c^2(\theta) = \frac{1}{\one^\top K^{-1} \one},
+\label{eq:gls}
+\end{equation}
+\begin{equation}
+L(\theta) \;=\; \log \int \N\bigl(y;\, c \one,\, K(\theta)\bigr)\, dc
+\;=\; \log \N\bigl(y;\, \hat c\,\one,\, K\bigr)
+\;+\; \tfrac{1}{2} \log 2\pi s_c^2 .
+\label{eq:evidence}
+\end{equation}
+Procedure:
+\begin{enumerate}[nosep,leftmargin=2em]
+  \item Coarse grid over $\mu_1 \in [3, 10]$\,Hz ($L$ is multimodal in
+        $\mu_1$; each grid point gets a cheap inner fit of the remaining
+        parameters).
+  \item From the best grid point, maximize $L(\theta)$ by quasi-Newton in
+        $\log$ parameters (positivity by construction).
+  \item Cost $O(n^3)$ per evaluation; negligible at these $n$.
+\end{enumerate}
+Intuition for step 2: $-2L = y^\top K^{-1} y + \log |K| + \text{const}$;
+the quadratic term rewards a $K$ whose oscillating correlation pattern
+(frames one period apart agree, half a period apart disagree) matches the
+data, the log-determinant penalizes claiming unobserved structure. Phase
+never appears: the pattern is read from correlations, not from curve
+values.
+
+\textbf{4. Outputs.}
+At $\hat\theta = \arg\max L$, with $H = -\nabla^2 L(\hat\theta)$ (observed
+information):
+\begin{center}
+\begin{tabular}{lll}
+quantity & estimate & variance \\[1pt]
+\hline \\[-9pt]
+intonation & $\hat c = \hat c(\hat\theta)$ from \eqref{eq:gls} &
+$s_c^2(\hat\theta)$ \quad (exact, given $\hat\theta$) \\[2pt]
+rate & $\hat f = \hat\mu_1$ &
+$[H^{-1}]_{\mu_1 \mu_1}$ \quad (Laplace) \\[2pt]
+extent & $\hat\gamma = \sqrt{2 \hat w_1}$ &
+$\dfrac{[H^{-1}]_{w_1 w_1}}{2 \hat w_1}$ \quad (Laplace + delta method,
+$\partial \gamma / \partial w_1 = 1/\sqrt{2 w_1}$) \\
+\end{tabular}
+\end{center}
+The three (estimate, variance) pairs are the note's contribution to the
+downstream across-note model, which is unchanged; only the estimator
+producing them changes. Given $\hat\theta$, the full curve $c + g(t)$ also
+has an exact GP posterior, used for diagnostics.
+
+\textbf{5. Behaviour on weak notes.}
+The variances above are the inverse curvature of $L$. A long note with
+many coherent cycles gives a sharp peak in $\mu_1$, hence small variance;
+a short or irregular note gives a nearly flat $L$, hence a large variance.
+The estimator therefore never refuses a note: an uninformative note
+reports itself as such, replacing the hard identifiability rules
+(minimum frame and cycle counts) that a shape-committed fit requires.
+
+\textbf{6. Limits, stated.}
+(i) Stationarity marginalizes phase, so the vibrato \emph{onset delay} is
+not identifiable in this model and keeps its current (gated-fit)
+estimator. (ii) On notes short relative to $1/\sqrt{v_1}$ and
+$1/\mu_1$, the vibrato and drift components can trade off (spectral
+overlap); the wide reported variances are the honest symptom, and priors
+on $\theta$ are the remedy if it matters in practice. (iii) $\hat f$ and
+$\hat\gamma$ are maximum-evidence point estimates with Laplace variances,
+the GP analogue of the parametric fit's delta method, not something
+categorically stronger; the categorical gain is items 5 and Fact 2(ii).
+
+\textbf{7. Evaluation (development data only, $\sim$5{,}000
+vibrato-identifiable notes; pass/fail decided by measure 1).}
+Each estimator runs independently on the tracked curve and on the
+corpus's ground-truth pitch curve of the same note; the latter output is
+that estimator's own reference, so neither estimator is scored against
+the other's definition of the targets.
+\begin{enumerate}[nosep,leftmargin=2em]
+  \item Parameter accuracy: $|\text{tracked} - \text{reference}|$ per
+        quantity, paired per note against the parametric fit. If the GP
+        does not win here, it is dropped.
+  \item Calibration: $z = (\text{tracked} - \text{reference})/\hat\sigma$;
+        coverage at nominal 90\%, log score, PIT uniformity.
+  \item Refused notes: on notes the parametric fit discards, does the
+        GP's posterior cover the reference at nominal rate?
+  \item Curve level: both posteriors scored directly against the
+        ground-truth curve's frames (no target definition needed).
+\end{enumerate}
+Adoption beyond a development study would be preregistered and confirmed
+on fresh data; already-confirmed results are unaffected.
+
+\end{document}
