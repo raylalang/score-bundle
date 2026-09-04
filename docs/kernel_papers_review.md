@@ -11,17 +11,20 @@ process" and "generalized spectral mixture", in the context of the
 vibrato/pitch-curve model (draft eq:cents-curve/eq:vibrato) and the
 Phase-3 likelihood.
 
-## 0. The decision in brief
+## 0. The decision in brief — UPDATED 2026-09-04: the test was run
 
-The working choice is the **spectral mixture (SM) kernel** as a prior on
-a note's cents curve, tested against the current sine estimator on
-development data (the kill-cheap test of `docs/gp_everywhere_memo.md`).
-The other two papers are not dropped: the GSM paper is the designated
-*second* rung, gated on the SM test passing, and the Alvarado & Stowell
-paper is the reference for the *other* slot (the Phase-3 waveform prior),
-not for the estimator. Sections 1–2 give the why and the where; sections
-3–5 review the papers; section 6 answers "are the other two relevant
-now" explicitly.
+The kill-cheap test was executed (`results/sm_estimator_dev.md`).
+**Slot A (SM-GP as estimator v2) is dead by the pre-committed rule**: it
+does not beat the sine fit on parameter accuracy (intonation ties, extent
+and rate lose decisively — the evidence's decomposition is less
+reproducible across two measurements of the same note than the rigid
+fit). The estimator chain stays as confirmed. **Slot B is strengthened**:
+on the estimand-free curve-level measure the SM prior describes the
+actual curve better than the sinusoid (median frame RMSE 35% lower),
+which is exactly the Phase-3 curve prior's job. The GSM rung (section 4)
+was gated on Slot A passing and is accordingly parked; Alvarado & Stowell
+remains the Slot-B reference. The sections below are kept as written
+before the test, with statuses updated.
 
 ## 1. Why this equation
 

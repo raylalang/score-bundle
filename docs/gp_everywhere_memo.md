@@ -47,7 +47,16 @@ whole-track models.
   binding constraints there are the estimand bridge and the τ noise
   row, which no kernel choice touches.
 
-## Minimal honest test (if ever pursued)
+## Minimal honest test — EXECUTED 2026-09-04, the idea died cheaply
+
+The test below was run (with a fourth, curve-level measure added):
+`results/sm_estimator_dev.md`. Verdict by the pre-committed rule: the
+SM-GP does not beat the sine fit on parameter accuracy (intonation ties;
+extent and rate lose decisively), so the estimator-replacement idea
+(Slot A) is dead; the estimator chain stays as confirmed. The
+estimand-free curve-level measure favors the GP (median frame RMSE 35%
+lower), which strengthens Slot B — the Phase-3 within-note curve prior —
+as the surviving home for these kernels. Original design, for the record:
 
 One development study, no new claims: SM-prior GP regression on cents
 curves for the ~5,000 identifiable dev notes; compare against the NLLS

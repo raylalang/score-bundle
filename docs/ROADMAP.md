@@ -39,14 +39,18 @@ line is ~42 pp, not the audit's ~30 estimate — the Phase-2 chapter keeps
 its mandated content (~10 pp); further shrinking would mean deleting, which
 the rule forbids.
 
-## THEN — The spectral-kernel modelling step (only after NEXT, and after discussing with the professor)
+## THEN — The spectral-kernel modelling step (STEP 1 DONE 2026-09-04: Slot A killed by its own test)
 
-Bring the reviewed kernel families into the model as the within-note
-curve prior. Decision inputs, all already written: the review
-(`docs/kernel_papers_review.md`), the unification memo with its honest
-costs and the minimal cheap test (`docs/gp_everywhere_memo.md`), and
-the slot choice (curve-level estimator vs the audio model's curve
-prior). Any evaluated claim gets its own registration.
+The kill-cheap test ran on Ray's go after the professor meeting:
+SM-GP estimator vs the sine fit on the dev notes
+(`results/sm_estimator_dev.md`, code frozen at 611685a, 185 tests).
+Verdict by the pre-committed rule: **Slot A (estimator v2) is dead** —
+parameter accuracy does not beat the sine fit (extent and rate lose
+decisively); the confirmed estimator chain stays. The estimand-free
+curve-level measure favors the SM prior (median frame RMSE 35% lower),
+so **Slot B — the Phase-3 within-note curve prior — is the surviving
+direction**, to be discussed with the professor before anything is
+built there. Any evaluated claim gets its own registration.
 
 ## FINALLY — update the professor
 
