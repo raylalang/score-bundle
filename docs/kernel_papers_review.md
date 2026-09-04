@@ -131,7 +131,16 @@ read-outs:
 
 $$\hat c_i \;=\; \mathbb{E}[c_i \mid y] \quad (\text{exact: the marginalized constant mean has a closed-form Gaussian posterior}),$$
 
-$$\hat f_i^{\mathrm{vib}} \;=\; \mu_1, \qquad \hat\gamma_i \;\approx\; \sqrt{2 w_1} \quad (\text{a sinusoid of amplitude } \gamma \text{ has stationary variance } \gamma^2/2).$$
+$$\hat f_i^{\mathrm{vib}} \;=\; \mu_1, \qquad \hat\gamma_i \;=\; \sqrt{2}\,\operatorname{std}\bigl(\hat m_1\bigr), \quad \hat m_1 = K_1 K^{-1}(y - \hat c\,\mathbf 1) \;\; \text{(the posterior vibrato component)}.$$
+
+(The naive conversion $\sqrt{2 w_1}$ — a sinusoid of amplitude $\gamma$
+has stationary variance $\gamma^2/2$ — targets the *ensemble* scale: on a
+near-coherent component $w_1$ has only two effective degrees of freedom,
+so $\sqrt{2\hat w_1}$ is $\chi^2_2$-spread around this note's *realized*
+amplitude, which is what the channel means and what the sine fit reports.
+Reading the amplitude off the posterior vibrato component targets the
+realized quantity directly; implementation-measured, see
+`sm_estimator.py`.)
 
 Their uncertainties: the centre's variance is exact (from its Gaussian
 posterior). Rate and extent are hyperparameter estimates, so their

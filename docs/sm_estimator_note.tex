@@ -77,10 +77,16 @@ Hence the vibrato component of \eqref{eq:kernel} in the coherent limit
 $v_1 \to 0$ is precisely a random-phase sinusoid of amplitude
 $\sqrt{2 w_1}$ and frequency $\mu_1$; finite $v_1$ spreads the frequency
 as $\N(\mu_1, v_1)$, i.e.\ lets the oscillation lose phase coherence over
-lags of order $1/\sqrt{v_1}$. Consequences: (i) the extent read-out is
-$\gamma = \sqrt{2 w_1}$; (ii) the classical parametric fit (constant plus
-phase-locked sinusoid) is the degenerate sub-model $v_1 \to 0$, $w_2 = 0$,
-with the phase treated as known rather than marginalized.
+lags of order $1/\sqrt{v_1}$. Consequences: (i) $w_1$ converts to an
+amplitude via $\gamma = \sqrt{2 w_1}$ --- but note $w_1$ is the
+\emph{ensemble} scale: on a near-coherent component it is informed by only
+two effective degrees of freedom (the realized sine and cosine
+amplitudes), so $\sqrt{2\hat w_1}$ is $\chi^2_2$-spread around the
+\emph{realized} amplitude of this note, which is the quantity of interest;
+the extent read-out therefore comes from the posterior vibrato component
+(\S4), not from $\hat w_1$; (ii) the classical parametric fit (constant
+plus phase-locked sinusoid) is the degenerate sub-model $v_1 \to 0$,
+$w_2 = 0$, with the phase treated as known rather than marginalized.
 
 \textbf{3. Fitting.}
 Let $K(\theta) \in \mathbb{R}^{n \times n}$,
@@ -115,6 +121,15 @@ data, the log-determinant penalizes claiming unobserved structure. Phase
 never appears: the pattern is read from correlations, not from curve
 values.
 
+Two identifiability bounds are imposed on the search, each closing a real
+flat direction of $L$. The drift bandwidth is bounded below,
+$2\pi^2 v_2 T^2 \ge \tfrac12$ over the note span $T$: a drift component
+with $v_2 \to 0$ is a pure constant, exactly redundant with the
+flat-prior $c$ (the evidence is flat in that direction and $w_2$ can run
+away). A drift must vary within the note; the constant belongs to $c$.
+Generous caps additionally bound the powers ($\le 10^3\,
+\widehat{\operatorname{Var}}[y]$) and bandwidths.
+
 \textbf{4. Outputs.}
 At $\hat\theta = \arg\max L$, with $H = -\nabla^2 L(\hat\theta)$ (observed
 information):
@@ -126,9 +141,11 @@ intonation & $\hat c = \hat c(\hat\theta)$ from \eqref{eq:gls} &
 $s_c^2(\hat\theta)$ \quad (exact, given $\hat\theta$) \\[2pt]
 rate & $\hat f = \hat\mu_1$ &
 $[H^{-1}]_{\mu_1 \mu_1}$ \quad (Laplace) \\[2pt]
-extent & $\hat\gamma = \sqrt{2 \hat w_1}$ &
-$\dfrac{[H^{-1}]_{w_1 w_1}}{2 \hat w_1}$ \quad (Laplace + delta method,
-$\partial \gamma / \partial w_1 = 1/\sqrt{2 w_1}$) \\
+extent & $\hat\gamma = \sqrt{2}\,\operatorname{std}_j \hat m_1(t_j)$ &
+$\hat\gamma^2 \cdot \tfrac14 [H^{-1}]_{\log w_1 \log w_1}$
+\quad (scale uncertainty via $w_1$) \\
+& \multicolumn{2}{l}{\quad with $\hat m_1 = K_1 K^{-1} (y - \hat c \one)$
+the posterior vibrato component} \\
 \end{tabular}
 \end{center}
 The three (estimate, variance) pairs are the note's contribution to the
