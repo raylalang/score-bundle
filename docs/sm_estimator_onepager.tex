@@ -1,0 +1,111 @@
+% One-page explainer: intonation & vibrato via a spectral-mixture GP.
+% Shareable: self-contained, no project-internal terminology.
+% Compile: tectonic sm_estimator_onepager.tex
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=1.9cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4.5pt}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{center}
+{\large\bfseries Estimating intonation and vibrato with a spectral-mixture Gaussian process}\\[2pt]
+{\small Raynaldi Lalang \,--\, one-page summary, September 2026}
+\end{center}
+
+\textbf{The task.}
+From a recording of one played note we want three numbers, each with an honest
+uncertainty: the \emph{intonation} $c$ (how sharp or flat the note's held centre
+sits, in cents), the \emph{vibrato rate} $f$ (oscillations per second), and the
+\emph{vibrato extent} $\gamma$ (how far the pitch swings, in cents). A pitch
+tracker turns the note's audio into a \emph{cents curve}: the pitch at each
+analysis frame, written as the deviation in cents from the note's written pitch.
+The curve's constant part is the intonation; its oscillation is the vibrato.
+
+\textbf{The current method and its limits.}
+The standard approach fits one rigid shape to the curve by least squares: a
+constant centre plus a phase-locked sinusoid. Two measured problems follow.
+First, real notes \emph{drift}: the centre moves during the note (we measured a
+median drift of $\sim$10 cents), and a rigid shape pushes that drift into the
+residual, biasing the fit. Second, where the shape assumption breaks (short
+notes, weak or irregular vibrato) the fit is unreliable, so hard rules must
+discard those notes entirely --- in our corpus the majority of notes.
+
+\textbf{The idea: state what we know as a distribution over curves.}
+What we actually know about a cents curve is knowledge about \emph{frequencies}:
+oscillation near the vibrato rate (5--8\,Hz) and slow variation near zero
+frequency (the drift). A Gaussian process (GP) prior can express exactly this,
+because choosing a GP kernel is equivalent to choosing how the curve's energy is
+spread over frequencies. Wilson \& Adams (ICML 2013) model that spread directly
+as a mixture of a few spectral bumps; the corresponding kernel is closed-form:
+\begin{equation*}
+k(\tau) \;=\; \textstyle\sum_{q} w_q\, e^{-2\pi^2 \tau^2 v_q} \cos(2\pi \tau \mu_q),
+\qquad
+\text{one damped cosine per bump.}
+\end{equation*}
+Each component $q$ has a frequency $\mu_q$, a power $w_q$, and a phase-coherence
+decay $v_q$. Two components suffice here --- one near the vibrato rate, one at
+zero frequency for the drift --- so the model for the observed frames
+$y_j = c(t_j)$ is
+\begin{equation*}
+c(t) = c + g(t), \quad g \sim \mathcal{GP}(0, k), \qquad
+\operatorname{Cov}(y_j, y_{j'}) =
+\underbrace{w_1 e^{-2\pi^2\tau^2 v_1}\cos(2\pi\tau\mu_1)}_{\text{vibrato}}
++ \underbrace{w_2\, e^{-2\pi^2\tau^2 v_2}}_{\text{drift }(\mu_2=0)}
++ \underbrace{\sigma^2 \mathbf{1}[j{=}j']}_{\text{tracker noise}}.
+\end{equation*}
+The point of this particular kernel: \emph{its parameters are the quantities we
+want to measure}, so fitting the model is the estimation itself. The sine fit is
+its degenerate limit (one component, perfectly phase-locked, no drift term).
+
+\textbf{How each number is estimated.}
+All hyperparameters are fitted at once by maximising the exact GP marginal
+likelihood of the note's frames,
+$\log \mathcal{N}\!\bigl(y;\, c\mathbf{1},\, K(\theta)\bigr)$.
+\emph{Intonation} $c$ is the correlation-aware average: given the kernel, the
+constant mean has an exact closed-form Gaussian posterior, and because the model
+knows which wiggle is vibrato and which is drift, an incomplete vibrato cycle or
+a drifting tail does not bias the centre (the naive curve mean has exactly that
+bias). \emph{Rate} $\mu_1$ is found where the frames' correlation pattern peaks
+the likelihood: the kernel predicts that frames one vibrato period apart agree
+and frames half a period apart disagree --- an oscillating correlation pattern
+readable from the data \emph{without knowing the phase}. A coarse grid over
+3--10\,Hz initialises the search (the likelihood is multimodal in frequency).
+\emph{Extent} follows from the power: too little $w_1$ forces the oscillation to
+be explained as white noise (which predicts no inter-frame correlation), too
+much predicts bigger swings than observed; the optimum is the variance the
+oscillation actually carries, and a sinusoid of amplitude $\gamma$ has variance
+$\gamma^2/2$, so $\hat\gamma = \sqrt{2 w_1}$.
+
+\textbf{Uncertainty, and graceful failure.}
+The centre's variance is exact. Rate and extent inherit theirs from the
+curvature of the log-likelihood at its optimum: many coherent cycles give a
+needle-sharp peak in $\mu_1$ and a small variance; a short or irregular note
+gives a nearly flat surface and a wide one. This replaces the discard rules: a
+weak note is not refused, it \emph{reports itself as uninformative}, and the
+uncertainty propagates into the across-note model that consumes these per-note
+estimates. That model, and the set of per-note quantities it works with, are
+unchanged --- this is a swap of the estimator behind three of them. (One known
+limit: a stationary kernel averages phase away, so the vibrato \emph{onset
+delay} cannot come from this model and keeps its current estimator.)
+
+\textbf{How it will be judged.}
+On development data only ($\sim$5{,}000 vibrato-identifiable notes from a
+chamber-music corpus with ground-truth pitch), four measures. (1)~\emph{Parameter
+accuracy}, the pass/fail criterion: each estimator runs on the tracked curve and
+on the ground-truth curve of the same note and is scored against its own
+ground-truth counterpart, so neither is judged by the other's definition of the
+targets. (2)~\emph{Calibration}: do the reported uncertainties cover the truth
+at their nominal rate (coverage, log score, PIT)? (3)~\emph{The refused notes}:
+on notes the sine fit discards, does the GP's wide posterior cover the
+ground-truth value? (4)~\emph{The curve itself}: both models' posteriors scored
+directly against the ground-truth curve's frames, which requires no target
+definition at all. If the GP does not beat the sine fit on (1), the idea is
+dropped; any adoption beyond a development study would be preregistered and
+confirmed on fresh data, and the already-confirmed results stand unchanged.
+
+\end{document}
