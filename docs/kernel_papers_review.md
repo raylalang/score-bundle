@@ -71,37 +71,89 @@ discipline) instead of via delta-method formulas. The mixture family is
 also dense in stationary kernels, and the evidence prunes unused
 components — the same ARD behaviour our per-piece fits already show.
 
-## 2. How exactly it enters our model
+## 2. How exactly it enters our model — the flow, step by step
 
 The change is confined to the **within-note** level. Nothing above it
-moves.
+moves. In one line, the estimator box changes and everything around it
+stays:
 
-Current chain (Phase 2):
+$$\text{tracker frames} \;\xrightarrow{\ \text{estimator}\ }\; \text{per-note cells} \pm \sigma \;\xrightarrow{\ \text{noise rows}\ }\; \text{graph GP across notes}.$$
 
-$$\text{tracker frames} \;\xrightarrow{\text{NLLS sine fit}}\; [c_i, \gamma_i, f_i^{\mathrm{vib}}, d_i^{\mathrm{vib}}] \pm \text{delta-method } \sigma \;\xrightarrow{\text{noise rows}}\; \text{graph GP across notes}.$$
+The steps below spell out what happens inside the new estimator box for
+one note $i$.
 
-Proposed chain (estimator v2, Slot A):
+**Step 1 — inputs.** The same inputs the sine fit gets today: the
+confidence-kept tracked frames of note $i$ (draft eq:framerule) — times
+$t_j$ and cents values $y_j = c_i(t_j)$ for the $|J_i|$ frames (typically
+30 to a few hundred at the 10 ms hop).
 
-$$\text{tracker frames} \;\xrightarrow{\text{GP regression}}\; p\bigl(c_i(\cdot)\bigr) \text{ under } c_i(t) \sim \mathcal{GP}\bigl(c_i,\; k_{\mathrm{SM}}\bigr) \;\xrightarrow{\text{noise rows}}\; \text{graph GP across notes},$$
+**Step 2 — the model for one note.** The curve is a constant centre plus
+a zero-mean GP:
 
-with the two-component instantiation
+$$c_i(t) \;=\; c_i + g_i(t), \qquad g_i \sim \mathcal{GP}\bigl(0,\; k_{\mathrm{SM}}\bigr), \qquad y_j \;=\; c_i(t_j) + \varepsilon_j,\ \ \varepsilon_j \sim \mathcal{N}(0, \sigma^2),$$
 
-$$k_{\mathrm{SM}}(\tau) \;=\; \underbrace{w_1\, e^{-2\pi^2\tau^2 v_1} \cos(2\pi\tau\mu_1)}_{\text{vibrato: rate }\mu_1,\ \text{extent } \sqrt{2w_1},\ \text{coherence } v_1} \;+\; \underbrace{w_2\, e^{-2\pi^2\tau^2 v_2}}_{\text{drift: } \mu_2 = 0}.$$
+with the two-component kernel
 
-Per note, the evidence is maximized over $(c_i, w_1, \mu_1, v_1, w_2,
-v_2, \text{noise})$; the read-outs are rate $= \mu_1$, extent
-$\approx \sqrt{2 w_1}$, centre $= c_i$, each with a posterior variance
-that becomes that cell's noise row. A short or weak note yields a wide
-posterior instead of the estimator's current refusal — graceful
-degradation on exactly the notes the identifiability rule now discards.
+$$k_{\mathrm{SM}}(\tau) \;=\; \underbrace{w_1\, e^{-2\pi^2\tau^2 v_1} \cos(2\pi\tau\mu_1)}_{\text{vibrato: rate }\mu_1,\ \text{power } w_1,\ \text{coherence } v_1} \;+\; \underbrace{w_2\, e^{-2\pi^2\tau^2 v_2}}_{\text{drift: } \mu_2 = 0}.$$
 
-What this slot does **not** give: the onset delay $d_i^{\mathrm{vib}}$.
-A stationary kernel marginalizes phase, so "the oscillation starts after
-a straight beginning" is inexpressible in plain SM — that is
-non-stationarity, and it is precisely the GSM paper's contribution
-(section 4). The delay channel carries no registered claim, so the test
-can proceed without it; delay stays with the gated fit until GSM is on
-the table.
+**Step 3 — the fit.** Build the $|J_i| \times |J_i|$ covariance matrix
+$K$ with entries $k_{\mathrm{SM}}(t_j - t_{j'}) + \sigma^2\,
+\delta_{jj'}$ (plus the constant-mean term, handled by marginalizing
+$c_i$ under a flat prior, exactly like the bias column of the across-note
+feature kernels), and maximize the exact log marginal likelihood
+
+$$\log p(y \mid \theta_i) \;=\; \log \mathcal{N}\bigl(y;\; 0,\; K(\theta_i)\bigr), \qquad \theta_i = (w_1, \mu_1, v_1, w_2, v_2, \sigma^2),$$
+
+over the six hyperparameters, in log space, per note. This is the same
+evidence formula as the across-note fit (draft eq:marglik), applied to
+frames within one note instead of notes within one piece; at these sizes
+the $O(|J_i|^3)$ cost is negligible. The one genuine numerical care is
+that the evidence is multimodal in $\mu_1$ (the known SM issue), so
+$\mu_1$ gets a coarse grid initialization over 3–10 Hz before the local
+optimizer — the GP analogue of the sine fit's frequency initialization.
+
+**Step 4 — the outputs and where each comes from.** Three channels, three
+read-outs:
+
+$$\hat c_i \;=\; \mathbb{E}[c_i \mid y] \quad (\text{exact: the marginalized constant mean has a closed-form Gaussian posterior}),$$
+
+$$\hat f_i^{\mathrm{vib}} \;=\; \mu_1, \qquad \hat\gamma_i \;\approx\; \sqrt{2 w_1} \quad (\text{a sinusoid of amplitude } \gamma \text{ has stationary variance } \gamma^2/2).$$
+
+Their uncertainties: the centre's variance is exact (from its Gaussian
+posterior). Rate and extent are hyperparameter estimates, so their
+variances come from the curvature of the log evidence at the optimum
+(a Laplace approximation) — the honest statement is that this is the
+GP analogue of the delta-method covariance the sine fit uses today, not
+something categorically better. What *is* categorically better sits one
+level down: given the hyperparameters, the whole curve $c_i(t)$ has an
+exact GP posterior, which is what the diagnostics plot and what degrades
+gracefully — on a short or weak note the evidence is nearly flat in
+$\mu_1$, the Laplace variances blow up, and the note reports itself as
+uninformative instead of being refused by a hand rule.
+
+**Step 5 — into the bundle.** The three (value, variance) pairs become
+the note's $c$, $\log\gamma$, $\log f^{\mathrm{vib}}$ cells and their
+noise rows, as-given, exactly where the sine fit's outputs go today. The
+across-note graph GP, the cell-mask machinery, and the loudness and
+timing channels are untouched.
+
+**What changes about the channels: nothing structural, two wrinkles.**
+The channel set is unchanged — this is an estimator swap behind the three
+pitch-derived channels. Wrinkle one: the estimands shift slightly ($\gamma$
+as gated-sinusoid amplitude and $\gamma$ as component power are different
+functionals of the same curve — the same estimand-gap phenomenon Phase 3
+measured for $c$), which is why the kill test scores against quasi-truth
+rather than against the old estimator's targets, and why v2 numbers are
+not comparable to the confirmed Phase-2 numbers. Wrinkle two: the onset
+delay $d_i^{\mathrm{vib}}$ cannot come from this estimator — a stationary
+kernel marginalizes phase, so "the oscillation starts after a straight
+beginning" is inexpressible in plain SM. That is non-stationarity, the
+GSM paper's contribution (section 4). The delay channel carries no
+registered claim, so during the test it keeps the gated fit (mixed
+estimator provenance, stated rather than hidden), until GSM is on the
+table. One door opens rather than changes: the coherence $v_1$ is a
+per-note quantity no current channel captures — a potential future
+channel, not part of this test.
 
 The second slot (Slot B, Phase 3): the collapsed waveform likelihood
 already contains a marginalized pitch-curve deviation prior with a crude
