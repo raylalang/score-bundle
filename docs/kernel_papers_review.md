@@ -25,6 +25,20 @@ now" explicitly.
 
 ## 1. Why this equation
 
+**The short answer: the SM kernel is the prior whose parameters are the
+quantities we want to measure.** The task is to estimate a rate and an
+extent from a noisy oscillating curve. In the SM kernel a frequency, its
+power, and its coherence *are* the hyperparameters, so fitting the prior
+by marginal likelihood *is* the estimation. No other standard choice has
+this property: SE or Matérn kernels encode only smoothness (there is no
+rate to read out), the periodic kernel fixes one phase-locked oscillation
+forever (the same rigidity that makes the sine fit fail), and the current
+sine fit commits to a shape and needs hand rules wherever the shape
+breaks. SM sits exactly at our level of knowledge — "oscillates near some
+rate, with some strength, imperfect phase, plus slow drift" — assuming
+nothing more, leaving nothing we need out. The rest of this section
+unpacks that.
+
 The current estimator (draft eq:vibrato) *assumes the curve's shape*: a
 constant centre plus one phase-locked sinusoid switched on after a delay,
 
