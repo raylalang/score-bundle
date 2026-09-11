@@ -45,6 +45,9 @@ from eval_phase2_real import (C_MAX, CACHE, CH, HOLD_FRAC, MIN_NOTES,  # noqa: E
 TAU = 4                          # channel index of tau in the 6-channel bundle
 RHO_GRID = (0.0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9)
 OUT_DIR = "results/corrnoise_tau"
+# --joint: rho chosen by the JOINT evidence -- all hyperparameters
+# re-optimized (warm-started) at each rho instead of profiled at the
+# rho=0 fit; --seeds overrides the mask seeds (fresh-seed robustness).
 
 
 def cell_indices(mask):
@@ -56,20 +59,23 @@ def cell_indices(mask):
     return np.concatenate(idx)
 
 
-def run(shard_k: int, shard_n: int) -> None:
+def run(shard_k: int, shard_n: int, joint: bool = False,
+        seeds=None, out_tag: str = "") -> None:
     from score_bundle.baselines import rich_score_features
     from score_bundle.gp import MultiOutputGraphGP
+    from score_bundle.optimize import nelder_mead
     from score_bundle.graph import build_adjacency, laplacian
     from score_bundle.score import Score
 
+    use_seeds = tuple(seeds) if seeds else SEEDS
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
     n_ch = len(CH)
     recs = []
     keys = sorted(data)
     for ti, key in enumerate(keys):
-        seeds_here = [s for si, s in enumerate(SEEDS)
-                      if (ti * len(SEEDS) + si) % shard_n == shard_k]
+        seeds_here = [s for si, s in enumerate(use_seeds)
+                      if (ti * len(use_seeds) + si) % shard_n == shard_k]
         if not seeds_here:
             continue
         d = data[key]
@@ -171,11 +177,70 @@ def run(shard_k: int, shard_n: int) -> None:
                         "cov": float(np.mean(np.abs(err) <= _Z90 * s)),
                         "n": int(h_idx.size)}
 
-            lmls = [obs_lml(T_of(r)) for r in RHO_GRID]
-            i_hat = int(np.argmax(lmls))
-            rho_hat = RHO_GRID[i_hat]
-            base = score_at(T_of(0.0))
-            corr = score_at(T_of(rho_hat))
+            if not joint:
+                lmls = [obs_lml(T_of(r)) for r in RHO_GRID]
+                i_hat = int(np.argmax(lmls))
+                rho_hat = RHO_GRID[i_hat]
+                base = score_at(T_of(0.0))
+                corr = score_at(T_of(rho_hat))
+            else:
+                # JOINT: warm-started re-optimization of every
+                # hyperparameter at each rho; rho by the joint evidence.
+                floor_log = np.log(np.maximum(floor, 1e-12))
+
+                def joint_lml(xv, rho):
+                    pv = g.unpack(xv)
+                    Cv = g._blocks(pv, allidx, allidx)
+                    nd = g._cell_noise(pv)
+                    Sig = np.diag(nd.copy())
+                    dt = nd[TAU * n:(TAU + 1) * n]
+                    if rho > 0:
+                        Sig[TAU * n:(TAU + 1) * n, TAU * n:(TAU + 1) * n] = \
+                            np.sqrt(np.outer(dt, dt)) * (rho ** lag)
+                    To = (Cv + Sig)[np.ix_(obs, obs)]
+                    sign, logdet = np.linalg.slogdet(To)
+                    if sign <= 0:
+                        return -np.inf
+                    a = np.linalg.solve(To, y_o)
+                    return float(-0.5 * (y_o @ a + logdet
+                                         + y_o.size * np.log(2 * np.pi)))
+
+                # profile first (cheap) to locate the neighbourhood, then
+                # a short warm-started joint refit at the winner and its
+                # grid neighbours only -- the full 7-point joint sweep is
+                # needlessly expensive on large tracks.
+                prof = [obs_lml(T_of(r)) for r in RHO_GRID]
+                i0 = int(np.argmax(prof))
+                cand = sorted({RHO_GRID[j] for j in
+                               (max(i0 - 1, 0), i0,
+                                min(i0 + 1, len(RHO_GRID) - 1))})
+                best = (-np.inf, 0.0, x_hat)
+                x_warm = x_hat
+                for rho in cand:
+                    def neg(xv, rho=rho):
+                        xc = xv.copy()
+                        xc[-n_ch:] = np.maximum(xc[-n_ch:], floor_log)
+                        try:
+                            v = -joint_lml(xc, rho)
+                        except (np.linalg.LinAlgError, ValueError):
+                            return 1e12
+                        return v if np.isfinite(v) else 1e12
+
+                    x_r = nelder_mead(neg, x_warm, step=0.1, max_iter=40)
+                    x_r[-n_ch:] = np.maximum(x_r[-n_ch:], floor_log)
+                    lml_r = joint_lml(x_r, rho)
+                    if lml_r > best[0]:
+                        best = (lml_r, rho, x_r.copy())
+                    x_warm = x_r
+                _, rho_hat, x_j = best
+                base = score_at(T_of(0.0))        # at the rho=0 fit x_hat
+                p = g.unpack(x_j)                 # rebuild T pieces at x_j
+                C = g._blocks(p, allidx, allidx)
+                noise_d = g._cell_noise(p)
+                d_tau = noise_d[TAU * n:(TAU + 1) * n]
+                root = np.sqrt(np.outer(d_tau, d_tau))
+                lmls = []
+                corr = score_at(T_of(rho_hat))    # at the joint fit x_j
             recs.append({"key": key, "seed": seed, "rho": rho_hat,
                          "lmls": lmls, "base": base, "corr": corr,
                          "instr": d["instrument"]})
@@ -185,14 +250,16 @@ def run(shard_k: int, shard_n: int) -> None:
                   f"({time.time() - t0:.0f}s)", flush=True)
 
     os.makedirs(OUT_DIR, exist_ok=True)
-    out = os.path.join(OUT_DIR, f"cells.shard{shard_k}of{shard_n}.pkl")
+    out = os.path.join(OUT_DIR,
+                       f"cells{out_tag}.shard{shard_k}of{shard_n}.pkl")
     pickle.dump(recs, open(out, "wb"))
     print(f"wrote {out} ({len(recs)} cells)")
 
 
-def report() -> None:
+def report(tag: str = "") -> None:
     recs = []
-    for f in sorted(glob.glob(os.path.join(OUT_DIR, "cells.shard*.pkl"))):
+    for f in sorted(glob.glob(os.path.join(OUT_DIR,
+                                           f"cells{tag}.shard*.pkl"))):
         recs += pickle.load(open(f, "rb"))
     print(f"{len(recs)} (track, seed) cells")
     rhos = np.array([r["rho"] for r in recs])
@@ -224,14 +291,25 @@ def report() -> None:
 def main() -> None:
     if len(sys.argv) < 2 or sys.argv[1] not in ("run", "report"):
         sys.exit(__doc__)
+    tag = ""
+    if "--tag" in sys.argv:
+        tag = sys.argv[sys.argv.index("--tag") + 1]
     if sys.argv[1] == "report":
-        report()
+        report(tag)
         return
     shard_k, shard_n = 0, 1
     if "--shard" in sys.argv:
         shard_k, shard_n = map(int, sys.argv[
             sys.argv.index("--shard") + 1].split("/"))
-    run(shard_k, shard_n)
+    seeds = None
+    if "--seeds" in sys.argv:
+        i = sys.argv.index("--seeds") + 1
+        seeds = []
+        while i < len(sys.argv) and sys.argv[i].isdigit():
+            seeds.append(int(sys.argv[i]))
+            i += 1
+    run(shard_k, shard_n, joint="--joint" in sys.argv, seeds=seeds,
+        out_tag=tag)
 
 
 if __name__ == "__main__":

@@ -35,6 +35,24 @@ model can represent it with one extra parameter, and representing it
 improves timing recovery by ~20% (≈99 → 80 ms) *and* its calibration —
 the exact axis the confirmation failed on.
 
+## Hardening (2026-09-11): the result survives both stress tests
+
+**Joint refit** (ρ chosen by the joint evidence, all hyperparameters
+re-optimized warm-started at the profile winner and its grid neighbours;
+`--joint`): ρ > 0 on **100% of cells** (median 0.60 — the joint fit pushes
+the correlation slightly higher), τ NLL −0.101 [−0.139, −0.064]\*, RMSE
+−0.0199 [−0.0278, −0.0129]\*, coverage 0.896 ≈ nominal. The profile
+shortcut was not flattering the idea.
+
+**Fresh mask seeds 2–3** (profile; `--seeds 2 3`): reproduces the
+original seeds nearly digit for digit — ρ > 0 on 97% (median 0.45),
+NLL −0.108 [−0.137, −0.078]\*, RMSE −0.0205 [−0.0279, −0.0138]\*,
+coverage toward nominal. No seed sensitivity.
+
+Three independent runs (profile 0/1, joint 0/1, profile 2/3), one
+conclusion, stable effect sizes. This is registration-grade development
+evidence for a future preregistered claim.
+
 ## Notes
 
 - The profile is at fixed fitted hyperparameters (cheap, staged design);
