@@ -1,120 +1,116 @@
-# Meeting prep (2026-08, private) — literature-review framing
+# Meeting prep (2026-09, private) — the measured-answers week
 
 **How to use this document.** To study: read top to bottom, then say
 Part 1 aloud twice. In the room: the pocket card is your glance-sheet,
 Part 1 is the spine you speak, Part 2 is what you reach for when asked.
-Part 3 is background — study it, never present it.
+The RESERVE section (previous meetings' beats: drift study, Phase 3,
+confirmation) is still valid background — reach for it only if asked.
 **Pages are the PRINTED ones (footer / ToC); your PDF viewer's counter
-runs 2 ahead.** Before anything else: **sync Overleaf with `main`**.
+runs 2 ahead.** Before anything else: **sync Overleaf with `main`**
+(draft is now 71 pp; Future Work carries the new measured answers).
+
+**Naming care (two different "AR(1)"s):** in the Phase-3 ladder, "AR(1)"
+is a within-note NOISE model on the waveform residual (it barely helped,
+2.73 cents). The NEW result is an AR(1) CORRELATION in the timing
+channel's noise row ACROSS notes — different object, different level;
+say "correlated timing noise across notes" in the room, never bare
+"AR(1)".
 
 ---
 
 ## Pocket card
 
-**Pages (draft restructured 2026-09-04: Phase 2 = Chapter 7, dev studies
-= App E, Phase 3 = App F):** phase table 6 · Phase-2 chapter 30–39 ·
-data-point Fig 7.1 = 33 · **drift verdict ¶ = 32; full study App E.3:
-Table E.1 + Fig E.1 = 59** · tonal App E.4, Fig E.2 = 60 ·
-truth/estimate/GP Fig 4.1 = 18 (URMP §4.3 = 17) · results 35–38
-(dev ledger Table 7.1 = 36 · confirmation Table 7.2 = 37) · **Phase-3
-study App F.1 = 61–63, its Table F.1 = 62, its Fig F.1 = 62** · channels
-Fig 7.2 = 38 · attribution §5.2 = 21 · Phase-2 architecture Fig 7.3 = 39.
+**Pages (draft updated 2026-09-16, 71 pp):** phase table 6 · Phase-2
+chapter 30–39 (dev Table 7.1 = 36 · confirmation Table 7.2 = 37) ·
+attribution §5.2 = 21 · Future Work (the measured answers live here)
+42–46 · App E drift E.3 = 60, tonal E.4 = 61 · App F Phase-3 = 62–64.
+Ledger doc: `results/exploration_week_2026-09.md`.
 
-**Eight numbers** (CONFIRMATION, as-given, paired vs no-graph, one-shot):
-intonation −0.88\* (dev basis −0.89\* — reproduced) · vibrato
-calibration −3.0\*/−0.56\* (the seed-sensitive extent star HELD) ·
-coverage 0.88–0.91 (all six) · timing calibration −0.03 ns = **C4
-failed** · adverse cell: timing recovery +0.003\* (≈3 ms) · drift:
-10 cents/note, 97% GT sign agreement, graph-white (lag-1 +0.03 vs τ's
-+0.59) · tonal (dev, exploratory) −0.21\*/−0.05\* · waveform (dev): 2.3 cents
-from truth with NO tracker, beats the estimator on winds, self-check
-coverage 0.90 exactly · Phase-1 confirmed 0.376 vs 0.393\*.
+**The week in eight numbers** (all DEVELOPMENT, exploratory, published
+tables unchanged):
+timing-tail blow-up cell 105.2 → −1.7 under the t predictive (floors:
+no effect) · articulation recovery −0.018\* from robust timing noise
+(the coupling spillover) · correlated timing noise: NLL −0.111\*, RMSE
+−20%\* (≈99→80 ms), correlation detected on 97–100% of cells, three
+independent runs · completion worst cell 480,266 → 0.7 under
+coverage-test + disagreement guard · SM estimator: extent err ×3 worse
+than the sine fit (dead) · SM curve prior: +0.11\* against (no gain) ·
+learned filter: switched off on 90% of cells.
 
-**FRAMING: this week = literature review** (his two pointers → the
-three papers). The meeting = the review: papers → mapping → proposal.
-Everything measured (drift, Phase 3, confirmation) is RESERVE — deploy
-only if Ray chooses. Study source: `docs/kernel_papers_review.md`;
-thesis carries the papers in related work (§2.5) + Future Work.
-Asks: (1) which slot first — curve-level estimator v2 or the Phase-3
-curve prior?; (2) were these the papers he meant / any others?
+**FRAMING: your two pointers, fully measured; the thesis's own needs,
+answered.** The meeting = the verdicts + two asks.
+Asks: (1) the corpus/pool decision — the correlated-timing-noise result
+is registration-grade and answers the one failed confirmation claim, and
+the tonal-metric registration waits on the same decision; (2) blessing
+of the opt-in adoption defaults (nothing reported changes without its
+own registration).
 
 ---
 
-# Part 1 — The story you tell (the literature review)
+# Part 1 — The story you tell
 
-- **Opening line (memorize):** "You pointed me at periodic-kernel GPs
-  and generalized spectral mixtures. I spent the week with the three
-  key papers — here's what they are, and exactly where they'd fit our
-  model."
+- **Opening line (memorize):** "I spent the week measuring instead of
+  building new things. Your two kernel pointers are now fully measured —
+  both places they could enter our pipeline — and every limitation the
+  thesis had documented about itself got converted into a measured
+  answer."
 
-### THE LADDER — three papers, one story
+### THE LADDER — five verdicts, in speaking order
 
-**Rung 1 — Wilson & Adams 2013, the spectral mixture (SM) kernel:**
+**1. Your pointers, slot one (the estimator).** A spectral-mixture GP
+replacing the per-note sine fit: killed by its own pre-committed test —
+the sine fit reproduces its targets across two measurements of the same
+note far better (extent and rate decisively). One insight survived: the
+GP describes the CURVE better; the sine fit reproduces SUMMARIES better.
 
-- the idea in one line: don't pick a kernel — model its SPECTRUM as a
-  Gaussian mixture; the kernel comes out in closed form (a sum of
-  damped cosines: frequency, coherence decay, weight per component)
-- dense: enough components approximate ANY stationary kernel; unused
-  components get pruned by the marginal likelihood (their Q=10 runs
-  keep ~7) — the same evidence discipline our per-piece fits use
-- what they show: pattern discovery + long-range extrapolation (CO2,
-  airline) where SE/Matérn/periodic kernels only interpolate
-- the mapping to say: "the periodic kernel you named is one SM
-  component in the sharp-peak limit; a note's vibrato is one component
-  at f-vib with finite coherence, and the drift is a near-zero-frequency
-  component — so vibrato-plus-drift is a two-component SM prior on the
-  cents curve"
+**2. Your pointers, slot two (the waveform curve prior).** That surviving
+insight pointed at the Phase-3 deviation prior — measured there too:
+no gain at matched rank (2.25 vs 2.29 cents median, tie; the paired mean
+significantly against, because a vibrato band pinned at a wrong scaffold
+rate is worse than neutral bumps). And a LEARNED filter on the graph
+spectrum: the evidence switches it off on 90% of pieces. So the kernels'
+value to us is conceptual — curve-level scoring, a coherence bound, and
+a read-out rule (estimate realized quantities, not process parameters) —
+not numerical. The question is closed with measurements, not opinions.
 
-**Rung 2 — Remes, Heinonen & Kaski 2017, the GENERALIZED spectral
-mixture (GSM):**
+**3. The timing tail (our known Phase-1 wart).** A variance-matched
+Student-t predictive kills it completely — the documented blow-up cell
+goes from NLL 105 to −1.7 with coverage intact — and the floors we had
+suggested as the cheap alternative do nothing (it is a tail-shape
+problem, not a scale problem). At inference level the robust fit also
+improves ARTICULATION (−0.018\*): a timing outlier corrupts coupled
+channels through the coregionalization; only robustifying the fit undoes
+that.
 
-- the extension: the SM parameters become FUNCTIONS of time — each
-  frequency, weight, and coherence length is itself a latent GP; SM is
-  the constant-function special case
-- their very first experiment is our problem in miniature: an
-  oscillation whose frequency changes over time, recovered where SM
-  cannot
-- the mapping: "this is the principled version of what the sine model
-  lacks — vibrato rate that drifts, extent that grows, within one note,
-  as smooth functions. Our gated sine fit is the degenerate limit: one
-  component, constant functions, hard onset gate."
-- honest cost to name: every hyperparameter is a latent function → much
-  heavier inference (their whitened-gradient MAP), and on short notes a
-  free frequency function can absorb drift and vice versa — the
-  identifiability problem our hard rules currently manage
+**4. The failed confirmation claim (C4, timing calibration).** Its named
+follow-up is measured and works: one AR(1) correlation parameter in the
+timing noise row across notes — chosen by the evidence itself on
+97–100% of pieces — improves calibration AND cuts timing error ~20%.
+Hardened: joint refit and fresh mask seeds reproduce it digit-for-digit.
+This is the registration candidate.
 
-**Rung 3 — Alvarado & Stowell 2016, GPs for music audio:**
+**5. The completion boundary.** The Mahalanobis test the thesis proposed
+is half right (needs a low-rank frame; misses catastrophes inside the
+excerpt's coverage); adding a disagreement guard against the cross-piece
+head closes it: worst cell 480,266 → 0.7, no cost where adaptation wins.
 
-- the assembly, at WAVEFORM level: a recording = per-note sigmoid
-  change-windows gating independent GPs; each note's kernel is an
-  exponentiated-cosine — a genuinely harmonic spectrum (fundamental +
-  partials from one parameter), times an SE term so the envelope can
-  move
-- their pitch estimation = maximize the marginal likelihood over each
-  note's fundamental — procedurally the same inference our Phase-3
-  sketch uses (grid over the collapsed likelihood)
-- two mappings to say:
-    - "they must hand-specify the note windows — we have the score;
-      the score-informed setting removes their main practical burden"
-    - "and a deliberate design difference: they put the structure in
-      the kernel and marginalize the note away; we keep named per-note
-      variables — c, gamma, f — because those variables ARE the object
-      of study. Both are valid; ours is chosen, not naive."
+### THE ASKS
 
-### THE PROPOSAL — where the kernels plug in (two slots)
+- "The correlated-timing-noise result is registration-grade — three
+  independent runs, both axes. To make it a claim I need a fresh pool:
+  can we decide the corpus question? (The tonal-metric registration
+  waits on the same decision.)"
+- "Everything is adopted opt-in only — published paths are bit-unchanged,
+  pinned by tests. Are you comfortable with these as the recommended
+  defaults for new runs?"
 
-- Slot A, curve-level estimator v2: GP regression with an SM/GSM prior
-  on a note's cents curve, replacing the parametric sine fit; outputs
-  distributions over slowly-varying (c, gamma, f)(t)
-- Slot B, the Phase-3 pitch-curve prior: the waveform likelihood needs
-  a prior over curve deviations, and these families are the principled
-  choice — still Gaussian, so the closed-form machinery carries over
-- boundary to state: these kernels model WITHIN-note structure; the
-  graph prior's across-note role is untouched
-- close: "I'd like your read on priority — the curve-level estimator,
-  or the Phase-3 prior first? And were these the papers you meant?"
+### One-breath honesty line (if asked "so the papers helped?")
 
----
+"They didn't improve a number anywhere we could measure — and we
+measured both slots. What they gave us is how we now score curves, bound
+coherence, and read out realized quantities. The week's wins came from
+the thesis's own documented limitations."
+
 
 # RESERVE — measured results (deploy ONLY if Ray chooses to open them)
 *(everything below is intact from the results-week prep: drift study →

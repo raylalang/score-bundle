@@ -345,10 +345,12 @@ latent function \cite{remes2017}. Applied to music audio, per-note
 change-windows gating GPs with harmonic (exponentiated-cosine)
 covariances support pitch estimation and gap imputation directly on the
 waveform \cite{alvarado2016}. These families are the natural priors for
-the \emph{within-note} structure this thesis measures but does not yet
-model --- a quasi-periodic vibrato whose rate and extent drift --- and
-\S\ref{ch:future} names the two slots where they would enter: a
-curve-level estimator and the Phase-3 pitch-curve prior. The design
+the \emph{within-note} structure this thesis measures but does not
+model --- a quasi-periodic vibrato whose rate and extent drift. Both
+slots where they could enter --- a curve-level estimator and the Phase-3
+pitch-curve prior --- were measured on development data with negative
+verdicts (\S\ref{ch:future}); their imprint on this thesis is
+conceptual. The design
 difference is deliberate and worth stating: kernel-side constructions
 marginalize the note's structure away, while this thesis keeps named
 per-note variables ($c$, $\gamma$, $f^{\mathrm{vib}}$, \dots) because
@@ -1297,8 +1299,10 @@ screen that \emph{adds} the overconfidence check the per-channel form lacks
 validated: it leaves healthy fits bit-for-bit unchanged,
 \emph{and it cannot catch this tail}, because the failure
 is invisible from observed notes. We report the limitation instead of patching it
-post hoc: the principled fixes are a heavy-tailed (Student-$t$) timing likelihood
-or deploy-time predictive floors (\S\ref{ch:future}), and the per-piece median NLL
+post hoc: the principled fix is a heavy-tailed (Student-$t$) timing
+likelihood --- since measured to defuse exactly this tail, at deploy time
+and at inference level, while predictive floors are measured ineffective
+(\S\ref{ch:future}) --- and the per-piece median NLL
 --- reported throughout --- is robust to it by construction.
 
 \section{Development studies, one verdict each}\label{sec:devstudies}
@@ -1986,15 +1990,39 @@ studied corpora (ASAP piano; URMP chamber ensembles).
 % =====================================================================
 \chapter{Future Work}\label{ch:future}
 
-\section{Model-level refinements (measured needs)}
-Three refinements follow directly from measured limitations. A
-\textbf{heavy-tailed (Student-$t$) observation model for timing} would defuse the
-one demonstrated NLL tail (\S\ref{sec:guard-gp}); it costs conjugacy, so inference
-becomes approximate for that channel. \textbf{Deploy-time predictive floors} are the
-cheap engineering alternative. And an \textbf{extrapolation-safe completion mode}
---- fall back from per-piece Bayesian weights to the cross-piece read-out head when
-the observed excerpt does not cover the feature space (a Mahalanobis coverage test
-would do) --- would close the adaptation boundary of \S\ref{sec:boundary}.
+\section{Model-level refinements: measured needs, now measured answers}
+Three refinements were named here as needs following from measured
+limitations; all three have since been measured on development data, and
+two of the original recommendations turned out to be wrong (all
+exploratory, published tables unchanged). A \textbf{heavy-tailed
+(Student-$t$) observation model for timing} works at both levels. As a
+deploy-time predictive (variance-matched, $\nu = 5$) it defuses the
+demonstrated NLL tail of \S\ref{sec:guard-gp} completely --- the
+documented blow-up cell falls from $105.2$ to $-1.7$ with coverage intact
+--- at zero change to the fit. As an inference-level noise model (a
+Gaussian scale mixture fit by leave-one-out EM reweighting) it
+additionally brings timing coverage to nominal and improves
+\emph{articulation} recovery ($-0.018$, significant): an observed timing
+outlier corrupts the coupled channels through the coregionalization, and
+only robustifying the fit undoes that. Its fits must be scored with the
+matched $t$ predictive --- a Gaussian score of a $t$ fit is incoherent.
+\textbf{Deploy-time predictive floors}, previously suggested here as the
+cheap engineering alternative, are measured ineffective: the failure is a
+tail-shape problem, not a scale problem, and a floor cannot reach
+outliers whose predictive scale is already honest. The
+\textbf{extrapolation-safe completion mode} is closed by a measured
+combination: the Mahalanobis coverage test suggested here (workable only
+in the observed excerpt's low-rank frame) is half the answer --- silent
+on interpolation, as required, but blind to catastrophic notes lying
+inside the excerpt's feature coverage --- and a $3\sigma$ disagreement
+guard against the cross-piece head is the other half, taming every
+blow-up (worst cell $480{,}266 \to 0.7$) while keeping the per-piece
+model's advantage where adaptation wins; blow-ups also occur under
+interpolation masks, so the boundary is about feature-weight
+determination, not extrapolation alone. All three remedies are
+implemented as opt-in capabilities under the safeguard precedent
+(published paths bit-unchanged); adopting any into a reported protocol
+requires its own registration.
 
 \section{Phase 2: what remains}
 Phase 2 itself is now a result (Chapter~\ref{ch:phase2}); what remains is
@@ -2002,9 +2030,16 @@ fourfold. \textbf{Beyond URMP:} on any corpus without note-level onset
 annotations the general audio-alignment problem returns, and $\tau$'s
 noise row must then carry an aligner's error. \textbf{The timing claim:}
 the one registered claim that failed at confirmation --- $\tau$
-calibration --- names its own follow-up: a correlated (or heavy-tailed)
-$\tau$ noise row that can represent alignment error's structure along
-score time, which the diagonal row provably cannot. \textbf{The tonal
+calibration --- named its own follow-up, a correlated $\tau$ noise row
+representing alignment error's structure along score time, and that
+follow-up is now measured (development, exploratory): an AR(1) block over
+note order, its one parameter chosen by the evidence, improves timing NLL
+significantly ($-0.111$), moves coverage toward nominal, and cuts timing
+RMSE by ${\sim}20\%$ ($\approx 99 \to 80$\,ms), with the correlation
+detected on 97--100\% of cells across three independent runs (fresh mask
+seeds; joint refit). Turning this into a claim requires its own
+preregistered confirmation on a fresh pool --- the pending corpus
+decision. \textbf{The tonal
 metric:} the circle-of-fifths \emph{replacement} geometry
 \eqref{eq:tonaladj} that hurt piano expression helps intonation on both
 axes (\S\ref{sec:phase2-delta}; development, exploratory); adopting it
@@ -2030,12 +2065,17 @@ integration into the Phase-2 bundle. The \emph{joint} loop --- all notes
 and coordinates at once under the graph prior (Laplace/VI), with the
 estimand bridge and the amplitude envelope $A_i(t)$ under the prior ---
 is the open work. The reviewed spectral-kernel families
-(\cite{wilson2013,remes2017,alvarado2016}; supervisor-suggested) supply
-the missing ingredient's principled form: a quasi-periodic,
-drift-capable prior on the within-note pitch curve, Gaussian and hence
-compatible with the collapsed likelihood --- the deviation prior of
-\S\ref{sec:phase3-study} with a spectral mixture in place of the bump
-basis. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
+(\cite{wilson2013,remes2017,alvarado2016}; supervisor-suggested) were
+measured at exactly this slot (development, exploratory): swapping the
+deviation prior of \S\ref{sec:phase3-study} for a matched-rank
+spectral-mixture prior adds nothing --- median tie ($2.25$ vs $2.29$
+cents), paired mean significantly against ($+0.11$), the harm
+concentrated where the scaffold rate is unreliable, since a vibrato band
+pinned at a wrong rate is worse than frequency-neutral bumps. The bump
+basis therefore stays; the families' measured contribution to this
+thesis is conceptual (curve-level scoring, the coherence bound, the
+realized-quantity read-out rule), and a revival would marginalize the
+band location rather than pin it. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
 the whole prior --- graph branch, evidence branch, joint kernel --- carries over
 as the structured component of $p(z)$, but with no performance MIDI there are no
 per-note observations and no visible/hidden split; every note's expression is
