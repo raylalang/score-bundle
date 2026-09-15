@@ -11,20 +11,28 @@ process" and "generalized spectral mixture", in the context of the
 vibrato/pitch-curve model (draft eq:cents-curve/eq:vibrato) and the
 Phase-3 likelihood.
 
-## 0. The decision in brief — UPDATED 2026-09-04: the test was run
+## 0. The decision in brief — UPDATED 2026-09-16: BOTH slots now measured, question closed
 
-The kill-cheap test was executed (`results/sm_estimator_dev.md`).
-**Slot A (SM-GP as estimator v2) is dead by the pre-committed rule**: it
-does not beat the sine fit on parameter accuracy (intonation ties, extent
-and rate lose decisively — the evidence's decomposition is less
-reproducible across two measurements of the same note than the rigid
-fit). The estimator chain stays as confirmed. **Slot B is strengthened**:
-on the estimand-free curve-level measure the SM prior describes the
-actual curve better than the sinusoid (median frame RMSE 35% lower),
-which is exactly the Phase-3 curve prior's job. The GSM rung (section 4)
-was gated on Slot A passing and is accordingly parked; Alvarado & Stowell
-remains the Slot-B reference. The sections below are kept as written
-before the test, with statuses updated.
+Slot A (SM-GP as estimator v2) died by its pre-committed kill test on
+2026-09-04 (`results/sm_estimator_dev.md`): it does not beat the sine fit
+on parameter accuracy (intonation ties, extent and rate lose decisively —
+the evidence's decomposition is less reproducible across two measurements
+of the same note than the rigid fit). The curve-level measure favoured
+the GP, which pointed at Slot B — and **Slot B was then measured on
+2026-09-10 and adds nothing** (`results/phase3_smprior_dev.md`): at
+matched rank the SM deviation prior ties the Hann-bump basis on the
+median (2.25 vs 2.29 cents) and loses on the paired mean (+0.112\*),
+with the harm concentrated where the scaffold rate is unreliable
+(a mis-centred vibrato band is worse than frequency-neutral bumps).
+A third study closed the remaining direction: a **learned** filter on the
+graph spectrum is switched off by the evidence on 90% of cells
+(`results/spectral_bump_dev.md`). The estimator chain and the bump basis
+stay as published; GSM stays parked; any Slot-B revival should
+marginalize the band location first. The reviewed papers' contribution to
+this pipeline is **conceptual** — curve-level scoring, the coherence
+bound, the realized-vs-process estimand rule — not numerical. The
+sections below are kept as written before the tests, with statuses
+updated.
 
 ## 1. Why this equation
 
@@ -217,8 +225,10 @@ per note. That is what the drift study found insufficient — hence paper
 
 ## 4. Remes, Heinonen & Kaski 2017 — the generalized spectral mixture (GSM)
 
-**Status: second rung — relevant, deliberately deferred until the SM
-test passes.**
+**Status (2026-09-16): parked.** Its gate (the SM test passing) did not
+open — Slot A died and Slot B measured no gain — so the GSM rung is not
+scheduled. Kept as the design record for the one thing plain SM cannot
+express (the onset delay; within-note drift of rate and extent).
 
 **What it is.** The non-stationary extension via the generalised Fourier
 transform (a spectral surface $S(s, s')$ instead of a density). The
@@ -253,8 +263,10 @@ calibration, so flexibility is not the binding constraint there.
 
 ## 5. Alvarado & Stowell 2016 — GPs for music audio
 
-**Status: the Slot-B reference — relevant to Phase 3, not to the
-estimator test.**
+**Status (2026-09-16): reference only.** Slot B was measured
+(`results/phase3_smprior_dev.md`, no gain at matched rank), so this paper
+remains the nearest-neighbour design contrast for Phase 3, not a pending
+work item.
 
 **What it is.** The two ideas above, assembled for music in the waveform
 domain. A recording is

@@ -23,6 +23,20 @@
 {\small Raynaldi Lalang, September 2026}
 \end{center}
 
+\begin{center}
+\fbox{\parbox{0.92\linewidth}{\small\textbf{Outcome (2026-09-04, added
+2026-09-16).} The evaluation of \S7 was run as committed
+(5{,}157 development notes; \texttt{results/sm\_estimator\_dev.md}). By
+the pass/fail rule the GP estimator was \textbf{not adopted}: it does not
+beat the sine fit on parameter accuracy (intonation ties; extent and rate
+lose decisively --- the evidence's decomposition is less reproducible
+across two measurements of the same note than the rigid fit). The
+curve-level measure (4) favoured the GP, but the follow-up at the
+waveform level (\texttt{results/phase3\_smprior\_dev.md}) measured no
+gain there either. This note is kept as the design record; the sine
+estimator remains the pipeline's estimator.}}
+\end{center}
+
 \textbf{1. Problem.}
 A pitch tracker converts one played note into frames
 $\{(t_j, y_j)\}_{j=1}^{n}$, where $y_j$ is the pitch at time $t_j$,

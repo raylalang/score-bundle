@@ -55,8 +55,11 @@ SM-GP does not beat the sine fit on parameter accuracy (intonation ties;
 extent and rate lose decisively), so the estimator-replacement idea
 (Slot A) is dead; the estimator chain stays as confirmed. The
 estimand-free curve-level measure favors the GP (median frame RMSE 35%
-lower), which strengthens Slot B — the Phase-3 within-note curve prior —
-as the surviving home for these kernels. Original design, for the record:
+lower), which pointed at Slot B — the Phase-3 within-note curve prior.
+[Update 2026-09-16: Slot B was then measured too
+(`results/phase3_smprior_dev.md`) and adds nothing at matched rank; both
+slots are closed, and the unification idea rests unless the band location
+is marginalized rather than scaffold-pinned.] Original design, for the record:
 
 One development study, no new claims: SM-prior GP regression on cents
 curves for the ~5,000 identifiable dev notes; compare against the NLLS
