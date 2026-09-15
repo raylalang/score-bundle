@@ -153,6 +153,24 @@ do not create, sync, or reference one.)
   `docs/kernel_papers_review.md`; unification option in
   `docs/gp_everywhere_memo.md`) are the design vocabulary for the
   within-note curve prior.
+- **Exploration week (2026-09-10/11, dev-only) + adoption (2026-09-16).**
+  Seven development studies, ledger `results/exploration_week_2026-09.md`:
+  timing tail defused at both levels (deploy-time t predictive; EM t noise
+  with a measured articulation spillover via the coupling; predictive
+  floors measured DEAD), the failed C4 claim's follow-up measured and
+  hardened (AR(1) τ noise row: both axes, three independent runs,
+  registration-grade — awaits a corpus decision), the adaptation boundary
+  closed (low-rank Mahalanobis + disagreement guard; Mahalanobis alone is
+  half the answer), and the spectral-kernel question CLOSED (Slot A dead,
+  Slot B no-gain, learned filter switched off by the evidence). Adopted as
+  **opt-in** capabilities (the fit_guarded precedent — default off,
+  published paths bit-unchanged, any reported-protocol change needs its
+  own registration): `gp.fit_t_em` (LOO-EM robust t noise; score its fits
+  with `metrics.student_t_nll`, never Gaussian), `gp.noise_corr` +
+  `gp.posterior_observations` (correlated per-channel noise, bit-equal to
+  the study machinery), `downstream.completion_guard`. Tests:
+  `tests/test_adoption_optin.py` (incl. ρ=0 bit-equality and brute-force
+  conditioning pins).
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,

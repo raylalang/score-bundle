@@ -363,6 +363,34 @@ class MultiOutputGraphGP:
             out[c * self.N:(c + 1) * self.N] = v
         return out
 
+    def _noise_cov_obs(self, p: dict, obs: np.ndarray) -> np.ndarray:
+        """Observation-noise covariance over the observed cells.
+
+        Diagonal (the published path) unless ``self.noise_corr`` is set:
+        an optional ``{"channel": c, "rho": r}`` giving channel ``c`` an
+        AR(1)-correlated noise block over note order,
+        ``Sigma_ij = sqrt(d_i d_j) * rho^|i-j|`` with ``d`` the per-cell
+        variances — the alignment-error structure measured in
+        results/corrnoise_tau_dev.md.  Opt-in: with the attribute unset
+        (default) this returns exactly ``diag(_cell_noise[obs])``, so
+        every published result is bit-unchanged; at ``rho = 0`` the
+        correlated path coincides with the diagonal one.
+        """
+        d = self._cell_noise(p)
+        nc = getattr(self, "noise_corr", None)
+        if nc is None:
+            return np.diag(d[obs])
+        c = int(nc["channel"])
+        rho = float(nc["rho"])
+        Sig = np.diag(d)
+        if rho > 0.0:
+            lo, hi = c * self.N, (c + 1) * self.N
+            dt = d[lo:hi]
+            lag = np.abs(np.arange(self.N)[:, None]
+                         - np.arange(self.N)[None, :])
+            Sig[lo:hi, lo:hi] = np.sqrt(np.outer(dt, dt)) * rho ** lag
+        return Sig[np.ix_(obs, obs)]
+
     def _lml_cells(self, Y: np.ndarray, mask2d: np.ndarray, x: np.ndarray) -> float:
         p = self.unpack(x)
         obs = self._cell_obs(mask2d)
@@ -370,7 +398,7 @@ class MultiOutputGraphGP:
             return 0.0
         allidx = np.arange(self.N)
         C = self._blocks(p, allidx, allidx)
-        K = C[np.ix_(obs, obs)] + np.diag(self._cell_noise(p)[obs])
+        K = C[np.ix_(obs, obs)] + self._noise_cov_obs(p, obs)
         ystack = np.concatenate([np.asarray(Y, dtype=float)[:, c]
                                  for c in range(self.k)])
         y = ystack[obs]
@@ -391,7 +419,7 @@ class MultiOutputGraphGP:
         if obs.size == 0:
             return (np.zeros((self.N, self.k)),
                     np.sqrt(prior_var).reshape(self.k, self.N).T)
-        K_oo = C[np.ix_(obs, obs)] + np.diag(self._cell_noise(p)[obs])
+        K_oo = C[np.ix_(obs, obs)] + self._noise_cov_obs(p, obs)
         K_ao = C[:, obs]
         ystack = np.concatenate([np.asarray(Y, dtype=float)[:, c]
                                  for c in range(self.k)])
@@ -401,6 +429,98 @@ class MultiOutputGraphGP:
         var = prior_var - np.einsum("ij,ji->i", K_ao, A)
         return (m.reshape(self.k, self.N).T,
                 np.sqrt(np.clip(var, 0.0, None)).reshape(self.k, self.N).T)
+
+    def posterior_observations(self, Y: np.ndarray, mask2d: np.ndarray,
+                               x: np.ndarray
+                               ) -> Tuple[np.ndarray, np.ndarray]:
+        """Predictive mean/std of the noisy OBSERVATION value at every cell.
+
+        Uses the full observation covariance T = C + Sigma_noise, so a
+        held-out cell's prediction includes the noise cross-covariance
+        with the observed cells.  With diagonal noise this reproduces the
+        established convention (posterior mean; latent var + cell noise);
+        with ``noise_corr`` set it is the correlated-noise predictive of
+        results/corrnoise_tau_dev.md, where a neighbour's alignment error
+        informs a held-out note's timing.  Returns (N, k) mean and std.
+        """
+        p = self.unpack(x)
+        obs = self._cell_obs(np.asarray(mask2d, dtype=bool))
+        allidx = np.arange(self.N)
+        C = self._blocks(p, allidx, allidx)
+        every = np.arange(self.k * self.N)
+        T = C + self._noise_cov_obs(p, every)
+        if obs.size == 0:
+            m = np.zeros(self.k * self.N)
+            v = np.clip(np.diag(T), 0.0, None)
+        else:
+            ystack = np.concatenate([np.asarray(Y, dtype=float)[:, c]
+                                     for c in range(self.k)])
+            y = ystack[obs]
+            T_oo = T[np.ix_(obs, obs)]
+            T_ao = T[:, obs]
+            m = T_ao @ np.linalg.solve(T_oo, y)
+            v = np.clip(np.diag(T)
+                        - np.einsum("ij,ji->i", T_ao,
+                                    np.linalg.solve(T_oo, T_ao.T)),
+                        1e-12, None)
+        return (m.reshape(self.k, self.N).T,
+                np.sqrt(v).reshape(self.k, self.N).T)
+
+    def fit_t_em(self, Y: np.ndarray, mask: np.ndarray, channel: int,
+                 nu: float = 5.0, rounds: int = 2, **fit_kw
+                 ) -> Tuple[np.ndarray, dict]:
+        """Robust fit: Student-t observation noise on one channel via its
+        Gaussian scale-mixture, by EM reweighting (results/t_noise_em_dev.md).
+
+        Each round refits all hyperparameters under per-note noise weights
+        ``w_i = (nu + 1) / (nu + z_i^2)`` computed from the designated
+        channel's observed LEAVE-ONE-OUT standardized residuals (the
+        closed-form LOO identity on the observed block: a posterior-mean
+        residual lets a flexible fit interpolate an observed outlier and
+        hide it from the EM; the LOO residual judges each observation by
+        the model fit WITHOUT it); a down-weighted note's cell variance is
+        inflated by ``1/w_i`` through the ``noise_scale`` hook.  Measured effects (development): coverage to nominal and an
+        articulation-recovery spillover through the coregionalization.
+        Opt-in — nothing published calls this.  Accepts a 1-D per-note or
+        2-D cell mask.  On return ``self.noise_scale`` holds the final
+        weights (so subsequent posterior calls are consistent); the
+        original attribute value is preserved in ``info["noise_scale_prev"]``
+        and the base (pre-EM) scale is multiplied, not replaced.
+        Predictions from this fit should be scored with a matched
+        Student-t predictive (see :func:`metrics.student_t_nll`), not a
+        Gaussian one.
+        """
+        Y = np.asarray(Y, dtype=float)
+        mask = np.asarray(mask)
+        mask2d = (np.repeat(mask[:, None], self.k, axis=1)
+                  if mask.ndim == 1 else mask.astype(bool))
+        prev = getattr(self, "noise_scale", None)
+        base = (np.asarray(prev, dtype=float).copy() if prev is not None
+                else np.ones((self.N, self.k)))
+        obs_c = mask2d[:, channel]
+        scale = base.copy()
+        x_hat, info = None, {}
+        for _ in range(max(rounds, 1)):
+            self.noise_scale = scale
+            x_hat, info = self.fit(Y, mask2d, **fit_kw)
+            p = self.unpack(x_hat)
+            obs = self._cell_obs(mask2d)
+            C = self._blocks(p, np.arange(self.N), np.arange(self.N))
+            K = C[np.ix_(obs, obs)] + self._noise_cov_obs(p, obs)
+            P = np.linalg.inv(K)
+            y = np.concatenate([Y[:, c] for c in range(self.k)])[obs]
+            dii = np.clip(np.diag(P), 1e-12, None)
+            z2_all = (P @ y) ** 2 / dii         # LOO z^2 per observed cell
+            # positions of channel `channel` cells inside the obs stack
+            in_ch = (obs >= channel * self.N) & (obs < (channel + 1) * self.N)
+            w = (nu + 1.0) / (nu + z2_all[in_ch])
+            scale = base.copy()
+            scale[obs_c, channel] = (base[obs_c, channel]
+                                     / np.maximum(w, 1e-3))
+        self.noise_scale = scale
+        info = dict(info, noise_scale_prev=prev, t_em_weights=w,
+                    t_em_nu=nu, t_em_channel=channel)
+        return x_hat, info
 
     def loo_predictive(self, Y: np.ndarray, x: np.ndarray
                        ) -> Tuple[np.ndarray, np.ndarray]:

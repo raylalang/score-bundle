@@ -35,6 +35,7 @@ Everything here is numpy-only (Phase-1 core rules); the LM mean arrives as an ar
 """
 from __future__ import annotations
 
+import math
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -477,3 +478,50 @@ def grouped_nearest_centroid(
             if pred == labels[i]:
                 correct += 1
     return (correct / scored if scored else float("nan")), scored
+
+
+def completion_guard(X: np.ndarray, mask: np.ndarray,
+                     pred: np.ndarray, head_pred: np.ndarray,
+                     head_sd: np.ndarray, guard_sd: float = 3.0,
+                     r_max: int = 10, z_q: float = 2.3263478740408408
+                     ) -> Tuple[np.ndarray, np.ndarray]:
+    """Extrapolation-safe completion flags (results/completion_fallback_dev.md).
+
+    Two deploy-legal rules, measured to be complementary: (i) a Mahalanobis
+    coverage test in the observed excerpt's low-rank PCA frame (a raw
+    high-dimensional test degenerates and flags everything) — in-subspace
+    whitened distance against a Wilson–Hilferty chi-square quantile at
+    ``z_q`` (default the 0.99 normal quantile), OR off-subspace energy
+    beyond 1.5x the observed quantile; (ii) a per-(note, channel)
+    disagreement guard, ``|pred - head_pred| > guard_sd * head_sd`` — the
+    catastrophe-killer (adaptation blow-ups also occur in interpolation).
+    Predictions on flagged entries should fall back to the cross-piece
+    head.  Returns (note_flags (N,), cell_flags (N, k)); combine with
+    ``note_flags[:, None] | cell_flags``.  numpy-only, deterministic.
+    """
+    X = np.asarray(X, dtype=float)
+    mask = np.asarray(mask, dtype=bool)
+    Xo = X[mask]
+    mu = Xo.mean(0)
+    Z = Xo - mu
+    U, sv, Vt = np.linalg.svd(Z / np.sqrt(max(len(Xo) - 1, 1)),
+                              full_matrices=False)
+    var = sv ** 2
+    r = int(np.searchsorted(np.cumsum(var) / (var.sum() + 1e-12), 0.95) + 1)
+    r = max(1, min(r, r_max, len(sv)))
+    V = Vt[:r].T
+    s = np.maximum(sv[:r], 1e-9)
+    d2_in = np.sum(((X - mu) @ V / s) ** 2, axis=1)
+    P = (X - mu) @ V @ V.T
+    e_off = np.sum(((X - mu) - P) ** 2, axis=1)
+    # Wilson-Hilferty chi-square quantile at normal quantile z_q, df = r
+    thr_in = r * (1.0 - 2.0 / (9.0 * r)
+                  + z_q * np.sqrt(2.0 / (9.0 * r))) ** 3
+    q_level = 1.0 - 0.5 * (1.0 - math.erf(z_q / math.sqrt(2.0)))
+    thr_off = np.quantile(e_off[mask], min(q_level, 1.0)) * 1.5
+    note_flags = (d2_in > thr_in) | (e_off > thr_off)
+    pred = np.asarray(pred, dtype=float)
+    head_pred = np.asarray(head_pred, dtype=float)
+    cell_flags = np.abs(pred - head_pred) > guard_sd * np.asarray(
+        head_sd, dtype=float)[None, :]
+    return note_flags, cell_flags

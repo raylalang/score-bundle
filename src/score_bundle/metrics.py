@@ -84,3 +84,27 @@ def evaluate(y_true, mean, std, level: float = 0.9) -> Dict[str, float]:
         "coverage@%.2f" % level: coverage(y_true, mean, std, level),
         "calibration_error": calibration_error(y_true, mean, std),
     }
+
+
+def student_t_nll(y_true: np.ndarray, mean: np.ndarray, std: np.ndarray,
+                  nu: float = 5.0) -> float:
+    """Mean NLL under a variance-matched Student-t predictive.
+
+    The deploy-time heavy-tailed predictive of results/tail_predictive_dev.md:
+    same mean and variance as the Gaussian predictive (scale^2 =
+    std^2 (nu-2)/nu, nu > 2), but a polynomial tail, so a handful of
+    many-sigma outliers cannot dominate a pooled average the way the
+    Gaussian's quadratic tail lets them (the measured Phase-1 timing
+    failure mode).  Fits from :meth:`gp.MultiOutputGraphGP.fit_t_em` must
+    be scored with this rule, not the Gaussian one (matched likelihood).
+    numpy-only.
+    """
+    if nu <= 2:
+        raise ValueError("variance matching needs nu > 2")
+    std = np.clip(np.asarray(std, dtype=float), 1e-12, None)
+    scale = std * math.sqrt((nu - 2.0) / nu)
+    z = (np.asarray(y_true, dtype=float) - np.asarray(mean, dtype=float)) / scale
+    logc = (math.lgamma((nu + 1.0) / 2.0) - math.lgamma(nu / 2.0)
+            - 0.5 * math.log(nu * math.pi))
+    logpdf = logc - (nu + 1.0) / 2.0 * np.log1p(z ** 2 / nu) - np.log(scale)
+    return float(-np.mean(logpdf))
