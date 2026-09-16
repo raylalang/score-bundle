@@ -1,0 +1,179 @@
+% =====================================================================
+%  deck_week.tex  --  meeting deck, 2026-09 (beamer, 16:9)
+%
+%  Framing: the measured-answers week. The supervisor's two kernel
+%  pointers measured at both slots (closed), and the thesis's own
+%  documented limitations each converted into a measured answer.
+%  Every number on a frame traces to a results/ doc; all development
+%  level, exploratory, published tables unchanged.
+%
+%  Style: house rules from the July lab talk. No em-dashes, no
+%  semicolons, no asterisks on slides. One term per concept. Symbols
+%  defined with role and units. Only show what is used. Never say bare
+%  "AR(1)" in the room: say "correlated timing noise across notes".
+%
+%  Compile:  cd docs/slides && tectonic deck_week.tex
+% =====================================================================
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{default}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}{\textcolor{okblue}{\scriptsize$\blacksquare$}}
+\setbeamertemplate{footline}{%
+  \hfill\scriptsize\textcolor{muted}{\insertframenumber\,/\,\inserttotalframenumber}\hspace{2mm}\vspace{2mm}}
+
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+
+\definecolor{okblue}{HTML}{0072B2}
+\definecolor{okverm}{HTML}{D55E00}
+\definecolor{okgreen}{HTML}{009E73}
+\definecolor{okamber}{HTML}{E69F00}
+\definecolor{muted}{HTML}{6B7280}
+\definecolor{ink}{HTML}{1A1A1A}
+\setbeamercolor{frametitle}{fg=ink}
+\setbeamercolor{normal text}{fg=ink}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+
+\title{\textbf{The measured-answers week}}
+\subtitle{Your two pointers, measured at both slots. Our own limitations, answered.}
+\author{Raynaldi Lalang}
+\date{September 2026}
+
+\begin{document}
+
+% ---------------------------------------------------------------------
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{What I did this week}
+  \begin{itemize}
+    \item I measured instead of building. Seven development studies, each
+          answering a question the project had already written down.
+    \item Two questions came from your kernel pointers. The rest came from
+          limitations the thesis had documented about itself.
+    \item Everything is development level and exploratory. Published
+          tables are unchanged. Adopted machinery is opt in, pinned by
+          tests, and any reported protocol change gets its own
+          registration.
+  \end{itemize}
+  \vfill
+  {\small\textcolor{muted}{Ledger: results/exploration\_week\_2026-09.md.
+  All starred numbers on these slides survive a Benjamini Hochberg pass
+  over the whole week.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Your two pointers: measured at both slots, closed}
+  \begin{enumerate}
+    \item \textbf{As the note estimator} (spectral mixture GP replacing
+          the sine fit). Killed by its own pre committed test. The sine
+          fit reproduces its targets across two measurements of the same
+          note far better (extent and rate decisively, and per piece even
+          the intonation tie turns against the GP).
+    \item \textbf{As the waveform pitch curve prior} (replacing the bump
+          basis). No gain at matched rank: median 2.25 vs 2.29 cents.
+          A vibrato band pinned at a wrong scaffold rate is worse than
+          frequency neutral bumps.
+    \item \textbf{As a learned filter on the graph spectrum.} The
+          evidence switches a free spectral bump off on 90 percent of
+          pieces.
+  \end{enumerate}
+  \vfill
+  What survives is conceptual: curve level scoring, a coherence bound,
+  and a read out rule (estimate realized quantities, not process
+  parameters).
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The timing tail: fixed at both levels}
+  Known Phase 1 failure: on a very steady piece a few timing outliers
+  explode the pooled Gaussian log score.
+  \begin{itemize}
+    \item \textbf{Deploy time.} A variance matched Student t predictive
+          takes the documented blow up cell from 105.2 to $-1.7$ with
+          coverage intact. The predictive floor we had suggested does
+          nothing: this is a tail shape problem, not a scale problem.
+    \item \textbf{Inference level.} Fitting the timing noise as a
+          Student t (scale mixture, leave one out reweighting) brings
+          coverage to nominal and improves \textbf{articulation} recovery
+          by $-0.018$ (starred): an observed timing outlier corrupts the
+          coupled channels, and only robustifying the fit undoes that.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The failed confirmation claim now has a measured fix}
+  C4 (timing calibration) failed at the Phase 2 confirmation. The thesis
+  named the suspect: alignment error is correlated along score time, and
+  a diagonal noise row cannot represent it.
+  \begin{itemize}
+    \item One correlation parameter in the timing noise row, chosen per
+          piece by the evidence itself.
+    \item The evidence detects the correlation on 97 to 100 percent of
+          pieces (median 0.45 to 0.60).
+    \item Timing calibration improves ($\Delta$NLL $-0.111$, starred),
+          coverage moves to nominal, and timing error falls about
+          20 percent (99 to 80 ms).
+    \item Reproduced three ways: original masks, fresh masks, and a full
+          joint refit.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Two smaller answers, and the adoption posture}
+  \begin{itemize}
+    \item \textbf{Completion.} The coverage test the thesis proposed is
+          half the fix. Adding a disagreement guard against the cross
+          piece head closes it: worst cell $480{,}266 \to 0.7$, with the
+          per piece model's advantage kept where adaptation wins.
+    \item \textbf{Adoption.} All of it is implemented as opt in
+          capabilities: default off, published paths bit unchanged,
+          pinned by equality tests. Nothing reported changes without its
+          own registration.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The registration is drafted. It needs one decision.}
+  \centering
+  \begin{tabular}{@{}rcc@{}}
+    \toprule
+    pool size (pieces) & P(calibration claim stars) & P(recovery claim stars) \\
+    \midrule
+     6 & 0.99 & 0.76 \\
+    10 (Bach10 size) & 1.00 & 0.83 \\
+    13 (spent pool size) & 1.00 & 0.94 \\
+    15 & 1.00 & 0.99 \\
+    \bottomrule
+  \end{tabular}
+  \vfill
+  \begin{itemize}
+    \item Claims ordered by this table: calibration primary, recovery
+          secondary. Draft: docs/corrnoise\_prereg\_DRAFT.md.
+    \item URMP is fully spent, so the pool must be a new corpus, a
+          disclosed re use, or both. The tonal metric registration waits
+          on the same decision.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{What I would like from you today}
+  \begin{enumerate}
+    \item \textbf{The pool decision} for the correlated timing noise
+          registration (and the tonal one): new corpus such as Bach10,
+          disclosed re use of the spent URMP pool, or both.
+    \item \textbf{The adoption defaults}: are you comfortable with the
+          robust timing noise, the correlated timing noise, and the
+          completion guard as recommended opt in modes for new runs?
+  \end{enumerate}
+  \vfill
+  {\small\textcolor{muted}{Everything else is recorded and waiting:
+  seven results documents, the ledger, the updated draft (71 pages), and
+  the registration draft.}}
+\end{frame}
+
+\end{document}

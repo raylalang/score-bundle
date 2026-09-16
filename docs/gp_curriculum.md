@@ -222,6 +222,59 @@ box feels vague, that stage needs a second pass.
 
 ---
 
+## Stage 7 — Robust and correlated noise: what the exploration week added
+
+**Read:** `results/tail_predictive_dev.md`, `results/t_noise_em_dev.md`,
+and `results/corrnoise_tau_dev.md` (short, and you have seen the ideas by
+now), then our draft's Future Work section "Model-level refinements:
+measured needs, now measured answers" for the compressed version.
+
+**The idea in plain words.** Two upgrades to the observation-noise story,
+both cheap and both measured. First, robustness: a Student-t distribution
+is exactly a Gaussian whose variance is itself random, so "t noise" can
+be fit with the ordinary Gaussian machinery by giving each note its own
+noise variance and re-estimating those variances from residuals (each
+note's weight falls smoothly the more standard deviations it sits out).
+The important subtlety is which residual to use: the fit's own residual
+at a note it has already seen is too small, because a flexible model
+partly absorbs its outliers — so the weight must come from the
+leave-one-out residual, which asks how surprising the note is to the
+model fit WITHOUT it, and there is a closed-form identity for that (the
+inverse covariance's row, divided by its diagonal element). Second,
+correlation: our timing targets inherit alignment error, and alignment
+error drifts smoothly along the piece, so neighbouring notes' timing
+errors are alike. Writing that as one correlation parameter in the noise
+covariance does two things at once — the evidence can detect the
+correlation from the observed notes, and the predictive can exploit it,
+because once errors are correlated a neighbour's observed error carries
+information about a held-out note's error.
+
+**Where it lives in our model.** `gp.fit_t_em` is the robust fit (opt-in;
+its predictions must be scored with the matched t predictive,
+`metrics.student_t_nll`, never a Gaussian score — a sharpened fit meeting
+the outliers it deliberately stopped absorbing looks terrible under the
+wrong rule). `gp.noise_corr` puts the correlated block into the timing
+channel's noise, and `gp.posterior_observations` predicts held-out
+observations under the full covariance including the noise cross-terms.
+Measured: the correlation is detected on nearly every development piece,
+timing calibration improves (the axis our one failed confirmation claim
+was about), timing error falls about twenty percent, and — through the
+coregionalization — robustifying timing even improves articulation, since
+an observed timing outlier used to corrupt the coupled channels.
+
+**Self-checks.**
+1. Why must the EM weights come from leave-one-out residuals rather than
+   the fit's own residuals, and what would go wrong with the latter?
+2. A colleague proposes fixing the timing-tail problem by flooring the
+   predictive standard deviation. Why does that fail here, and what does
+   its failure tell you about the nature of the problem?
+3. With correlated timing noise, why does the prediction for a held-out
+   note use the noise covariance between that note and the observed
+   notes — and what musical fact makes this correlation exist at all?
+
+---
+
+
 ## Answers
 
 **Stage 1.** (1) The function itself is the parameter — infinitely many
@@ -286,3 +339,22 @@ entries are not identified and could not be read as channel
 variances/correlations. (3) Coverage: with the graph, held-out coverage
 sits at nominal (0.925 / 0.88–0.91 confirmed); without it, intervals
 stop being honest — the graph's confirmed contribution is calibration.
+
+**Stage 7.** (1) A flexible model partly fits its own outliers: at an
+observed note the posterior mean is pulled toward the observed value, so
+the in-sample residual understates how outlying the note is, and the EM
+under-reacts (this was found concretely when a test toy interpolated its
+planted outliers). The leave-one-out residual judges each note by the
+model fit without it, and the identity r_i = (P y)_i / P_ii with variance
+1/P_ii (P the inverse observed covariance) gives it in closed form. (2)
+The blow-up cells have honest predictive scales — their coverage is fine —
+so raising the scale floor changes nothing; the damage is a few notes many
+standard deviations out, amplified by the Gaussian's quadratic tail. A
+floor fixes scale problems; this is a tail-shape problem, which is why
+only changing the predictive's tail (Student-t) works. (3) The held-out
+observation is target-plus-noise, and once the noise is correlated the
+noise component is partially predictable from the neighbours' observed
+errors — so the conditional mean must include the noise cross-covariance,
+not just the latent one. The correlation exists because timing targets are
+defined against an alignment warp, and the warp's error drifts smoothly
+along the piece: adjacent notes share it.
