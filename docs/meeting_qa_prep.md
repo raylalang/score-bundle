@@ -37,6 +37,16 @@ coverage-test + disagreement guard · SM estimator: extent err ×3 worse
 than the sine fit (dead) · SM curve prior: +0.11\* against (no gain) ·
 learned filter: switched off on 90% of cells.
 
+**Hardening (say it if probed on statistics):** every main star survives
+a week-wide Benjamini–Hochberg pass over all 14 contrasts
+(`logs/week_bh_recheck.log`); the Slot-A kill hardens (even intonation is
+adverse per piece); the Slot-B "harm" does NOT survive piece clustering —
+say "no gain", never "harm". **Power (the registration is drafted,
+`docs/corrnoise_prereg_DRAFT.md`):** the timing-calibration claim stars
+with probability ≥0.99 from 6 pieces on any pool option; recovery needs
+~13–15 pieces and is secondary by design — so even Bach10-sized pools
+work for the primary claim.
+
 **FRAMING: your two pointers, fully measured; the thesis's own needs,
 answered.** The meeting = the verdicts + two asks.
 Asks: (1) the corpus/pool decision — the correlated-timing-noise result

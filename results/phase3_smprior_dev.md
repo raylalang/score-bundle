@@ -20,6 +20,10 @@ exploratory, no claims.**
 | SM prior | 2.25 | 7.28 | 0.02 |
 
 Paired |err|, SM − bumps: **+0.112 [+0.026, +0.202]\*** (median +0.000).
+[Hardening note, 2026-09-16: this note-level star does **not** survive
+piece-level clustering (5 composition clusters; Wilcoxon p = 0.63; n.s.
+after the week-wide BH pass, `logs/week_bh_recheck.log`) — read the
+verdict as **no gain**, not measured harm. The decision is unchanged.]
 Per family: strings tie (+0.002, median −0.058), brass ≈ tie (+0.081),
 **winds carry the harm (+0.226)** — the family where the tracker's
 failure modes live, hence where the scaffold rate is least reliable, and

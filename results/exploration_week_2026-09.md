@@ -55,6 +55,24 @@ failed timing-calibration claim (B, hardened), the adaptation boundary
 - "a Mahalanobis coverage test would do" — it half-does; the disagreement
   guard is the load-bearing half (`completion_fallback_dev.md`).
 
+## Statistical hardening (2026-09, BH pass over the whole week)
+
+`scripts/week_bh_recheck.py` (offline, per-piece deltas — URMP contrasts
+clustered at composition level by construction — Benjamini–Hochberg
+q = 0.05 over the 14-contrast family, plus BCa/Wilcoxon/sign per
+contrast; log: `logs/week_bh_recheck.log`). Three refinements:
+
+1. **Every main claim survives BH**: all six correlated-τ contrasts
+   (three runs × both axes), both t-EM contrasts, the learned-filter
+   RMSE harm, and the kill test's adverse extent/rate stars.
+2. **The Slot-A kill hardens**: even the intonation contrast, a tie at
+   cell level, is adverse-starred per piece (Wilcoxon p = 0.0003,
+   6/31 pieces negative).
+3. **The Slot-B harm downgrades**: the "+0.112\*" adverse mean does not
+   survive piece-level clustering (5 composition clusters only;
+   Wilcoxon p = 0.63; n.s. after BH). The Slot-B verdict is therefore
+   **no gain** — not measured harm — which changes no decision.
+
 ## What follows (decided 2026-09-16)
 
 Adoption engineering (opt-in core support for the correlated τ noise
