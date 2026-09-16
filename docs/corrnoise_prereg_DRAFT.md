@@ -24,9 +24,9 @@ diagonal noise row.
   negative and starred. Development basis: −0.0192\* / −0.0205\* /
   −0.0199\* across the three runs. Does not gate N1.
 - **N3 (honest boundary, pre-stated).** Coverage at nominal 90% stays in
-  [0.85, 0.95] under the correlated predictive (development: 0.90–0.92,
-  moving toward nominal from mild over-coverage). Reported; gates
-  nothing.
+  [0.85, 0.95] under the correlated predictive (development: 0.90 across
+  all three runs, moving toward nominal from the diagonal's 0.91–0.92
+  mild over-coverage). Reported; gates nothing.
 - **N4 (detection, descriptive).** The evidence-chosen ρ is positive on a
   majority of cells (development: 97–100%). Reported; gates nothing.
 
@@ -44,9 +44,19 @@ registrations in one shot:
    claim are modest: per-track monophonic audio + note-level onset
    annotations (for the leave-one-out warp that defines τ and its noise
    row); the other bundle channels additionally want ground-truth or
-   trackable pitch. Bach10 (10 pieces × 4 monophonic stems, note
-   annotations, GT pitch) fits and sits above the 10-piece power row
-   (~8 cells/piece).
+   trackable pitch. **Bach10 readiness (checked 2026-09-16):** the AIR
+   lab page (labsites.rochester.edu/air/resource.html) confirms the
+   dataset carries everything needed and more — audio of each part AND
+   the ensemble for 10 four-part Bach chorales (violin, clarinet,
+   saxophone, bassoon), MIDI scores, ground-truth audio–score alignment,
+   ground-truth pitch per part, and ground-truth notes. At 4 stems ×
+   2 seeds ≈ 8 cells/piece it sits above the 10-piece power row. The
+   download is gated behind the lab's request form (the "Dataset
+   Download" Google form linked from the page — a manual step, like
+   URMP's Dryad gate): Ray fills the form, the corpus lands in
+   `../data/bach10/`, then the URMP preparatory sequence applies
+   (loader, composition-level split frozen data-blind, tracker
+   calibration) before the tag.
 2. **Disclosed re-use of the spent URMP pool.** Replication-grade, not
    pristine: the pool was spent on the Phase-2 claim set, which did not
    involve ρ, but the tracks are no longer untouched-by-any-decision.
@@ -102,6 +112,9 @@ registration rather than discovered after.
 - [x] Core code path pinned by tests (ρ=0 bit-equality; brute-force
       conditioning)
 - [ ] Corpus/pool decided with the professor
+- [ ] If Bach10: request via the AIR lab form (manual; contents verified
+      against the lab page 2026-09-16 — per-part audio, GT pitch, GT
+      notes, MIDI scores, alignment)
 - [ ] If a new corpus: loader + annotations verified, split frozen at
       composition level, tracker calibrated (the URMP preparatory steps)
 - [ ] Claims file frozen in a dedicated commit + tag

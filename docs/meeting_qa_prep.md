@@ -34,7 +34,8 @@ no effect) · articulation recovery −0.018\* from robust timing noise
 −20%\* (≈99→80 ms), correlation detected on 97–100% of cells, three
 independent runs · completion worst cell 480,266 → 0.7 under
 coverage-test + disagreement guard · SM estimator: extent err ×3 worse
-than the sine fit (dead) · SM curve prior: +0.11\* against (no gain) ·
+than the sine fit (dead) · SM curve prior: no gain (median tie; the
+adverse mean does not survive piece clustering) ·
 learned filter: switched off on 90% of cells.
 
 **Hardening (say it if probed on statistics):** every main star survives
@@ -406,7 +407,80 @@ design rather than re-open the frozen Phase-2 estimator."
 
 ---
 
-# Part 2 — When he asks
+# Part 2 — When he asks (THIS meeting)
+
+Each answer is 2 to 4 spoken sentences with its number and source.
+
+**"So my kernel suggestions did not help. Was the week wasted?"**
+No: the week converted the question from opinion to measurement, at both
+places the kernels could enter and even for a learned filter, and each
+test cost one development study. And what the papers forced on us did
+pay: curve-level scoring, the coherence bound, and the
+realized-quantities read-out rule are now working parts of the pipeline.
+The week's numerical wins came from our own documented limitations,
+which the papers' concepts helped us fix. *(ledger; kernel review §0)*
+
+**"These are development results. Why should I trust them?"**
+Three reasons, in increasing strength: every main effect survives a
+Benjamini Hochberg pass over all fourteen contrasts of the week; the
+headline result is reproduced three independent ways (original masks,
+fresh masks, joint refit); and we claim nothing from them --- turning the
+timing result into a claim is exactly what the drafted registration is
+for. *(logs/week_bh_recheck.log; corrnoise_tau_dev.md)*
+
+**"You changed the pipeline after confirmation. Is that not scope creep?"**
+Nothing published moved: the new capabilities are off by default, and
+tests pin bit-equality of the default paths --- the same pattern as the
+existing safeguard, which the thesis already documents. Any change to a
+reported protocol needs its own registration; that rule is written into
+each results doc. *(tests/test_adoption_optin.py; CLAUDE.md)*
+
+**"Coverage went DOWN with your robust fit. How is that good?"**
+It went from 0.948 to 0.919 at a nominal 0.90 --- from over-coverage
+toward the target. The Gaussian fit was inflating the timing noise floor
+to absorb outliers, which padded everyone's intervals; the robust fit
+stops that, so intervals are honest rather than merely wide.
+*(t_noise_em_dev.md)*
+
+**"Explain the correlated timing noise in one breath."**
+Timing targets are defined against an alignment warp, and warp error
+drifts smoothly along the piece, so neighbouring notes share it. One
+correlation parameter writes that down; the evidence then detects it on
+97 to 100 percent of pieces, and prediction improves because a
+neighbour's observed error now carries information about a held-out
+note's error. *(corrnoise_tau_dev.md)*
+
+**"New corpus or re-use the spent pool?"**
+The power table says the calibration claim is safe either way (0.99 or
+better from six pieces). A new corpus gives a pristine one-shot; re-use
+is honest but only replication-grade, since those pieces are no longer
+untouched by any decision. My preference is register on a new corpus and
+report the spent pool as a labeled replication --- and the tonal
+registration can share whatever pool you choose. *(corrnoise prereg
+draft, corpus options)*
+
+**"What happened to the generalized spectral mixture?"**
+Parked with its gate stated: it was queued behind the plain spectral
+mixture passing, which did not happen. It remains the design record for
+the one thing plain SM cannot express, the vibrato onset delay.
+*(kernel review §4)*
+
+**"The articulation improvement from robust timing noise --- will you use it?"**
+It is recorded and implemented, not deployed: adoption is opt in, and
+promoting it into reported numbers would need a registration. Its value
+today is diagnostic --- it proves observed outliers in one channel
+corrupt the coupled channels, which is a property of the
+coregionalization worth knowing. *(t_noise_em_dev.md)*
+
+**"Could the timing fix have rescued C4 retroactively?"**
+No, and we did not try: the confirmation pool is spent, and its one-shot
+discipline covers evaluations, not only fits --- we never rescored it.
+C4 stays failed as reported; the fix earns its own registration or
+nothing. *(corrnoise_tau_dev.md, scope note)*
+
+---
+
+# Part 2b — Background Q&A from the previous meetings (study only)
 
 **Terms, one line each (blank-out insurance):**
 *as-given* = the estimator's own variances used directly as observation
