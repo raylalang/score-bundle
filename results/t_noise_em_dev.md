@@ -50,3 +50,5 @@ measured. Nothing is adopted; published tables unchanged.
 
 - Reproduce: `PYTHONPATH=src:scripts python scripts/eval_t_noise_em.py
   run --shard K/4` (×4) then `report`.
+
+**Figure:** `docs/thesis/figures/t_noise_em_dev.png` (per-cell articulation deltas; coverage moving to nominal) — `scripts/make_week_figures.py`.

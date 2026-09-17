@@ -66,3 +66,5 @@ evidence for a future preregistered claim.
   Nothing is adopted now.
 - Reproduce: `PYTHONPATH=src:scripts python scripts/eval_corrnoise_tau.py
   run --shard K/6` (×6) then `report`.
+
+**Figure:** `docs/thesis/figures/corrnoise_tau_dev.png` (paired deltas across the three runs; the evidence-chosen rho; the mechanism on one track) — `scripts/make_week_figures.py`.

@@ -64,3 +64,5 @@ recorded for the Future Work section's update.
 
 - Reproduce: `PYTHONPATH=src:scripts python
   scripts/eval_completion_fallback.py --fracs F` for F in 0.25/0.5/0.75.
+
+**Figure:** `docs/thesis/figures/completion_fallback_dev.png` (worst-piece RMSE per setting and rule; flag rates) — `scripts/make_week_figures.py`.

@@ -81,3 +81,12 @@ helpers), the draft's Future-Work passages updated from "measured needs"
 to measured answers, and the meeting asks: the corpus/pool decision for a
 future preregistered correlated-τ claim, and blessing of the opt-in
 adoption defaults.
+
+## Figures (added 2026-09-17)
+
+One per finding, house style, from the committed pickles only
+(`scripts/make_week_figures.py`): `corrnoise_tau_dev.png`,
+`tail_predictive_dev.png`, `t_noise_em_dev.png`,
+`completion_fallback_dev.png`, `kernels_closed_dev.png` (all under
+`docs/thesis/figures/`). The corrnoise figure is on the meeting deck;
+the rest are backup frames.

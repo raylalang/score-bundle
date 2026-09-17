@@ -61,3 +61,5 @@ its own registration; the published tables stand as they are.
 - Recommendation if ever adopted: ν = 5 (worst cell ≤ 0.55, coverage
   0.94–0.95, no ν-tuning knife-edge — ν = 3 and 10 behave the same way).
 - Reproduce: `PYTHONPATH=src:scripts python scripts/eval_tail_predictive.py`.
+
+**Figure:** `docs/thesis/figures/tail_predictive_dev.png` (sorted per-cell NLL at 30% hidden; worst cell per masking level) — `scripts/make_week_figures.py`.

@@ -25,6 +25,7 @@
 \usepackage{amsmath,amssymb,bm}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\graphicspath{{../thesis/figures/}}
 
 \definecolor{okblue}{HTML}{0072B2}
 \definecolor{okverm}{HTML}{D55E00}
@@ -124,6 +125,17 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{The same result, in one picture}
+  \centering
+  \includegraphics[width=0.98\linewidth]{corrnoise_tau_dev.png}
+
+  {\scriptsize\textcolor{muted}{Left: paired deltas with 95 percent
+  intervals, three runs. Middle: the evidence-chosen correlation per
+  piece. Right: one track's held-out timing, diagonal vs correlated
+  noise, targets as crosses.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Two smaller answers, and the adoption posture}
   \begin{itemize}
     \item \textbf{Completion.} The coverage test the thesis proposed is
@@ -174,6 +186,28 @@
   {\small\textcolor{muted}{Everything else is recorded and waiting:
   seven results documents, the ledger, the updated draft (71 pages), and
   the registration draft.}}
+\end{frame}
+
+
+% ------------------------------------------------------------ backup
+\begin{frame}{Backup: the timing tail, before and after}
+  \centering
+  \includegraphics[width=0.92\linewidth]{tail_predictive_dev.png}
+\end{frame}
+
+\begin{frame}{Backup: robust timing noise helps articulation}
+  \centering
+  \includegraphics[width=0.92\linewidth]{t_noise_em_dev.png}
+\end{frame}
+
+\begin{frame}{Backup: the completion guard}
+  \centering
+  \includegraphics[width=0.95\linewidth]{completion_fallback_dev.png}
+\end{frame}
+
+\begin{frame}{Backup: the kernel question, closed in three panels}
+  \centering
+  \includegraphics[width=0.98\linewidth]{kernels_closed_dev.png}
 \end{frame}
 
 \end{document}
