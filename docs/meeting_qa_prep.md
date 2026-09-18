@@ -478,6 +478,18 @@ design rather than re-open the frozen Phase-2 estimator."
 
 Each answer is 2 to 4 spoken sentences with its number and source.
 
+**"But the GP fits the curve better — your own panel A shows it. How is
+that a loss?"**
+Two different questions. The GP wins at describing the curve — we
+measured that too, frame by frame against the ground truth, and it wins
+clearly. It loses at reproducing its three NUMBERS across two independent
+measurements of the same note, because flexibility lets the decomposition
+settle differently on each curve, while the rigid fit asks a narrower
+question and gets the same answer twice. Our pipeline consumes the three
+numbers, so reproducibility was the committed pass/fail axis. The
+curve-level win is exactly what sent us to the waveform prior — where it
+did not convert either. *(sm_estimator_dev.md M1 + metric caveat + M4)*
+
 **"So my kernel suggestions did not help. Was the week wasted?"**
 No: the week converted the question from opinion to measurement, at both
 places the kernels could enter and even for a learned filter, and each
