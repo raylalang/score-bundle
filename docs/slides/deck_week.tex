@@ -364,6 +364,103 @@
   survives a multiple comparison pass.}}
 \end{frame}
 
+% ================================== THE CENTRAL SECTION: THE SM-GP TEST
+% ---------------------------------------------------------------------
+\begin{frame}{The estimator question: a GP in place of the sine fit}
+  The proposal measured this cycle, and the main discussion point:
+  replace the per-note sine fit with a Gaussian process on the cents
+  curve whose kernel is the \textbf{spectral mixture} (Wilson and Adams
+  2013), two damped cosines:
+  \begin{equation*}
+    k(\tau) \;=\;
+    \underbrace{w_1\, e^{-2\pi^2 v_1 \tau^2} \cos(2\pi \mu_1 \tau)}_{\text{vibrato component}}
+    \;+\;
+    \underbrace{w_2\, e^{-2\pi^2 v_2 \tau^2}}_{\text{drift component}}
+  \end{equation*}
+  {\small $\tau$: time lag (s). $\mu_1$: rate (Hz). $w_1, w_2$: powers
+  (cents$^2$). $v_1, v_2$: bandwidths (Hz$^2$).}
+  \begin{itemize}
+    \item The prior states only: the curve's energy sits in a band of
+          width $\sqrt{v_1}$ around the rate $\mu_1$, plus a
+          low-frequency drift band around zero. Nothing else is assumed.
+    \item In the coherent limit $v_1 \to 0$ the vibrato component is
+          exactly a random-phase sinusoid of amplitude $\sqrt{2 w_1}$:
+          the sine fit is the degenerate sub-model ($v_1 \to 0$,
+          $w_2 = 0$, phase treated as known instead of marginalized).
+    \item Fit per note by the same exact marginal likelihood as the rest
+          of the thesis: a grid over $\mu_1$ (the evidence is
+          multimodal), local optimization, variances from the evidence
+          curvature.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Reading out the channels: process parameters are not estimands}
+  The channels mean \textbf{this note's realized quantities}. Three
+  read-out rules, each forced by a measured mismatch:
+  \begin{itemize}
+    \item \textbf{Extent.} The ensemble scale $\sqrt{2 w_1}$ is informed
+          by only two effective degrees of freedom on a near-coherent
+          component, so it is spread around the realized amplitude
+          (median 0.83 of it). Read
+          $\hat\gamma = \sqrt{2}\,\operatorname{std}(\hat m_1)$ from the
+          posterior vibrato component $\hat m_1$ instead.
+    \item \textbf{Centre.} The process constant and the slow drift split
+          a note-level offset arbitrarily. Read the realized average,
+          $\hat c + \operatorname{mean}(\hat m_2)$
+          (median error 9.6 to 2.1 cents).
+    \item \textbf{Rate.} On real curves the unconstrained evidence
+          prefers an incoherent band, under which the rate is weakly
+          identified. Bound the bandwidth, $\sqrt{v_1} \le \mu_1 / 8$,
+          so the component is an oscillation.
+  \end{itemize}
+  \vfill
+  Weak notes are never refused: a flat evidence reports itself as a wide
+  variance, replacing the sine fit's hard minimum frame and cycle rules.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The committed test}
+  Pass or fail decided before the run, on 5{,}157 development notes with
+  identifiable vibrato in both curves:
+  \begin{itemize}
+    \item Each estimator runs on the \textbf{tracked} curve AND on the
+          \textbf{ground truth} curve of the same note, and is scored
+          against its own ground-truth output. Neither model is scored
+          against the other's definition of the targets.
+    \item Four measures: (1) \textbf{parameter accuracy}, the
+          pre-committed pass or fail rule (the pipeline consumes exactly
+          these scalars). (2) calibration of the tracked estimate against
+          its reference. (3) the notes the sine fit refuses. (4)
+          \textbf{curve level}: both posteriors scored on the ground
+          truth curve's frames, no target definition needed.
+  \end{itemize}
+  \vfill
+  What follows: the win side, the loss side, the verdict.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The win side: the better model of the curve}
+  \centering
+  \includegraphics[width=0.98\linewidth]{sm_estimator_explainer.png}
+
+  {\scriptsize\textcolor{muted}{One cello note. A: the sine fit's rigid
+  shape drifts out of phase, the SM GP tracks the curve. B: the posterior
+  split into centre, drift, and vibrato. C: both estimators' read outs.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The loss side: the read-outs flip between two measurements}
+  \centering
+  \includegraphics[width=0.98\linewidth]{sm_estimator_worstcase.png}
+
+  {\scriptsize\textcolor{muted}{A barely vibrated bass note, its two
+  measurements. The flexible posterior answers each curve honestly and
+  differently. The sine fit returns its own grid floor twice. This
+  instability at the scalar read out, verified intrinsic on strongly
+  vibrated notes, is why the swap is closed.}}
+\end{frame}
+
 % ---------------------------------------------------------------------
 \begin{frame}{The kernel direction: measured at both entry points}
   \begin{enumerate}
@@ -480,46 +577,6 @@
 
 
 % ------------------------------------------------------------ backup
-\begin{frame}{Backup: the estimator on one real note (the win side)}
-  \centering
-  \includegraphics[width=0.98\linewidth]{sm_estimator_explainer.png}
-
-  {\scriptsize\textcolor{muted}{One cello note. A: the sine fit's rigid
-  shape drifts out of phase, the SM GP tracks the curve. B: the posterior
-  split into centre, drift, and vibrato. C: both estimators' read outs.}}
-\end{frame}
-
-\begin{frame}{Backup: the estimator on one real note (the loss side)}
-  \centering
-  \includegraphics[width=0.98\linewidth]{sm_estimator_worstcase.png}
-
-  {\scriptsize\textcolor{muted}{A barely vibrated bass note, its two
-  measurements. The flexible posterior answers each curve honestly and
-  differently. The sine fit returns its own grid floor twice. This
-  instability at the scalar read out, verified intrinsic on strongly
-  vibrated notes, is why the swap is closed.}}
-\end{frame}
-
-% ------------------------------------------------------------ backup
-\begin{frame}{Backup: what the spectral mixture estimator was}
-  The note's cents curve as a GP draw, kernel = two damped cosines:
-  \[ k(\tau) = w_1 e^{-2\pi^2 v_1 \tau^2} \cos(2\pi \mu_1 \tau)
-     + w_2 e^{-2\pi^2 v_2 \tau^2} \]
-  \begin{itemize}
-    \item Read outs: rate $= \mu_1$, extent from the posterior vibrato
-          component, centre as the realized average. Fit per note by the
-          exact marginal likelihood (grid over $\mu_1$, then local
-          optimization), with uncertainties from the evidence curvature.
-    \item Implementation forced three estimand fixes: realized amplitude
-          not ensemble power, realized centre not the process constant,
-          and a coherence bound so the component is an oscillation.
-    \item The committed test: both estimators on the tracked AND the
-          ground truth curve of each note, each scored against its own
-          ground truth output, 5{,}157 development notes, parameter
-          accuracy as the pass or fail rule.
-  \end{itemize}
-\end{frame}
-
 \begin{frame}{Backup: the timing tail, before and after}
   \centering
   \includegraphics[width=0.92\linewidth]{tail_predictive_dev.png}
