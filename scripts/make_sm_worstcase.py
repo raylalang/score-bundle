@@ -102,7 +102,7 @@ def main() -> None:
     for name, (t_, x_) in (("tracked", (tt, x)), ("ground truth", (ttg, xg))):
         fits[name] = (fit_vibrato_note(t_, x_), fit_sm_note(t_, x_))
 
-    fig, axes = plt.subplots(1, 3, figsize=(11.0, 3.2))
+    fig, axes = plt.subplots(1, 2, figsize=(9.4, 3.5))
     for k, (name, (t_, x_)) in enumerate(
             (("tracked", (tt, x)), ("ground truth", (ttg, xg)))):
         ax = axes[k]
@@ -127,36 +127,17 @@ def main() -> None:
                      loc="left")
         ax.legend(fontsize=7.5, loc="lower right")
 
-    ax = axes[2]
-    for j, (q, lab) in enumerate((("f", "rate (Hz)"),
-                                  ("gamma", "extent (cents)"))):
-        y0 = 2.4 - 2.2 * j
-        for name, mk in (("tracked", "o"), ("ground truth", "s")):
-            nl, sm = fits[name]
-            ax.plot(nl[q], y0 + 0.35, mk, ms=6, color=VERM)
-            ax.plot(sm[q], y0 - 0.35, mk, ms=6, color=BLUE)
-        nl_a, sm_a = fits["tracked"]
-        nl_b, sm_b = fits["ground truth"]
-        ax.annotate("", xy=(sm_b[q], y0 - 0.35), xytext=(sm_a[q], y0 - 0.35),
-                    arrowprops=dict(arrowstyle="-", color=BLUE, lw=1.2))
-        ax.annotate("", xy=(nl_b[q], y0 + 0.35), xytext=(nl_a[q], y0 + 0.35),
-                    arrowprops=dict(arrowstyle="-", color=VERM, lw=1.2))
-        ax.text(ax.get_xlim()[0], y0 + 0.9, lab, fontsize=8.5, color=INK)
     nl_a, sm_a = fits["tracked"]
     nl_b, sm_b = fits["ground truth"]
-    ax.text(max(nl_a["f"], nl_b["f"]) + 0.45, 2.4 + 0.35,
-            f"same {nl_a['f']:.1f} Hz twice (its grid floor)",
-            fontsize=7.5, color=VERM, ha="left", va="center")
-    ax.text((sm_a["f"] + sm_b["f"]) / 2, 2.4 - 0.35 - 0.42,
-            f"flips: {min(sm_a['f'], sm_b['f']):.1f} to "
-            f"{max(sm_a['f'], sm_b['f']):.1f} Hz on the same note",
-            fontsize=7.5, color=BLUE, ha="center", va="top")
-    ax.set_yticks([])
-    ax.set_ylim(-1.2, 3.6)
-    ax.set_xlabel("read-out per curve\n(circle = tracked, square = ground truth)")
-    ax.set_title("C  two witnesses: sine agrees with itself, SM flips",
-                 loc="left")
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 1, 0.855))
+    fig.text(0.008, 0.985,
+             f"sine fit: {nl_a['f']:.1f} Hz on both curves "
+             "(its grid floor, agreement by construction)",
+             color=VERM, fontsize=10, ha="left", va="top")
+    fig.text(0.008, 0.92,
+             f"SM-GP: {sm_a['f']:.1f} Hz on one, {sm_b['f']:.1f} Hz on the "
+             "other (the read-outs the pipeline consumes flip)",
+             color=BLUE, fontsize=10, ha="left", va="top")
     fig.savefig(OUT, bbox_inches="tight")
     plt.close(fig)
     print("wrote", OUT)

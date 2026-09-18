@@ -83,16 +83,16 @@ own registration).
 - **Worst case (frame 11).** A and B are the SAME note measured twice
   (tracked vs ground-truth curve). The SM fits the curve better in BOTH
   panels — that is expected and is NOT the test. The estimator's product
-  is not the curve; it is three numbers per note fed to the bundle. Panel
-  C is the test: does each estimator return the same numbers from both
-  measurements? Sine: 2.5 Hz twice (partly manufactured — that is its
-  grid floor, where 13–18% of barely-vibrato notes sit). SM: 2.0 vs
-  9.5 Hz. Better curve in, different numbers out — the whole two-sided
-  verdict in one picture.
+  is not the curve; it is three numbers per note fed to the bundle, and
+  those sit in the legends: sine 2.5 Hz on both curves (partly
+  manufactured — that is its grid floor, where 13–18% of barely-vibrato
+  notes sit), SM 2.0 Hz on one and 9.5 Hz on the other. The two headline
+  lines above the panels state exactly this. Better curve in, different
+  numbers out — the whole two-sided verdict in one picture.
 - **If asked "but the blue fit looks better":** "Exactly — in both
   panels, and that is the measured half of the verdict. The other half is
-  panel C: the numbers the pipeline actually consumes flip between two
-  measurements of the same note, and that instability survives
+  in the legends: the numbers the pipeline actually consumes flip between
+  two measurements of the same note, and that instability survives
   restriction to strong-vibrato notes, so it is intrinsic to the
   translation into scalars, not an artifact of weak notes or of the
   rule."
