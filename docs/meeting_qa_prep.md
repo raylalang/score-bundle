@@ -132,6 +132,11 @@ Backup deck frame + `completion_fallback_dev.md` carry it.)*
 - "Everything is adopted opt-in only — published paths are bit-unchanged,
   pinned by tests. Are you comfortable with these as the recommended
   defaults for new runs?"
+- "The kernels are your call. The measured default is to close the
+  question — GSM stays gated, and a curve-prior revival would need the
+  band location marginalized, not pinned. Unless you see a reason to
+  pursue a variant, I would spend the next cycle on the timing
+  registration."
 
 ### One-breath honesty line (if asked "so the papers helped?")
 
