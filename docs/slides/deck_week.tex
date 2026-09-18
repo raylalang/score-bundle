@@ -160,20 +160,6 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Two smaller answers, and the adoption posture}
-  \begin{itemize}
-    \item \textbf{Completion.} The coverage test the thesis proposed is
-          half the fix. Adding a disagreement guard against the cross
-          piece head closes it: worst cell $480{,}266 \to 0.7$, with the
-          per piece model's advantage kept where adaptation wins.
-    \item \textbf{Adoption.} All of it is implemented as opt in
-          capabilities: default off, published paths bit unchanged,
-          pinned by equality tests. Nothing reported changes without its
-          own registration.
-  \end{itemize}
-\end{frame}
-
-% ---------------------------------------------------------------------
 \begin{frame}{The registration is drafted. It needs one decision.}
   \centering
   \begin{tabular}{@{}rcc@{}}
@@ -198,6 +184,8 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{What I would like from you today}
+  Everything above is implemented as opt in capabilities: default off,
+  published paths bit unchanged, pinned by equality tests.
   \begin{enumerate}
     \item \textbf{The pool decision} for the correlated timing noise
           registration (and the tonal one): new corpus such as Bach10,

@@ -84,7 +84,7 @@ do the work. If he waves it off, skip straight to the opening line.)*
   thesis had documented about itself got converted into a measured
   answer."
 
-### THE LADDER — five verdicts, in speaking order
+### THE LADDER — four verdicts, in speaking order
 
 **1. Your pointers, slot one (the estimator).** A spectral-mixture GP
 replacing the per-note sine fit: killed by its own pre-committed test —
@@ -118,10 +118,10 @@ timing noise row across notes — chosen by the evidence itself on
 Hardened: joint refit and fresh mask seeds reproduce it digit-for-digit.
 This is the registration candidate.
 
-**5. The completion boundary.** The Mahalanobis test the thesis proposed
-is half right (needs a low-rank frame; misses catastrophes inside the
-excerpt's coverage); adding a disagreement guard against the cross-piece
-head closes it: worst cell 480,266 → 0.7, no cost where adaptation wins.
+*(Not spoken, unless he asks: a third documented limitation — the
+completion blow-up — is also closed, by the proposed coverage test plus a
+disagreement guard; it is deploy-mode engineering with no claim attached.
+Backup deck frame + `completion_fallback_dev.md` carry it.)*
 
 ### THE ASKS
 
