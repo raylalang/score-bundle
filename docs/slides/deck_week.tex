@@ -223,6 +223,73 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Phase 2: from a pitch track to intonation and vibrato}
+  A pitch tracker turns each track into frames $(t_j, f_{0,j}, \pi_j)$:
+  time, fundamental frequency, voicing confidence.
+  \begin{itemize}
+    \item \textbf{Frame rule}: note $i$ keeps
+          $J_i = \{\, j:\ \text{voiced},\ \pi_j \ge q_{0.2},\
+          t_j \in [o_i,\, o_i + u_i) \,\}$, at least 4 frames
+          ($o_i, u_i$: the note's annotated onset and duration,
+          $q_{0.2}$: the track's lowest confidence quintile).
+    \item \textbf{Cents curve}: each kept frame becomes a deviation from
+          equal temperament at 440 Hz,
+          $x_j = 1200 \log_2 (f_{0,j}/440) - 100\,(p_i - 69)$
+          ($p_i$: MIDI pitch).
+  \end{itemize}
+  The per-note estimator of the intonation and vibrato channels:
+  \begin{equation*}
+    x(t) \;=\; c \;+\; \gamma \sin\bigl( 2\pi f\, (t - \delta) \bigr)
+    \;+\; \text{noise}
+  \end{equation*}
+  \vspace{-4mm}
+  \begin{itemize}
+    \item Least squares: a grid over the rate $f$ (2.5 to 9 Hz), the
+          amplitudes closed form per grid point. Variances from the
+          curvature covariance $\hat\sigma^2 (J^{\!\top}\! J)^{-1}$ and
+          the delta method for $\log\gamma$, $\log f$.
+    \item A gated variant (the oscillation starts only at
+          $t \ge d_i^{\mathrm{vib}}$) supplies the vibrato onset channel.
+    \item $c$ is the vibrato-free centre, not the curve mean (they
+          coincide only over whole cycles, which a note rarely supplies).
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Phase 2: loudness, timing, and what the GP observes}
+  \begin{itemize}
+    \item \textbf{Loudness} $\ell_i$: the note's log RMS energy, centred
+          per track. Variance from the spread over four within-note
+          chunks.
+    \item \textbf{Timing} $\tau_i$: score and performed notes are matched
+          (exact order when the pitch sequences agree, else a monotone
+          pitch DTW). Each note gets a local tempo line, fit on its
+          $\pm 8$ matched neighbours with note $i$ itself excluded:
+  \end{itemize}
+  \begin{equation*}
+    \hat u_i \;=\; \hat\varphi_i\, b_i + \hat\psi_i, \qquad
+    \tau_i \;=\; u_i - \hat u_i
+  \end{equation*}
+  {\small $u_i$: performed onset (s). $b_i$: score onset (beats).
+  $\hat\varphi_i, \hat\psi_i$: the leave-one-out tempo line's slope and
+  intercept. The channel's variance is the tempo line's predictive
+  variance for note $i$, so alignment error enters the noise row, not
+  the target.}
+  \vspace{1mm}
+
+  The observation model the GP sees, per piece as before:
+  \begin{equation*}
+    \hat y \;=\; y + e, \qquad e \sim \N\bigl(0,\ \diag(\hat v)\bigr)
+  \end{equation*}
+  {\small $\hat y$: the six estimates per note. $\hat v$: each
+  estimator's own reported variance, used as given (a learned rescale
+  was measured worse, three times). Unidentifiable vibrato, octave
+  errors ($|c| > 150$ cents), and unmatched notes are missing cells:
+  the GP conditions on observed cells only. The coupling matrix $B$ is
+  now $6 \times 6$, everything else unchanged.}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Phase 2 (strings and winds, URMP): \textcolor{okgreen}{confirmed}, one claim failed}
   The same prior, unchanged. Six per-note channels estimated from audio,
   each with its own variance, used as given:
@@ -249,9 +316,19 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Phase 3 (waveform likelihood): scoped, first studies measured}
-  The likelihood block becomes the audio itself: a synthesis basis with the
-  amplitudes marginalized exactly, so pitch deviations are scored directly
-  against the waveform.
+  The likelihood block becomes the audio itself: pitch deviations are
+  scored directly against the waveform, with the amplitudes marginalized
+  exactly,
+  \begin{equation*}
+    x = \Phi(z)\, a + \epsilon, \quad
+    a \sim \N(0, \Sigma_a),\ \epsilon \sim \N(0, \sigma^2 I)
+    \;\Longrightarrow\;
+    p(x \mid z) = \N\bigl(x;\, 0,\ \Phi \Sigma_a \Phi^{\!\top} + \sigma^2 I\bigr)
+  \end{equation*}
+  {\small $x$: audio samples. $z$: per-note pitch deviations. $\Phi(z)$:
+  the harmonic synthesis basis. $a$: amplitudes, never estimated. The
+  determinant and quadratic form cost $O(m p^2)$ for $m$ samples and $p$
+  basis columns, so whole tracks are exact.}
   \begin{itemize}
     \item \textbf{Feasibility} (376 notes, 7 tracks): waveform intonation
           lands median 2.29 cents from quasi-truth with \textbf{no pitch
