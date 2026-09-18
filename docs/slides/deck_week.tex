@@ -207,6 +207,27 @@
 
 
 % ------------------------------------------------------------ backup
+\begin{frame}{Backup: what the spectral mixture estimator was}
+  The note's cents curve as a GP draw, kernel = two damped cosines:
+  \[ k(\tau) = w_1 e^{-2\pi^2 v_1 \tau^2} \cos(2\pi \mu_1 \tau)
+     + w_2 e^{-2\pi^2 v_2 \tau^2} \]
+  \begin{itemize}
+    \item Read outs: rate $= \mu_1$, extent from the posterior vibrato
+          component, centre as the realized average. Fit per note by the
+          exact marginal likelihood (grid over $\mu_1$, then local
+          optimization); uncertainties from the evidence curvature.
+    \item Implementation forced three estimand fixes: realized amplitude
+          not ensemble power, realized centre not the process constant,
+          and a coherence bound so the component is an oscillation.
+    \item The committed test: both estimators on the tracked AND the
+          ground truth curve of each note, each scored against its own
+          ground truth output, 5{,}157 development notes, parameter
+          accuracy as the pass or fail rule. Full record:
+          results/sm\_estimator\_dev.md and the two page note
+          docs/sm\_estimator\_note.pdf.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{Backup: the timing tail, before and after}
   \centering
   \includegraphics[width=0.92\linewidth]{tail_predictive_dev.png}

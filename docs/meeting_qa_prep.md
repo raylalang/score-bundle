@@ -123,6 +123,50 @@ completion blow-up — is also closed, by the proposed coverage test plus a
 disagreement guard; it is deploy-mode engineering with no claim attached.
 Backup deck frame + `completion_fallback_dev.md` carry it.)*
 
+### VERDICT 1, EXPANDED — the SM work, spoken (3 minutes; this is what
+you told him you would do, so walk it before the verdict)
+
+"What I built is exactly what I described in my note. The current
+estimator fits one rigid shape to each note's cents curve: a constant
+centre plus a phase-locked sinusoid, by least squares. The replacement
+treats the curve as a draw from a Gaussian process whose kernel is the
+spectral mixture: two damped-cosine components, one at the vibrato rate
+with a finite coherence, one at zero frequency for the drift we measured.
+The point of that kernel is that its parameters ARE the quantities we
+want: the component frequency is the rate, its power carries the extent,
+its coherence is a new phase-stability knob. Each note is fit by the same
+exact marginal likelihood the rest of the model uses, over the note's
+tracked frames — a grid over the frequency because the evidence is
+multimodal, then a local optimization; uncertainties from the curvature
+of the evidence, which is the GP's analogue of the delta method."
+
+"Implementing it taught us three things before any comparison ran. The
+process-level parameters are NOT what the channels mean. The ensemble
+power understates this note's realized amplitude, so extent must be read
+from the posterior vibrato component. The process constant and the slow
+drift split a note-level offset arbitrarily, so the centre must be read
+as the realized average. And the unconstrained evidence prefers an
+incoherent band on real curves, so the vibrato component needs a
+coherence bound to even BE a vibrato. Each read-out was redesigned
+accordingly — that estimand rule is a durable result of this work."
+
+"The test was committed before the run: both estimators on the tracked
+curve AND on the ground-truth curve of the same note, each scored against
+its own ground-truth output so neither is judged by the other's
+definition of the targets; five thousand development notes; parameter
+accuracy as the pass/fail rule. The sine fit reproduces its targets far
+better — extent and rate decisively — because the rigid fit asks a
+narrower question and answers it more stably across two measurements of
+the same note. One measure favoured the GP: describing the actual curve,
+frame by frame. That pointed at the waveform prior, which we then also
+measured: no gain at matched rank. So the question is closed at both
+slots, by the rule I committed to in advance."
+
+*(If he wants the math in front of him: hand over or screen-share
+`docs/sm_estimator_note.pdf` — two pages, problem/model/fit/outputs/
+limits/test, with the outcome banner. Backup deck frame has the equation
+and the test design.)*
+
 ### THE ASKS
 
 - "The correlated-timing-noise result is registration-grade — three
