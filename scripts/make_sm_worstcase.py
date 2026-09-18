@@ -142,10 +142,18 @@ def main() -> None:
         ax.annotate("", xy=(nl_b[q], y0 + 0.35), xytext=(nl_a[q], y0 + 0.35),
                     arrowprops=dict(arrowstyle="-", color=VERM, lw=1.2))
         ax.text(ax.get_xlim()[0], y0 + 0.9, lab, fontsize=8.5, color=INK)
+    nl_a, sm_a = fits["tracked"]
+    nl_b, sm_b = fits["ground truth"]
+    ax.text(max(nl_a["f"], nl_b["f"]) + 0.45, 2.4 + 0.35,
+            f"same {nl_a['f']:.1f} Hz twice (its grid floor)",
+            fontsize=7.5, color=VERM, ha="left", va="center")
+    ax.text((sm_a["f"] + sm_b["f"]) / 2, 2.4 - 0.35 - 0.42,
+            f"flips: {min(sm_a['f'], sm_b['f']):.1f} to "
+            f"{max(sm_a['f'], sm_b['f']):.1f} Hz on the same note",
+            fontsize=7.5, color=BLUE, ha="center", va="top")
     ax.set_yticks([])
     ax.set_ylim(-1.2, 3.6)
-    ax.set_xlabel("read-out per curve (circle = tracked, square = ground "
-                  "truth); the line is the disagreement")
+    ax.set_xlabel("read-out per curve\n(circle = tracked, square = ground truth)")
     ax.set_title("C  two witnesses: sine agrees with itself, SM flips",
                  loc="left")
     fig.tight_layout()

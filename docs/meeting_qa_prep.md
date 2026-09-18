@@ -1,8 +1,11 @@
 # Meeting prep (2026-09, private) — the measured-answers week
 
-**How to use this document.** To study: read top to bottom, then say
-Part 1 aloud twice. In the room: the pocket card is your glance-sheet,
-Part 1 is the spine you speak, Part 2 is what you reach for when asked.
+**How to use this document.** To study: the TALK MAP below with the deck
+open is the formal skeleton — one row per deck segment, claim + number +
+visual. Part 1 is the same content in spoken register; use it only to
+find words, not to learn the structure. In the room: the pocket card is
+your glance-sheet, the deck is the spine, Part 2 is what you reach for
+when asked.
 The RESERVE section (previous meetings' beats: drift study, Phase 3,
 confirmation) is still valid background — reach for it only if asked.
 **Pages are the PRINTED ones (footer / ToC); your PDF viewer's counter
@@ -56,6 +59,43 @@ is registration-grade and answers the one failed confirmation claim, and
 the tonal-metric registration waits on the same decision; (2) blessing
 of the opt-in adoption defaults (nothing reported changes without its
 own registration).
+
+---
+
+# TALK MAP — the meeting in six rows (study THIS, deck open)
+
+| # | say (one sentence) | the number | the visual / math | deck |
+|---|---|---|---|---|
+| 0 Orientation | One model: a multi-output GP on the score graph; Phase 1 confirmed, Phase 2 confirmed with one failed secondary claim (timing calibration), Phase 3 scoped. | conf. 0.376 vs 0.393\* | phase table, draft p. 6 | 2–3 |
+| 1 Kernels, slot one | The SM-GP wins the curve but is less stable at producing the sine-defined scalars our channels are; swap closed by the pre-committed rule. | 6.3 vs 9.6 cents; extent +1.686\*, rate +0.164\* | explainer + worst-case figures; note eq. (2) | 4, 10–12 |
+| 2 Kernels, slot two | At the waveform deviation prior: no gain at matched rank; a learned spectral filter switches itself off. | 2.25 vs 2.29 cents tie; off on 90% | — | 4, 16 |
+| 3 Timing tail | A variance-matched Student-t predictive kills the blow-up (floors do nothing: tail-shape, not scale); the robust fit also repairs articulation via the coupling. | 105.2 → −1.7; artic. −0.018\* | t-predictive backup frame | 5, 13–14 |
+| 4 C4 repair — MAIN | One correlated-noise parameter in the timing row, chosen by the evidence per piece, improves calibration AND cuts timing error 20%. | NLL −0.111\*, RMSE ≈99→80 ms, ρ>0 on 97–100% of cells, three runs | Σ equation (frame 6), mechanism figure (frame 7) | 6–8 |
+| 5 Asks | Pool decision; opt-in blessing; kernels three paths (default: register now, curve-level channels eventually). | calibration power ≥0.99 from 6 pieces | power table | 9 |
+
+### Reading the two SM figures (the formal version of verdict 1)
+
+- **Explainer (frame 10).** A: one lively note, both models of its curve
+  (the GP tracks it, the rigid sine cannot). B: the GP posterior split
+  into centre + drift + vibrato components; the read-outs come from these
+  REALIZED components, not from the kernel's process parameters (the
+  estimand rule). C: the three numbers with intervals, two estimators.
+- **Worst case (frame 11).** A and B are the SAME note measured twice
+  (tracked vs ground-truth curve). The SM fits the curve better in BOTH
+  panels — that is expected and is NOT the test. The estimator's product
+  is not the curve; it is three numbers per note fed to the bundle. Panel
+  C is the test: does each estimator return the same numbers from both
+  measurements? Sine: 2.5 Hz twice (partly manufactured — that is its
+  grid floor, where 13–18% of barely-vibrato notes sit). SM: 2.0 vs
+  9.5 Hz. Better curve in, different numbers out — the whole two-sided
+  verdict in one picture.
+- **If asked "but the blue fit looks better":** "Exactly — in both
+  panels, and that is the measured half of the verdict. The other half is
+  panel C: the numbers the pipeline actually consumes flip between two
+  measurements of the same note, and that instability survives
+  restriction to strong-vibrato notes, so it is intrinsic to the
+  translation into scalars, not an artifact of weak notes or of the
+  rule."
 
 ---
 
