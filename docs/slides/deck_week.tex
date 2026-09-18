@@ -628,22 +628,60 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Why the interface is the question: two vocabularies, counted}
+  \begin{center}
+  \small
+  \begin{tabular}{@{}lllp{44mm}@{}}
+    \toprule
+    & sine fit & SM-GP & reading \\
+    \midrule
+    centre & $c$ & $c$ & the sustained level (shared) \\
+    oscillation & $\gamma$, $f$, $\delta$ & $w_1$, $\mu_1$, $v_1$ &
+      amplitude and rate shared, then phase vs coherence \\
+    drift & (none) & $w_2$, $v_2$ & how much the level wanders, how fast \\
+    noise & $\sigma^2$ & $\sigma^2$ & frame noise \\
+    \midrule
+    per note & 5 & 7 & \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item The channels \textbf{invert the sine fit exactly}: $(c, \gamma,
+          f)$ rebuild the whole model (phase is a nuisance). Transcription
+          to channels to synthesis is a lossless round trip.
+    \item The channels pin the SM only to its coherent limit $v_1 \to 0$,
+          $w_2 = 0$, \textbf{which is the sine model}. Everything the SM
+          adds lives in coordinates the bundle does not carry: a lossy
+          round trip.
+    \item Interpretability follows the same line: the sine's numbers mean
+          what they say by construction. The SM's mean what their names
+          say only when the decomposition is well identified, the same
+          conditionality that closed the swap.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{The design question this opens}
   The six scalar channels are themselves a design choice, made when the
   parametric fit was the only estimator. The head-to-head reopens it, at
-  three possible depths:
+  four possible depths:
   \begin{enumerate}
     \item \textbf{Redesign the read-out, keep the interface.}
           Marginalize the rate over its posterior instead of picking the
           evidence optimum, or gate the vibrato channels by measured
           strength. Cheap, and the confirmed bundle keeps its meaning.
+    \item \textbf{Extend the vocabulary.} Add the missing coordinates as
+          channels: coherence ($\mu_1/\sqrt{v_1}$, phase stability, a
+          variable the sine cannot express) and drift power. The SM then
+          inverts from the bundle exactly as the sine does today, and
+          synthesis closes again. Each new channel needs its own target,
+          variance, and registration.
     \item \textbf{Redesign the interface (back to the drawing board).}
           Channels at curve level: the across-note GP consumes the
-          within-note posterior itself, not three scalars. The hand rules
-          become priors, uncertainty flows exactly, and the waveform
-          likelihood of Phase 3 is already curve-native. Cost: a new
-          bundle definition, priors in place of today's identifiability
-          rules, and its own registered evaluation on a fresh pool.
+          within-note posterior itself. Hand rules become priors,
+          uncertainty flows exactly, and Phase 3 is already curve-native.
+          Cost: a new bundle definition and its own registered evaluation
+          on a fresh pool.
     \item \textbf{Keep the design as is.} The confirmed pipeline stands
           on its own, and the estimator question rests as measured.
   \end{enumerate}
