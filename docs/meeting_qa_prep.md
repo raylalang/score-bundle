@@ -54,8 +54,9 @@ work for the primary claim.
 **FRAMING: the kernel direction, fully measured; the thesis's own needs,
 answered.** Two weeks since the last meeting: open with the 60-second
 orientation (Part 1 head; deck frames 2–11 are the thesis refresher +
-timeline — the deck is now thesis-shaped, fundamentals included), then
-the verdicts + two asks.
+recent-work overview). The deck is THE living deck now: thesis-shaped,
+general-audience register — no claim codes (say "timing calibration",
+not "C4") and no repo paths on slides. Then the verdicts + two asks.
 Asks: (1) the corpus/pool decision — the correlated-timing-noise result
 is registration-grade and answers the one failed confirmation claim, and
 the tonal-metric registration waits on the same decision; (2) blessing
@@ -118,9 +119,9 @@ weeks: the estimator test we agreed on, then a measuring week. And the failed ti
 where today's main result attaches."
 
 *(Deck frames 2–10 carry the whole thesis refresher — problem, the four
-model frames, one status frame per phase — and frame 11 the timeline; let
-them
-do the work. If he waves it off, skip straight to the opening line.)*
+model frames, one status frame per phase — and frame 11 the recent-work
+overview; let them do the work. If he waves it off, skip straight to the
+opening line.)*
 
 - **Opening line (memorize):** "I spent the two weeks measuring instead
   of building new things. The kernel direction from our last discussion

@@ -1,12 +1,14 @@
 % =====================================================================
 %  deck_week.tex  --  meeting deck, 2026-09 (beamer, 16:9)
 %
-%  Shape (2026-09-18, Ray's direction): a thesis presentation, not a
-%  progress report. Part I is the thesis so far (problem, model in four
-%  method frames lifted from the July lab talk, one status frame per
-%  phase); Part II is the two measured weeks in their place inside that
-%  arc; then the asks and the backups. Fundamentals are IN the deck so
-%  Phase-1 work and model basics can be revisited in the room.
+%  THE LIVING DECK (2026-09-18, Ray's direction): this is the one thesis
+%  deck from now on, kept updated, written for a general audience. A
+%  thesis presentation, not a progress report: no meeting-relative
+%  frames ("since we last met"), no internal claim codes (C1..C4 are
+%  spoken as their claim names), no repo paths or ledger references on
+%  slides. Part I is the thesis so far (problem, model in four method
+%  frames from the July lab talk, one status frame per phase); Part II
+%  is the recent measured results; then the open decisions and backups.
 %
 %  Style: house rules from the July lab talk. No em-dashes, no
 %  semicolons, no asterisks on slides ("significant", never "starred").
@@ -196,7 +198,7 @@
   $y$. $C$: the noise-free part of $K$. $m, \Sigma_y$: posterior mean and
   covariance. No variational approximation anywhere, and the baselines are
   exact special cases (diagonal $B$, zero $c_f$, fixed cross-piece mean).
-  Today's main result adds one parameter to the
+  The newest result adds one parameter to the
   \textcolor{okverm}{noise term}.}
 \end{frame}
 
@@ -217,7 +219,7 @@
   Known boundary: per-piece adaptation fails at excerpt extrapolation
   (completion), where the cross-piece head stays the honest tool. One
   documented wart: a rare timing-outlier tail can explode the pooled
-  Gaussian log score on very steady pieces (measured fix today).
+  Gaussian log score on very steady pieces (a measured fix follows).
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -229,19 +231,20 @@
     \quad
     \text{\small (intonation, extent, rate, loudness, timing, vibrato onset)}
   \end{equation*}
-  Registered claims, one shot spent 2026-08-27, scored by the frozen rule:
+  Preregistered claims, confirmed on 13 held-out pieces (2026-08-27),
+  scored by the frozen rule:
   \begin{itemize}
-    \item \textcolor{okgreen}{C1 pass}: intonation recovery ($-0.877$,
+    \item \textcolor{okgreen}{Intonation recovery: pass} ($-0.877$,
           significant, reproducing development).
-    \item \textcolor{okgreen}{C2 pass}: vibrato calibration, both channels.
-    \item \textcolor{okgreen}{C3 pass}: coverage 0.88 to 0.91 on all six
+    \item \textcolor{okgreen}{Vibrato calibration: pass}, both channels.
+    \item \textcolor{okgreen}{Coverage: pass}, 0.88 to 0.91 on all six
           channels.
-    \item \textcolor{okverm}{C4 fail}: timing calibration ($-0.030$, not
-          significant), reported verbatim. The thesis names the suspect:
-          alignment error correlated along score time.
+    \item \textcolor{okverm}{Timing calibration: fail} ($-0.030$, not
+          significant), reported verbatim. The suspect: alignment error
+          correlated along score time.
   \end{itemize}
   \vfill
-  The failed claim is where today's main result attaches.
+  The failed claim is where the newest result attaches.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -261,35 +264,31 @@
   \end{itemize}
   \vfill
   {\small\textcolor{muted}{All Phase 3 numbers are development studies, no
-  claims. Record: results/phase3\_waveform\_dev.md and
-  results/phase3\_integration\_dev.md.}}
+  claims.}}
 \end{frame}
 
-% ============================================== PART II  THE TWO WEEKS
+% ============================================== PART II  RECENT RESULTS
 % ---------------------------------------------------------------------
-\begin{frame}{Since we last met}
+\begin{frame}{Recent work: three measured answers}
   \begin{enumerate}
-    \item \textbf{Last meeting} was the reading week: the two kernel
-          pointers from our discussion, the three papers, and the two
-          slots where those kernels could enter our pipeline.
-    \item \textbf{Then the estimator test we agreed on}: the swap was
-          closed by its pre committed rule. The model itself won at curve
-          level, both sides on the next slide.
-    \item \textbf{Then a measuring week}: the second slot and a learned
-          filter closed the kernel question, and every limitation the
-          thesis had documented about itself was measured. Results
-          hardened (a multiple comparison pass, three run reproduction),
-          winners adopted as opt in machinery, one registration drafted.
+    \item \textbf{The spectral mixture kernel direction}, measured at
+          both points where it could enter the pipeline: a better model
+          of the pitch curve, not a better producer of the scalar
+          channels the pipeline consumes. Closed by a pre committed rule.
+    \item \textbf{The timing tail}, the model's one documented log score
+          failure, fixed at both levels (the predictive and the fit).
+    \item \textbf{The failed timing calibration claim} repaired:
+          correlated timing noise across notes, reproduced three ways,
+          ready to register.
   \end{enumerate}
   \vfill
-  {\small\textcolor{muted}{I measured instead of building. Everything is
-  development level, published tables unchanged. Ledger:
-  results/exploration\_week\_2026-09.md. Every significance claim on
-  these slides survives the multiple comparison pass.}}
+  {\small\textcolor{muted}{All recent results are development level and
+  exploratory, published tables unchanged. Every significance claim shown
+  survives a multiple comparison pass.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The kernel direction: measured at both slots}
+\begin{frame}{The kernel direction: measured at both entry points}
   \begin{enumerate}
     \item \textbf{As a model of the curve, it wins.} Scored frame by
           frame against the ground truth pitch curves, the spectral
@@ -301,8 +300,8 @@
           than never leaving them (pre committed rule, verified intrinsic
           on strongly vibrated notes). The confirmed bundle keeps its
           estimator.
-    \item \textbf{The same pattern at the other slot and for a learned
-          filter}: no gain as the waveform curve prior at matched rank,
+    \item \textbf{The same pattern at the other entry point and for a
+          learned filter}: no gain as the waveform curve prior at matched rank,
           and a free spectral bump is switched off by the evidence on 90
           percent of pieces.
   \end{enumerate}
@@ -331,9 +330,9 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{The failed confirmation claim now has a measured fix}
-  C4 (timing calibration) failed at the Phase 2 confirmation. The thesis
-  named the suspect: alignment error is correlated along score time, and
-  a diagonal noise row cannot represent it.
+  Timing calibration failed at the Phase 2 confirmation. The thesis named
+  the suspect: alignment error is correlated along score time, and a
+  diagonal noise row cannot represent it.
   \[ \Sigma^{\tau}_{ij} = \sqrt{d_i d_j}\; \rho^{|i-j|}
      \qquad (d_i = \text{the note's timing noise variance, } i, j
      \text{ in score order}) \]
@@ -377,7 +376,7 @@
   \vfill
   \begin{itemize}
     \item Claims ordered by this table: calibration primary, recovery
-          secondary. Draft: docs/corrnoise\_prereg\_DRAFT.md.
+          secondary. The registration text is drafted and frozen-ready.
     \item URMP is fully spent, so the pool must be a new corpus, a
           disclosed re use, or both. The tonal metric registration waits
           on the same decision.
@@ -385,27 +384,21 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{What I would like from you today}
-  Everything above is implemented as opt in capabilities: default off,
-  published paths bit unchanged, pinned by equality tests.
+\begin{frame}{Open decisions}
   \begin{enumerate}
-    \item \textbf{The pool decision} for the correlated timing noise
-          registration (and the tonal one): new corpus such as Bach10,
-          disclosed re use of the spent URMP pool, or both.
-    \item \textbf{The adoption defaults}: are you comfortable with the
-          robust timing noise, the correlated timing noise, and the
-          completion guard as recommended opt in modes for new runs?
-    \item \textbf{The kernels are your call.} They won at curve level
-          and lost at impersonating the sine fit's parameters. Three
-          paths: marginalize the rate and retest the estimator, aim the
-          kernels at curve level channels inside Phase 3, or close and
-          spend the next cycle on the timing registration. My default is
-          the last now and the second eventually.
+    \item \textbf{The registration pool} for the correlated timing noise
+          claim (the tonal metric registration waits on the same
+          decision): a new corpus such as Bach10, a disclosed re use of
+          the spent pool, or both.
+    \item \textbf{Adoption defaults.} The robust timing noise, the
+          correlated timing noise, and the completion guard are
+          implemented opt in: default off, published paths bit unchanged,
+          pinned by equality tests. Recommend them for new runs?
+    \item \textbf{The kernel direction.} Three paths: marginalize the
+          rate and retest the estimator, aim the kernels at curve level
+          channels inside Phase 3, or close and register the timing claim
+          first. Recommendation: the last now, the second eventually.
   \end{enumerate}
-  \vfill
-  {\small\textcolor{muted}{Everything else is recorded and waiting:
-  seven results documents, the ledger, the updated draft (71 pages), and
-  the registration draft.}}
 \end{frame}
 
 
@@ -446,9 +439,7 @@
     \item The committed test: both estimators on the tracked AND the
           ground truth curve of each note, each scored against its own
           ground truth output, 5{,}157 development notes, parameter
-          accuracy as the pass or fail rule. Full record:
-          results/sm\_estimator\_dev.md and the two page note
-          docs/sm\_estimator\_note.pdf.
+          accuracy as the pass or fail rule.
   \end{itemize}
 \end{frame}
 
