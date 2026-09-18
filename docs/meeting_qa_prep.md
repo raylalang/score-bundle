@@ -53,7 +53,9 @@ work for the primary claim.
 
 **FRAMING: the kernel direction, fully measured; the thesis's own needs,
 answered.** Two weeks since the last meeting: open with the 60-second
-orientation (Part 1 head; deck frames 2–3), then the verdicts + two asks.
+orientation (Part 1 head; deck frames 2–11 are the thesis refresher +
+timeline — the deck is now thesis-shaped, fundamentals included), then
+the verdicts + two asks.
 Asks: (1) the corpus/pool decision — the correlated-timing-noise result
 is registration-grade and answers the one failed confirmation claim, and
 the tonal-metric registration waits on the same decision; (2) blessing
@@ -66,21 +68,21 @@ own registration).
 
 | # | say (one sentence) | the number | the visual / math | deck |
 |---|---|---|---|---|
-| 0 Orientation | One model: a multi-output GP on the score graph; Phase 1 confirmed, Phase 2 confirmed with one failed secondary claim (timing calibration), Phase 3 scoped. | conf. 0.376 vs 0.393\* | phase table, draft p. 6 | 2–3 |
-| 1 Kernels, slot one | The SM-GP wins the curve but is less stable at producing the sine-defined scalars our channels are; swap closed by the pre-committed rule. | 6.3 vs 9.6 cents; extent +1.686\*, rate +0.164\* | explainer + worst-case figures; note eq. (2) | 4, 10–12 |
-| 2 Kernels, slot two | At the waveform deviation prior: no gain at matched rank; a learned spectral filter switches itself off. | 2.25 vs 2.29 cents tie; off on 90% | — | 4, 16 |
-| 3 Timing tail | A variance-matched Student-t predictive kills the blow-up (floors do nothing: tail-shape, not scale); the robust fit also repairs articulation via the coupling. | 105.2 → −1.7; artic. −0.018\* | t-predictive backup frame | 5, 13–14 |
-| 4 C4 repair — MAIN | One correlated-noise parameter in the timing row, chosen by the evidence per piece, improves calibration AND cuts timing error 20%. | NLL −0.111\*, RMSE ≈99→80 ms, ρ>0 on 97–100% of cells, three runs | Σ equation (frame 6), mechanism figure (frame 7) | 6–8 |
-| 5 Asks | Pool decision; opt-in blessing; kernels three paths (default: register now, curve-level channels eventually). | calibration power ≥0.99 from 6 pieces | power table | 9 |
+| 0 Orientation | One model: a multi-output GP on the score graph; Phase 1 confirmed, Phase 2 confirmed with one failed secondary claim (timing calibration), Phase 3 scoped. | conf. 0.376 vs 0.393\* | model frames 4–7, phase frames 8–10 (phase table also draft p. 6) | 2–11 |
+| 1 Kernels, slot one | The SM-GP wins the curve but is less stable at producing the sine-defined scalars our channels are; swap closed by the pre-committed rule. | 6.3 vs 9.6 cents; extent +1.686\*, rate +0.164\* | explainer + worst-case figures; note eq. (2) | 12, 18–20 |
+| 2 Kernels, slot two | At the waveform deviation prior: no gain at matched rank; a learned spectral filter switches itself off. | 2.25 vs 2.29 cents tie; off on 90% | — | 12, 24 |
+| 3 Timing tail | A variance-matched Student-t predictive kills the blow-up (floors do nothing: tail-shape, not scale); the robust fit also repairs articulation via the coupling. | 105.2 → −1.7; artic. −0.018\* | t-predictive backup frame | 13, 21–22 |
+| 4 C4 repair — MAIN | One correlated-noise parameter in the timing row, chosen by the evidence per piece, improves calibration AND cuts timing error 20%. | NLL −0.111\*, RMSE ≈99→80 ms, ρ>0 on 97–100% of cells, three runs | Σ equation (frame 14), mechanism figure (frame 15) | 14–16 |
+| 5 Asks | Pool decision; opt-in blessing; kernels three paths (default: register now, curve-level channels eventually). | calibration power ≥0.99 from 6 pieces | power table (frame 16) | 16–17 |
 
 ### Reading the two SM figures (the formal version of verdict 1)
 
-- **Explainer (frame 10).** A: one lively note, both models of its curve
+- **Explainer (frame 18).** A: one lively note, both models of its curve
   (the GP tracks it, the rigid sine cannot). B: the GP posterior split
   into centre + drift + vibrato components; the read-outs come from these
   REALIZED components, not from the kernel's process parameters (the
   estimand rule). C: the three numbers with intervals, two estimators.
-- **Worst case (frame 11).** A and B are the SAME note measured twice
+- **Worst case (frame 19).** A and B are the SAME note measured twice
   (tracked vs ground-truth curve). The SM fits the curve better in BOTH
   panels — that is expected and is NOT the test. The estimator's product
   is not the curve; it is three numbers per note fed to the bundle, and
@@ -112,11 +114,12 @@ confirmed by its own one shot, with one secondary claim failed and
 reported verbatim: timing calibration. Phase 3, the audio likelihood, is
 scoped with a first study measured. Last time we met was the reading
 week on the kernel direction from our discussion. Since then, two
-weeks: the estimator test
-you gated, then a measuring week. And the failed timing claim is exactly
+weeks: the estimator test we agreed on, then a measuring week. And the failed timing claim is exactly
 where today's main result attaches."
 
-*(Deck frames 2 and 3 carry this orientation and the timeline — let them
+*(Deck frames 2–10 carry the whole thesis refresher — problem, the four
+model frames, one status frame per phase — and frame 11 the timeline; let
+them
 do the work. If he waves it off, skip straight to the opening line.)*
 
 - **Opening line (memorize):** "I spent the two weeks measuring instead
