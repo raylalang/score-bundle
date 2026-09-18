@@ -36,8 +36,9 @@ no effect) · articulation recovery −0.018\* from robust timing noise
 (the coupling spillover) · correlated timing noise: NLL −0.111\*, RMSE
 −20%\* (≈99→80 ms), correlation detected on 97–100% of cells, three
 independent runs · completion worst cell 480,266 → 0.7 under
-coverage-test + disagreement guard · SM: wins the curve (6.3 vs 9.6 c frame-level) but ×3 less
-stable at producing the sine-defined scalars — swap closed · SM curve prior: no gain (median tie; the
+coverage-test + disagreement guard · SM: curve level favours it (6.3 vs 9.6 c median, paired mean
+borderline) but ×3 less stable at the sine-defined scalars — swap off,
+direction inconclusive · SM curve prior: no gain (median tie; the
 adverse mean does not survive piece clustering) ·
 learned filter: switched off on 90% of cells.
 
@@ -132,9 +133,10 @@ do the work. If he waves it off, skip straight to the opening line.)*
 
 ### THE LADDER — four verdicts, in speaking order
 
-**1. The kernel direction, slot one (the estimator).** The spectral-mixture GP
-is the better model of the curve — measured frame-by-frame against ground
-truth, it wins clearly (6.3 vs 9.6 cents median). What it cannot do is
+**1. The kernel direction, slot one (the estimator).** At curve level —
+measured frame-by-frame against ground truth — the evidence favours the
+spectral-mixture GP (6.3 vs 9.6 cents median; paired mean borderline, so
+favourable rather than conclusive). What it cannot do is
 impersonate the current estimator: our channels ARE the sine fit's own
 parameters, and translating a richer posterior into that scalar
 vocabulary is less stable than never leaving it (extent and rate

@@ -357,11 +357,10 @@
 \begin{frame}{Recent work: three measured answers}
   \begin{enumerate}
     \item \textbf{The spectral mixture kernel direction}, measured at
-          both points where it could enter the pipeline: the better
-          model of the pitch curve. The swap at the current scalar
-          interface is off by a pre committed rule, and the measured
-          bottleneck is the interface, not the model. The direction
-          stays live.
+          both points where it could enter the pipeline. The swap at the
+          current scalar interface is off by a pre committed rule. At
+          curve level the evidence favours the GP, not yet conclusively.
+          The direction is open, its deciding tests identified.
     \item \textbf{The timing tail}, the model's one documented log score
           failure, fixed at both levels (the predictive and the fit).
     \item \textbf{The failed timing calibration claim} repaired:
@@ -504,10 +503,11 @@
 % ---------------------------------------------------------------------
 \begin{frame}{The kernel direction: measured at both entry points}
   \begin{enumerate}
-    \item \textbf{As a model of the curve, it wins.} Scored frame by
-          frame against the ground truth pitch curves, the spectral
-          mixture GP describes what the player did better than the
-          sinusoid (median 6.3 vs 9.6 cents).
+    \item \textbf{As a model of the curve, the evidence favours it.}
+          Scored frame by frame against the ground truth pitch curves:
+          median error 6.3 vs 9.6 cents, calibration at nominal.
+          Favourable, not conclusive: the paired mean is borderline and
+          a small tail of overconfident cells remains.
     \item \textbf{As a drop in for the current estimator, it loses.}
           Our channels are the sine fit's own parameters. Translating a
           posterior over curves into those three scalars is less stable
@@ -520,10 +520,10 @@
           percent of pieces.
   \end{enumerate}
   \vfill
-  The reading: the model outgrew the scalar interface, not the other way
-  round. The direction stays live. The principled next designs:
-  marginalize the rate instead of point-picking it, or move the channels
-  themselves to curve level, where the two GP levels meet directly.
+  The reading: the direction is \textbf{inconclusive}, decided only at
+  its narrowest question (no drop-in swap today). The deciding tests are
+  not yet run: marginalize the rate instead of point-picking it, or move
+  the channels to curve level, where the two GP levels meet directly.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -610,13 +610,14 @@
           implemented opt in: default off, published paths bit unchanged,
           pinned by equality tests. Recommend them for new runs?
     \item \textbf{The kernel direction, the main discussion.} The
-          spectral mixture is the measured better model of the curve,
-          and the scalar interface is the measured bottleneck. Ways
-          forward: (a) marginalize the rate and retest at the same
-          interface, (b) move the channels to curve level so the
-          within-note and across-note GPs meet directly, (c) register
-          the timing claim first and return. Sequencing, not a keep or
-          ditch decision: (c) first does not close (a) or (b).
+          drop-in swap is conclusively off, the curve-level evidence
+          favours the spectral mixture without deciding it, so the
+          direction is inconclusive and its deciding tests are known:
+          (a) marginalize the rate and retest at the same interface,
+          (b) move the channels to curve level so the within-note and
+          across-note GPs meet directly, (c) register the timing claim
+          first and return. Sequencing, not a keep or ditch decision:
+          (c) first does not close (a) or (b).
   \end{enumerate}
 \end{frame}
 
