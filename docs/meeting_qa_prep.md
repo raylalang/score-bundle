@@ -33,14 +33,14 @@ no effect) · articulation recovery −0.018\* from robust timing noise
 (the coupling spillover) · correlated timing noise: NLL −0.111\*, RMSE
 −20%\* (≈99→80 ms), correlation detected on 97–100% of cells, three
 independent runs · completion worst cell 480,266 → 0.7 under
-coverage-test + disagreement guard · SM estimator: extent err ×3 worse
-than the sine fit (dead) · SM curve prior: no gain (median tie; the
+coverage-test + disagreement guard · SM: wins the curve (6.3 vs 9.6 c frame-level) but ×3 less
+stable at producing the sine-defined scalars — swap closed · SM curve prior: no gain (median tie; the
 adverse mean does not survive piece clustering) ·
 learned filter: switched off on 90% of cells.
 
 **Hardening (say it if probed on statistics):** every main star survives
 a week-wide Benjamini–Hochberg pass over all 14 contrasts
-(`logs/week_bh_recheck.log`); the Slot-A kill hardens (even intonation is
+(`logs/week_bh_recheck.log`); the swap verdict hardens (even intonation is
 adverse per piece); the Slot-B "harm" does NOT survive piece clustering —
 say "no gain", never "harm". **Power (the registration is drafted,
 `docs/corrnoise_prereg_DRAFT.md`):** the timing-calibration claim stars
@@ -71,7 +71,7 @@ Phase 2 carried the same prior unchanged to strings and winds and is
 confirmed by its own one shot, with one secondary claim failed and
 reported verbatim: timing calibration. Phase 3, the audio likelihood, is
 scoped with a first study measured. Last time we met was the reading
-week on your two kernel pointers. Since then, two weeks: the kill test
+week on your two kernel pointers. Since then, two weeks: the estimator test
 you gated, then a measuring week. And the failed timing claim is exactly
 where today's main result attaches."
 
@@ -511,9 +511,11 @@ tail of decomposition flips, not an artifact of the test.
 *(sm_estimator_dev.md M1 + metric caveat + M4 + stratified addendum)*
 
 **"So my kernel suggestions did not help. Was the week wasted?"**
-No: the week converted the question from opinion to measurement, at both
-places the kernels could enter and even for a learned filter, and each
-test cost one development study. And what the papers forced on us did
+No — they did help, measurably: your kernels are the better model of the
+curve itself (6.3 vs 9.6 cents frame-level against ground truth). What
+they could not do is impersonate the sine fit's own parameters, which is
+what the current pipeline consumes, and each of those tests cost one
+development study. And what the papers forced on us did
 pay: curve-level scoring, the coherence bound, and the
 realized-quantities read-out rule are now working parts of the pipeline.
 The week's numerical wins came from our own documented limitations,

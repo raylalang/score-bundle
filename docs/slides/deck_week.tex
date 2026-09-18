@@ -76,8 +76,9 @@
     \item \textbf{Last meeting} was the reading week: your two pointers,
           the three papers, and the two slots where those kernels could
           enter our pipeline.
-    \item \textbf{Then the test you gated}: the estimator slot died by
-          its pre committed rule.
+    \item \textbf{Then the test you gated}: the estimator swap was
+          closed by its pre committed rule (the model itself won at curve
+          level; frame 4 has both sides).
     \item \textbf{Then a measuring week}: the second slot and a learned
           filter closed the kernel question, and every limitation the
           thesis had documented about itself was measured. Results
@@ -137,9 +138,12 @@
   C4 (timing calibration) failed at the Phase 2 confirmation. The thesis
   named the suspect: alignment error is correlated along score time, and
   a diagonal noise row cannot represent it.
+  \[ \Sigma^{\tau}_{ij} = \sqrt{d_i d_j}\; \rho^{|i-j|}
+     \qquad (d_i = \text{the note's timing noise variance, } i, j
+     \text{ in score order}) \]
   \begin{itemize}
-    \item One correlation parameter in the timing noise row, chosen per
-          piece by the evidence itself.
+    \item One correlation parameter $\rho$ in the timing noise row,
+          chosen per piece by the evidence itself.
     \item The evidence detects the correlation on 97 to 100 percent of
           pieces (median 0.45 to 0.60).
     \item Timing calibration improves ($\Delta$NLL $-0.111$, starred),
@@ -208,6 +212,27 @@
   the registration draft.}}
 \end{frame}
 
+
+% ------------------------------------------------------------ backup
+\begin{frame}{Backup: the estimator on one real note (the win side)}
+  \centering
+  \includegraphics[width=0.98\linewidth]{sm_estimator_explainer.png}
+
+  {\scriptsize\textcolor{muted}{One cello note. A: the sine fit's rigid
+  shape drifts out of phase; the SM GP tracks the curve. B: the posterior
+  split into centre, drift, and vibrato. C: both estimators' read outs.}}
+\end{frame}
+
+\begin{frame}{Backup: the estimator on one real note (the loss side)}
+  \centering
+  \includegraphics[width=0.98\linewidth]{sm_estimator_worstcase.png}
+
+  {\scriptsize\textcolor{muted}{A barely vibrated bass note, its two
+  measurements. The flexible posterior answers each curve honestly and
+  differently; the sine fit returns its own grid floor twice. This
+  instability at the scalar read out, verified intrinsic on strongly
+  vibrated notes, is why the swap is closed.}}
+\end{frame}
 
 % ------------------------------------------------------------ backup
 \begin{frame}{Backup: what the spectral mixture estimator was}

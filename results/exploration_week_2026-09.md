@@ -13,7 +13,7 @@ recommended for new runs, published paths untouched); any change to a
 
 | study | question | verdict | record |
 |---|---|---|---|
-| Slot-A kill test (09-04, prologue) | SM-GP replaces the sine estimator? | **Dead** by its pre-committed rule: extent +1.69\*, rate +0.16\* against; c ties. Curve-level measure favoured the GP (its one signal). | `sm_estimator_dev.md` |
+| Slot-A test (09-04, prologue) | SM-GP replaces the sine estimator? | **Swap closed** by its pre-committed rule: extent +1.69\*, rate +0.16\* against at producing the sine-defined scalars; c ties. At curve level the GP **wins** (M4) — the interface reading (2026-09-18): the model outgrew the scalar interface. | `sm_estimator_dev.md` + stratified addendum |
 | A — deploy-time t predictive | rescue the measured Gaussian timing tail? | **Win**: blow-up cell NLL 105.16 → −1.69, coverage intact, pooled NLL better on healthy cells. **Floors measured dead** (tail-shape problem, not scale). | `tail_predictive_dev.md` |
 | A-full — inference-level t (EM scale mixture) | does robust *inference* buy more than rescoring? | **Yes, two things**: articulation recovery −0.018\* through the coregionalization (observed τ outliers corrupt coupled channels — first measured cross-bundle robustness effect) and coverage to nominal (0.919); τ t-NLL −0.30\*. Cost: must score likelihood-consistently. | `t_noise_em_dev.md` |
 | B — AR(1) τ noise row | the failed C4 claim's named follow-up | **Strong win, both axes**: NLL −0.111\*, RMSE −20%\* (≈99→80 ms), ρ>0 detected on 97% of cells (median 0.45). | `corrnoise_tau_dev.md` |
@@ -25,11 +25,14 @@ recommended for new runs, published paths untouched); any change to a
 ## The shape of the week
 
 The reviewed spectral kernels (the supervisor's two pointers) are now
-measured at **both** of the slots the review named — Slot A dead, Slot B
-no-gain, and even a learned filter on the graph spectrum is declined by
-the evidence. Their contribution to this pipeline is **conceptual**
-(curve-level scoring, the coherence bound, the estimand lessons), not
-numerical. Meanwhile the thesis's **own documented limitations each
+measured at **both** of the slots the review named — the estimator swap
+closed, Slot B no-gain, and even a learned filter on the graph spectrum
+is declined by the evidence. Their one numerical win is real but blocked
+by the interface: the SM-GP models the curve better (M4), yet the
+pipeline consumes sine-defined scalars, where translation is less stable
+than the incumbent's rigidity. The transferable contribution is
+conceptual (curve-level scoring, the coherence bound, the estimand
+lessons). Meanwhile the thesis's **own documented limitations each
 converted into a measured win**: the timing tail (A, both levels), the
 failed timing-calibration claim (B, hardened), the adaptation boundary
 (C).
@@ -65,7 +68,7 @@ contrast; log: `logs/week_bh_recheck.log`). Three refinements:
 1. **Every main claim survives BH**: all six correlated-τ contrasts
    (three runs × both axes), both t-EM contrasts, the learned-filter
    RMSE harm, and the kill test's adverse extent/rate stars.
-2. **The Slot-A kill hardens**: even the intonation contrast, a tie at
+2. **The swap verdict hardens**: even the intonation contrast, a tie at
    cell level, is adverse-starred per piece (Wilcoxon p = 0.0003,
    6/31 pieces negative).
 3. **The Slot-B harm downgrades**: the "+0.112\*" adverse mean does not
