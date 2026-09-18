@@ -204,12 +204,48 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Notations}
+  \begin{center}
+  {\scriptsize\setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}lp{56mm}l@{}}
+  \toprule
+  Symbol & Meaning & Role \\
+  \midrule
+  $y \in \R^{3N}$ & the three channels ($\tau$, $\log r$, $v$) of all $N$
+                     notes, stacked & part observed, part predicted \\
+  $K \in \R^{3N \times 3N}$ & the covariance of $y$: the entire model in
+                     one matrix & built per piece \\
+  $K_G(s) \in \R^{N \times N}$ & score-graph kernel: how expression
+             co-varies between related notes & from the score, $s$ learned per piece \\
+  $\ell_b$, $\ell_p$ & graph length-scales (time, pitch) & fixed, global \\
+  $B \in \R^{3 \times 3}$ & how strongly the channels move together
+             & learned per piece \\
+  $X_{\mathrm{feat}},\, H \in \R^{N \times d}$ & score descriptors and
+             music-model features & inputs ($H$: trained once, frozen) \\
+  $c_f \in \R^3$ per set & how much each channel trusts each feature set
+             & learned per piece \\
+  $\varsigma^2 \in \R^3$ & per-channel noise variances & learned per piece \\
+  $\theta \in \R^{16}$ & $(s, B, \{c_f\}, \varsigma^2)$
+             & all learned per piece, exact evidence \\
+  $\tilde y_o$, $o$ & observed values, and which entries & data \\
+  $m \in \R^{3N}$, $\Sigma_y$ & posterior mean and covariance & predicted, closed form \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \vspace{1mm}
+  {\small Phase 2 reuses everything with six channels in place of three.
+  Its per-note symbols (the channels $c, \gamma, f, \ell, \tau,
+  d^{\mathrm{vib}}$ and the estimator internals) are defined where they
+  first appear.}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Phase 1 (piano, ASAP): \textcolor{okgreen}{confirmed}}
   Preregistered one shot on 20 untouched pieces, against the two stage
   pipeline the model provably contains:
   \begin{itemize}
-    \item \textbf{Accuracy}: RMSE 0.376 vs 0.393, paired difference
-          significant.
+    \item \textbf{Accuracy}: RMSE 0.376 vs 0.393 (pooled over the
+          three channels), the paired per-piece difference significant.
     \item \textbf{Calibration}: the graph's log score contribution
           significant, coverage 0.925 at nominal 0.9.
     \item \textbf{Attribution} (measured): the per-piece feature weighting
@@ -239,10 +275,11 @@
           ($p_i$: MIDI pitch).
   \end{itemize}
   \vfill
-  Everything downstream consumes this curve. The next slide's channels
+  Everything downstream consumes this curve. The next slides' channels
   (loudness, timing) and the observation model are also shared. The two
   approaches of this chapter compete \textbf{only} for the pitch-curve
-  channels $[\,c,\ \log\gamma,\ \log f\,]$.
+  channels: intonation centre $c$ (cents), vibrato extent $\gamma$
+  (cents), vibrato rate $f$ (Hz).
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -329,6 +366,8 @@
     x(t) \;=\; c \;+\; \gamma \sin\bigl( 2\pi f\, (t - \delta) \bigr)
     \;+\; \text{noise}
   \end{equation*}
+  {\small $c$: centre (cents). $\gamma$: extent (cents). $f$: rate (Hz).
+  $\delta$: phase offset (s).}
   \begin{itemize}
     \item A grid over the rate $f$ (2.5 to 9 Hz), the amplitudes closed
           form per grid point. Variances from the curvature covariance
@@ -350,13 +389,14 @@
   treat the note's cents curve as a Gaussian process whose kernel is the
   \textbf{spectral mixture} (Wilson and Adams 2013), two damped cosines:
   \begin{equation*}
-    k(\tau) \;=\;
-    \underbrace{w_1\, e^{-2\pi^2 v_1 \tau^2} \cos(2\pi \mu_1 \tau)}_{\text{vibrato component}}
+    k(\Delta t) \;=\;
+    \underbrace{w_1\, e^{-2\pi^2 v_1 \Delta t^2} \cos(2\pi \mu_1 \Delta t)}_{\text{vibrato component}}
     \;+\;
-    \underbrace{w_2\, e^{-2\pi^2 v_2 \tau^2}}_{\text{drift component}}
+    \underbrace{w_2\, e^{-2\pi^2 v_2 \Delta t^2}}_{\text{drift component}}
   \end{equation*}
-  {\small $\tau$: time lag (s). $\mu_1$: rate (Hz). $w_1, w_2$: powers
-  (cents$^2$). $v_1, v_2$: bandwidths (Hz$^2$).}
+  {\small $\Delta t$: time lag between two frames (s), so $\tau$ stays
+  the timing channel. $\mu_1$: rate (Hz). $w_1, w_2$: powers (cents$^2$).
+  $v_1, v_2$: bandwidths (Hz$^2$).}
   \begin{itemize}
     \item The prior states only: the curve's energy sits in a band of
           width $\sqrt{v_1}$ around the rate $\mu_1$, plus a
@@ -378,13 +418,13 @@
   pair. The spectral mixture is a Gaussian mixture placed directly in
   the spectrum:
   \begin{equation*}
-    S(s) \;=\; \sum_{q=1}^{2} \frac{w_q}{2}
-    \Bigl[ \N(s;\, \mu_q, v_q) + \N(s;\, -\mu_q, v_q) \Bigr],
+    S(\xi) \;=\; \sum_{q=1}^{2} \frac{w_q}{2}
+    \Bigl[ \N(\xi;\, \mu_q, v_q) + \N(\xi;\, -\mu_q, v_q) \Bigr],
     \qquad \mu_2 = 0
   \end{equation*}
-  {\small $s$: frequency (Hz). The prior is a statement about where the
-  curve's energy lives: a peak at the vibrato rate, mass at zero for the
-  drift.}
+  {\small $\xi$: frequency (Hz), not the graph parameter $s$. The prior
+  is a statement about where the curve's energy lives: a peak at the
+  vibrato rate, mass at zero for the drift.}
   \vspace{1mm}
   \begin{itemize}
     \item \textbf{The thesis does the same thing one level up.} Across
@@ -651,9 +691,10 @@
   Timing calibration failed at the Phase 2 confirmation. The thesis named
   the suspect: alignment error is correlated along score time, and a
   diagonal noise row cannot represent it.
-  \[ \Sigma^{\tau}_{ij} = \sqrt{d_i d_j}\; \rho^{|i-j|}
-     \qquad (d_i = \text{the note's timing noise variance, } i, j
-     \text{ in score order}) \]
+  \[ \Sigma^{\tau}_{ij} \;=\; \varsigma_{\tau,i}\,
+     \varsigma_{\tau,j}\; \rho^{|i-j|}
+     \qquad (\varsigma_{\tau,i}\text{: note } i\text{'s timing noise
+     standard deviation, } i, j \text{ in score order}) \]
   \begin{itemize}
     \item One correlation parameter $\rho$ in the timing noise row,
           chosen per piece by the evidence itself.
