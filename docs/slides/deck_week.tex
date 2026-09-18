@@ -273,13 +273,19 @@
           equal temperament at 440 Hz,
           $x_j = 1200 \log_2 (f_{0,j}/440) - 100\,(p_i - 69)$
           ($p_i$: MIDI pitch).
+    \item \textbf{Two curves per note.} Tracked: pyin, run by us on the
+          track audio, with the voicing confidence $\pi_j$ above.
+          Ground truth: the corpus's own frame-level pitch annotation of
+          the same separately recorded single-instrument track (46 ms
+          window, 10 ms hop), made by the dataset authors. Cleaner, but
+          still a measurement of the same performance.
   \end{itemize}
   \vfill
-  Everything downstream consumes this curve. The next slides' channels
-  (loudness, timing) and the observation model are also shared. The two
-  approaches of this chapter compete \textbf{only} for the pitch-curve
-  channels: intonation centre $c$ (cents), vibrato extent $\gamma$
-  (cents), vibrato rate $f$ (Hz).
+  Everything downstream consumes the tracked curve. The next slides'
+  channels and the observation model are also shared. The two approaches
+  of this chapter compete \textbf{only} for the pitch-curve channels:
+  intonation centre $c$ (cents), vibrato extent $\gamma$ (cents),
+  vibrato rate $f$ (Hz).
 \end{frame}
 
 % ---------------------------------------------------------------------
