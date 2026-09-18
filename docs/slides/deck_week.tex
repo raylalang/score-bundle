@@ -540,10 +540,13 @@
   Pass or fail decided before the run, on 5{,}157 development notes with
   identifiable vibrato in both curves:
   \begin{itemize}
-    \item Each estimator runs on the \textbf{tracked} curve AND on the
-          \textbf{ground truth} curve of the same note, and is scored
-          against its own ground-truth output. Neither model is scored
-          against the other's definition of the targets.
+    \item There is no ground-truth $c$, $\log\gamma$, or $\log f$: the
+          corpus annotates a pitch \textbf{curve}, and the channels are
+          estimator-defined quantities. So each estimator runs on the
+          \textbf{tracked} curve AND on the \textbf{ground truth} curve
+          of the same note, and is scored against its own ground-truth
+          output. Neither model is scored against the other's definition
+          of the targets.
     \item Four measures: (1) \textbf{parameter accuracy}, the
           pre-committed pass or fail rule (the pipeline consumes exactly
           these scalars). (2) calibration of the tracked estimate against
