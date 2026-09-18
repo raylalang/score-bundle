@@ -488,7 +488,11 @@ settle differently on each curve, while the rigid fit asks a narrower
 question and gets the same answer twice. Our pipeline consumes the three
 numbers, so reproducibility was the committed pass/fail axis. The
 curve-level win is exactly what sent us to the waveform prior — where it
-did not convert either. *(sm_estimator_dev.md M1 + metric caveat + M4)*
+did not convert either. And we checked the population objection: even
+restricted to notes with unambiguous vibrato, the reproducibility loss
+stars on all three read-outs — the instability is intrinsic, a heavy
+tail of decomposition flips, not an artifact of the test.
+*(sm_estimator_dev.md M1 + metric caveat + M4 + stratified addendum)*
 
 **"So my kernel suggestions did not help. Was the week wasted?"**
 No: the week converted the question from opinion to measurement, at both

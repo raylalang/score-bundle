@@ -108,3 +108,31 @@ the rigid fit — that instability, not any single bug, is why Slot A dies.
   there is a separate decision, discussed before built.
 - Reproduce: `PYTHONPATH=src:scripts python scripts/eval_sm_estimator.py
   run --shard K/4` (×4) then `report`.
+
+## Stratified addendum (2026-09-18, prompted by the worst-case review)
+
+Ray's challenge — "conceptually it should be better; was the population
+or the criterion at fault?" — was tested two ways, offline.
+
+**The worst case is real and instructive** (`docs/thesis/figures/
+sm_estimator_worstcase.png`, `scripts/make_sm_worstcase.py`): a
+double-bass note with essentially no vibrato, whose two curves genuinely
+contain different residual wiggles (tracker quantization erased the
+micro-oscillation from one). The SM honestly reports two different
+answers (2.0 vs 9.5 Hz, both near its band edges); the sine fit reports
+2.5 Hz twice — its own grid floor, i.e. a manufactured agreement. On
+barely-vibrato notes 13–18% of sine rates sit at the grid floor.
+
+**But the kill survives stratification by true vibrato strength**
+(GT-curve extent): the reproducibility gap narrows ~4x from weak to real
+vibrato (rate disagreement 0.402→0.110 vs sine 0.175→0.025), yet on the
+unambiguous slice (extent ≥ 10 cents, n = 2,340) the paired loss still
+stars on all three read-outs (rate +0.154*, extent +1.256*, centre
++0.327*; cluster bootstrap over pieces). Medians are small (+0.06/+0.08)
+— the SM is usually fine but carries a heavy tail of decomposition
+flips even on good notes, which is fatal for a pipeline-feeding
+estimator. Verdict unchanged; interpretation sharpened: the instability
+is intrinsic to point-picking from a multimodal, weakly-identified
+decomposition, not an artifact of the population or the rule. A future
+redesign would marginalize the rate rather than point-pick it, or gate
+by vibrato strength — recorded as design notes, not scheduled.
