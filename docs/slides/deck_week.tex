@@ -298,20 +298,28 @@
     \quad
     \text{\small (intonation, extent, rate, loudness, timing, vibrato onset)}
   \end{equation*}
-  Preregistered claims, confirmed on 13 held-out pieces (2026-08-27),
-  scored by the frozen rule:
+  Does the graph prior earn its place on real audio? Claims preregistered,
+  then scored once on 13 held-out pieces (2026-08-27) by a rule fixed
+  before that data was opened. Each $\Delta$ = metric(full model) $-$
+  metric(no-graph ablation), paired per piece, negative favours the graph:
   \begin{itemize}
-    \item \textcolor{okgreen}{Intonation recovery: pass} ($-0.877$,
-          significant, reproducing development).
-    \item \textcolor{okgreen}{Vibrato calibration: pass}, both channels.
-    \item \textcolor{okgreen}{Coverage: pass}, 0.88 to 0.91 on all six
-          channels.
-    \item \textcolor{okverm}{Timing calibration: fail} ($-0.030$, not
-          significant), reported verbatim. The suspect: alignment error
-          correlated along score time.
+    \item \textcolor{okgreen}{Intonation recovery: pass.}
+          $\Delta$RMSE $-0.877$ cents, significant.
+    \item \textcolor{okgreen}{Vibrato calibration: pass.}
+          $\Delta$NLL $-2.990$ (extent) and $-0.564$ (rate), both
+          significant.
+    \item \textcolor{okgreen}{Coverage: pass.} 0.88 to 0.91 at nominal
+          0.90 on all six channels.
+    \item \textcolor{okverm}{Timing calibration: fail.}
+          $\Delta$NLL $-0.030$, the interval includes zero. Reported
+          verbatim. The suspect: alignment error correlated along score
+          time.
   \end{itemize}
   \vfill
-  The failed claim is where the newest result attaches.
+  This confirmed the pipeline \textbf{as built}, sine estimator inside.
+  Whether a GP should replace that estimator is a separate, open
+  question (the central section). The failed claim is where the newest
+  result attaches.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -349,9 +357,11 @@
 \begin{frame}{Recent work: three measured answers}
   \begin{enumerate}
     \item \textbf{The spectral mixture kernel direction}, measured at
-          both points where it could enter the pipeline: a better model
-          of the pitch curve, not a better producer of the scalar
-          channels the pipeline consumes. Closed by a pre committed rule.
+          both points where it could enter the pipeline: the better
+          model of the pitch curve. The swap at the current scalar
+          interface is off by a pre committed rule, and the measured
+          bottleneck is the interface, not the model. The direction
+          stays live.
     \item \textbf{The timing tail}, the model's one documented log score
           failure, fixed at both levels (the predictive and the fit).
     \item \textbf{The failed timing calibration claim} repaired:
@@ -391,6 +401,36 @@
           of the thesis: a grid over $\mu_1$ (the evidence is
           multimodal), local optimization, variances from the evidence
           curvature.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Why spectral: the thesis already thinks this way}
+  A stationary kernel and a symmetric spectral density are a Fourier
+  pair. The spectral mixture is a Gaussian mixture placed directly in
+  the spectrum:
+  \begin{equation*}
+    S(s) \;=\; \sum_{q=1}^{2} \frac{w_q}{2}
+    \Bigl[ \N(s;\, \mu_q, v_q) + \N(s;\, -\mu_q, v_q) \Bigr],
+    \qquad \mu_2 = 0
+  \end{equation*}
+  {\small $s$: frequency (Hz). The prior is a statement about where the
+  curve's energy lives: a peak at the vibrato rate, mass at zero for the
+  drift.}
+  \vspace{1mm}
+  \begin{itemize}
+    \item \textbf{The thesis does the same thing one level up.} Across
+          notes, $K_G = U\, g(\nu; s)\, U^{\!\top}$ shapes the
+          \textbf{score-graph spectrum}. Within a note, the spectral
+          mixture shapes the \textbf{time spectrum}. One design language
+          at both levels: put the prior where the energy is.
+    \item \textbf{Where the levels meet today}: the observation model.
+          The within-note fit hands each across-note cell an estimate
+          and a variance, three scalars per note.
+    \item \textbf{The unification this opens}: a GP at every level. The
+          estimator's hand rules (minimum cycles, gates, octave
+          thresholds) become priors and posteriors, and uncertainty
+          flows into the noise rows automatically.
   \end{itemize}
 \end{frame}
 
@@ -480,9 +520,10 @@
           percent of pieces.
   \end{enumerate}
   \vfill
-  The reading: the model may have outgrown the scalar interface, not the
-  other way round. What it already changed: curve level scoring, a
-  coherence bound, and the realized quantities read out rule.
+  The reading: the model outgrew the scalar interface, not the other way
+  round. The direction stays live. The principled next designs:
+  marginalize the rate instead of point-picking it, or move the channels
+  themselves to curve level, where the two GP levels meet directly.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -568,10 +609,14 @@
           correlated timing noise, and the completion guard are
           implemented opt in: default off, published paths bit unchanged,
           pinned by equality tests. Recommend them for new runs?
-    \item \textbf{The kernel direction.} Three paths: marginalize the
-          rate and retest the estimator, aim the kernels at curve level
-          channels inside Phase 3, or close and register the timing claim
-          first. Recommendation: the last now, the second eventually.
+    \item \textbf{The kernel direction, the main discussion.} The
+          spectral mixture is the measured better model of the curve,
+          and the scalar interface is the measured bottleneck. Ways
+          forward: (a) marginalize the rate and retest at the same
+          interface, (b) move the channels to curve level so the
+          within-note and across-note GPs meet directly, (c) register
+          the timing claim first and return. Sequencing, not a keep or
+          ditch decision: (c) first does not close (a) or (b).
   \end{enumerate}
 \end{frame}
 

@@ -70,20 +70,20 @@ own registration).
 | # | say (one sentence) | the number | the visual / math | deck |
 |---|---|---|---|---|
 | 0 Orientation | One model: a multi-output GP on the score graph; Phase 1 confirmed, Phase 2 confirmed with one failed secondary claim (timing calibration), Phase 3 scoped. | conf. 0.376 vs 0.393\* | model frames 4–7, Phase-2 method math 9–10, phase status 8/11/12 | 2–13 |
-| 1 Kernels, slot one | The SM-GP wins the curve but is less stable at producing the sine-defined scalars our channels are; swap closed by the pre-committed rule. | 6.3 vs 9.6 cents; extent +1.686\*, rate +0.164\* | SM section: model 14, read-outs 15, test 16, win 17, loss 18, verdict 19 | 14–19 |
-| 2 Kernels, slot two | At the waveform deviation prior: no gain at matched rank; a learned spectral filter switches itself off. | 2.25 vs 2.29 cents tie; off on 90% | — | 19, 28 |
-| 3 Timing tail | A variance-matched Student-t predictive kills the blow-up (floors do nothing: tail-shape, not scale); the robust fit also repairs articulation via the coupling. | 105.2 → −1.7; artic. −0.018\* | t-predictive backup frame | 20, 25–26 |
-| 4 C4 repair — MAIN | One correlated-noise parameter in the timing row, chosen by the evidence per piece, improves calibration AND cuts timing error 20%. | NLL −0.111\*, RMSE ≈99→80 ms, ρ>0 on 97–100% of cells, three runs | Σ equation (frame 21), mechanism figure (frame 22) | 21–23 |
-| 5 Asks | Pool decision; opt-in blessing; kernels three paths (default: register now, curve-level channels eventually). | calibration power ≥0.99 from 6 pieces | power table (frame 23) | 23–24 |
+| 1 Kernels, slot one | The SM-GP wins the curve but is less stable at producing the sine-defined scalars our channels are; swap closed by the pre-committed rule. | 6.3 vs 9.6 cents; extent +1.686\*, rate +0.164\* | SM section: model 14, thesis connection 15, read-outs 16, test 17, win 18, loss 19, verdict 20 | 14–20 |
+| 2 Kernels, slot two | At the waveform deviation prior: no gain at matched rank; a learned spectral filter switches itself off. | 2.25 vs 2.29 cents tie; off on 90% | — | 20, 29 |
+| 3 Timing tail | A variance-matched Student-t predictive kills the blow-up (floors do nothing: tail-shape, not scale); the robust fit also repairs articulation via the coupling. | 105.2 → −1.7; artic. −0.018\* | t-predictive backup frame | 21, 26–27 |
+| 4 C4 repair — MAIN | One correlated-noise parameter in the timing row, chosen by the evidence per piece, improves calibration AND cuts timing error 20%. | NLL −0.111\*, RMSE ≈99→80 ms, ρ>0 on 97–100% of cells, three runs | Σ equation (frame 22), mechanism figure (frame 23) | 22–24 |
+| 5 Asks | Pool decision; opt-in blessing; kernels three paths (default: register now, curve-level channels eventually). | calibration power ≥0.99 from 6 pieces | power table (frame 24) | 24–25 |
 
 ### Reading the two SM figures (the formal version of verdict 1)
 
-- **Explainer (frame 17).** A: one lively note, both models of its curve
+- **Explainer (frame 18).** A: one lively note, both models of its curve
   (the GP tracks it, the rigid sine cannot). B: the GP posterior split
   into centre + drift + vibrato components; the read-outs come from these
   REALIZED components, not from the kernel's process parameters (the
   estimand rule). C: the three numbers with intervals, two estimators.
-- **Worst case (frame 18).** A and B are the SAME note measured twice
+- **Worst case (frame 19).** A and B are the SAME note measured twice
   (tracked vs ground-truth curve). The SM fits the curve better in BOTH
   panels — that is expected and is NOT the test. The estimator's product
   is not the curve; it is three numbers per note fed to the bundle, and
@@ -222,8 +222,9 @@ territory."
 *(If he wants the math in front of him: hand over or screen-share
 `docs/sm_estimator_note.pdf` — two pages, problem/model/fit/outputs/
 limits/test, with the outcome banner. The SM section is now the deck's
-spine: frames 14–16 carry the model, the read-out rules, and the test
-design, 17–18 the two pictures, 19 the verdict.)*
+spine: frames 14–17 carry the model, the two-level spectral connection,
+the read-out rules, and the test design, 18–19 the two pictures, 20 the
+verdict.)*
 
 ### THE ASKS
 
