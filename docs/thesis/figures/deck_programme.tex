@@ -35,14 +35,14 @@
    $\tilde y = y + e$ on observed notes};
 \node[lik] (l2) at (7.6, 0)
   {\textbf{Phase 2: $f_0$-derived targets}\\[1pt]
-   noisy estimates, per-(note, channel) masks};
+   noisy estimates, six channels,\\ per-(note, channel) masks};
 \node[lik, dashed] (l3) at (7.6, -2.3)
   {\textbf{Phase 3: waveform}\\[1pt]
    $x = \Phi(z)\,a + \epsilon$, no per-note data};
 
-\node[tag, fill=okgreen] at ([xshift=-6mm, yshift=0mm]l1.east |- l1.north)  {Done};
-\node[tag, fill=okamber] at ([xshift=-6mm]l2.east |- l2.north) {WIP};
-\node[tag] at ([xshift=-8mm]l3.east |- l3.north) {To Do};
+\node[tag, fill=okgreen, anchor=east] at ([xshift=-2mm]l1.north east) {Confirmed};
+\node[tag, fill=okgreen, anchor=east] at ([xshift=-2mm]l2.north east) {Confirmed};
+\node[tag, fill=okamber, anchor=east] at ([xshift=-2mm]l3.north east) {Scoped};
 
 \node[outp] (o1) at (13.4, 2.3) {per-note posterior\\ {\scriptsize $\tau, \log r, v$}};
 \node[outp] (o2) at (13.4, 0) {per-note posterior\\ {\scriptsize $+\,c$, vibrato}};
