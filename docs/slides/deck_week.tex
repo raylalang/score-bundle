@@ -92,25 +92,27 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Your two pointers: measured at both slots, closed}
+\begin{frame}{Your two pointers: measured at both slots}
   \begin{enumerate}
-    \item \textbf{As the note estimator} (spectral mixture GP replacing
-          the sine fit). Killed by its own pre committed test. The sine
-          fit reproduces its targets across two measurements of the same
-          note far better (extent and rate decisively, and per piece even
-          the intonation tie turns against the GP).
-    \item \textbf{As the waveform pitch curve prior} (replacing the bump
-          basis). No gain at matched rank: median 2.25 vs 2.29 cents.
-          A vibrato band pinned at a wrong scaffold rate is worse than
-          frequency neutral bumps.
-    \item \textbf{As a learned filter on the graph spectrum.} The
-          evidence switches a free spectral bump off on 90 percent of
-          pieces.
+    \item \textbf{As a model of the curve, it wins.} Scored frame by
+          frame against the ground truth pitch curves, the spectral
+          mixture GP describes what the player did better than the
+          sinusoid (median 6.3 vs 9.6 cents).
+    \item \textbf{As a drop in for the current estimator, it loses.}
+          Our channels are the sine fit's own parameters. Translating a
+          posterior over curves into those three scalars is less stable
+          than never leaving them (pre committed rule; verified intrinsic
+          on strongly vibrated notes). The confirmed bundle keeps its
+          estimator.
+    \item \textbf{The same pattern at the other slot and for a learned
+          filter}: no gain as the waveform curve prior at matched rank;
+          a free spectral bump is switched off by the evidence on 90
+          percent of pieces.
   \end{enumerate}
   \vfill
-  What survives is conceptual: curve level scoring, a coherence bound,
-  and a read out rule (estimate realized quantities, not process
-  parameters).
+  The reading: the model may have outgrown the scalar interface, not the
+  other way round. What it already changed: curve level scoring, a
+  coherence bound, and the realized quantities read out rule.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -193,11 +195,12 @@
     \item \textbf{The adoption defaults}: are you comfortable with the
           robust timing noise, the correlated timing noise, and the
           completion guard as recommended opt in modes for new runs?
-    \item \textbf{The kernels are your call}: the measured default is to
-          close the question. GSM stays gated, and a revival of the curve
-          prior would need the band location marginalized rather than
-          pinned. Unless you see a reason to pursue a variant, I would
-          spend the next cycle on the timing registration.
+    \item \textbf{The kernels are your call.} They won at curve level
+          and lost at impersonating the sine fit's parameters. Three
+          paths: marginalize the rate and retest the estimator, aim the
+          kernels at curve level channels inside Phase 3, or close and
+          spend the next cycle on the timing registration. My default is
+          the last now and the second eventually.
   \end{enumerate}
   \vfill
   {\small\textcolor{muted}{Everything else is recorded and waiting:

@@ -86,14 +86,19 @@ do the work. If he waves it off, skip straight to the opening line.)*
 
 ### THE LADDER — four verdicts, in speaking order
 
-**1. Your pointers, slot one (the estimator).** A spectral-mixture GP
-replacing the per-note sine fit: killed by its own pre-committed test —
-the sine fit reproduces its targets across two measurements of the same
-note far better (extent and rate decisively). One insight survived: the
-GP describes the CURVE better; the sine fit reproduces SUMMARIES better.
+**1. Your pointers, slot one (the estimator).** The spectral-mixture GP
+is the better model of the curve — measured frame-by-frame against ground
+truth, it wins clearly (6.3 vs 9.6 cents median). What it cannot do is
+impersonate the current estimator: our channels ARE the sine fit's own
+parameters, and translating a richer posterior into that scalar
+vocabulary is less stable than never leaving it (extent and rate
+decisively, by the pre-committed rule). So the swap is off — the
+confirmed bundle keeps its estimator — and the real finding is that the
+model may have outgrown the interface.
 
-**2. Your pointers, slot two (the waveform curve prior).** That surviving
-insight pointed at the Phase-3 deviation prior — measured there too:
+**2. Your pointers, slot two (the waveform curve prior).** The
+curve-level win pointed at the Phase-3 deviation prior — measured there
+too:
 no gain at matched rank (2.25 vs 2.29 cents median, tie; the paired mean
 significantly against, because a vibrato band pinned at a wrong scaffold
 rate is worse than neutral bumps). And a LEARNED filter on the graph
@@ -152,15 +157,21 @@ accordingly — that estimand rule is a durable result of this work."
 
 "The test was committed before the run: both estimators on the tracked
 curve AND on the ground-truth curve of the same note, each scored against
-its own ground-truth output so neither is judged by the other's
-definition of the targets; five thousand development notes; parameter
-accuracy as the pass/fail rule. The sine fit reproduces its targets far
-better — extent and rate decisively — because the rigid fit asks a
-narrower question and answers it more stably across two measurements of
-the same note. One measure favoured the GP: describing the actual curve,
-frame by frame. That pointed at the waveform prior, which we then also
-measured: no gain at matched rank. So the question is closed at both
-slots, by the rule I committed to in advance."
+its own ground-truth output; five thousand development notes; parameter
+accuracy as the pass/fail rule. Two results came out, and both matter.
+At curve level the GP wins clearly — it is the better model of what the
+player did. At parameter level it loses on stability — and here is the
+honest subtlety: our channels are literally the sine model's parameters,
+so the test asks both models to answer in the sine fit's vocabulary. The
+GP answers by translating a posterior over curves into three scalars, and
+that translation wobbles — we verified this is intrinsic, not a
+population artifact, by re-testing on strongly-vibrated notes only. So
+the committed rule correctly protects the confirmed bundle: no estimator
+swap. But the scientific reading is not that the model failed — it is
+that the model outgrew the scalar interface. The principled paths, if we
+ever want them, are marginalizing the rate instead of point-picking it,
+or moving the channels themselves to curve level, which is Phase-3
+territory."
 
 *(If he wants the math in front of him: hand over or screen-share
 `docs/sm_estimator_note.pdf` — two pages, problem/model/fit/outputs/
@@ -176,18 +187,23 @@ and the test design.)*
 - "Everything is adopted opt-in only — published paths are bit-unchanged,
   pinned by tests. Are you comfortable with these as the recommended
   defaults for new runs?"
-- "The kernels are your call. The measured default is to close the
-  question — GSM stays gated, and a curve-prior revival would need the
-  band location marginalized, not pinned. Unless you see a reason to
-  pursue a variant, I would spend the next cycle on the timing
-  registration."
+- "The kernels: your model won at curve level and lost at impersonating
+  the sine fit's parameters. I see three paths and want your read:
+  (a) marginalize the rate instead of point-picking it and retest the
+  estimator; (b) accept that the scalar channels are the limitation and
+  aim the kernels at curve-level channels inside Phase 3; (c) close it
+  and spend the next cycle on the timing registration. My default is (c)
+  now and (b) eventually, but this is genuinely your call."
 
 ### One-breath honesty line (if asked "so the papers helped?")
 
-"They didn't improve a number anywhere we could measure — and we
-measured both slots. What they gave us is how we now score curves, bound
-coherence, and read out realized quantities. The week's wins came from
-the thesis's own documented limitations."
+"Your kernels turned out to be the better model of the curve — we
+measured that. They could not beat the incumbent at producing the
+incumbent's own parameters, which is what the current pipeline consumes;
+that swap is closed by a pre-committed rule. What they changed is how we
+score curves, bound coherence, and read out realized quantities — and
+they opened the question of whether the scalar interface itself is the
+eventual limitation."
 
 
 # RESERVE — measured results (deploy ONLY if Ray chooses to open them)
