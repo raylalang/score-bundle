@@ -54,6 +54,7 @@
 \newcommand{\N}{\mathcal{N}}
 \newcommand{\Lg}{L_{\mathcal G}}
 \newcommand{\diag}{\operatorname{diag}}
+\newcommand{\one}{\mathbf{1}}
 
 \title{\textbf{Expressive Performance as a Gaussian Process\\ on a Musical Score Graph}}
 \subtitle{The thesis so far, and two weeks of measured answers}
@@ -245,6 +246,20 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Phase 2: what the data looks like}
+  \centering
+  \includegraphics[width=0.98\linewidth]{phase2_frames_intro.png}
+
+  {\scriptsize\textcolor{muted}{Real development notes, no fits drawn.
+  A: the same note measured twice. The tracker quantizes and drops
+  frames, the ground truth shows the oscillation underneath. Both
+  measurements exist for every development note, which the head-to-head
+  test later exploits. B: enough frames and cycles, the vibrato channels
+  are observed. C: a short flat note, the rule refuses, the cells are
+  missing and the across-note GP simply conditions on fewer cells.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Phase 2: loudness, timing, and what the GP observes}
   \begin{itemize}
     \item \textbf{Loudness} $\ell_i$: the note's log RMS energy, centred
@@ -388,28 +403,40 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Reading out the channels: process parameters are not estimands}
-  The channels mean \textbf{this note's realized quantities}. Three
-  read-out rules, each forced by a measured mismatch:
+\begin{frame}{Approach 2: from the GP posterior to the three channels}
+  Given the fitted kernel, the posterior mean of the curve splits exactly
+  into its components (constant, drift, vibrato):
+  \begin{equation*}
+    \hat m(t) \;=\; \hat c \;+\; \hat m_2(t) \;+\; \hat m_1(t),
+    \qquad
+    \hat m_q \;=\; K_q\, K^{-1} (x - \hat c\, \one)
+  \end{equation*}
+  {\small $K_q$: component $q$'s kernel matrix. $K$: the full kernel plus
+  noise. The win-side figure shows this split on a real note.}
+  \begin{center}
+  \small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    channel & estimate & variance \\
+    \midrule
+    intonation $c$ & $\hat c + \operatorname{mean}(\hat m_2)$
+      \ (the realized average) & flat-prior GLS variance \\
+    extent $\log\gamma$ & $\log\bigl(\sqrt{2}\,
+      \operatorname{std}(\hat m_1)\bigr)$ & evidence curvature in $\log w_1$ \\
+    rate $\log f$ & $\log \hat\mu_1$ & evidence curvature in $\mu_1$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
   \begin{itemize}
-    \item \textbf{Extent.} The ensemble scale $\sqrt{2 w_1}$ is informed
-          by only two effective degrees of freedom on a near-coherent
-          component, so it is spread around the realized amplitude
-          (median 0.83 of it). Read
-          $\hat\gamma = \sqrt{2}\,\operatorname{std}(\hat m_1)$ from the
-          posterior vibrato component $\hat m_1$ instead.
-    \item \textbf{Centre.} The process constant and the slow drift split
-          a note-level offset arbitrarily. Read the realized average,
-          $\hat c + \operatorname{mean}(\hat m_2)$
-          (median error 9.6 to 2.1 cents).
-    \item \textbf{Rate.} On real curves the unconstrained evidence
-          prefers an incoherent band, under which the rate is weakly
-          identified. Bound the bandwidth, $\sqrt{v_1} \le \mu_1 / 8$,
-          so the component is an oscillation.
+    \item Every read-out is a \textbf{realized} quantity of this note's
+          curve, never a process parameter (the ensemble scale spreads
+          around the realized amplitude, the constant splits an offset
+          with the drift arbitrarily).
+    \item The coherence bound $\sqrt{v_1} \le \mu_1/8$ keeps the
+          component an oscillation, weak notes report a wide variance
+          instead of being refused, and the interface is the same as
+          approach 1: an estimate and a variance per channel per note.
   \end{itemize}
-  \vfill
-  Weak notes are never refused: a flat evidence reports itself as a wide
-  variance, replacing the sine fit's hard minimum frame and cycle rules.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -528,6 +555,30 @@
   its narrowest question (no drop-in swap today). The deciding tests are
   not yet run: marginalize the rate instead of point-picking it, or move
   the channels to curve level, where the two GP levels meet directly.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The design question this opens}
+  The six scalar channels are themselves a design choice, made when the
+  parametric fit was the only estimator. The head-to-head reopens it, at
+  three possible depths:
+  \begin{enumerate}
+    \item \textbf{Redesign the read-out, keep the interface.}
+          Marginalize the rate over its posterior instead of picking the
+          evidence optimum, or gate the vibrato channels by measured
+          strength. Cheap, and the confirmed bundle keeps its meaning.
+    \item \textbf{Redesign the interface (back to the drawing board).}
+          Channels at curve level: the across-note GP consumes the
+          within-note posterior itself, not three scalars. The hand rules
+          become priors, uncertainty flows exactly, and the waveform
+          likelihood of Phase 3 is already curve-native. Cost: a new
+          bundle definition, priors in place of today's identifiability
+          rules, and its own registered evaluation on a fresh pool.
+    \item \textbf{Keep the design as is.} The confirmed pipeline stands
+          on its own, and the estimator question rests as measured.
+  \end{enumerate}
+  \vfill
+  Which depth to aim at is the decision this talk asks for (final slide).
 \end{frame}
 
 % ---------------------------------------------------------------------
