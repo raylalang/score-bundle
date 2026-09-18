@@ -50,7 +50,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Where the thesis stands (30 seconds of orientation)}
+\begin{frame}{Where the thesis stands}
   One model: a multi output Gaussian process on the score graph. Score and
   performance in, per note expressive variables out, each with a
   calibrated error bar.
@@ -60,7 +60,7 @@
           stage pipeline the model provably contains).
     \item \textbf{Phase 2} (strings and winds, URMP): the same prior,
           unchanged, on six estimated channels.
-          \textcolor{okgreen}{Confirmed} by its own one shot; the
+          \textcolor{okgreen}{Confirmed} by its own one shot. The
           secondary claim, \textbf{timing calibration}, failed and is
           reported verbatim.
     \item \textbf{Phase 3} (audio likelihood): scoped, first development
@@ -71,14 +71,14 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Since we last met (two weeks)}
+\begin{frame}{Since we last met}
   \begin{enumerate}
     \item \textbf{Last meeting} was the reading week: the two kernel
           pointers from our discussion, the three papers, and the two
           slots where those kernels could enter our pipeline.
-    \item \textbf{Then the test you gated}: the estimator swap was
-          closed by its pre committed rule (the model itself won at curve
-          level; frame 4 has both sides).
+    \item \textbf{Then the estimator test we agreed on}: the swap was
+          closed by its pre committed rule. The model itself won at curve
+          level, both sides on the next slide.
     \item \textbf{Then a measuring week}: the second slot and a learned
           filter closed the kernel question, and every limitation the
           thesis had documented about itself was measured. Results
@@ -86,7 +86,7 @@
           winners adopted as opt in machinery, one registration drafted.
   \end{enumerate}
   \vfill
-  {\small\textcolor{muted}{I measured instead of building; everything is
+  {\small\textcolor{muted}{I measured instead of building. Everything is
   development level, published tables unchanged. Ledger:
   results/exploration\_week\_2026-09.md. All starred numbers on these
   slides survive the multiple comparison pass.}}
@@ -102,12 +102,12 @@
     \item \textbf{As a drop in for the current estimator, it loses.}
           Our channels are the sine fit's own parameters. Translating a
           posterior over curves into those three scalars is less stable
-          than never leaving them (pre committed rule; verified intrinsic
+          than never leaving them (pre committed rule, verified intrinsic
           on strongly vibrated notes). The confirmed bundle keeps its
           estimator.
     \item \textbf{The same pattern at the other slot and for a learned
-          filter}: no gain as the waveform curve prior at matched rank;
-          a free spectral bump is switched off by the evidence on 90
+          filter}: no gain as the waveform curve prior at matched rank,
+          and a free spectral bump is switched off by the evidence on 90
           percent of pieces.
   \end{enumerate}
   \vfill
@@ -170,7 +170,7 @@
   \centering
   \begin{tabular}{@{}rcc@{}}
     \toprule
-    pool size (pieces) & P(calibration claim stars) & P(recovery claim stars) \\
+    pool size (pieces) & P(calibration claim significant) & P(recovery claim significant) \\
     \midrule
      6 & 0.99 & 0.76 \\
     10 (Bach10 size) & 1.00 & 0.83 \\
@@ -219,7 +219,7 @@
   \includegraphics[width=0.98\linewidth]{sm_estimator_explainer.png}
 
   {\scriptsize\textcolor{muted}{One cello note. A: the sine fit's rigid
-  shape drifts out of phase; the SM GP tracks the curve. B: the posterior
+  shape drifts out of phase, the SM GP tracks the curve. B: the posterior
   split into centre, drift, and vibrato. C: both estimators' read outs.}}
 \end{frame}
 
@@ -229,7 +229,7 @@
 
   {\scriptsize\textcolor{muted}{A barely vibrated bass note, its two
   measurements. The flexible posterior answers each curve honestly and
-  differently; the sine fit returns its own grid floor twice. This
+  differently. The sine fit returns its own grid floor twice. This
   instability at the scalar read out, verified intrinsic on strongly
   vibrated notes, is why the swap is closed.}}
 \end{frame}
@@ -243,7 +243,7 @@
     \item Read outs: rate $= \mu_1$, extent from the posterior vibrato
           component, centre as the realized average. Fit per note by the
           exact marginal likelihood (grid over $\mu_1$, then local
-          optimization); uncertainties from the evidence curvature.
+          optimization), with uncertainties from the evidence curvature.
     \item Implementation forced three estimand fixes: realized amplitude
           not ensemble power, realized centre not the process constant,
           and a coherence bound so the component is an oscillation.
