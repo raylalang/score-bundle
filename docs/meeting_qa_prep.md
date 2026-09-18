@@ -55,7 +55,8 @@ work for the primary claim.
 **FRAMING: the kernel direction, fully measured; the thesis's own needs,
 answered.** Two weeks since the last meeting: open with the 60-second
 orientation (Part 1 head; deck frames 2–13 are the thesis refresher +
-the Phase-2 front end, 14–24 the two-approach story and design question). The deck is THE living deck now: thesis-shaped,
+the Phase-2 front end, 14–25 the two-approach story, vocabulary count,
+and design question). The deck is THE living deck now: thesis-shaped,
 general-audience register — no claim codes (say "timing calibration",
 not "C4") and no repo paths on slides. Then the verdicts + two asks.
 Asks: (1) the corpus/pool decision — the correlated-timing-noise result
@@ -71,11 +72,11 @@ own registration).
 | # | say (one sentence) | the number | the visual / math | deck |
 |---|---|---|---|---|
 | 0 Orientation | One model: a multi-output GP on the score graph; Phase 1 confirmed, Phase 2 confirmed with one failed secondary claim (timing calibration), Phase 3 scoped. | conf. 0.376 vs 0.393\* | model frames 4–7, notations 8, Phase-1 status 9, front end 10–13 (channels defined 11, data figure 12) | 2–13 |
-| 1 The two approaches | Side-by-side first; curve level favours the SM-GP (medians; paired mean borderline), the scalar read-outs are less stable; swap off, direction inconclusive. | 6.3 vs 9.6 cents; extent +1.686\*, rate +0.164\* | side-by-side 14, incumbent 15, SM model 16, thesis connection 17, channel mapping 18, confirmation 19, test 20, win 21, loss 22, verdict 23, design question 24 | 14–24 |
-| 2 Kernels, slot two | At the waveform deviation prior: no gain at matched rank; a learned spectral filter switches itself off. | 2.25 vs 2.29 cents tie; off on 90% | — | 23, 35 |
-| 3 Timing tail | A variance-matched Student-t predictive kills the blow-up (floors do nothing: tail-shape, not scale); the robust fit also repairs articulation via the coupling. | 105.2 → −1.7; artic. −0.018\* | t-predictive backup frame | 27, 32–33 |
-| 4 C4 repair — MAIN | One correlated-noise parameter in the timing row, chosen by the evidence per piece, improves calibration AND cuts timing error 20%. | NLL −0.111\*, RMSE ≈99→80 ms, ρ>0 on 97–100% of cells, three runs | Σ equation (frame 28), mechanism figure (frame 29) | 28–30 |
-| 5 Asks | Pool decision; opt-in blessing; kernels three paths (default: register now, curve-level channels eventually). | calibration power ≥0.99 from 6 pieces | power table (frame 30) | 30–31 |
+| 1 The two approaches | Side-by-side first; curve level favours the SM-GP (medians; paired mean borderline), the scalar read-outs are less stable; swap off, direction inconclusive. | 6.3 vs 9.6 cents; extent +1.686\*, rate +0.164\* | side-by-side 14, incumbent 15, SM model 16, thesis connection 17, channel mapping 18, confirmation 19, test 20, win 21, loss 22, verdict 23, vocabularies counted 24, design question 25 | 14–25 |
+| 2 Kernels, slot two | At the waveform deviation prior: no gain at matched rank; a learned spectral filter switches itself off. | 2.25 vs 2.29 cents tie; off on 90% | — | 23, 36 |
+| 3 Timing tail | A variance-matched Student-t predictive kills the blow-up (floors do nothing: tail-shape, not scale); the robust fit also repairs articulation via the coupling. | 105.2 → −1.7; artic. −0.018\* | t-predictive backup frame | 28, 33–34 |
+| 4 C4 repair — MAIN | One correlated-noise parameter in the timing row, chosen by the evidence per piece, improves calibration AND cuts timing error 20%. | NLL −0.111\*, RMSE ≈99→80 ms, ρ>0 on 97–100% of cells, three runs | Σ equation (frame 29), mechanism figure (frame 30) | 29–31 |
+| 5 Asks | Pool decision; opt-in blessing; kernels three paths (default: register now, curve-level channels eventually). | calibration power ≥0.99 from 6 pieces | power table (frame 31) | 31–32 |
 
 ### Reading the two SM figures (the formal version of verdict 1)
 
@@ -121,9 +122,9 @@ where today's main result attaches."
 
 *(Deck frames 2–13 carry problem, model, notations, Phase 1, and the
 Phase-2 front end with the channel definitions at 11 and the data figure
-at 12; 14–24 are the two-approach story with the side-by-side at 14, the
-confirmation at 19, and the design question at 24; 25 Phase 3; 26 opens
-the timing results. Let the frames do the work. If he waves the
+at 12; 14–25 are the two-approach story with the side-by-side at 14, the
+confirmation at 19, the vocabulary count at 24, and the design question
+at 25; 26 Phase 3; 27 opens the timing results. Let the frames do the work. If he waves the
 refresher off, skip straight to the opening line.)*
 
 - **Opening line (memorize):** "I spent the two weeks measuring instead
@@ -228,8 +229,8 @@ territory."
 limits/test, with the outcome banner. The two-approach story is the
 deck's spine: frame 14 the side-by-side, 15–18 the approaches in depth
 with the spectral connection and the channel mapping, 20 the test
-design, 21–22 the two pictures, 23 the verdict, 24 the design
-question.)*
+design, 21–22 the two pictures, 23 the verdict, 24 the vocabulary
+count, 25 the design question.)*
 
 ### THE ASKS
 
@@ -545,6 +546,17 @@ design rather than re-open the frozen Phase-2 estimator."
 ---
 
 # Part 2 — When he asks (THIS meeting)
+
+**"Isn't the parameter test unfair to the GP?"**
+"Partly, and we measured the part that is. The scoring itself was fair:
+own-reference, so neither model was graded against the other's numbers.
+What is asymmetric is the required output vocabulary: the three channels
+invert the sine fit exactly, and they pin the SM only to its coherent
+limit, which IS the sine model (deck frame 24). So the test is fair for
+the swap decision, because the pipeline consumes exactly those scalars,
+and tilted for model comparison, which is why the committed design also
+carried the estimand-free curve-level measure, and why the answer to the
+tilt is the design question on frame 25, not a re-score."
 
 Each answer is 2 to 4 spoken sentences with its number and source.
 
