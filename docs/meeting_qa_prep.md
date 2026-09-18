@@ -49,7 +49,8 @@ with probability ≥0.99 from 6 pieces on any pool option; recovery needs
 work for the primary claim.
 
 **FRAMING: your two pointers, fully measured; the thesis's own needs,
-answered.** The meeting = the verdicts + two asks.
+answered.** Two weeks since the last meeting: open with the 60-second
+orientation (Part 1 head; deck frames 2–3), then the verdicts + two asks.
 Asks: (1) the corpus/pool decision — the correlated-timing-noise result
 is registration-grade and answers the one failed confirmation claim, and
 the tonal-metric registration waits on the same decision; (2) blessing
@@ -60,8 +61,25 @@ own registration).
 
 # Part 1 — The story you tell
 
-- **Opening line (memorize):** "I spent the week measuring instead of
-  building new things. Your two kernel pointers are now fully measured —
+### ORIENTATION — 60 seconds, say FIRST (two weeks have passed)
+
+"Quick orientation since it has been two weeks. The thesis is one model:
+a multi output Gaussian process on the score graph. Score and performance
+go in, per note expressive variables come out, each with a calibrated
+error bar. Phase 1, piano, is confirmed by its preregistered one shot.
+Phase 2 carried the same prior unchanged to strings and winds and is
+confirmed by its own one shot, with one secondary claim failed and
+reported verbatim: timing calibration. Phase 3, the audio likelihood, is
+scoped with a first study measured. Last time we met was the reading
+week on your two kernel pointers. Since then, two weeks: the kill test
+you gated, then a measuring week. And the failed timing claim is exactly
+where today's main result attaches."
+
+*(Deck frames 2 and 3 carry this orientation and the timeline — let them
+do the work. If he waves it off, skip straight to the opening line.)*
+
+- **Opening line (memorize):** "I spent the two weeks measuring instead
+  of building new things. Your two kernel pointers are now fully measured —
   both places they could enter our pipeline — and every limitation the
   thesis had documented about itself got converted into a measured
   answer."

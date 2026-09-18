@@ -50,21 +50,45 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{What I did this week}
+\begin{frame}{Where the thesis stands (30 seconds of orientation)}
+  One model: a multi output Gaussian process on the score graph. Score and
+  performance in, per note expressive variables out, each with a
+  calibrated error bar.
   \begin{itemize}
-    \item I measured instead of building. Seven development studies, each
-          answering a question the project had already written down.
-    \item Two questions came from your kernel pointers. The rest came from
-          limitations the thesis had documented about itself.
-    \item Everything is development level and exploratory. Published
-          tables are unchanged. Adopted machinery is opt in, pinned by
-          tests, and any reported protocol change gets its own
-          registration.
+    \item \textbf{Phase 1} (piano, ASAP): \textcolor{okgreen}{confirmed}
+          by its preregistered one shot (0.376 vs 0.393 against the two
+          stage pipeline the model provably contains).
+    \item \textbf{Phase 2} (strings and winds, URMP): the same prior,
+          unchanged, on six estimated channels.
+          \textcolor{okgreen}{Confirmed} by its own one shot; the
+          secondary claim, \textbf{timing calibration}, failed and is
+          reported verbatim.
+    \item \textbf{Phase 3} (audio likelihood): scoped, first development
+          study measured.
   \end{itemize}
   \vfill
-  {\small\textcolor{muted}{Ledger: results/exploration\_week\_2026-09.md.
-  All starred numbers on these slides survive a Benjamini Hochberg pass
-  over the whole week.}}
+  The failed timing claim is where today's main result attaches.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Since we last met (two weeks)}
+  \begin{enumerate}
+    \item \textbf{Last meeting} was the reading week: your two pointers,
+          the three papers, and the two slots where those kernels could
+          enter our pipeline.
+    \item \textbf{Then the test you gated}: the estimator slot died by
+          its pre committed rule.
+    \item \textbf{Then a measuring week}: the second slot and a learned
+          filter closed the kernel question, and every limitation the
+          thesis had documented about itself was measured. Results
+          hardened (a multiple comparison pass, three run reproduction),
+          winners adopted as opt in machinery, one registration drafted.
+  \end{enumerate}
+  \vfill
+  {\small\textcolor{muted}{I measured instead of building; everything is
+  development level, published tables unchanged. Ledger:
+  results/exploration\_week\_2026-09.md. All starred numbers on these
+  slides survive the multiple comparison pass.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
