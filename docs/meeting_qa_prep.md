@@ -48,7 +48,7 @@ with probability ≥0.99 from 6 pieces on any pool option; recovery needs
 ~13–15 pieces and is secondary by design — so even Bach10-sized pools
 work for the primary claim.
 
-**FRAMING: your two pointers, fully measured; the thesis's own needs,
+**FRAMING: the kernel direction, fully measured; the thesis's own needs,
 answered.** Two weeks since the last meeting: open with the 60-second
 orientation (Part 1 head; deck frames 2–3), then the verdicts + two asks.
 Asks: (1) the corpus/pool decision — the correlated-timing-noise result
@@ -71,7 +71,8 @@ Phase 2 carried the same prior unchanged to strings and winds and is
 confirmed by its own one shot, with one secondary claim failed and
 reported verbatim: timing calibration. Phase 3, the audio likelihood, is
 scoped with a first study measured. Last time we met was the reading
-week on your two kernel pointers. Since then, two weeks: the estimator test
+week on the kernel direction from our discussion. Since then, two
+weeks: the estimator test
 you gated, then a measuring week. And the failed timing claim is exactly
 where today's main result attaches."
 
@@ -79,14 +80,15 @@ where today's main result attaches."
 do the work. If he waves it off, skip straight to the opening line.)*
 
 - **Opening line (memorize):** "I spent the two weeks measuring instead
-  of building new things. Your two kernel pointers are now fully measured —
+  of building new things. The kernel direction from our last discussion
+  is now fully measured —
   both places they could enter our pipeline — and every limitation the
   thesis had documented about itself got converted into a measured
   answer."
 
 ### THE LADDER — four verdicts, in speaking order
 
-**1. Your pointers, slot one (the estimator).** The spectral-mixture GP
+**1. The kernel direction, slot one (the estimator).** The spectral-mixture GP
 is the better model of the curve — measured frame-by-frame against ground
 truth, it wins clearly (6.3 vs 9.6 cents median). What it cannot do is
 impersonate the current estimator: our channels ARE the sine fit's own
@@ -96,7 +98,7 @@ decisively, by the pre-committed rule). So the swap is off — the
 confirmed bundle keeps its estimator — and the real finding is that the
 model may have outgrown the interface.
 
-**2. Your pointers, slot two (the waveform curve prior).** The
+**2. The kernel direction, slot two (the waveform curve prior).** The
 curve-level win pointed at the Phase-3 deviation prior — measured there
 too:
 no gain at matched rank (2.25 vs 2.29 cents median, tie; the paired mean
@@ -187,7 +189,8 @@ and the test design.)*
 - "Everything is adopted opt-in only — published paths are bit-unchanged,
   pinned by tests. Are you comfortable with these as the recommended
   defaults for new runs?"
-- "The kernels: your model won at curve level and lost at impersonating
+- "The kernels: the spectral mixture won at curve level and lost at
+  impersonating
   the sine fit's parameters. I see three paths and want your read:
   (a) marginalize the rate instead of point-picking it and retest the
   estimator; (b) accept that the scalar channels are the limitation and
@@ -197,7 +200,7 @@ and the test design.)*
 
 ### One-breath honesty line (if asked "so the papers helped?")
 
-"Your kernels turned out to be the better model of the curve — we
+"The spectral mixture turned out to be the better model of the curve — we
 measured that. They could not beat the incumbent at producing the
 incumbent's own parameters, which is what the current pipeline consumes;
 that swap is closed by a pre-committed rule. What they changed is how we
@@ -470,7 +473,7 @@ discipline — it feeds it."
   SM kernels (Parra & Tobar, NeurIPS 2017; multi-task GSM, Chen et al.)
   generalize our ICM coupling B
 
-**The line to close it:** "So your two pointers are the right family for
+**The line to close it:** "So the kernel families are the right tools for
 the two slots we just measured as open — the estimator's sine model and
 the waveform likelihood's curve prior. I'd fold them into the Phase-3
 design rather than re-open the frozen Phase-2 estimator."
@@ -511,7 +514,7 @@ tail of decomposition flips, not an artifact of the test.
 *(sm_estimator_dev.md M1 + metric caveat + M4 + stratified addendum)*
 
 **"So my kernel suggestions did not help. Was the week wasted?"**
-No — they did help, measurably: your kernels are the better model of the
+No — it did help, measurably: the spectral mixture is the better model of the
 curve itself (6.3 vs 9.6 cents frame-level against ground truth). What
 they could not do is impersonate the sine fit's own parameters, which is
 what the current pipeline consumes, and each of those tests cost one
