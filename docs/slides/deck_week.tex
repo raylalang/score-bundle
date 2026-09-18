@@ -281,11 +281,32 @@
           still a measurement of the same performance.
   \end{itemize}
   \vfill
-  Everything downstream consumes the tracked curve. The next slides'
-  channels and the observation model are also shared. The two approaches
-  of this chapter compete \textbf{only} for the pitch-curve channels:
-  intonation centre $c$ (cents), vibrato extent $\gamma$ (cents),
-  vibrato rate $f$ (Hz).
+  Everything downstream consumes the tracked curve. The two approaches of
+  this chapter compete \textbf{only} for the three pitch-curve channels
+  $c$, $\log\gamma$, $\log f$, defined on the next slide.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Phase 2: the pitch-curve channels, defined}
+  Both approaches read the same three numbers off a note's cents curve.
+  Their shared premise: within one note, the pitch deviation is a
+  sustained level plus one oscillation.
+  \begin{itemize}
+    \item \textbf{Intonation} $c$ (cents): the sustained level, the
+          note's offset from its written equal-tempered pitch with the
+          oscillation averaged out. $c > 0$ is sharp, $c < 0$ is flat,
+          $|c| = 100$ is a full semitone.
+    \item \textbf{Vibrato extent} $\gamma$ (cents): the oscillation's
+          amplitude, half the peak-to-peak pitch swing around the level.
+    \item \textbf{Vibrato rate} $f$ (Hz): the oscillation's frequency,
+          cycles per second. String and wind vibrato lives at roughly
+          4 to 8 Hz.
+  \end{itemize}
+  \vfill
+  The bundle carries $\log\gamma$ and $\log f$: both quantities are
+  positive and their errors are multiplicative. Where no oscillation is
+  identifiable the two vibrato channels are missing cells, and $c$
+  remains.
 \end{frame}
 
 % ---------------------------------------------------------------------
