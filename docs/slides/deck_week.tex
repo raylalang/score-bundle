@@ -223,7 +223,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 2: from a pitch track to intonation and vibrato}
+\begin{frame}{Phase 2, shared machinery: from audio to the cents curve}
   A pitch tracker turns each track into frames $(t_j, f_{0,j}, \pi_j)$:
   time, fundamental frequency, voicing confidence.
   \begin{itemize}
@@ -237,26 +237,15 @@
           $x_j = 1200 \log_2 (f_{0,j}/440) - 100\,(p_i - 69)$
           ($p_i$: MIDI pitch).
   \end{itemize}
-  The per-note estimator of the intonation and vibrato channels:
-  \begin{equation*}
-    x(t) \;=\; c \;+\; \gamma \sin\bigl( 2\pi f\, (t - \delta) \bigr)
-    \;+\; \text{noise}
-  \end{equation*}
-  \vspace{-4mm}
-  \begin{itemize}
-    \item Least squares: a grid over the rate $f$ (2.5 to 9 Hz), the
-          amplitudes closed form per grid point. Variances from the
-          curvature covariance $\hat\sigma^2 (J^{\!\top}\! J)^{-1}$ and
-          the delta method for $\log\gamma$, $\log f$.
-    \item A gated variant (the oscillation starts only at
-          $t \ge d_i^{\mathrm{vib}}$) supplies the vibrato onset channel.
-    \item $c$ is the vibrato-free centre, not the curve mean (they
-          coincide only over whole cycles, which a note rarely supplies).
-  \end{itemize}
+  \vfill
+  Everything downstream consumes this curve. The next slide's channels
+  (loudness, timing) and the observation model are also shared. The two
+  approaches of this chapter compete \textbf{only} for the pitch-curve
+  channels $[\,c,\ \log\gamma,\ \log f\,]$.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 2: loudness, timing, and what the GP observes}
+\begin{frame}{Phase 2, shared machinery: loudness, timing, and what the GP observes}
   \begin{itemize}
     \item \textbf{Loudness} $\ell_i$: the note's log RMS energy, centred
           per track. Variance from the spread over four within-note
@@ -290,96 +279,61 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 2 (strings and winds, URMP): \textcolor{okgreen}{confirmed}, one claim failed}
-  The same prior, unchanged. Six per-note channels estimated from audio,
-  each with its own variance, used as given:
+\begin{frame}{Phase 2: two approaches to the pitch-curve channels}
+  Both consume the same cents curve and output the same thing: an
+  estimate and a variance for each of $[\,c,\ \log\gamma,\ \log f\,]$
+  per note.
+  \vspace{2mm}
+  \begin{center}
+  \small
+  \begin{tabular}{@{}p{25mm}p{47mm}p{47mm}@{}}
+    \toprule
+     & \textbf{approach 1: sine fit} & \textbf{approach 2: SM-GP} \\
+    \midrule
+    the curve is & one rigid shape & a draw from a GP \\
+    assumes & a phase-locked sinusoid for the whole note & energy in a band
+      at the rate, plus a drift band \\
+    fit by & least squares on a rate grid & exact marginal likelihood on a
+      rate grid \\
+    variances & fit curvature, delta method & evidence curvature \\
+    weak notes & refused by hard rules & never refused, wide posterior \\
+    status & \textcolor{okgreen}{confirmed in the pipeline} &
+      \textcolor{okblue}{measured, inconclusive} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{1mm}
+  The next slides dive into each, then the confirmation (which ran with
+  approach 1 inside), then the head-to-head test.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Approach 1: the sine fit (the incumbent)}
+  One rigid shape per note, fit to the cents curve by least squares:
   \begin{equation*}
-    y_i = [\, c_i,\ \log\gamma_i,\ \log f_i,\ \ell_i,\ \tau_i,\ d_i^{\mathrm{vib}} \,]
-    \quad
-    \text{\small (intonation, extent, rate, loudness, timing, vibrato onset)}
+    x(t) \;=\; c \;+\; \gamma \sin\bigl( 2\pi f\, (t - \delta) \bigr)
+    \;+\; \text{noise}
   \end{equation*}
-  Does the graph prior earn its place on real audio? Claims preregistered,
-  then scored once on 13 held-out pieces (2026-08-27) by a rule fixed
-  before that data was opened. Each $\Delta$ = metric(full model) $-$
-  metric(no-graph ablation), paired per piece, negative favours the graph:
   \begin{itemize}
-    \item \textcolor{okgreen}{Intonation recovery: pass.}
-          $\Delta$RMSE $-0.877$ cents, significant.
-    \item \textcolor{okgreen}{Vibrato calibration: pass.}
-          $\Delta$NLL $-2.990$ (extent) and $-0.564$ (rate), both
-          significant.
-    \item \textcolor{okgreen}{Coverage: pass.} 0.88 to 0.91 at nominal
-          0.90 on all six channels.
-    \item \textcolor{okverm}{Timing calibration: fail.}
-          $\Delta$NLL $-0.030$, the interval includes zero. Reported
-          verbatim. The suspect: alignment error correlated along score
-          time.
+    \item A grid over the rate $f$ (2.5 to 9 Hz), the amplitudes closed
+          form per grid point. Variances from the curvature covariance
+          $\hat\sigma^2 (J^{\!\top}\! J)^{-1}$ and the delta method for
+          $\log\gamma$, $\log f$.
+    \item A gated variant (the oscillation starts only at
+          $t \ge d_i^{\mathrm{vib}}$) supplies the vibrato onset channel,
+          in either approach.
+    \item $c$ is the vibrato-free centre, not the curve mean (they
+          coincide only over whole cycles, which a note rarely supplies).
+    \item Weak notes are refused by hard identifiability rules (minimum
+          frames, minimum cycles): refused channels become missing cells.
   \end{itemize}
-  \vfill
-  This confirmed the pipeline \textbf{as built}, sine estimator inside.
-  Whether a GP should replace that estimator is a separate, open
-  question (the central section). The failed claim is where the newest
-  result attaches.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 3 (waveform likelihood): scoped, first studies measured}
-  The likelihood block becomes the audio itself: pitch deviations are
-  scored directly against the waveform, with the amplitudes marginalized
-  exactly,
-  \begin{equation*}
-    x = \Phi(z)\, a + \epsilon, \quad
-    a \sim \N(0, \Sigma_a),\ \epsilon \sim \N(0, \sigma^2 I)
-    \;\Longrightarrow\;
-    p(x \mid z) = \N\bigl(x;\, 0,\ \Phi \Sigma_a \Phi^{\!\top} + \sigma^2 I\bigr)
-  \end{equation*}
-  {\small $x$: audio samples. $z$: per-note pitch deviations. $\Phi(z)$:
-  the harmonic synthesis basis. $a$: amplitudes, never estimated. The
-  determinant and quadratic form cost $O(m p^2)$ for $m$ samples and $p$
-  basis columns, so whole tracks are exact.}
-  \begin{itemize}
-    \item \textbf{Feasibility} (376 notes, 7 tracks): waveform intonation
-          lands median 2.29 cents from quasi-truth with \textbf{no pitch
-          tracker}, and beats the estimator chain on winds.
-    \item \textbf{Integration}: as a seventh bundle channel with a
-          visible-notes discrepancy floor, better calibrated on 14 of 14
-          pairs (significant). The no-floor control is worse, so the floor
-          is necessary.
-    \item \textbf{Open}: joint inference over note positions.
-  \end{itemize}
-  \vfill
-  {\small\textcolor{muted}{All Phase 3 numbers are development studies, no
-  claims.}}
-\end{frame}
-
-% ============================================== PART II  RECENT RESULTS
-% ---------------------------------------------------------------------
-\begin{frame}{Recent work: three measured answers}
-  \begin{enumerate}
-    \item \textbf{The spectral mixture kernel direction}, measured at
-          both points where it could enter the pipeline. The swap at the
-          current scalar interface is off by a pre committed rule. At
-          curve level the evidence favours the GP, not yet conclusively.
-          The direction is open, its deciding tests identified.
-    \item \textbf{The timing tail}, the model's one documented log score
-          failure, fixed at both levels (the predictive and the fit).
-    \item \textbf{The failed timing calibration claim} repaired:
-          correlated timing noise across notes, reproduced three ways,
-          ready to register.
-  \end{enumerate}
-  \vfill
-  {\small\textcolor{muted}{All recent results are development level and
-  exploratory, published tables unchanged. Every significance claim shown
-  survives a multiple comparison pass.}}
-\end{frame}
-
-% ================================== THE CENTRAL SECTION: THE SM-GP TEST
-% ---------------------------------------------------------------------
-\begin{frame}{The estimator question: a GP in place of the sine fit}
-  The proposal measured this cycle, and the main discussion point:
-  replace the per-note sine fit with a Gaussian process on the cents
-  curve whose kernel is the \textbf{spectral mixture} (Wilson and Adams
-  2013), two damped cosines:
+\begin{frame}{Approach 2: a GP in place of the sine fit}
+  The challenger, measured this cycle, and the main discussion point:
+  treat the note's cents curve as a Gaussian process whose kernel is the
+  \textbf{spectral mixture} (Wilson and Adams 2013), two damped cosines:
   \begin{equation*}
     k(\tau) \;=\;
     \underbrace{w_1\, e^{-2\pi^2 v_1 \tau^2} \cos(2\pi \mu_1 \tau)}_{\text{vibrato component}}
@@ -459,7 +413,57 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The committed test}
+\begin{frame}{Phase 2 (strings and winds, URMP): \textcolor{okgreen}{confirmed}, one claim failed}
+  The same prior, unchanged. Six per-note channels estimated from audio,
+  each with its own variance, used as given:
+  \begin{equation*}
+    y_i = [\, c_i,\ \log\gamma_i,\ \log f_i,\ \ell_i,\ \tau_i,\ d_i^{\mathrm{vib}} \,]
+    \quad
+    \text{\small (intonation, extent, rate, loudness, timing, vibrato onset)}
+  \end{equation*}
+  Does the graph prior earn its place on real audio? Claims preregistered,
+  then scored once on 13 held-out pieces (2026-08-27) by a rule fixed
+  before that data was opened. Each $\Delta$ = metric(full model) $-$
+  metric(no-graph ablation), paired per piece, negative favours the graph:
+  \begin{itemize}
+    \item \textcolor{okgreen}{Intonation recovery: pass.}
+          $\Delta$RMSE $-0.877$ cents, significant.
+    \item \textcolor{okgreen}{Vibrato calibration: pass.}
+          $\Delta$NLL $-2.990$ (extent) and $-0.564$ (rate), both
+          significant.
+    \item \textcolor{okgreen}{Coverage: pass.} 0.88 to 0.91 at nominal
+          0.90 on all six channels.
+    \item \textcolor{okverm}{Timing calibration: fail.}
+          $\Delta$NLL $-0.030$, the interval includes zero. Reported
+          verbatim. The suspect: alignment error correlated along score
+          time.
+  \end{itemize}
+  \vfill
+  This confirmed the pipeline \textbf{as built}, approach 1 inside. The
+  head-to-head with approach 2 follows. The failed timing claim is taken
+  up again in the timing section.
+\end{frame}
+
+% ---------------------------------------------------------------------
+
+
+% ---------------------------------------------------------------------
+
+
+% ---------------------------------------------------------------------
+
+
+% ---------------------------------------------------------------------
+
+
+% ---------------------------------------------------------------------
+
+
+% ---------------------------------------------------------------------
+
+
+% ---------------------------------------------------------------------
+\begin{frame}{The head-to-head, committed before the run}
   Pass or fail decided before the run, on 5{,}157 development notes with
   identifiable vibrato in both curves:
   \begin{itemize}
@@ -524,6 +528,54 @@
   its narrowest question (no drop-in swap today). The deciding tests are
   not yet run: marginalize the rate instead of point-picking it, or move
   the channels to curve level, where the two GP levels meet directly.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Phase 3 (waveform likelihood): scoped, first studies measured}
+  The likelihood block becomes the audio itself: pitch deviations are
+  scored directly against the waveform, with the amplitudes marginalized
+  exactly,
+  \begin{equation*}
+    x = \Phi(z)\, a + \epsilon, \quad
+    a \sim \N(0, \Sigma_a),\ \epsilon \sim \N(0, \sigma^2 I)
+    \;\Longrightarrow\;
+    p(x \mid z) = \N\bigl(x;\, 0,\ \Phi \Sigma_a \Phi^{\!\top} + \sigma^2 I\bigr)
+  \end{equation*}
+  {\small $x$: audio samples. $z$: per-note pitch deviations. $\Phi(z)$:
+  the harmonic synthesis basis. $a$: amplitudes, never estimated. The
+  determinant and quadratic form cost $O(m p^2)$ for $m$ samples and $p$
+  basis columns, so whole tracks are exact.}
+  \begin{itemize}
+    \item \textbf{Feasibility} (376 notes, 7 tracks): waveform intonation
+          lands median 2.29 cents from quasi-truth with \textbf{no pitch
+          tracker}, and beats the estimator chain on winds.
+    \item \textbf{Integration}: as a seventh bundle channel with a
+          visible-notes discrepancy floor, better calibrated on 14 of 14
+          pairs (significant). The no-floor control is worse, so the floor
+          is necessary.
+    \item \textbf{Open}: joint inference over note positions.
+  \end{itemize}
+  \vfill
+  {\small\textcolor{muted}{All Phase 3 numbers are development studies, no
+  claims.}}
+\end{frame}
+
+% ============================================== THE TIMING RESULTS
+% ---------------------------------------------------------------------
+\begin{frame}{This cycle's other measured answers}
+  Beyond the estimator question, two documented limitations were
+  converted into measured answers:
+  \begin{enumerate}
+    \item \textbf{The timing tail}, the model's one documented log score
+          failure, fixed at both levels (the predictive and the fit).
+    \item \textbf{The failed timing calibration claim} repaired:
+          correlated timing noise across notes, reproduced three ways,
+          ready to register.
+  \end{enumerate}
+  \vfill
+  {\small\textcolor{muted}{All recent results are development level and
+  exploratory, published tables unchanged. Every significance claim shown
+  survives a multiple comparison pass.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
