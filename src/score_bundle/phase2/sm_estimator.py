@@ -4,6 +4,10 @@ The "estimator v2" candidate of docs/kernel_papers_review.md (Slot A) and
 docs/sm_estimator_note.tex: replace the parametric sine fit
 (:func:`intonation.fit_vibrato_note`) by exact GP regression under a
 two-component spectral-mixture (SM) kernel (Wilson & Adams, ICML 2013),
+(naming note 2026-10-06: as a METHOD this is a hand-structured
+quasi-periodic GP, the Q=2 mu2=0 special case of the SM family, not the
+many-component spectral learning of the SM paper -- forward-facing
+materials say "QP-GP"; see docs/sm_kernel_verification.md)
 
     k(tau) = w1 * exp(-2 pi^2 v1 tau^2) * cos(2 pi mu1 tau)   [vibrato]
            + w2 * exp(-2 pi^2 v2 tau^2)                        [drift]

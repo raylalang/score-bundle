@@ -57,10 +57,10 @@
 \newcommand{\one}{\mathbf{1}}
 
 \title{\textbf{Expressive Performance as a Gaussian Process\\ on a Musical Score Graph}}
-\subtitle{The thesis so far, and two weeks of measured answers}
+\subtitle{The thesis so far, and the measured answers of autumn 2026}
 \author{Raynaldi Lalang}
 \institute{Kyoto University}
-\date{September 2026}
+\date{October 2026}
 
 \begin{document}
 
@@ -367,7 +367,7 @@
   \small
   \begin{tabular}{@{}p{25mm}p{47mm}p{47mm}@{}}
     \toprule
-     & \textbf{approach 1: sine fit} & \textbf{approach 2: SM-GP} \\
+     & \textbf{approach 1: sine fit} & \textbf{approach 2: QP-GP} \\
     \midrule
     the curve is & one rigid shape & a draw from a GP \\
     assumes & a phase-locked sinusoid for the whole note & energy in a band
@@ -412,9 +412,10 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Approach 2: a GP in place of the sine fit}
-  The challenger, measured this cycle, and the main discussion point:
-  treat the note's cents curve as a Gaussian process whose kernel is the
-  \textbf{spectral mixture} (Wilson and Adams 2013), two damped cosines:
+  The challenger, and the main discussion point: treat the note's cents
+  curve as a \textbf{quasi-periodic Gaussian process (QP-GP)}, two damped
+  cosines (the $Q = 2$, $\mu_2 = 0$ special case of the spectral mixture
+  family, Wilson and Adams 2013):
   \begin{equation*}
     k(\Delta t) \;=\;
     \underbrace{w_1\, e^{-2\pi^2 v_1 \Delta t^2} \cos(2\pi \mu_1 \Delta t)}_{\text{vibrato component}}
@@ -442,7 +443,7 @@
 % ---------------------------------------------------------------------
 \begin{frame}{Why spectral: the thesis already thinks this way}
   A stationary kernel and a symmetric spectral density are a Fourier
-  pair. The spectral mixture is a Gaussian mixture placed directly in
+  pair. The QP-GP's spectral density is a Gaussian mixture placed directly in
   the spectrum:
   \begin{equation*}
     S(\xi) \;=\; \sum_{q=1}^{2} \frac{w_q}{2}
@@ -585,7 +586,7 @@
   \includegraphics[width=0.98\linewidth]{sm_estimator_explainer.png}
 
   {\scriptsize\textcolor{muted}{One cello note. A: the sine fit's rigid
-  shape drifts out of phase, the SM GP tracks the curve. B: the posterior
+  shape drifts out of phase, the QP-GP tracks the curve. B: the posterior
   split into centre, drift, and vibrato. C: both estimators' read outs.}}
 \end{frame}
 
@@ -633,7 +634,7 @@
   \small
   \begin{tabular}{@{}lllp{44mm}@{}}
     \toprule
-    & sine fit & SM-GP & reading \\
+    & sine fit & QP-GP & reading \\
     \midrule
     centre & $c$ & $c$ & the sustained level (shared) \\
     oscillation & $\gamma$, $f$, $\delta$ & $w_1$, $\mu_1$, $v_1$ &
@@ -649,13 +650,13 @@
     \item The channels \textbf{invert the sine fit exactly}: $(c, \gamma,
           f)$ rebuild the whole model (phase is a nuisance). Transcription
           to channels to synthesis is a lossless round trip.
-    \item The channels pin the SM only to its coherent limit $v_1 \to 0$,
-          $w_2 = 0$, \textbf{which is the sine model}. Everything the SM
-          adds lives in coordinates the bundle does not carry: a lossy
-          round trip.
+    \item The channels pin the QP-GP only to its coherent limit
+          $v_1 \to 0$, $w_2 = 0$, \textbf{which is the sine model}.
+          Everything the QP-GP adds lives in coordinates the bundle does
+          not carry: a lossy round trip.
     \item Interpretability follows the same line: the sine's numbers mean
-          what they say by construction. The SM's mean what their names
-          say only when the decomposition is well identified, the same
+          what they say by construction. The QP-GP's mean what their
+          names say only when the decomposition is well identified, the same
           conditionality that closed the swap.
   \end{itemize}
 \end{frame}
@@ -672,8 +673,8 @@
           strength. Cheap, and the confirmed bundle keeps its meaning.
     \item \textbf{Extend the vocabulary.} Add the missing coordinates as
           channels: coherence ($\mu_1/\sqrt{v_1}$, phase stability, a
-          variable the sine cannot express) and drift power. The SM then
-          inverts from the bundle exactly as the sine does today, and
+          variable the sine cannot express) and drift power. The QP-GP
+          then inverts from the bundle exactly as the sine does today, and
           synthesis closes again. Each new channel needs its own target,
           variance, and registration.
     \item \textbf{Redesign the interface (back to the drawing board).}
@@ -721,7 +722,7 @@
 
 % ============================================== THE TIMING RESULTS
 % ---------------------------------------------------------------------
-\begin{frame}{This cycle's other measured answers}
+\begin{frame}{The other measured answers (2026-09)}
   Beyond the estimator question, two documented limitations were
   converted into measured answers:
   \begin{enumerate}
@@ -823,7 +824,7 @@
           pinned by equality tests. Recommend them for new runs?
     \item \textbf{The kernel direction, the main discussion.} The
           drop-in swap is conclusively off, the curve-level evidence
-          favours the spectral mixture without deciding it, so the
+          favours the QP-GP without deciding it, so the
           direction is inconclusive and its deciding tests are known:
           (a) marginalize the rate and retest at the same interface,
           (b) move the channels to curve level so the within-note and

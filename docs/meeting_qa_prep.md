@@ -1,5 +1,14 @@
 # Meeting prep (2026-09, private) — the measured-answers week
 
+> **2026-10-06 NAMING CORRECTION (supervisor, last meeting): the
+> estimator is NOT "the SM method".** Verified in
+> `docs/sm_kernel_verification.md`: the kernel is the Q = 2 special case
+> of the spectral-mixture family (equations all correct), but as a
+> method it is a hand-structured **quasi-periodic GP (QP-GP)** — say
+> that, never "SM-GP". Deck, figures, and the 2-page note are renamed;
+> this prep below predates the correction and is partially stale
+> pending the zemi rewrite.
+
 **How to use this document.** To study: the TALK MAP below with the deck
 open is the formal skeleton — one row per deck segment, claim + number +
 visual. Part 1 is the same content in spoken register; use it only to

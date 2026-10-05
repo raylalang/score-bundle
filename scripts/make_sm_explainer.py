@@ -113,7 +113,7 @@ def main() -> None:
     ax.plot(tt, x, ".", ms=3, color=MUTED, label="tracked frames")
     ax.plot(tg, sine, color=VERM, lw=1.6,
             label="sine fit (one rigid shape)")
-    ax.plot(tg, m_curve, color=BLUE, lw=1.6, label="SM-GP posterior mean")
+    ax.plot(tg, m_curve, color=BLUE, lw=1.6, label="QP-GP posterior mean")
     ax.fill_between(tg, m_curve - 1.645 * np.sqrt(v_curve),
                     m_curve + 1.645 * np.sqrt(v_curve),
                     color=BLUE, alpha=0.18, linewidth=0)
@@ -155,7 +155,7 @@ def main() -> None:
     ax.set_yticks([])
     ax.set_ylim(-0.6, 2.75)
     ax.set_xlabel("value with 90% interval "
-                  "(vermilion = sine fit, blue = SM-GP)")
+                  "(vermilion = sine fit, blue = QP-GP)")
     ax.set_title("C  the read-outs: same three numbers, two witnesses",
                  loc="left")
 

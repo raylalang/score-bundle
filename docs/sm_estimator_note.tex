@@ -19,7 +19,7 @@
 \begin{document}
 
 \begin{center}
-{\large\bfseries Intonation and vibrato estimation with a spectral-mixture Gaussian process}\\[2pt]
+{\large\bfseries Intonation and vibrato estimation with a quasi-periodic Gaussian process}\\[2pt]
 {\small Raynaldi Lalang, September 2026}
 \end{center}
 
@@ -68,8 +68,11 @@ k_\theta(\tau) \;=\;
 \qquad \theta = (w_1, \mu_1, v_1, w_2, v_2, \sigma^2).
 \label{eq:kernel}
 \end{equation}
-This is the spectral-mixture (SM) kernel of Wilson \& Adams (ICML 2013)
-with $Q = 2$ components, the second at zero frequency.
+The kernel is the $Q = 2$ special case (second component at zero
+frequency) of the spectral-mixture family of Wilson \& Adams (ICML
+2013). As a method this is a hand-structured quasi-periodic kernel
+(fixed roles, bounded band), not that paper's many-component spectral
+learning.
 
 \textbf{Fact 1 (spectral reading).}
 A stationary kernel and a symmetric spectral density are a Fourier pair.

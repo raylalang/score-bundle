@@ -116,7 +116,7 @@ def main() -> None:
                 label=f"sine: rate {nl['f']:.1f} Hz, "
                       f"extent {nl['gamma']:.1f} c")
         ax.plot(tg, m, color=BLUE, lw=1.5,
-                label=f"SM-GP: rate {sm['f']:.1f} Hz, "
+                label=f"QP-GP: rate {sm['f']:.1f} Hz, "
                       f"extent {sm['gamma']:.1f} c")
         ax.fill_between(tg, m - 1.645 * np.sqrt(v), m + 1.645 * np.sqrt(v),
                         color=BLUE, alpha=0.16, linewidth=0)
@@ -135,7 +135,7 @@ def main() -> None:
              "(its grid floor, agreement by construction)",
              color=VERM, fontsize=10, ha="left", va="top")
     fig.text(0.008, 0.92,
-             f"SM-GP: {sm_a['f']:.1f} Hz on one, {sm_b['f']:.1f} Hz on the "
+             f"QP-GP: {sm_a['f']:.1f} Hz on one, {sm_b['f']:.1f} Hz on the "
              "other (the read-outs the pipeline consumes flip)",
              color=BLUE, fontsize=10, ha="left", va="top")
     fig.savefig(OUT, bbox_inches="tight")
