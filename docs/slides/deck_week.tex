@@ -54,6 +54,10 @@
 \newcommand{\N}{\mathcal{N}}
 \newcommand{\Lg}{L_{\mathcal G}}
 \newcommand{\diag}{\operatorname{diag}}
+\newcommand{\divider}[2]{\begin{frame}\centering\vfill
+  {\small\textcolor{muted}{#1}}\\[2mm]
+  {\LARGE\textbf{#2}}\\[4mm]
+  {\color{okblue}\rule{62mm}{1.2pt}}\vfill\end{frame}}
 \newcommand{\one}{\mathbf{1}}
 
 \title{\textbf{Expressive Performance as a Gaussian Process\\ on a Musical Score Graph}}
@@ -100,6 +104,8 @@
   \vfill
   Each phase gets its own setting slide before its results.
 \end{frame}
+
+\divider{the model}{One Gaussian process on the score graph}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Approach: one prior, three kinds of observation}
@@ -203,6 +209,8 @@
 % ---------------------------------------------------------------------
 
 
+\divider{Phase 1, piano}{Expression read exactly from the keys}
+
 % ---------------------------------------------------------------------
 \begin{frame}{Phase 1: the setting (piano, aligned MIDI)}
   A Disklavier records exactly what the pianist controlled. Per written
@@ -233,6 +241,8 @@
           two components are near-orthogonal complements.
   \end{itemize}
 \end{frame}
+
+\divider{Phase 2, strings and winds}{Pitch expression, estimated from audio}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Phase 2: from audio to the cents curve}
@@ -356,7 +366,40 @@
           includes zero).
   \end{itemize}
   \vfill
-  Timing is the loose end, taken up after Phase 3.
+  Timing is the loose end. Next two slides.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Timing noise is correlated across notes}
+  Why timing did not calibrate: alignment error is correlated along
+  score time, and a diagonal noise row cannot represent it. One
+  parameter fixes it:
+  \[ \Sigma^{\tau}_{ij} \;=\; \varsigma_{\tau,i}\,
+     \varsigma_{\tau,j}\; \rho^{|i-j|}
+     \qquad (\varsigma_{\tau,i}\text{: note } i\text{'s timing noise
+     standard deviation, } i, j \text{ in score order}) \]
+  \begin{itemize}
+    \item One correlation parameter $\rho$ in the timing noise row,
+          chosen per piece by the evidence itself.
+    \item The evidence detects the correlation on 97 to 100 percent of
+          pieces (median 0.45 to 0.60).
+    \item Timing calibration improves ($\Delta$NLL $-0.111$, significant),
+          coverage moves to nominal, and timing error falls about
+          20 percent (99 to 80 ms).
+    \item Reproduced three ways: original masks, fresh masks, and a full
+          joint refit.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Held-out timing, with and without the correlation}
+  \centering
+  \includegraphics[width=0.98\linewidth]{corrnoise_tau_dev.png}
+
+  {\scriptsize\textcolor{muted}{Left: paired deltas with 95 percent
+  intervals, three runs. Middle: the evidence-chosen correlation per
+  piece. Right: one track's held-out timing, diagonal vs correlated
+  noise, targets as crosses.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -395,8 +438,10 @@
 % ---------------------------------------------------------------------
 
 
+\divider{Phase 3, audio directly}{The waveform as the observation}
+
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 3 (waveform likelihood): scoped, first studies measured}
+\begin{frame}{Phase 3: first measured studies}
   The likelihood block becomes the audio itself: pitch deviations are
   scored directly against the waveform, with the amplitudes marginalized
   exactly,
@@ -444,37 +489,10 @@
 
 
 % ---------------------------------------------------------------------
-\begin{frame}{Timing noise is correlated across notes}
-  Why timing did not calibrate: alignment error is correlated along
-  score time, and a diagonal noise row cannot represent it. One
-  parameter fixes it:
-  \[ \Sigma^{\tau}_{ij} \;=\; \varsigma_{\tau,i}\,
-     \varsigma_{\tau,j}\; \rho^{|i-j|}
-     \qquad (\varsigma_{\tau,i}\text{: note } i\text{'s timing noise
-     standard deviation, } i, j \text{ in score order}) \]
-  \begin{itemize}
-    \item One correlation parameter $\rho$ in the timing noise row,
-          chosen per piece by the evidence itself.
-    \item The evidence detects the correlation on 97 to 100 percent of
-          pieces (median 0.45 to 0.60).
-    \item Timing calibration improves ($\Delta$NLL $-0.111$, significant),
-          coverage moves to nominal, and timing error falls about
-          20 percent (99 to 80 ms).
-    \item Reproduced three ways: original masks, fresh masks, and a full
-          joint refit.
-  \end{itemize}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
-\begin{frame}{Held-out timing, with and without the correlation}
-  \centering
-  \includegraphics[width=0.98\linewidth]{corrnoise_tau_dev.png}
 
-  {\scriptsize\textcolor{muted}{Left: paired deltas with 95 percent
-  intervals, three runs. Middle: the evidence-chosen correlation per
-  piece. Right: one track's held-out timing, diagonal vs correlated
-  noise, targets as crosses.}}
-\end{frame}
 
 % ---------------------------------------------------------------------
 
