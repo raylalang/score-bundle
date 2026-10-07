@@ -103,6 +103,33 @@
   \end{enumerate}
 \end{frame}
 
+% ---------------------------------------------------------------------
+\begin{frame}{Related work}
+  \begin{columns}[T,onlytextwidth]
+  \column{0.50\textwidth}
+  \textbf{Expressive performance modelling}
+  {\small
+  \begin{itemize}
+    \item rule systems: KTH performance rules (Friberg et al.\ 2006)
+    \item linear basis-function models (Grachten and Widmer 2012)
+    \item deep rendering models: VirtuosoNet (Jeong et al.\ 2019)
+  \end{itemize}
+  All output one rendering or corpus statistics, none a calibrated
+  per-note posterior.}
+  \column{0.48\textwidth}
+  \textbf{Gaussian processes and graphs}
+  {\small
+  \begin{itemize}
+    \item GPs over graphs (Venkitaraman et al.\ 2018)
+    \item graph Mat\'ern kernels (Borovitskiy et al.\ 2021)
+    \item multi-output coupling, ICM (Bonilla et al.\ 2008)
+  \end{itemize}}
+  \end{columns}
+  \vfill
+  This work combines the two: a graph GP over score positions, with
+  per-note side information, for calibrated performance inference.
+\end{frame}
+
 \divider{The model}{A multi-output Gaussian process on the score graph}
 
 % ---------------------------------------------------------------------
@@ -205,6 +232,28 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Notation}
+  \begin{center}
+  {\scriptsize\setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}lp{56mm}l@{}}
+  \toprule
+  Symbol & Meaning & Role \\
+  \midrule
+  $y \in \R^{3N}$ & the channels of all $N$ notes, stacked & part observed, part predicted \\
+  $K \in \R^{3N \times 3N}$ & the covariance of $y$: the entire model & built per piece \\
+  $K_G(s)$ & score-graph kernel & from the score, $s$ learned per piece \\
+  $\ell_b$, $\ell_p$ & graph length-scales (time, pitch) & fixed, global \\
+  $B \in \R^{3 \times 3}$ & channel coupling & learned per piece \\
+  $X_f \in \R^{N \times d}$ & per-note features (score, music model) & inputs \\
+  $c_f \in \R^3$ & feature trust per channel & learned per piece \\
+  $\varsigma^2 \in \R^3$ & per-channel noise variances & learned per piece \\
+  $m$, $\Sigma_y$ & posterior mean and covariance & predicted, closed form \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+\end{frame}
+
+% ---------------------------------------------------------------------
 
 
 \divider{Piano}{Timing, articulation, velocity from aligned MIDI}
@@ -227,12 +276,20 @@
   Preregistered, scored once on 20 untouched pieces. Baseline: the
   two-stage pipeline built from the same ingredients (regression mean
   first, then a per-channel graph residual).
+  \begin{center}
+  \small
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    & baseline & this model \\
+    \midrule
+    RMSE, pooled over the three channels & 0.393 & \textbf{0.376} \\
+    coverage at nominal 0.90 & --- & \textbf{0.925} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
   \begin{itemize}
-    \item \textbf{Accuracy}: RMSE 0.376 (this model) vs 0.393
-          (baseline), pooled over the three channels, paired per piece,
-          significant.
-    \item \textbf{Calibration}: coverage 0.925 at nominal 0.9. Removing
-          the graph term costs log score, significantly.
+    \item The RMSE difference is paired per piece and significant.
+          Removing the graph term costs log score, significantly.
     \item \textbf{Attribution} (measured): the per-piece feature weighting
           carries the mean, the graph carries the calibration, and the
           two components are near-orthogonal complements.
@@ -344,17 +401,23 @@
     \quad
     \text{\small (intonation, extent, rate, loudness, timing, vibrato onset)}
   \end{equation*}
-  Preregistered, scored once on 13 held-out pieces. Every $\Delta$
-  below = full model $-$ the same model with the graph term removed,
-  paired per piece (negative favours the graph):
-  \begin{itemize}
-    \item Intonation recovery: $\Delta$RMSE $-0.877$ cents, significant.
-    \item Vibrato calibration: $\Delta$NLL $-2.990$ (extent), $-0.564$
-          (rate), both significant.
-    \item Coverage 0.88 to 0.91 at nominal 0.90, all six channels.
-    \item Timing calibration: no improvement ($-0.030$, interval
-          includes zero).
-  \end{itemize}
+  Preregistered, scored once on 13 held-out pieces. $\Delta$ = full
+  model $-$ the same model with the graph term removed, paired per
+  piece (negative favours the graph).
+  \begin{center}
+  \small
+  \begin{tabular}{@{}llc@{}}
+    \toprule
+    quantity & $\Delta$ & significant \\
+    \midrule
+    intonation recovery (RMSE) & $-0.877$ cents & yes \\
+    vibrato extent calibration (NLL) & $-2.990$ & yes \\
+    vibrato rate calibration (NLL) & $-0.564$ & yes \\
+    timing calibration (NLL) & $-0.030$ & no \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  Coverage 0.88 to 0.91 at nominal 0.90 on all six channels.
   \vfill
 \end{frame}
 
@@ -484,6 +547,20 @@
 
 % ---------------------------------------------------------------------
 
+
+% ---------------------------------------------------------------------
+\begin{frame}{Summary}
+  One Gaussian process on the score graph, three observation types:
+  \begin{itemize}
+    \item \textbf{Piano}: beats the two-stage baseline on accuracy and
+          calibration, confirmed on untouched pieces.
+    \item \textbf{Strings and winds}: the graph improves recovery and
+          calibration on estimated channels; the timing gap is explained
+          and repaired by one correlated-noise parameter.
+    \item \textbf{Audio}: curve inference from the waveform, no tracker,
+          at 1 to 5 cents on first notes.
+  \end{itemize}
+\end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Plan}
