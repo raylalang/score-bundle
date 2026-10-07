@@ -186,13 +186,19 @@ def predict_q(t_fit, y_fit, p, t_new):
 
 
 # ---------------------------------------------------------------- data
-def iter_notes(n_tracks: int):
+def iter_notes(n_tracks: int, shard: tuple = None):
     from eval_phase2_real import dev_unique_tracks
     from make_phase2_intro import note_curves
     data = pickle.load(open(".cache/urmp_targets_dev.pkl", "rb"))
     f0s = pickle.load(open(".cache/urmp_f0_dev.pkl", "rb"))
     tracks = {(p.index, t.number): t for p, t in dev_unique_tracks()}
-    for key in sorted(data)[:n_tracks]:
+    keys = sorted(data)
+    if shard is not None:
+        k, n = shard
+        keys = [kk for j, kk in enumerate(keys) if j % n == k]
+    else:
+        keys = keys[:n_tracks]
+    for key in keys:
         d = data[key]
         for i in range(d["onset"].size):
             if d["n_frames"][i] < 20:
@@ -292,8 +298,32 @@ def stage_pilot(n_tracks: int = 4):
     stage_report()
 
 
+def stage_run(k: int, n: int):
+    rows, t0 = [], time.time()
+    out = f".cache/sm_proper_shard{k}of{n}.pkl"
+    for key, i, ident, tt, x, ttg, xg in iter_notes(0, shard=(k, n)):
+        row = run_note(tt, x, ttg, xg)
+        row.update({"key": key, "i": i, "ident": ident, "n": tt.size})
+        rows.append(row)
+        if len(rows) % 25 == 0:
+            print(f"  shard {k}/{n}: {len(rows)} notes "
+                  f"({time.time()-t0:.0f}s)", flush=True)
+            pickle.dump(rows, open(out, "wb"))
+    pickle.dump(rows, open(out, "wb"))
+    print(f"shard {k}/{n} done: {len(rows)} notes, "
+          f"{(time.time()-t0)/60:.1f} min")
+
+
 def stage_report():
-    rows = pickle.load(open(OUT, "rb"))
+    import glob
+    shards = sorted(glob.glob(".cache/sm_proper_shard*of*.pkl"))
+    if shards:
+        rows = []
+        for s in shards:
+            rows += pickle.load(open(s, "rb"))
+        print(f"[merged {len(shards)} shards]")
+    else:
+        rows = pickle.load(open(OUT, "rb"))
     ok = [r for r in rows if "rmse_hand" in r]
     ident = [r for r in ok if r["ident"]]
     d_ev = np.array([r["ev_prop"] - r["ev_hand"] for r in ok])
@@ -320,5 +350,8 @@ if __name__ == "__main__":
         stage_inspect()
     elif cmd == "pilot":
         stage_pilot(int(sys.argv[2]) if len(sys.argv) > 2 else 4)
+    elif cmd == "run":
+        k, n = sys.argv[2].split("/")
+        stage_run(int(k), int(n))
     else:
         stage_report()

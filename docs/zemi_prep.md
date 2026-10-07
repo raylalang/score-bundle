@@ -20,8 +20,11 @@ taught us about the interface."
 use is the two-component special case of the spectral mixture kernel of
 Wilson and Adams, but the METHOD is not theirs — their method learns a
 many-component spectrum to discover structure; I imposed the structure
-by hand. So I call this simply the GP estimator. The learned-spectrum
-version, their method applied as intended, is running now."
+by hand. So I call this simply the GP estimator. And I ran their method
+as intended: at pilot scale (253 notes) it ties my hand-structured
+kernel at curve level and finds the vibrato band unaided on about a
+quarter of identifiable notes. The imposed structure costs nothing in
+fit and is what defines the channels."
 
 ## Timing budget (1200 s)
 
@@ -55,8 +58,9 @@ tests are known."
   channel values; channels are estimator-defined, hence own-reference.
 - **"What next?"** The open-questions frame: pool for the timing
   registration, opt-in defaults, and the estimator design depth — with
-  the learned-spectrum experiment in progress as the honest version of
-  the kernel question.
+  the learned-spectrum pilot (ties at curve level, 27% band rediscovery)
+  as the honest, measured version of the kernel question. Record:
+  `results/sm_proper_dev.md`.
 
 Deep Q&A reservoir: `docs/meeting_qa_prep.md` Part 2 (note its banner —
 read "GP estimator" wherever it says SM).
