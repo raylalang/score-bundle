@@ -105,7 +105,7 @@
   Each phase gets its own setting slide before its results.
 \end{frame}
 
-\divider{the model}{One Gaussian process on the score graph}
+\divider{The model}{A multi-output Gaussian process on the score graph}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Approach: one prior, three kinds of observation}
@@ -196,7 +196,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The model, in one picture}
+\begin{frame}{Architecture}
   \figslotw{arch_phase1_deck.png}{0.96}{architecture}
   \vspace{-1mm}
   \centering\small \textcolor{okblue}{Blue}: score graph $\to \Lg \to
@@ -209,10 +209,10 @@
 % ---------------------------------------------------------------------
 
 
-\divider{Phase 1, piano}{Expression read exactly from the keys}
+\divider{Phase 1, piano}{Timing, articulation, velocity from aligned MIDI}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 1: the setting (piano, aligned MIDI)}
+\begin{frame}{Phase 1 setup: aligned performance MIDI}
   A Disklavier records exactly what the pianist controlled. Per written
   note, three variables, read directly, no estimation:
   \begin{equation*}
@@ -242,7 +242,7 @@
   \end{itemize}
 \end{frame}
 
-\divider{Phase 2, strings and winds}{Pitch expression, estimated from audio}
+\divider{Phase 2, strings and winds}{Six channels estimated from tracked audio}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Phase 2: from audio to the cents curve}
@@ -285,7 +285,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 2: what the data looks like}
+\begin{frame}{Example frames: tracked vs ground truth}
   \centering
   \includegraphics[width=0.98\linewidth]{phase2_frames_intro.png}
 
@@ -331,7 +331,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{One real note: the curve and its parts}
+\begin{frame}{Example note: posterior mean and components}
   \centering
   \includegraphics[width=0.98\linewidth]{sm_estimator_explainer.png}
 
@@ -438,10 +438,10 @@
 % ---------------------------------------------------------------------
 
 
-\divider{Phase 3, audio directly}{The waveform as the observation}
+\divider{Phase 3, audio}{A waveform likelihood with marginalized amplitudes}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 3: first measured studies}
+\begin{frame}{Phase 3: development studies}
   The likelihood block becomes the audio itself: pitch deviations are
   scored directly against the waveform, with the amplitudes marginalized
   exactly,
@@ -471,7 +471,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 3, the next step, running: the curve straight from the waveform}
+\begin{frame}{Prototype: curve inference from the waveform}
   \centering
   \includegraphics[width=0.98\linewidth]{phase3_curve_proto.png}
 
@@ -498,7 +498,7 @@
 
 
 % ---------------------------------------------------------------------
-\begin{frame}{From here (proposed sequencing)}
+\begin{frame}{Plan}
   \begin{center}
   \small
   \begin{tabular}{@{}lp{96mm}@{}}
