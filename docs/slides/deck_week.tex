@@ -90,7 +90,7 @@
   an error bar you can trust.}
   \vspace{2mm}
 
-  The same prior, three observation problems. One per phase:
+  Three observation problems:
   \begin{enumerate}
     \item \textbf{Piano}: timing, articulation, velocity, read directly
           from aligned MIDI. Are the error bars calibrated, note by
@@ -101,8 +101,6 @@
     \item \textbf{Audio directly}: no pitch tracker at all. Can the
           waveform itself be the observation?
   \end{enumerate}
-  \vfill
-  Each phase gets its own setting slide before its results.
 \end{frame}
 
 \divider{The model}{A multi-output Gaussian process on the score graph}
@@ -110,9 +108,9 @@
 % ---------------------------------------------------------------------
 \begin{frame}{Approach: one prior, three kinds of observation}
   One \textbf{Gaussian process (GP)} prior over per-note expressive fields, on
-  a graph built from the score. Only the observation changes: per-note MIDI
-  values (Phase 1), noisy $f_0$-derived targets (Phase 2), or the waveform
-  itself (Phase 3). A Phase-0 music model supplies input features to all.
+  a graph built from the score. Only the observation changes: per-note
+  MIDI values, noisy $f_0$-derived targets, or the waveform itself. A
+  pretrained music model supplies input features to all.
   \figslotw{deck_programme.png}{0.9}{the shared prior with three swappable
     likelihood blocks (MIDI / $f_0$ / waveform)}
 \end{frame}
@@ -181,8 +179,8 @@
   the per-channel noise variances.}
   \vspace{1mm}
 
-  All parameters $\theta = (s, B, \{c_f\}, \varsigma^2)$, 16 numbers in
-  Phase 1, from one exact evidence per piece. Prediction is conjugate:
+  All parameters $\theta = (s, B, \{c_f\}, \varsigma^2)$, 16 numbers on
+  piano, from one exact evidence per piece. Prediction is conjugate:
   \begin{equation*}
     m = C_{\cdot o} K_{oo}^{-1} \tilde y_o, \qquad
     \Sigma_y = C - C_{\cdot o} K_{oo}^{-1} C_{o\cdot},
@@ -209,26 +207,23 @@
 % ---------------------------------------------------------------------
 
 
-\divider{Phase 1, piano}{Timing, articulation, velocity from aligned MIDI}
+\divider{piano}{Timing, articulation, velocity from aligned MIDI}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 1 setup: aligned performance MIDI}
-  A Disklavier records exactly what the pianist controlled. Per written
-  note, three variables, read directly, no estimation:
+\begin{frame}{Setup: aligned performance MIDI}
+  A Disklavier performance: per written note, three variables, read
+  directly, no estimation.
   \begin{equation*}
     y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{onset timing}},\;\;
       \underbrace{\log r_i}_{\text{articulation}},\;\;
       \underbrace{v_i}_{\text{velocity}}\;\bigr]
   \end{equation*}
   \vfill
-  The concept picture two slides back is exactly this data: the three
-  deviation rows under the piano roll. The question Phase 1 answers:
-  held out notes, how good are the estimates, and can the error bars
-  be trusted?
+  Evaluation: held-out notes, accuracy and calibration.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 1: results (piano, ASAP)}
+\begin{frame}{Results (piano, ASAP)}
   Preregistered one shot on 20 untouched pieces, against the two stage
   pipeline the model provably contains:
   \begin{itemize}
@@ -242,10 +237,10 @@
   \end{itemize}
 \end{frame}
 
-\divider{Phase 2, strings and winds}{Six channels estimated from tracked audio}
+\divider{strings and winds}{Six channels estimated from tracked audio}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 2: from audio to the cents curve}
+\begin{frame}{From audio to the cents curve}
   A pitch tracker turns each track into frames $(t_j, f_{0,j}, \pi_j)$:
   time, fundamental frequency, voicing confidence.
   \begin{itemize}
@@ -263,12 +258,11 @@
           Cleaner, but still a measurement.
   \end{itemize}
   \vfill
-  The pipeline consumes the tracked curve. Next: the pitch-curve
-  channels $c$, $\log\gamma$, $\log f$.
+  The pipeline consumes the tracked curve.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 2: the pitch-curve channels, defined}
+\begin{frame}{The pitch-curve channels, defined}
   Within one note, the pitch deviation is a sustained level plus one
   oscillation. Three numbers describe it:
   \begin{itemize}
@@ -347,7 +341,7 @@
 
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 2: results (strings and winds, URMP)}
+\begin{frame}{Results (strings and winds, URMP)}
   The same prior, unchanged. Six per-note channels estimated from audio,
   each with its own variance, used as given:
   \begin{equation*}
@@ -366,7 +360,6 @@
           includes zero).
   \end{itemize}
   \vfill
-  Timing is the loose end. Next two slides.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -438,10 +431,10 @@
 % ---------------------------------------------------------------------
 
 
-\divider{Phase 3, audio}{A waveform likelihood with marginalized amplitudes}
+\divider{audio}{A waveform likelihood with marginalized amplitudes}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 3: development studies}
+\begin{frame}{Development studies (waveform)}
   The likelihood block becomes the audio itself: pitch deviations are
   scored directly against the waveform, with the amplitudes marginalized
   exactly,
@@ -466,8 +459,7 @@
     \item \textbf{Open}: joint inference over note positions.
   \end{itemize}
   \vfill
-  {\small\textcolor{muted}{All Phase 3 numbers are development studies, no
-  claims.}}
+  {\small\textcolor{muted}{Development studies, no claims.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -512,7 +504,7 @@
     November & decide the estimator design depth (read-out, vocabulary,
           curve level, or keep). Run the registered timing confirmation
           on the chosen pool, one shot. \\
-    December on & Phase 3 at scale: multi-note segments, joint note
+    December on & waveform studies at scale: multi-note segments, joint note
           positions. Consolidate thesis chapters as results land. \\
     \bottomrule
   \end{tabular}

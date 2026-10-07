@@ -31,13 +31,13 @@
    {\scriptsize score graph + side information;\\ unchanged across all phases}};
 
 \node[lik] (l1) at (7.6, 2.3)
-  {\textbf{Phase 1: per-note MIDI}\\[1pt]
+  {\textbf{piano: per-note MIDI}\\[1pt]
    $\tilde y = y + e$ on observed notes};
 \node[lik] (l2) at (7.6, 0)
-  {\textbf{Phase 2: $f_0$-derived targets}\\[1pt]
+  {\textbf{strings and winds: $f_0$ targets}\\[1pt]
    noisy estimates, six channels,\\ per-(note, channel) masks};
 \node[lik, dashed] (l3) at (7.6, -2.3)
-  {\textbf{Phase 3: waveform}\\[1pt]
+  {\textbf{audio: waveform}\\[1pt]
    $x = \Phi(z)\,a + \epsilon$, no per-note data};
 
 \node[tag, fill=okgreen, anchor=east] at ([xshift=-2mm]l1.north east) {Confirmed};
