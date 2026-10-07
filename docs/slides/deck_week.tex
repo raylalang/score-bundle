@@ -231,18 +231,14 @@
           equal temperament at 440 Hz,
           $x_j = 1200 \log_2 (f_{0,j}/440) - 100\,(p_i - 69)$
           ($p_i$: MIDI pitch).
-    \item \textbf{Two curves per note.} Tracked: pYIN, run by us on the
-          track audio, with the voicing confidence $\pi_j$ above.
-          Ground truth: the corpus's own frame-level pitch annotation of
-          the same separately recorded single-instrument track (46 ms
-          window, 10 ms hop), made by the dataset authors. Cleaner, but
-          still a measurement of the same performance.
+    \item \textbf{Two curves per note.} Tracked: pYIN, run by us.
+          Ground truth: the corpus's own annotation of the same stem.
+          Cleaner, but still a measurement.
   \end{itemize}
   \vfill
-  Everything downstream consumes the tracked curve, and the loudness and
-  timing channels and the observation model (backups) are shared as well.
-  The two approaches of this chapter compete \textbf{only} for the three
-  pitch-curve channels $c$, $\log\gamma$, $\log f$, defined next.
+  The pipeline consumes the tracked curve. The two approaches compete
+  only for the pitch-curve channels $c$, $\log\gamma$, $\log f$,
+  defined next.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -251,21 +247,16 @@
   Their shared premise: within one note, the pitch deviation is a
   sustained level plus one oscillation.
   \begin{itemize}
-    \item \textbf{Intonation} $c$ (cents): the sustained level, the
-          note's offset from its written equal-tempered pitch with the
-          oscillation averaged out. $c > 0$ is sharp, $c < 0$ is flat,
-          $|c| = 100$ is a full semitone.
+    \item \textbf{Intonation} $c$ (cents): the sustained offset from
+          the written pitch. $c > 0$ is sharp, $100$ is a semitone.
     \item \textbf{Vibrato extent} $\gamma$ (cents): the oscillation's
-          amplitude, half the peak-to-peak pitch swing around the level.
-    \item \textbf{Vibrato rate} $f$ (Hz): the oscillation's frequency,
-          cycles per second. String and wind vibrato lives at roughly
-          4 to 8 Hz.
+          amplitude.
+    \item \textbf{Vibrato rate} $f$ (Hz): its frequency. Vibrato lives
+          at roughly 4 to 8 Hz.
   \end{itemize}
   \vfill
-  The bundle carries $\log\gamma$ and $\log f$: both quantities are
-  positive and their errors are multiplicative. Where no oscillation is
-  identifiable the two vibrato channels are missing cells, and $c$
-  remains.
+  The bundle carries $\log\gamma$, $\log f$ (positive, multiplicative
+  errors). No oscillation found: those cells are missing, $c$ remains.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -363,10 +354,9 @@
     \quad
     \text{\small (intonation, extent, rate, loudness, timing, vibrato onset)}
   \end{equation*}
-  Does the graph prior earn its place on real audio? Claims preregistered,
-  then scored once on 13 held-out pieces (2026-08-27) by a rule fixed
-  before that data was opened. Each $\Delta$ = metric(full model) $-$
-  metric(no-graph ablation), paired per piece, negative favours the graph:
+  Does the graph prior earn its place on real audio? Preregistered,
+  scored once on 13 held-out pieces, rule fixed before the data was
+  opened. $\Delta$ = full model $-$ no-graph ablation, paired per piece:
   \begin{itemize}
     \item \textcolor{okgreen}{Intonation recovery: pass.}
           $\Delta$RMSE $-0.877$ cents, significant.
@@ -381,9 +371,8 @@
           time.
   \end{itemize}
   \vfill
-  This confirmed the pipeline \textbf{as built}, approach 1 inside. The
-  head-to-head with approach 2 follows. The failed timing claim is taken
-  up again in the timing section.
+  This confirmed the pipeline with approach 1 inside. The head-to-head
+  follows. The failed claim returns in the timing section.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -409,19 +398,12 @@
   Pass or fail decided before the run, on 5{,}157 development notes with
   identifiable vibrato in both curves:
   \begin{itemize}
-    \item There is no ground-truth $c$, $\log\gamma$, or $\log f$: the
-          corpus annotates a pitch \textbf{curve}, and the channels are
-          estimator-defined quantities. So each estimator runs on the
-          \textbf{tracked} curve AND on the \textbf{ground truth} curve
-          of the same note, and is scored against its own ground-truth
-          output. Neither model is scored against the other's definition
-          of the targets.
-    \item Four measures: (1) \textbf{parameter accuracy}, the
-          pre-committed pass or fail rule (the pipeline consumes exactly
-          these scalars). (2) calibration of the tracked estimate against
-          its reference. (3) the notes the sine fit refuses. (4)
-          \textbf{curve level}: both posteriors scored on the ground
-          truth curve's frames, no target definition needed.
+    \item No ground-truth channel values exist: the corpus annotates a
+          \textbf{curve}. So each estimator is scored against its own
+          output on the ground-truth curve, never against the other's.
+    \item Four measures: \textbf{parameter accuracy} (the pass or fail
+          rule), calibration, the refused notes, and \textbf{curve
+          level} (no target definition needed).
   \end{itemize}
   \vfill
   What follows: the win side, the loss side, the verdict.
@@ -572,13 +554,10 @@
   \centering
   \includegraphics[width=0.98\linewidth]{phase3_curve_proto.png}
 
-  {\scriptsize\textcolor{muted}{Prototype, this week, development only:
-  the within-note GP prior on a knot grid and the amplitude-collapsed
-  waveform likelihood, MAP plus diagonal Laplace. No pitch tracker and
-  no estimator anywhere: the two GP levels meet at the audio. Better
-  than the pYIN frames on two of three notes, an honest miss on the
-  cello. This is the curve-level depth of the design question, made
-  concrete.}}
+  {\scriptsize\textcolor{muted}{Prototype (this week, development):
+  the within-note GP prior meets the waveform likelihood directly. No
+  tracker, no estimator. Better than the pYIN frames on two of three
+  notes, an honest miss on the cello.}}
 \end{frame}
 
 % ============================================== THE TIMING RESULTS
@@ -665,12 +644,10 @@
           channels to curve level, or keep the design as is. The swap is
           conclusively off, the curve-level evidence favours the GP
           without deciding it, and the direction is inconclusive.
-          Measured (9{,}804 notes): the kernel paper's method applied as
-          intended, free components and no hand roles, \textbf{ties} the
-          hand-structured kernel at curve level and rediscovers the
-          vibrato band unaided on 18 percent of identifiable notes. The
-          channel-defining structure must be imposed: it is
-          interpretive, not a fit cost.
+          Measured on 9{,}804 notes: the method applied as intended
+          \textbf{ties} the hand kernel at curve level and finds the
+          vibrato band unaided on 18 percent of notes. The structure
+          must be imposed.
   \end{enumerate}
 \end{frame}
 
