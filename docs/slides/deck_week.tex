@@ -184,6 +184,17 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{The model, in one picture}
+  \figslotw{arch_phase1_deck.png}{0.96}{architecture}
+  \vspace{-1mm}
+  \centering\small \textcolor{okblue}{Blue}: score graph $\to \Lg \to
+  K_G$. \textcolor{okamber}{Amber}: score and music-model features as
+  linear kernels, fused into the joint kernel.
+  \textcolor{okverm}{Vermilion}: the likelihood, the only block that
+  changes across the phases.
+\end{frame}
+
+% ---------------------------------------------------------------------
 
 
 % ---------------------------------------------------------------------
@@ -612,6 +623,31 @@
 
 % ---------------------------------------------------------------------
 
+
+% ---------------------------------------------------------------------
+\begin{frame}{From here (proposed sequencing)}
+  \begin{center}
+  \small
+  \begin{tabular}{@{}lp{96mm}@{}}
+    \toprule
+    now & integrate the full-corpus run of the learned-spectrum study
+          (in progress today). \\
+    next 2 weeks & freeze the correlated timing noise registration once
+          the pool is decided. Batch-evaluate the curve-from-waveform
+          prototype on the development tracks (fit the prior
+          hyperparameters by evidence, joint Laplace). \\
+    November & decide the estimator design depth (read-out, vocabulary,
+          curve level, or keep). Run the registered timing confirmation
+          on the chosen pool, one shot. \\
+    December on & Phase 3 at scale: multi-note segments, joint note
+          positions. Consolidate thesis chapters as results land. \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vfill
+  {\small\textcolor{muted}{Sequencing only, dates indicative: the first
+  two decisions are the open questions on the next slide.}}
+\end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Open questions}

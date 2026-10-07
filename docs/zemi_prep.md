@@ -1,6 +1,6 @@
 # Zemi prep (2026-10-08, 20 minutes, English) — private
 
-Deck: `docs/slides/deck_week.pdf`, spine = frames 2–24, backups 25–37.
+Deck: `docs/slides/deck_week.pdf`, spine = frames 2–26, backups 27–39.
 Naming rule for the room: say **"the GP estimator"**; describe the
 kernel ("two components: a damped cosine at the vibrato rate plus a
 slow drift"); the one attribution sentence is on frame 11. Never
@@ -14,7 +14,7 @@ graph, three phases, and then the current question — two competing
 estimators for the pitch-curve channels, and what their head-to-head
 taught us about the interface."
 
-## The naming correction, said once (at frame 11)
+## The naming correction, said once (at frame 12)
 
 "One correction from last time, checked against the paper: the kernel I
 use is the two-component special case of the spectral mixture kernel of
@@ -30,13 +30,13 @@ fit and is what defines the channels."
 
 | frames | content | budget |
 |---|---|---|
-| 2–7 | problem · approach · model (graph, coupling, covariance) · Phase 1 | 6 min |
-| 8–13 | cents curve · channels · data · side-by-side · GP estimator · confirmation | 5.5 min |
-| 14–19 | head-to-head · win · loss · verdict · vocabularies · design question | 5.5 min |
-| 20–24 | timing fix · mechanism picture · Phase 3 · curve-from-waveform prototype · open questions | 3.5 min |
+| 2–8 | problem · approach · model (graph, coupling, covariance, architecture picture) · Phase 1 | 6 min |
+| 9–14 | cents curve · channels · data · side-by-side · GP estimator · confirmation | 5.5 min |
+| 15–20 | head-to-head · win · loss · verdict · vocabularies · design question | 5 min |
+| 21–26 | timing fix · mechanism picture · Phase 3 · curve-from-waveform prototype · timeline · open questions | 3.5 min |
 
-If running long: frames 21 (mechanism picture) and 22 (Phase 3) compress
-to one sentence each. Frame 23 (the prototype) does NOT get cut: say
+If running long: frames 22 (mechanism picture) and 23 (Phase 3) compress
+to one sentence each. Frame 24 (the prototype) does NOT get cut: say
 "built this week: the within-note GP prior and the waveform likelihood
 meeting directly, no tracker, no estimator -- 2.5, 4.8, 1.0 cents
 against ground truth on violin, cello, clarinet, versus pYIN's 3.4,
@@ -55,7 +55,7 @@ tests are known."
   own-reference, so neither model was graded against the other's
   numbers. What is asymmetric is the output vocabulary: the three
   channels invert the sine fit exactly and pin the GP only to its
-  coherent limit, which IS the sine model (frame 17/18). Fair for the
+  coherent limit, which IS the sine model (frames 18/19). Fair for the
   swap decision, tilted for model comparison — hence the design
   question, not a re-score.
 - **"What is the ground truth?"** The corpus annotates a pitch curve
