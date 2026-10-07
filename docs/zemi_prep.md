@@ -1,6 +1,6 @@
 # Zemi prep (2026-10-08, 20 minutes, English) — private
 
-Deck: `docs/slides/deck_week.pdf`, 21 slides, no backups. Audience: lab
+Deck: `docs/slides/deck_week.pdf`, 22 slides, no backups. Audience: lab
 members with no prior context. Say "the GP estimator", never "SM-GP";
 say "correlated timing noise across notes", never bare "AR(1)".
 
@@ -31,9 +31,13 @@ does not get cut.
   played, the deviations ARE the expression. Not transcription: the
   score is known.
 - **3 Thesis + three problems.** Say the thesis sentence verbatim, then
-  one problem per phase: calibrated error bars (piano), noisy estimated
-  targets (strings/winds), the waveform as the observation (audio).
-  Every later slide answers one of these three.
+  one problem per phase with its own variables: piano (timing,
+  articulation, velocity, read exactly), strings/winds (six, estimated,
+  noisy), audio (no tracker). Every later slide answers one of the
+  three; each phase gets a setting slide before its results.
+- **(new) Phase 1 setting.** Disklavier = exact measurement, no
+  estimation anywhere; the concept picture was this data. Phase 1 asks
+  only: good estimates, trustworthy error bars, on held-out notes.
 - **3 Approach.** One GP prior on a score graph; only the observation
   block changes per phase (MIDI, f0 targets, waveform).
 - **4 Graph.** Edges = close in score time and pitch: neighbours play

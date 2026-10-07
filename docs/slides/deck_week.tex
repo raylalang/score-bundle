@@ -82,24 +82,23 @@
 % ---------------------------------------------------------------------
 \begin{frame}{The thesis, and the three problems}
   \textbf{Thesis: one Gaussian process on the score graph turns a known
-  score and a performance into every per-note expressive variable, each
-  with an error bar you can trust.}
-  \begin{equation*}
-    y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{onset timing}},\;\;
-      \underbrace{\log r_i}_{\text{articulation}},\;\;
-      \underbrace{v_i}_{\text{velocity}}\;\bigr]
-    \qquad\text{per written note (piano).}
-  \end{equation*}
-  Three problems, one per phase:
+  score and a performance into per-note expressive variables, each with
+  an error bar you can trust.}
+  \vspace{2mm}
+
+  The same prior, three observation problems. One per phase:
   \begin{enumerate}
-    \item \textbf{Piano}: the variables are read directly from aligned
-          MIDI. Are the error bars calibrated, note by note?
-    \item \textbf{Strings and winds}: the variables (now six, with
-          intonation and vibrato) must be \textbf{estimated} from audio,
+    \item \textbf{Piano}: timing, articulation, velocity, read directly
+          from aligned MIDI. Are the error bars calibrated, note by
+          note?
+    \item \textbf{Strings and winds}: six variables, now with
+          intonation and vibrato, \textbf{estimated} from audio,
           noisily. Does the same prior still work?
     \item \textbf{Audio directly}: no pitch tracker at all. Can the
           waveform itself be the observation?
   \end{enumerate}
+  \vfill
+  Each phase gets its own setting slide before its results.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -203,6 +202,22 @@
 
 % ---------------------------------------------------------------------
 
+
+% ---------------------------------------------------------------------
+\begin{frame}{Phase 1: the setting (piano, aligned MIDI)}
+  A Disklavier records exactly what the pianist controlled. Per written
+  note, three variables, read directly, no estimation:
+  \begin{equation*}
+    y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{onset timing}},\;\;
+      \underbrace{\log r_i}_{\text{articulation}},\;\;
+      \underbrace{v_i}_{\text{velocity}}\;\bigr]
+  \end{equation*}
+  \vfill
+  The concept picture two slides back is exactly this data: the three
+  deviation rows under the piano roll. The question Phase 1 answers:
+  held out notes, how good are the estimates, and can the error bars
+  be trusted?
+\end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Phase 1: results (piano, ASAP)}
