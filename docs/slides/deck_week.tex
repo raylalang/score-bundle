@@ -207,7 +207,7 @@
 % ---------------------------------------------------------------------
 
 
-\divider{piano}{Timing, articulation, velocity from aligned MIDI}
+\divider{Piano}{Timing, articulation, velocity from aligned MIDI}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: aligned performance MIDI}
@@ -237,7 +237,7 @@
   \end{itemize}
 \end{frame}
 
-\divider{strings and winds}{Six channels estimated from tracked audio}
+\divider{Strings and winds}{Intonation, vibrato, loudness, timing, estimated from tracked audio}
 
 % ---------------------------------------------------------------------
 \begin{frame}{From audio to the cents curve}
@@ -263,19 +263,12 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{The pitch-curve channels, defined}
-  Within one note, the pitch deviation is a sustained level plus one
-  oscillation. Three numbers describe it:
-  \begin{itemize}
-    \item \textbf{Intonation} $c$ (cents): the sustained offset from
-          the written pitch. $c > 0$ is sharp, $100$ is a semitone.
-    \item \textbf{Vibrato extent} $\gamma$ (cents): the oscillation's
-          amplitude.
-    \item \textbf{Vibrato rate} $f$ (Hz): its frequency. Vibrato lives
-          at roughly 4 to 8 Hz.
-  \end{itemize}
-  \vfill
-  The bundle carries $\log\gamma$, $\log f$ (positive, multiplicative
-  errors). No oscillation found: those cells are missing, $c$ remains.
+  Within one note: a sustained level plus one oscillation.
+  \figslotw{channels_def.png}{0.82}{annotated note}
+  \vspace{-2mm}
+  {\small The bundle carries $c$, $\log\gamma$, $\log f$ (logs:
+  positive, multiplicative errors). No oscillation found: the vibrato
+  cells are missing, $c$ remains.}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -431,7 +424,7 @@
 % ---------------------------------------------------------------------
 
 
-\divider{audio}{A waveform likelihood with marginalized amplitudes}
+\divider{Audio}{A waveform likelihood with marginalized amplitudes}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Development studies (waveform)}
@@ -513,17 +506,7 @@
   {\small\textcolor{muted}{Sequencing, not dates.}}
 \end{frame}
 
-% ---------------------------------------------------------------------
-\begin{frame}{Open questions}
-  \begin{enumerate}
-    \item Which corpus to confirm the timing result on: a new one
-          (Bach10), a disclosed re-use, or both?
-    \item Keep the channels as three scalars per note, or move them to
-          curve level (the prototype's direction)?
-    \item Should the new robustness options (robust and correlated
-          timing noise, the completion guard) become defaults?
-  \end{enumerate}
-\end{frame}
+
 
 
 \end{document}

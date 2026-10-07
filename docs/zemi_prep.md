@@ -1,6 +1,6 @@
 # Zemi prep (2026-10-08, 20 minutes, English) — private
 
-Deck: `docs/slides/deck_week.pdf`, 26 slides (4 chapter dividers), no backups. Audience: lab
+Deck: `docs/slides/deck_week.pdf`, 25 slides (4 chapter dividers), no backups. Deck ends on the Plan. Audience: lab
 members with no prior context. Say "the GP estimator", never "SM-GP";
 say "correlated timing noise across notes", never bare "AR(1)".
 
@@ -20,7 +20,7 @@ winds, and where it's going: reading pitch curves straight from audio."
 | 10–12 | PIANO: setting · results | 2.5 min |
 | 13–21 | STRINGS AND WINDS: cents curve · channels · data · GP estimator · one-note figure · results · timing + picture | 6.5 min |
 | 22–24 | THE WAVEFORM: first studies · prototype | 2 min |
-| 25–26 | timeline · open questions | 0.5 min |
+| 25 | plan | 0.5 min |
 
 If long: slides 15 and 18 compress to a sentence. Slide 16 (prototype)
 does not get cut.
@@ -96,10 +96,7 @@ does not get cut.
   nominal. Three reproductions.
 - **21 Timing picture.** One track's held-out timing, with and without the
   correlation.
-- **25 Timeline.** Sequencing, not dates; gated by the open questions.
-- **26 Open questions.** Corpus for confirming the timing result;
-  scalar channels vs curve level (the prototype's direction); the
-  robustness options as defaults.
+- **25 Plan.** Sequencing, not dates. End here, invite discussion: the pool decision, and scalar channels vs curve level.
 
 ## Likely questions
 
