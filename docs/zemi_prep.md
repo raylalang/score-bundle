@@ -1,6 +1,6 @@
 # Zemi prep (2026-10-08, 20 minutes, English) — private
 
-Deck: `docs/slides/deck_week.pdf`, spine = frames 2–23, backups 24–36.
+Deck: `docs/slides/deck_week.pdf`, spine = frames 2–24, backups 25–37.
 Naming rule for the room: say **"the GP estimator"**; describe the
 kernel ("two components: a damped cosine at the vibrato rate plus a
 slow drift"); the one attribution sentence is on frame 11. Never
@@ -33,10 +33,15 @@ fit and is what defines the channels."
 | 2–7 | problem · approach · model (graph, coupling, covariance) · Phase 1 | 6 min |
 | 8–13 | cents curve · channels · data · side-by-side · GP estimator · confirmation | 5.5 min |
 | 14–19 | head-to-head · win · loss · verdict · vocabularies · design question | 5.5 min |
-| 20–23 | timing fix · mechanism picture · Phase 3 · open questions | 3 min |
+| 20–24 | timing fix · mechanism picture · Phase 3 · curve-from-waveform prototype · open questions | 3.5 min |
 
 If running long: frames 21 (mechanism picture) and 22 (Phase 3) compress
-to one sentence each.
+to one sentence each. Frame 23 (the prototype) does NOT get cut: say
+"built this week: the within-note GP prior and the waveform likelihood
+meeting directly, no tracker, no estimator -- 2.5, 4.8, 1.0 cents
+against ground truth on violin, cello, clarinet, versus pYIN's 3.4,
+2.7, 4.6. The cello is the honest miss. This is the curve-level depth
+of the design question, running."
 
 ## One-breath verdict (frame 17)
 
