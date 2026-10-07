@@ -3,7 +3,7 @@
 
 Not a result -- an explainer. One vibrato-identifiable development note:
 (A) the tracked cents frames, the sine fit's single rigid curve, and the
-SM-GP's posterior band over the curve; (B) the SM posterior split into
+GP estimator's posterior band over the curve; (B) the posterior split into
 its two components (the vibrato oscillation and the slow drift) plus the
 centre -- the 'two damped cosines' made visible; (C) the read-outs of
 both estimators side by side with their uncertainties.
@@ -113,7 +113,7 @@ def main() -> None:
     ax.plot(tt, x, ".", ms=3, color=MUTED, label="tracked frames")
     ax.plot(tg, sine, color=VERM, lw=1.6,
             label="sine fit (one rigid shape)")
-    ax.plot(tg, m_curve, color=BLUE, lw=1.6, label="QP-GP posterior mean")
+    ax.plot(tg, m_curve, color=BLUE, lw=1.6, label="GP posterior mean")
     ax.fill_between(tg, m_curve - 1.645 * np.sqrt(v_curve),
                     m_curve + 1.645 * np.sqrt(v_curve),
                     color=BLUE, alpha=0.18, linewidth=0)
@@ -155,7 +155,7 @@ def main() -> None:
     ax.set_yticks([])
     ax.set_ylim(-0.6, 2.75)
     ax.set_xlabel("value with 90% interval "
-                  "(vermilion = sine fit, blue = QP-GP)")
+                  "(vermilion = sine fit, blue = GP)")
     ax.set_title("C  the read-outs: same three numbers, two witnesses",
                  loc="left")
 

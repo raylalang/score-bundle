@@ -2,7 +2,7 @@
 """The SM-estimator failure mode, made visible on ONE real note.
 
 Companion to make_sm_explainer.py: find a development note where the
-SM-GP's read-outs disagree badly between the note's two measurements
+GP estimator's read-outs disagree badly between the note's two measurements
 (tracked curve vs ground-truth curve) while the sine fit's agree, refit
 both estimators on both curves, and show why: the flexible decomposition
 settles differently on each curve; the rigid fit asks a narrower question
@@ -116,7 +116,7 @@ def main() -> None:
                 label=f"sine: rate {nl['f']:.1f} Hz, "
                       f"extent {nl['gamma']:.1f} c")
         ax.plot(tg, m, color=BLUE, lw=1.5,
-                label=f"QP-GP: rate {sm['f']:.1f} Hz, "
+                label=f"GP: rate {sm['f']:.1f} Hz, "
                       f"extent {sm['gamma']:.1f} c")
         ax.fill_between(tg, m - 1.645 * np.sqrt(v), m + 1.645 * np.sqrt(v),
                         color=BLUE, alpha=0.16, linewidth=0)
@@ -135,7 +135,7 @@ def main() -> None:
              "(its grid floor, agreement by construction)",
              color=VERM, fontsize=10, ha="left", va="top")
     fig.text(0.008, 0.92,
-             f"QP-GP: {sm_a['f']:.1f} Hz on one, {sm_b['f']:.1f} Hz on the "
+             f"GP: {sm_a['f']:.1f} Hz on one, {sm_b['f']:.1f} Hz on the "
              "other (the read-outs the pipeline consumes flip)",
              color=BLUE, fontsize=10, ha="left", va="top")
     fig.savefig(OUT, bbox_inches="tight")

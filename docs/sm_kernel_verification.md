@@ -44,19 +44,46 @@ approximator of stationary kernels. What we built uses none of that:
   spectra the SM family exists to reach;
 - nothing is discovered from the spectrum; the structure is imposed.
 
-Structurally this is a **hand-designed quasi-periodic kernel** — the
-"periodic-ish component plus smooth drift" construction of the
-Rasmussen–Williams CO2 example and the quasi-periodic state-space
-models of Solin & Särkkä — written in the SM component form.
+Structurally this is a **hand-designed two-component kernel** of the
+"oscillation plus smooth drift" type (the design pattern of the
+Rasmussen–Williams CO2 example), written in the SM component form.
 
-## Naming decision (forward-facing materials)
+## Naming decision (forward-facing materials; revised 2026-10-07)
 
-One term per concept, from now on: **quasi-periodic GP (QP-GP)**, with
-the one-line attribution at first use: *"its kernel is the Q = 2,
-mu2 = 0 special case of the spectral-mixture family (Wilson and Adams
-2013)"*. That keeps the citation (the component form and the Fact-1/
-Fact-2 spectral reading remain correct and useful) without claiming the
-method.
+**No coined names** (Ray's standing rule). The first proposal here was
+"quasi-periodic GP (QP-GP)" -- retracted: "QP-GP" is not a literature
+term, and "quasi-periodic kernel" in the GP literature usually means a
+periodic kernel damped by an SE envelope (MacKay's ExpSine times SE;
+Solin and Sarkka's state-space form), whereas ours is a pure cosine
+times SE. The accurate, source-grounded phrasing, used everywhere:
+
+- running text: **"the GP estimator"** (vs "the sine fit");
+- at first use: *"a Gaussian process with a two-component kernel, a
+  damped cosine at the vibrato rate plus a slow drift -- the Q = 2,
+  mu2 = 0 special case of the spectral mixture kernel (Wilson and Adams
+  2013)"*. "Spectral mixture (SM) kernel" is the paper's own name for
+  the KERNEL (verified below), so the special-case attribution is exact.
+
+## Verified against the PDFs (2026-10-07)
+
+- Wilson & Adams 2013 (`related_works/gp-kernel-pattern-discovery.pdf`):
+  their Eq. (11), one component, is exp(-2 pi^2 tau^2 sigma^2)
+  cos(2 pi tau mu) and Eq. (12) the Q-component sum -- our kernel and
+  the note's equations match symbol for symbol (their sigma^2 = our
+  v_q). The paper states "Henceforth, we refer to the kernel in
+  Eq. (12) as a spectral mixture (SM) kernel", i.e. the name attaches
+  to the kernel; the method of the paper is many components (Q = 10 in
+  their CO2 experiment), free means, learned spectral density,
+  "discover patterns without encoding them a priori" -- confirming the
+  method-level distinction above.
+- Remes, Heinonen, Kaski 2017
+  (`related_works/non-stationary-spectral-kernels.pdf`): title
+  "Non-Stationary Spectral Kernels"; the generalised spectral density /
+  GSM framing is theirs.
+- Alvarado & Stowell 2016 (`related_works/gp-music-audio-model.pdf`):
+  "Gaussian Processes for Music Audio Modelling and Content Analysis",
+  Queen Mary University of London, 2016 -- author/year attributions
+  correct.
 
 Applied to: `docs/slides/deck_week.tex` (the living deck), the two
 estimator figures (legends regenerated), `docs/sm_estimator_note.tex`,

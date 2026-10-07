@@ -151,32 +151,10 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The model (3): side information as kernels}
-  Any per-note side information enters the same way. In Phase 1 there are
-  two sets, each one row per note ($N \times d$): simple score descriptors
-  $X_{\mathrm{feat}}$ (register, duration, meter, position) and per-note
-  features $H$ from a small music model trained on MAESTRO.
-  \vspace{1mm}
 
-  A linear mean with unknown weights $\beta$, integrated out, becomes a
-  kernel term ($X$ = either feature matrix, $f_G$ = the graph GP of the
-  previous slide, $c_X$ = the prior scale of set $X$'s weights):
-  \begin{equation*}
-    y \;=\; X\beta + f_G, \quad \beta \sim \N(0,\, c_X\,I)
-    \qquad\Longrightarrow\qquad
-    \operatorname{Cov}[\,y\,] \;=\; c_X\, X X^{\!\top} + \operatorname{Cov}[\,f_G\,].
-  \end{equation*}
-  \begin{itemize}
-    \item So the regression weights are not fixed once across the corpus: they
-          are \textbf{re-inferred for every piece}, jointly with everything
-          else, and their uncertainty enters the posterior.
-    \item This per-piece adaptation is the measured main source of the
-          accuracy gain.
-  \end{itemize}
-\end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The model (4): the covariance of one performance}
+\begin{frame}{The model (3): the covariance of one performance}
   Stack all channels of the $N$ notes into one vector $y$.
   Every component becomes one term of its covariance $K$, built per piece:
   \begin{equation*}
@@ -185,8 +163,10 @@
     \;+\; \underbrace{\textcolor{okamber}{\textstyle\sum_f \diag(c_f)\otimes X_f X_f^{\!\top}}}_{\text{side information}}
     \;+\; \underbrace{\textcolor{okverm}{\diag(\varsigma^2)\otimes I}}_{\text{noise}}
   \end{equation*}
-  {\small $f$ runs over the feature sets, giving per-channel scales $c_f$.
-  $\varsigma^2$ = the per-channel noise variances.}
+  {\small $f$ runs over the per-note feature sets $X_f$ (score
+  descriptors, music-model features), each a marginalized linear mean
+  with per-channel scales $c_f$ (detail in the backups). $\varsigma^2$ =
+  the per-channel noise variances.}
   \vspace{1mm}
 
   All parameters $\theta = (s, B, \{c_f\}, \varsigma^2)$, 16 numbers in
@@ -204,40 +184,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Notations}
-  \begin{center}
-  {\scriptsize\setlength{\tabcolsep}{3pt}
-  \begin{tabular}{@{}lp{56mm}l@{}}
-  \toprule
-  Symbol & Meaning & Role \\
-  \midrule
-  $y \in \R^{3N}$ & the three channels ($\tau$, $\log r$, $v$) of all $N$
-                     notes, stacked & part observed, part predicted \\
-  $K \in \R^{3N \times 3N}$ & the covariance of $y$: the entire model in
-                     one matrix & built per piece \\
-  $K_G(s) \in \R^{N \times N}$ & score-graph kernel: how expression
-             co-varies between related notes & from the score, $s$ learned per piece \\
-  $\ell_b$, $\ell_p$ & graph length-scales (time, pitch) & fixed, global \\
-  $B \in \R^{3 \times 3}$ & how strongly the channels move together
-             & learned per piece \\
-  $X_{\mathrm{feat}},\, H \in \R^{N \times d}$ & score descriptors and
-             music-model features & inputs ($H$: trained once, frozen) \\
-  $c_f \in \R^3$ per set & how much each channel trusts each feature set
-             & learned per piece \\
-  $\varsigma^2 \in \R^3$ & per-channel noise variances & learned per piece \\
-  $\theta \in \R^{16}$ & $(s, B, \{c_f\}, \varsigma^2)$
-             & all learned per piece, exact evidence \\
-  $\tilde y_o$, $o$ & observed values, and which entries & data \\
-  $m \in \R^{3N}$, $\Sigma_y$ & posterior mean and covariance & predicted, closed form \\
-  \bottomrule
-  \end{tabular}}
-  \end{center}
-  \vspace{1mm}
-  {\small Phase 2 reuses everything with six channels in place of three.
-  Its per-note symbols (the channels $c, \gamma, f, \ell, \tau,
-  d^{\mathrm{vib}}$ and the estimator internals) are defined where they
-  first appear.}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
 \begin{frame}{Phase 1 (piano, ASAP): \textcolor{okgreen}{confirmed}}
@@ -273,7 +220,7 @@
           equal temperament at 440 Hz,
           $x_j = 1200 \log_2 (f_{0,j}/440) - 100\,(p_i - 69)$
           ($p_i$: MIDI pitch).
-    \item \textbf{Two curves per note.} Tracked: pyin, run by us on the
+    \item \textbf{Two curves per note.} Tracked: pYIN, run by us on the
           track audio, with the voicing confidence $\pi_j$ above.
           Ground truth: the corpus's own frame-level pitch annotation of
           the same separately recorded single-instrument track (46 ms
@@ -281,9 +228,10 @@
           still a measurement of the same performance.
   \end{itemize}
   \vfill
-  Everything downstream consumes the tracked curve. The two approaches of
-  this chapter compete \textbf{only} for the three pitch-curve channels
-  $c$, $\log\gamma$, $\log f$, defined on the next slide.
+  Everything downstream consumes the tracked curve, and the loudness and
+  timing channels and the observation model (backups) are shared as well.
+  The two approaches of this chapter compete \textbf{only} for the three
+  pitch-curve channels $c$, $\log\gamma$, $\log f$, defined next.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -324,38 +272,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Phase 2: loudness, timing, and what the GP observes}
-  \begin{itemize}
-    \item \textbf{Loudness} $\ell_i$: the note's log RMS energy, centred
-          per track. Variance from the spread over four within-note
-          chunks.
-    \item \textbf{Timing} $\tau_i$: score and performed notes are matched
-          (exact order when the pitch sequences agree, else a monotone
-          pitch DTW). Each note gets a local tempo line, fit on its
-          $\pm 8$ matched neighbours with note $i$ itself excluded:
-  \end{itemize}
-  \begin{equation*}
-    \hat u_i \;=\; \hat\varphi_i\, b_i + \hat\psi_i, \qquad
-    \tau_i \;=\; u_i - \hat u_i
-  \end{equation*}
-  {\small $u_i$: performed onset (s). $b_i$: score onset (beats).
-  $\hat\varphi_i, \hat\psi_i$: the leave-one-out tempo line's slope and
-  intercept. The channel's variance is the tempo line's predictive
-  variance for note $i$, so alignment error enters the noise row, not
-  the target.}
-  \vspace{1mm}
 
-  The observation model the GP sees, per piece as before:
-  \begin{equation*}
-    \hat y \;=\; y + e, \qquad e \sim \N\bigl(0,\ \diag(\hat v)\bigr)
-  \end{equation*}
-  {\small $\hat y$: the six estimates per note. $\hat v$: each
-  estimator's own reported variance, used as given (a learned rescale
-  was measured worse, three times). Unidentifiable vibrato, octave
-  errors ($|c| > 150$ cents), and unmatched notes are missing cells:
-  the GP conditions on observed cells only. The coupling matrix $B$ is
-  now $6 \times 6$, everything else unchanged.}
-\end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Phase 2: two approaches to the pitch-curve channels}
@@ -367,7 +284,7 @@
   \small
   \begin{tabular}{@{}p{25mm}p{47mm}p{47mm}@{}}
     \toprule
-     & \textbf{approach 1: sine fit} & \textbf{approach 2: QP-GP} \\
+     & \textbf{approach 1: sine fit} & \textbf{approach 2: GP estimator} \\
     \midrule
     the curve is & one rigid shape & a draw from a GP \\
     assumes & a phase-locked sinusoid for the whole note & energy in a band
@@ -382,40 +299,20 @@
   \end{tabular}
   \end{center}
   \vspace{1mm}
-  The next slides dive into each, then the confirmation (which ran with
-  approach 1 inside), then the head-to-head test.
+  Approach 2 in depth next (approach 1's fit detail: backups), then the
+  confirmation, which ran with approach 1 inside, then the head-to-head.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Approach 1: the sine fit (the incumbent)}
-  One rigid shape per note, fit to the cents curve by least squares:
-  \begin{equation*}
-    x(t) \;=\; c \;+\; \gamma \sin\bigl( 2\pi f\, (t - \delta) \bigr)
-    \;+\; \text{noise}
-  \end{equation*}
-  {\small $c$: centre (cents). $\gamma$: extent (cents). $f$: rate (Hz).
-  $\delta$: phase offset (s).}
-  \begin{itemize}
-    \item A grid over the rate $f$ (2.5 to 9 Hz), the amplitudes closed
-          form per grid point. Variances from the curvature covariance
-          $\hat\sigma^2 (J^{\!\top}\! J)^{-1}$ and the delta method for
-          $\log\gamma$, $\log f$.
-    \item A gated variant (the oscillation starts only at
-          $t \ge d_i^{\mathrm{vib}}$) supplies the vibrato onset channel,
-          in either approach.
-    \item $c$ is the vibrato-free centre, not the curve mean (they
-          coincide only over whole cycles, which a note rarely supplies).
-    \item Weak notes are refused by hard identifiability rules (minimum
-          frames, minimum cycles): refused channels become missing cells.
-  \end{itemize}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
 \begin{frame}{Approach 2: a GP in place of the sine fit}
   The challenger, and the main discussion point: treat the note's cents
-  curve as a \textbf{quasi-periodic Gaussian process (QP-GP)}, two damped
-  cosines (the $Q = 2$, $\mu_2 = 0$ special case of the spectral mixture
-  family, Wilson and Adams 2013):
+  curve as a \textbf{Gaussian process} with a two-component kernel, a
+  damped cosine at the vibrato rate plus a slow drift (the $Q = 2$,
+  $\mu_2 = 0$ special case of the spectral mixture kernel of Wilson and
+  Adams 2013):
   \begin{equation*}
     k(\Delta t) \;=\;
     \underbrace{w_1\, e^{-2\pi^2 v_1 \Delta t^2} \cos(2\pi \mu_1 \Delta t)}_{\text{vibrato component}}
@@ -441,71 +338,10 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Why spectral: the thesis already thinks this way}
-  A stationary kernel and a symmetric spectral density are a Fourier
-  pair. The QP-GP's spectral density is a Gaussian mixture placed directly in
-  the spectrum:
-  \begin{equation*}
-    S(\xi) \;=\; \sum_{q=1}^{2} \frac{w_q}{2}
-    \Bigl[ \N(\xi;\, \mu_q, v_q) + \N(\xi;\, -\mu_q, v_q) \Bigr],
-    \qquad \mu_2 = 0
-  \end{equation*}
-  {\small $\xi$: frequency (Hz), not the graph parameter $s$. The prior
-  is a statement about where the curve's energy lives: a peak at the
-  vibrato rate, mass at zero for the drift.}
-  \vspace{1mm}
-  \begin{itemize}
-    \item \textbf{The thesis does the same thing one level up.} Across
-          notes, $K_G = U\, g(\nu; s)\, U^{\!\top}$ shapes the
-          \textbf{score-graph spectrum}. Within a note, the spectral
-          mixture shapes the \textbf{time spectrum}. One design language
-          at both levels: put the prior where the energy is.
-    \item \textbf{Where the levels meet today}: the observation model.
-          The within-note fit hands each across-note cell an estimate
-          and a variance, three scalars per note.
-    \item \textbf{The unification this opens}: a GP at every level. The
-          estimator's hand rules (minimum cycles, gates, octave
-          thresholds) become priors and posteriors, and uncertainty
-          flows into the noise rows automatically.
-  \end{itemize}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
-\begin{frame}{Approach 2: from the GP posterior to the three channels}
-  Given the fitted kernel, the posterior mean of the curve splits exactly
-  into its components (constant, drift, vibrato):
-  \begin{equation*}
-    \hat m(t) \;=\; \hat c \;+\; \hat m_2(t) \;+\; \hat m_1(t),
-    \qquad
-    \hat m_q \;=\; K_q\, K^{-1} (x - \hat c\, \one)
-  \end{equation*}
-  {\small $K_q$: component $q$'s kernel matrix. $K$: the full kernel plus
-  noise. The win-side figure shows this split on a real note.}
-  \begin{center}
-  \small
-  \begin{tabular}{@{}lll@{}}
-    \toprule
-    channel & estimate & variance \\
-    \midrule
-    intonation $c$ & $\hat c + \operatorname{mean}(\hat m_2)$
-      \ (the realized average) & flat-prior GLS variance \\
-    extent $\log\gamma$ & $\log\bigl(\sqrt{2}\,
-      \operatorname{std}(\hat m_1)\bigr)$ & evidence curvature in $\log w_1$ \\
-    rate $\log f$ & $\log \hat\mu_1$ & evidence curvature in $\mu_1$ \\
-    \bottomrule
-  \end{tabular}
-  \end{center}
-  \begin{itemize}
-    \item Every read-out is a \textbf{realized} quantity of this note's
-          curve, never a process parameter (the ensemble scale spreads
-          around the realized amplitude, the constant splits an offset
-          with the drift arbitrarily).
-    \item The coherence bound $\sqrt{v_1} \le \mu_1/8$ keeps the
-          component an oscillation, weak notes report a wide variance
-          instead of being refused, and the interface is the same as
-          approach 1: an estimate and a variance per channel per note.
-  \end{itemize}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
 \begin{frame}{Phase 2 (strings and winds, URMP): \textcolor{okgreen}{confirmed}, one claim failed}
@@ -586,7 +422,7 @@
   \includegraphics[width=0.98\linewidth]{sm_estimator_explainer.png}
 
   {\scriptsize\textcolor{muted}{One cello note. A: the sine fit's rigid
-  shape drifts out of phase, the QP-GP tracks the curve. B: the posterior
+  shape drifts out of phase, the GP tracks the curve. B: the posterior
   split into centre, drift, and vibrato. C: both estimators' read outs.}}
 \end{frame}
 
@@ -634,7 +470,7 @@
   \small
   \begin{tabular}{@{}lllp{44mm}@{}}
     \toprule
-    & sine fit & QP-GP & reading \\
+    & sine fit & GP estimator & reading \\
     \midrule
     centre & $c$ & $c$ & the sustained level (shared) \\
     oscillation & $\gamma$, $f$, $\delta$ & $w_1$, $\mu_1$, $v_1$ &
@@ -650,12 +486,12 @@
     \item The channels \textbf{invert the sine fit exactly}: $(c, \gamma,
           f)$ rebuild the whole model (phase is a nuisance). Transcription
           to channels to synthesis is a lossless round trip.
-    \item The channels pin the QP-GP only to its coherent limit
+    \item The channels pin the GP only to its coherent limit
           $v_1 \to 0$, $w_2 = 0$, \textbf{which is the sine model}.
-          Everything the QP-GP adds lives in coordinates the bundle does
+          Everything the GP adds lives in coordinates the bundle does
           not carry: a lossy round trip.
     \item Interpretability follows the same line: the sine's numbers mean
-          what they say by construction. The QP-GP's mean what their
+          what they say by construction. The GP's mean what their
           names say only when the decomposition is well identified, the same
           conditionality that closed the swap.
   \end{itemize}
@@ -673,7 +509,7 @@
           strength. Cheap, and the confirmed bundle keeps its meaning.
     \item \textbf{Extend the vocabulary.} Add the missing coordinates as
           channels: coherence ($\mu_1/\sqrt{v_1}$, phase stability, a
-          variable the sine cannot express) and drift power. The QP-GP
+          variable the sine cannot express) and drift power. The GP
           then inverts from the bundle exactly as the sine does today, and
           synthesis closes again. Each new channel needs its own target,
           variance, and registration.
@@ -722,38 +558,10 @@
 
 % ============================================== THE TIMING RESULTS
 % ---------------------------------------------------------------------
-\begin{frame}{The other measured answers (2026-09)}
-  Beyond the estimator question, two documented limitations were
-  converted into measured answers:
-  \begin{enumerate}
-    \item \textbf{The timing tail}, the model's one documented log score
-          failure, fixed at both levels (the predictive and the fit).
-    \item \textbf{The failed timing calibration claim} repaired:
-          correlated timing noise across notes, reproduced three ways,
-          ready to register.
-  \end{enumerate}
-  \vfill
-  {\small\textcolor{muted}{All recent results are development level and
-  exploratory, published tables unchanged. Every significance claim shown
-  survives a multiple comparison pass.}}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
-\begin{frame}{The timing tail: fixed at both levels}
-  Known Phase 1 failure: on a very steady piece a few timing outliers
-  explode the pooled Gaussian log score.
-  \begin{itemize}
-    \item \textbf{Deploy time.} A variance matched Student t predictive
-          takes the documented blow up cell from 105.2 to $-1.7$ with
-          coverage intact. The predictive floor we had suggested does
-          nothing: this is a tail shape problem, not a scale problem.
-    \item \textbf{Inference level.} Fitting the timing noise as a
-          Student t (scale mixture, leave one out reweighting) brings
-          coverage to nominal and improves \textbf{articulation} recovery
-          by $-0.018$ (significant): an observed timing outlier corrupts
-          the coupled channels, and only robustifying the fit undoes that.
-  \end{itemize}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
 \begin{frame}{The failed confirmation claim now has a measured fix}
@@ -789,7 +597,253 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The registration is drafted. It needs one decision.}
+
+
+% ---------------------------------------------------------------------
+\begin{frame}{Open questions}
+  \begin{enumerate}
+    \item \textbf{Which pool} for the correlated timing noise
+          registration: a new corpus such as Bach10, a disclosed re use
+          of the spent pool, or both? (The tonal metric registration
+          waits on the same decision.)
+    \item \textbf{Should the opt-in capabilities become recommended
+          defaults} for new runs? (Robust timing noise, correlated
+          timing noise, completion guard: default off today, published
+          paths bit unchanged, pinned by equality tests.)
+    \item \textbf{Which depth of the estimator design question?}
+          Redesign the read-out, extend the vocabulary, move the
+          channels to curve level, or keep the design as is. The swap is
+          conclusively off, the curve-level evidence favours the GP
+          without deciding it, and the direction is inconclusive. In
+          progress: letting the spectrum be \textbf{learned} (free
+          components, no hand roles), the kernel paper's method applied
+          as intended.
+  \end{enumerate}
+\end{frame}
+
+
+% ------------------------------------------------------------ backup
+\begin{frame}{Backup: notations}
+  \begin{center}
+  {\scriptsize\setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}lp{56mm}l@{}}
+  \toprule
+  Symbol & Meaning & Role \\
+  \midrule
+  $y \in \R^{3N}$ & the three channels ($\tau$, $\log r$, $v$) of all $N$
+                     notes, stacked & part observed, part predicted \\
+  $K \in \R^{3N \times 3N}$ & the covariance of $y$: the entire model in
+                     one matrix & built per piece \\
+  $K_G(s) \in \R^{N \times N}$ & score-graph kernel: how expression
+             co-varies between related notes & from the score, $s$ learned per piece \\
+  $\ell_b$, $\ell_p$ & graph length-scales (time, pitch) & fixed, global \\
+  $B \in \R^{3 \times 3}$ & how strongly the channels move together
+             & learned per piece \\
+  $X_{\mathrm{feat}},\, H \in \R^{N \times d}$ & score descriptors and
+             music-model features & inputs ($H$: trained once, frozen) \\
+  $c_f \in \R^3$ per set & how much each channel trusts each feature set
+             & learned per piece \\
+  $\varsigma^2 \in \R^3$ & per-channel noise variances & learned per piece \\
+  $\theta \in \R^{16}$ & $(s, B, \{c_f\}, \varsigma^2)$
+             & all learned per piece, exact evidence \\
+  $\tilde y_o$, $o$ & observed values, and which entries & data \\
+  $m \in \R^{3N}$, $\Sigma_y$ & posterior mean and covariance & predicted, closed form \\
+  \bottomrule
+  \end{tabular}}
+  \end{center}
+  \vspace{1mm}
+  {\small Phase 2 reuses everything with six channels in place of three.
+  Its per-note symbols (the channels $c, \gamma, f, \ell, \tau,
+  d^{\mathrm{vib}}$ and the estimator internals) are defined where they
+  first appear.}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: side information as kernels (the model's feature terms)}
+  Any per-note side information enters the same way. In Phase 1 there are
+  two sets, each one row per note ($N \times d$): simple score descriptors
+  $X_{\mathrm{feat}}$ (register, duration, meter, position) and per-note
+  features $H$ from a small music model trained on MAESTRO.
+  \vspace{1mm}
+
+  A linear mean with unknown weights $\beta$, integrated out, becomes a
+  kernel term ($X$ = either feature matrix, $f_G$ = the graph GP of the
+  previous slide, $c_X$ = the prior scale of set $X$'s weights):
+  \begin{equation*}
+    y \;=\; X\beta + f_G, \quad \beta \sim \N(0,\, c_X\,I)
+    \qquad\Longrightarrow\qquad
+    \operatorname{Cov}[\,y\,] \;=\; c_X\, X X^{\!\top} + \operatorname{Cov}[\,f_G\,].
+  \end{equation*}
+  \begin{itemize}
+    \item So the regression weights are not fixed once across the corpus: they
+          are \textbf{re-inferred for every piece}, jointly with everything
+          else, and their uncertainty enters the posterior.
+    \item This per-piece adaptation is the measured main source of the
+          accuracy gain.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: loudness, timing, and what the GP observes}
+  \begin{itemize}
+    \item \textbf{Loudness} $\ell_i$: the note's log RMS energy, centred
+          per track. Variance from the spread over four within-note
+          chunks.
+    \item \textbf{Timing} $\tau_i$: score and performed notes are matched
+          (exact order when the pitch sequences agree, else a monotone
+          pitch DTW). Each note gets a local tempo line, fit on its
+          $\pm 8$ matched neighbours with note $i$ itself excluded:
+  \end{itemize}
+  \begin{equation*}
+    \hat u_i \;=\; \hat\varphi_i\, b_i + \hat\psi_i, \qquad
+    \tau_i \;=\; u_i - \hat u_i
+  \end{equation*}
+  {\small $u_i$: performed onset (s). $b_i$: score onset (beats).
+  $\hat\varphi_i, \hat\psi_i$: the leave-one-out tempo line's slope and
+  intercept. The channel's variance is the tempo line's predictive
+  variance for note $i$, so alignment error enters the noise row, not
+  the target.}
+  \vspace{1mm}
+
+  The observation model the GP sees, per piece as before:
+  \begin{equation*}
+    \hat y \;=\; y + e, \qquad e \sim \N\bigl(0,\ \diag(\hat v)\bigr)
+  \end{equation*}
+  {\small $\hat y$: the six estimates per note. $\hat v$: each
+  estimator's own reported variance, used as given (a learned rescale
+  was measured worse, three times). Unidentifiable vibrato, octave
+  errors ($|c| > 150$ cents), and unmatched notes are missing cells:
+  the GP conditions on observed cells only. The coupling matrix $B$ is
+  now $6 \times 6$, everything else unchanged.}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: approach 1 in detail, the sine fit}
+  One rigid shape per note, fit to the cents curve by least squares:
+  \begin{equation*}
+    x(t) \;=\; c \;+\; \gamma \sin\bigl( 2\pi f\, (t - \delta) \bigr)
+    \;+\; \text{noise}
+  \end{equation*}
+  {\small $c$: centre (cents). $\gamma$: extent (cents). $f$: rate (Hz).
+  $\delta$: phase offset (s).}
+  \begin{itemize}
+    \item A grid over the rate $f$ (2.5 to 9 Hz), the amplitudes closed
+          form per grid point. Variances from the curvature covariance
+          $\hat\sigma^2 (J^{\!\top}\! J)^{-1}$ and the delta method for
+          $\log\gamma$, $\log f$.
+    \item A gated variant (the oscillation starts only at
+          $t \ge d_i^{\mathrm{vib}}$) supplies the vibrato onset channel,
+          in either approach.
+    \item $c$ is the vibrato-free centre, not the curve mean (they
+          coincide only over whole cycles, which a note rarely supplies).
+    \item Weak notes are refused by hard identifiability rules (minimum
+          frames, minimum cycles): refused channels become missing cells.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: why spectral, the thesis already thinks this way}
+  A stationary kernel and a symmetric spectral density are a Fourier
+  pair. This kernel's spectral density is a Gaussian mixture placed directly in
+  the spectrum:
+  \begin{equation*}
+    S(\xi) \;=\; \sum_{q=1}^{2} \frac{w_q}{2}
+    \Bigl[ \N(\xi;\, \mu_q, v_q) + \N(\xi;\, -\mu_q, v_q) \Bigr],
+    \qquad \mu_2 = 0
+  \end{equation*}
+  {\small $\xi$: frequency (Hz), not the graph parameter $s$. The prior
+  is a statement about where the curve's energy lives: a peak at the
+  vibrato rate, mass at zero for the drift.}
+  \vspace{1mm}
+  \begin{itemize}
+    \item \textbf{The thesis does the same thing one level up.} Across
+          notes, $K_G = U\, g(\nu; s)\, U^{\!\top}$ shapes the
+          \textbf{score-graph spectrum}. Within a note, the spectral
+          mixture shapes the \textbf{time spectrum}. One design language
+          at both levels: put the prior where the energy is.
+    \item \textbf{Where the levels meet today}: the observation model.
+          The within-note fit hands each across-note cell an estimate
+          and a variance, three scalars per note.
+    \item \textbf{The unification this opens}: a GP at every level. The
+          estimator's hand rules (minimum cycles, gates, octave
+          thresholds) become priors and posteriors, and uncertainty
+          flows into the noise rows automatically.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: from the GP posterior to the three channels}
+  Given the fitted kernel, the posterior mean of the curve splits exactly
+  into its components (constant, drift, vibrato):
+  \begin{equation*}
+    \hat m(t) \;=\; \hat c \;+\; \hat m_2(t) \;+\; \hat m_1(t),
+    \qquad
+    \hat m_q \;=\; K_q\, K^{-1} (x - \hat c\, \one)
+  \end{equation*}
+  {\small $K_q$: component $q$'s kernel matrix. $K$: the full kernel plus
+  noise. The win-side figure shows this split on a real note.}
+  \begin{center}
+  \small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    channel & estimate & variance \\
+    \midrule
+    intonation $c$ & $\hat c + \operatorname{mean}(\hat m_2)$
+      \ (the realized average) & flat-prior GLS variance \\
+    extent $\log\gamma$ & $\log\bigl(\sqrt{2}\,
+      \operatorname{std}(\hat m_1)\bigr)$ & evidence curvature in $\log w_1$ \\
+    rate $\log f$ & $\log \hat\mu_1$ & evidence curvature in $\mu_1$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \begin{itemize}
+    \item Every read-out is a \textbf{realized} quantity of this note's
+          curve, never a process parameter (the ensemble scale spreads
+          around the realized amplitude, the constant splits an offset
+          with the drift arbitrarily).
+    \item The coherence bound $\sqrt{v_1} \le \mu_1/8$ keeps the
+          component an oscillation, weak notes report a wide variance
+          instead of being refused, and the interface is the same as
+          approach 1: an estimate and a variance per channel per note.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: the other measured answers (2026-09)}
+  Beyond the estimator question, two documented limitations were
+  converted into measured answers:
+  \begin{enumerate}
+    \item \textbf{The timing tail}, the model's one documented log score
+          failure, fixed at both levels (the predictive and the fit).
+    \item \textbf{The failed timing calibration claim} repaired:
+          correlated timing noise across notes, reproduced three ways,
+          ready to register.
+  \end{enumerate}
+  \vfill
+  {\small\textcolor{muted}{All recent results are development level and
+  exploratory, published tables unchanged. Every significance claim shown
+  survives a multiple comparison pass.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: the timing tail, fixed at both levels}
+  Known Phase 1 failure: on a very steady piece a few timing outliers
+  explode the pooled Gaussian log score.
+  \begin{itemize}
+    \item \textbf{Deploy time.} A variance matched Student t predictive
+          takes the documented blow up cell from 105.2 to $-1.7$ with
+          coverage intact. The predictive floor we had suggested does
+          nothing: this is a tail shape problem, not a scale problem.
+    \item \textbf{Inference level.} Fitting the timing noise as a
+          Student t (scale mixture, leave one out reweighting) brings
+          coverage to nominal and improves \textbf{articulation} recovery
+          by $-0.018$ (significant): an observed timing outlier corrupts
+          the coupled channels, and only robustifying the fit undoes that.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: the registration draft and its power}
   \centering
   \begin{tabular}{@{}rcc@{}}
     \toprule
@@ -812,30 +866,6 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Open decisions}
-  \begin{enumerate}
-    \item \textbf{The registration pool} for the correlated timing noise
-          claim (the tonal metric registration waits on the same
-          decision): a new corpus such as Bach10, a disclosed re use of
-          the spent pool, or both.
-    \item \textbf{Adoption defaults.} The robust timing noise, the
-          correlated timing noise, and the completion guard are
-          implemented opt in: default off, published paths bit unchanged,
-          pinned by equality tests. Recommend them for new runs?
-    \item \textbf{The kernel direction, the main discussion.} The
-          drop-in swap is conclusively off, the curve-level evidence
-          favours the QP-GP without deciding it, so the
-          direction is inconclusive and its deciding tests are known:
-          (a) marginalize the rate and retest at the same interface,
-          (b) move the channels to curve level so the within-note and
-          across-note GPs meet directly, (c) register the timing claim
-          first and return. Sequencing, not a keep or ditch decision:
-          (c) first does not close (a) or (b).
-  \end{enumerate}
-\end{frame}
-
-
-% ------------------------------------------------------------ backup
 \begin{frame}{Backup: the timing tail, before and after}
   \centering
   \includegraphics[width=0.92\linewidth]{tail_predictive_dev.png}
