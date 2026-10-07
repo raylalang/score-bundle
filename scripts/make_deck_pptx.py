@@ -12,9 +12,18 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 
+from pptx.enum.shapes import MSO_SHAPE
+
 INK = RGBColor(0x1A, 0x1A, 0x1A)
 BLUE = RGBColor(0x00, 0x72, 0xB2)
 MUTED = RGBColor(0x6B, 0x72, 0x80)
+RULE = RGBColor(0xE5, 0xE7, 0xEB)
+FONT = "Segoe UI"
+
+
+def _style(p, size, color, bold=False):
+    p.font.size, p.font.bold, p.font.color.rgb = Pt(size), bold, color
+    p.font.name = FONT
 FIG = "docs/thesis/figures/"
 W, H = Inches(13.33), Inches(7.5)
 
@@ -25,19 +34,30 @@ prs.slide_width, prs.slide_height = W, H
 def slide(title, bullets=(), eq=None, fig=None, fig_w=9.5, note="",
           small=None, audio=()):
     s = prs.slides.add_slide(prs.slide_layouts[6])
+    n = len(prs.slides._sldIdLst)
+    num = s.shapes.add_textbox(Inches(12.5), Inches(7.05), Inches(0.7),
+                               Inches(0.35))
+    _style(num.text_frame.paragraphs[0], 12, MUTED)
+    num.text_frame.paragraphs[0].text = str(n)
     if title:
         tb = s.shapes.add_textbox(Inches(0.45), Inches(0.25),
                                   Inches(12.4), Inches(0.75))
         p = tb.text_frame.paragraphs[0]
         p.text = title
-        p.font.size, p.font.bold, p.font.color.rgb = Pt(28), True, INK
+        _style(p, 28, INK, bold=True)
+        bar = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.5),
+                                 Inches(0.98), Inches(12.3), Pt(2.2))
+        bar.fill.solid()
+        bar.fill.fore_color.rgb = BLUE
+        bar.line.fill.background()
+        bar.shadow.inherit = False
     y = 1.2
     if eq:
         tb = s.shapes.add_textbox(Inches(0.9), Inches(y), Inches(11.5),
                                   Inches(0.7))
         p = tb.text_frame.paragraphs[0]
         p.text = eq
-        p.font.size, p.font.color.rgb = Pt(20), BLUE
+        _style(p, 20, BLUE)
         y += 0.85
     if bullets:
         tb = s.shapes.add_textbox(Inches(0.9), Inches(y), Inches(11.6),
@@ -49,11 +69,10 @@ def slide(title, bullets=(), eq=None, fig=None, fig_w=9.5, note="",
             lvl = 0
             if b.startswith("  "):
                 lvl, b = 1, b.strip()
-            p.text = ("• " if lvl == 0 else "– ") + b
+            p.text = ("•  " if lvl == 0 else "–  ") + b
             p.level = lvl
-            p.font.size = Pt(20 if lvl == 0 else 17)
-            p.font.color.rgb = INK
-            p.space_after = Pt(8)
+            _style(p, 20 if lvl == 0 else 17, INK)
+            p.space_after = Pt(10)
         y += 0.5 + 0.55 * len(bullets)
     if fig:
         pic = s.shapes.add_picture(FIG + fig, 0, 0, width=Inches(fig_w))
@@ -64,7 +83,7 @@ def slide(title, bullets=(), eq=None, fig=None, fig_w=9.5, note="",
                                   Inches(0.7))
         p = tb.text_frame.paragraphs[0]
         p.text = small
-        p.font.size, p.font.color.rgb = Pt(13), MUTED
+        _style(p, 13, MUTED)
         tb.text_frame.word_wrap = True
     for x, wav in audio:
         s.shapes.add_movie(wav, Inches(x), Inches(6.55), Inches(0.65),
@@ -76,14 +95,22 @@ def slide(title, bullets=(), eq=None, fig=None, fig_w=9.5, note="",
 
 # 1 title
 s = slide(None)
-tb = s.shapes.add_textbox(Inches(1.0), Inches(2.6), Inches(11.3), Inches(1.8))
-for i, (txt, size, bold) in enumerate([
+band = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, Inches(2.3),
+                          Inches(13.33), Pt(3))
+band.fill.solid()
+band.fill.fore_color.rgb = BLUE
+band.line.fill.background()
+band.shadow.inherit = False
+tb = s.shapes.add_textbox(Inches(1.0), Inches(2.7), Inches(11.3), Inches(2.2))
+for i, (txt, size, bold, col) in enumerate([
         ("Expressive Performance as a Gaussian Process on a Musical "
-         "Score Graph", 32, True),
-        ("Raynaldi Lalang — Kyoto University — October 2026", 18, False)]):
+         "Score Graph", 34, True, INK),
+        ("", 12, False, INK),
+        ("Raynaldi Lalang   ·   Kyoto University   ·   October 2026",
+         18, False, MUTED)]):
     p = tb.text_frame.paragraphs[0] if i == 0 else tb.text_frame.add_paragraph()
     p.text = txt
-    p.font.size, p.font.bold, p.font.color.rgb = Pt(size), bold, INK
+    _style(p, size, col, bold)
 
 # 2 concept + audio
 slide("Expressive performance",
@@ -339,7 +366,11 @@ for r, (a, b) in enumerate(rows):
     for c, txt in enumerate((a, b)):
         cell = tbl.cell(r, c)
         cell.text = txt
-        cell.text_frame.paragraphs[0].font.size = Pt(18)
+        _style(cell.text_frame.paragraphs[0], 18,
+               BLUE if c == 0 else INK, bold=(c == 0))
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = RGBColor(0xFF, 0xFF, 0xFF) \
+            if r % 2 == 0 else RULE
 
 # 22 open questions
 slide("Open questions",
