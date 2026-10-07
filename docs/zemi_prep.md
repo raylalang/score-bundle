@@ -29,7 +29,11 @@ does not get cut.
 
 - **2 Expressive performance.** The concept picture: written vs
   played, the deviations ARE the expression. Not transcription: the
-  score is known.
+  score is known. AUDIO DEMO here: docs/slides/zemi_audio_demo.pptx
+  (one slide, two embedded clips, same Kreisleriana bars: flat = score
+  MIDI at uniform velocity, expressive = a real performance from ASAP).
+  Or play docs/slides/audio/{flat,expressive}.wav in any player. Sine
+  synthesis, so timing and dynamics carry the contrast, say so.
 - **3 Thesis + three problems.** Say the thesis sentence verbatim, then
   one problem per phase with its own variables: piano (timing,
   articulation, velocity, read exactly), strings/winds (six, estimated,
