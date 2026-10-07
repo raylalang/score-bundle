@@ -224,13 +224,15 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Results (piano, ASAP)}
-  Preregistered one shot on 20 untouched pieces, against the two stage
-  pipeline the model provably contains:
+  Preregistered, scored once on 20 untouched pieces. Baseline: the
+  two-stage pipeline built from the same ingredients (regression mean
+  first, then a per-channel graph residual).
   \begin{itemize}
-    \item \textbf{Accuracy}: RMSE 0.376 vs 0.393 (pooled over the
-          three channels), the paired per-piece difference significant.
-    \item \textbf{Calibration}: the graph's log score contribution
-          significant, coverage 0.925 at nominal 0.9.
+    \item \textbf{Accuracy}: RMSE 0.376 (this model) vs 0.393
+          (baseline), pooled over the three channels, paired per piece,
+          significant.
+    \item \textbf{Calibration}: coverage 0.925 at nominal 0.9. Removing
+          the graph term costs log score, significantly.
     \item \textbf{Attribution} (measured): the per-piece feature weighting
           carries the mean, the graph carries the calibration, and the
           two components are near-orthogonal complements.
@@ -342,8 +344,9 @@
     \quad
     \text{\small (intonation, extent, rate, loudness, timing, vibrato onset)}
   \end{equation*}
-  Preregistered, scored once on 13 held-out pieces. $\Delta$ = full
-  model $-$ no-graph ablation, paired per piece:
+  Preregistered, scored once on 13 held-out pieces. Every $\Delta$
+  below = full model $-$ the same model with the graph term removed,
+  paired per piece (negative favours the graph):
   \begin{itemize}
     \item Intonation recovery: $\Delta$RMSE $-0.877$ cents, significant.
     \item Vibrato calibration: $\Delta$NLL $-2.990$ (extent), $-0.564$
@@ -369,9 +372,9 @@
           chosen per piece by the evidence itself.
     \item The evidence detects the correlation on 97 to 100 percent of
           pieces (median 0.45 to 0.60).
-    \item Timing calibration improves ($\Delta$NLL $-0.111$, significant),
-          coverage moves to nominal, and timing error falls about
-          20 percent (99 to 80 ms).
+    \item Against the diagonal noise row ($\rho = 0$), same model
+          otherwise: $\Delta$NLL $-0.111$, significant; coverage to
+          nominal; timing error 99 to 80 ms.
     \item Reproduced three ways: original masks, fresh masks, and a full
           joint refit.
   \end{itemize}
