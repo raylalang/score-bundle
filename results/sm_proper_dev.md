@@ -59,7 +59,23 @@ series); a per-track (pooled) spectrum rather than per-note might give
 the method a fairer discovery setting — noted as a possible follow-up,
 not scheduled.
 
-## Full run
+## Full run (all dev tracks, 9,804 notes of >= 20 frames, 5,523 vibrato-identifiable; 4 shards, 2026-10-08)
 
-78 dev tracks, sharded (`run k/4`), queued 2026-10-07. This section to
-be replaced by the merged numbers when it lands.
+| measure | result |
+|---|---|
+| evidence, learned minus hand | median −0.08; learned higher on 43% of notes |
+| GT-frame RMSE delta | median −0.001 cents (exact tie) |
+| GT-frame NLL delta | median −0.020 (tie) |
+| coverage@90 | 0.800 both |
+| vibrato band rediscovered | **18%** of identifiable notes |
+| wall per note | 0.6 s vs 0.3 s |
+
+The pilot's reading survives at 39x the sample and sharpens: curve-level
+description is an exact tie, the evidence slightly prefers the smaller
+hand-structured kernel (Occam, at matched description), and unaided
+rediscovery of the vibrato band FALLS at scale (27% -> 18%; the pilot's
+four tracks were vibrato-richer than the corpus). Verdict: on this
+corpus the spectral mixture method has nothing to discover at the
+single-note level that the hand structure does not already encode, and
+the hand structure costs nothing. The channel-defining structure must
+be imposed, which is the design question's point.
