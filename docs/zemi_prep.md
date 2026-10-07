@@ -1,6 +1,6 @@
 # Zemi prep (2026-10-08, 20 minutes, English) — private
 
-Deck: `docs/slides/deck_week.pdf`, 20 slides, no backups. Audience: lab
+Deck: `docs/slides/deck_week.pdf`, 21 slides, no backups. Audience: lab
 members with no prior context. Say "the GP estimator", never "SM-GP";
 say "correlated timing noise across notes", never bare "AR(1)".
 
@@ -15,7 +15,7 @@ winds, and where it's going: reading pitch curves straight from audio."
 
 | slides | content | budget |
 |---|---|---|
-| 2–7 | problem · approach · model (graph, coupling, covariance, picture) | 6 min |
+| 2–8 | expression concept · thesis + three problems · approach · model | 6.5 min |
 | 8–11 | cents curve · channels · data figure · Phase 1 results | 4 min |
 | 12–14 | GP estimator · one-note figure · Phase 2 results | 4 min |
 | 15–16 | Phase 3 · curve-from-waveform prototype | 3 min |
@@ -27,9 +27,13 @@ does not get cut.
 
 ## Speaker notes, slide by slide
 
-- **2 Problem.** Score known, so not transcription: infer what the
-  performer controlled, with trustworthy error bars. Piano: timing,
-  articulation, velocity. Strings/winds add pitch control.
+- **2 Expressive performance.** The concept picture: written vs
+  played, the deviations ARE the expression. Not transcription: the
+  score is known.
+- **3 Thesis + three problems.** Say the thesis sentence verbatim, then
+  one problem per phase: calibrated error bars (piano), noisy estimated
+  targets (strings/winds), the waveform as the observation (audio).
+  Every later slide answers one of these three.
 - **3 Approach.** One GP prior on a score graph; only the observation
   block changes per phase (MIDI, f0 targets, waveform).
 - **4 Graph.** Edges = close in score time and pitch: neighbours play

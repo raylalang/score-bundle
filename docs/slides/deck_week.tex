@@ -70,28 +70,36 @@
 
 % ============================================== PART I  THE THESIS
 % ---------------------------------------------------------------------
-\begin{frame}{Problem: infer how the music was played, with reliable uncertainty}
-  The goal: a probabilistic model of \textbf{every per-note expressive
-  parameter a performer controls}: timing, articulation, velocity, and, on
-  continuously pitched instruments, intonation and vibrato, ultimately
-  inferred from audio alone. Every estimate must carry an error bar that can
-  be trusted note by note.
-  \vspace{2mm}
+\begin{frame}{Expressive performance}
+  The score fixes pitches and note values. Performers add the rest:
+  when, how long, how loud, and on strings and winds, how the pitch
+  moves inside the note. These deviations are the expression.
+  \vspace{-2mm}
+  \figslotw{deck_concept.png}{0.73}{written vs played, and the deviation
+    channels}
+\end{frame}
 
-  On piano, from aligned performance MIDI,
+% ---------------------------------------------------------------------
+\begin{frame}{The thesis, and the three problems}
+  \textbf{Thesis: one Gaussian process on the score graph turns a known
+  score and a performance into every per-note expressive variable, each
+  with an error bar you can trust.}
   \begin{equation*}
     y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{onset timing}},\;\;
       \underbrace{\log r_i}_{\text{articulation}},\;\;
-      \underbrace{v_i}_{\text{velocity}}\;\bigr] \in \R^{3}
-    \qquad\text{per written note.}
+      \underbrace{v_i}_{\text{velocity}}\;\bigr]
+    \qquad\text{per written note (piano).}
   \end{equation*}
-  \begin{itemize}
-    \item Not full transcription: the score is known.
-    \item The output is a \textbf{per-note posterior}: an estimate and a
-          calibrated error bar.
-    \item On strings and winds the vector extends to six estimated
-          channels (Phase 2).
-  \end{itemize}
+  Three problems, one per phase:
+  \begin{enumerate}
+    \item \textbf{Piano}: the variables are read directly from aligned
+          MIDI. Are the error bars calibrated, note by note?
+    \item \textbf{Strings and winds}: the variables (now six, with
+          intonation and vibrato) must be \textbf{estimated} from audio,
+          noisily. Does the same prior still work?
+    \item \textbf{Audio directly}: no pitch tracker at all. Can the
+          waveform itself be the observation?
+  \end{enumerate}
 \end{frame}
 
 % ---------------------------------------------------------------------
