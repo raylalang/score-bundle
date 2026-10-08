@@ -311,6 +311,18 @@
 \divider{Strings and winds}{Intonation, vibrato, loudness, timing, estimated from tracked audio}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Example frames: tracked vs ground truth}
+  \centering
+  \includegraphics[width=0.98\linewidth]{phase2_frames_intro.png}
+
+  {\scriptsize\textcolor{muted}{Real development notes, no fits drawn.
+  A: the same note measured twice. The tracker quantizes and drops
+  frames, the ground truth shows the oscillation underneath. B: enough
+  frames and cycles, the vibrato channels are observed. C: a short flat
+  note, refused, its cells missing.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{From audio to the cents curve}
   A pitch tracker turns each track into frames $(t_j, f_{0,j}, \pi_j)$:
   time, fundamental frequency, voicing confidence.
@@ -343,16 +355,7 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Example frames: tracked vs ground truth}
-  \centering
-  \includegraphics[width=0.98\linewidth]{phase2_frames_intro.png}
 
-  {\scriptsize\textcolor{muted}{Real development notes, no fits drawn.
-  A: the same note measured twice. The tracker quantizes and drops
-  frames, the ground truth shows the oscillation underneath. B: enough
-  frames and cycles, the vibrato channels are observed. C: a short flat
-  note, refused, its cells missing.}}
-\end{frame}
 
 % ---------------------------------------------------------------------
 
