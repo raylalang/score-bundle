@@ -426,23 +426,16 @@
   \end{itemize}
 \end{frame}
 
-% ---------------------------------------------------------------------
-\begin{frame}{The kernel: covariance, spectrum, samples}
-  \figslotw{kernel_viz.png}{0.98}{kernel visualization}
-  \vspace{-2mm}
-  {\small\textcolor{muted}{A: the two components of $k(\Delta t)$. B:
-  the same kernel in frequency, a band at the vibrato rate plus drift at
-  zero. C: draws from the prior, vibrato over a wandering level.}}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
-\begin{frame}{Example note: the GP posterior}
-  \begin{center}
-  \includegraphics[height=0.68\textheight]{example_note_fit.png}
-  \end{center}
-  \vspace{-2mm}
-  {\small\textcolor{muted}{One cello note: the posterior tracks the
-  curve; a rigid sine fit as reference.}}
+\begin{frame}{Example note: posterior mean and components}
+  \centering
+  \includegraphics[width=0.98\linewidth]{sm_estimator_explainer.png}
+
+  {\scriptsize\textcolor{muted}{One cello note. A: the GP tracks the
+  curve (a rigid sine fit as reference). B: the posterior split into
+  centre, drift, and vibrato. C: the read-outs.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -478,6 +471,36 @@
   \end{center}
   Coverage 0.88 to 0.91 at nominal 0.90 on all six channels.
   \vfill
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Timing noise is correlated across notes}
+  Why timing did not calibrate: alignment error is correlated along
+  score time, and a diagonal noise row cannot represent it. One
+  parameter fixes it:
+  \[ \Sigma^{\tau}_{ij} \;=\; \varsigma_{\tau,i}\,
+     \varsigma_{\tau,j}\; \rho^{|i-j|}
+     \qquad (\varsigma_{\tau,i}\text{: note } i\text{'s timing noise
+     standard deviation, } i, j \text{ in score order}) \]
+  \figslotw{timing_runs.png}{0.78}{timing runs}
+  \vspace{-2mm}
+  \begin{itemize}
+    \item $\rho$ chosen per piece by the evidence: detected on 97 to
+          100 percent of pieces (median 0.45 to 0.60).
+    \item Against the diagonal row ($\rho = 0$), same model otherwise:
+          $\Delta$NLL $-0.111$, significant; timing error 99 to 80 ms.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Held-out timing, with and without the correlation}
+  \centering
+  \includegraphics[width=0.98\linewidth]{corrnoise_tau_dev.png}
+
+  {\scriptsize\textcolor{muted}{Left: paired deltas with 95 percent
+  intervals, three runs. Middle: the evidence-chosen correlation per
+  piece. Right: one track's held-out timing, diagonal vs correlated
+  noise, targets as crosses.}}
 \end{frame}
 
 
@@ -584,7 +607,8 @@
     \item \textbf{Piano}: beats the two-stage baseline on accuracy and
           calibration, confirmed on untouched pieces.
     \item \textbf{Strings and winds}: the graph improves recovery and
-          calibration on the estimated channels.
+          calibration on the estimated channels; the timing gap is
+          explained and repaired by one correlated-noise parameter.
     \item \textbf{Audio}: curve inference from the waveform, no tracker,
           at 1 to 5 cents on first notes.
   \end{itemize}
