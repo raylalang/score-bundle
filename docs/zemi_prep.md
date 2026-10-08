@@ -1,6 +1,6 @@
 # Zemi prep (2026-10-08, 20 minutes, English) — private
 
-Deck: `docs/slides/deck_week.pdf`, 28 slides (4 chapter dividers), no backups. Order: concept 2, thesis 3, related work 4, model 5-11 (notation 11), piano 12-15 (posterior example 15), strings and winds 16-26 (setup 17, data figure 18, kernel visualized on 22, timing runs on 25), audio 26-28, summary 29, plan 30. Results are tables: best bolded, comparator in the header. Development language appears once, on the Audio divider. Audience: lab
+Deck: `docs/slides/deck_week.pdf`, 28 slides (4 chapter dividers), no backups. Order: concept 2, thesis 3, related work 4, model 5-11 (notation 11), piano 12-15 (posterior example 15), strings and winds 16-24 (setup 17, data figure 18, kernel visual 22, example note 23, results 24; TIMING SLIDES HIDDEN for now), audio 26-28, summary 29, plan 30. Results are tables: best bolded, comparator in the header. Development language appears once, on the Audio divider. Audience: lab
 members with no prior context. Say "the GP estimator", never "SM-GP";
 say "correlated timing noise across notes", never bare "AR(1)".
 
@@ -111,3 +111,8 @@ does not get cut.
 - **"Why does one correlation parameter cut timing error 20 percent?"**
   A neighbour's warp error predicts yours; the correlated noise row
   lets the model subtract it.
+
+## If asked about the timing row (its slides are hidden for now)
+"Known issue: the timing channel is the one that did not calibrate. We
+have a measured fix (correlated noise along score order) and a planned
+registration; I am keeping it out of today's talk for time."
