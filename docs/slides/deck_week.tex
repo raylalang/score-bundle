@@ -207,7 +207,8 @@
   \vspace{1mm}
 
   All parameters $\theta = (s, B, \{c_f\}, \varsigma^2)$, 16 numbers on
-  piano, from one exact evidence per piece. Prediction is conjugate:
+  piano (the construction is identical for any channel count), from one
+  exact evidence per piece. Prediction is conjugate:
   \begin{equation*}
     m = C_{\cdot o} K_{oo}^{-1} \tilde y_o, \qquad
     \Sigma_y = C - C_{\cdot o} K_{oo}^{-1} C_{o\cdot},
@@ -239,14 +240,14 @@
   \toprule
   Symbol & Meaning & Role \\
   \midrule
-  $y \in \R^{3N}$ & the channels of all $N$ notes, stacked & part observed, part predicted \\
-  $K \in \R^{3N \times 3N}$ & the covariance of $y$: the entire model & built per piece \\
+  $y \in \R^{CN}$ & the $C$ channels of all $N$ notes ($C{=}3$ piano, $6$ strings and winds) & part observed, part predicted \\
+  $K \in \R^{CN \times CN}$ & the covariance of $y$: the entire model & built per piece \\
   $K_G(s)$ & score-graph kernel & from the score, $s$ learned per piece \\
   $\ell_b$, $\ell_p$ & graph length-scales (time, pitch) & fixed, global \\
-  $B \in \R^{3 \times 3}$ & channel coupling & learned per piece \\
+  $B \in \R^{C \times C}$ & channel coupling & learned per piece \\
   $X_f \in \R^{N \times d}$ & per-note features (score, music model) & inputs \\
-  $c_f \in \R^3$ & feature trust per channel & learned per piece \\
-  $\varsigma^2 \in \R^3$ & per-channel noise variances & learned per piece \\
+  $c_f \in \R^C$ & feature trust per channel & learned per piece \\
+  $\varsigma^2 \in \R^C$ & per-channel noise variances & learned per piece \\
   $m$, $\Sigma_y$ & posterior mean and covariance & predicted, closed form \\
   \bottomrule
   \end{tabular}}
@@ -294,6 +295,14 @@
           carries the mean, the graph carries the calibration, and the
           two components are near-orthogonal complements.
   \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Example piece: posterior and held-out notes}
+  \figslotw{posterior_example_dev.png}{0.86}{posterior example}
+  \vspace{-2mm}
+  {\small\textcolor{muted}{One validation piece, 40 percent of notes
+  hidden: posterior mean, 90 percent band, hidden truths in orange.}}
 \end{frame}
 
 \divider{Strings and winds}{Intonation, vibrato, loudness, timing, estimated from tracked audio}
@@ -430,16 +439,13 @@
      \varsigma_{\tau,j}\; \rho^{|i-j|}
      \qquad (\varsigma_{\tau,i}\text{: note } i\text{'s timing noise
      standard deviation, } i, j \text{ in score order}) \]
+  \figslotw{timing_runs.png}{0.78}{timing runs}
+  \vspace{-2mm}
   \begin{itemize}
-    \item One correlation parameter $\rho$ in the timing noise row,
-          chosen per piece by the evidence itself.
-    \item The evidence detects the correlation on 97 to 100 percent of
-          pieces (median 0.45 to 0.60).
-    \item Against the diagonal noise row ($\rho = 0$), same model
-          otherwise: $\Delta$NLL $-0.111$, significant; coverage to
-          nominal; timing error 99 to 80 ms.
-    \item Reproduced three ways: original masks, fresh masks, and a full
-          joint refit.
+    \item $\rho$ chosen per piece by the evidence: detected on 97 to
+          100 percent of pieces (median 0.45 to 0.60).
+    \item Against the diagonal row ($\rho = 0$), same model otherwise:
+          $\Delta$NLL $-0.111$, significant; timing error 99 to 80 ms.
   \end{itemize}
 \end{frame}
 
@@ -490,10 +496,10 @@
 % ---------------------------------------------------------------------
 
 
-\divider{Audio}{A waveform likelihood with marginalized amplitudes}
+\divider{Audio (development studies)}{A waveform likelihood with marginalized amplitudes}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Development studies (waveform)}
+\begin{frame}{Waveform likelihood: first results}
   The likelihood block becomes the audio itself: pitch deviations are
   scored directly against the waveform, with the amplitudes marginalized
   exactly,
@@ -518,18 +524,16 @@
     \item \textbf{Open}: joint inference over note positions.
   \end{itemize}
   \vfill
-  {\small\textcolor{muted}{Development studies, no claims.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Prototype: curve inference from the waveform}
+\begin{frame}{Curve inference from the waveform}
   \centering
   \includegraphics[width=0.98\linewidth]{phase3_curve_proto.png}
 
-  {\scriptsize\textcolor{muted}{Prototype (this week, development):
-  the within-note GP prior meets the waveform likelihood directly. No
-  tracker, no estimator. Better than the pYIN frames on two of three
-  notes.}}
+  {\scriptsize\textcolor{muted}{The within-note GP prior meets the
+  waveform likelihood directly. No tracker, no estimator. Better than
+  the pYIN frames on two of three notes.}}
 \end{frame}
 
 % ============================================== THE TIMING RESULTS
@@ -569,8 +573,8 @@
   \begin{tabular}{@{}lp{96mm}@{}}
     \toprule
     October & freeze the correlated timing noise registration once the
-          pool is decided. Batch-evaluate the curve-from-waveform
-          prototype on the development tracks. \\
+          pool is decided. Batch-evaluate curve-from-waveform inference
+          across the corpus. \\
     November & decide the channel design (scalars or curve level). Run
           the registered timing confirmation on the chosen pool, one
           shot. \\
