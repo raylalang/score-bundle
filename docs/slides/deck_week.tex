@@ -559,13 +559,22 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{The pipeline: inputs, processing, output}
+  \figslotw{audio_pipeline.png}{0.97}{pipeline}
+  \vspace{-1mm}
+  {\small\textcolor{muted}{The score anchors the pitch; the GP proposes
+  deviation curves; each candidate is synthesized and scored against the
+  recording with the timbre integrated out; the best-scoring curve and
+  its uncertainty are the output.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{One note: the model against the raw audio}
   \figslotw{waveform_viz.png}{0.95}{waveform fit}
   \vspace{-2mm}
-  {\small\textcolor{muted}{A clarinet note. A: the harmonic model on
-  40 ms of the recording, at the fitted intonation. B: the collapsed
-  log probability of the recording as the proposed offset $c$ varies:
-  tens of thousands of samples make it needle-sharp.}}
+  {\small\textcolor{muted}{The harmonic model locks onto the recording
+  cycle for cycle once the intonation is right; a few cents off and the
+  match collapses, which is why audio is such a sharp observation.}}
 \end{frame}
 
 % ---------------------------------------------------------------------

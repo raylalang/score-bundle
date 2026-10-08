@@ -174,7 +174,7 @@ def main() -> None:
             (np.interp(gt_t, tr_t, tr_x) - gt_x) ** 2))) if tr_t.size > 1 else np.nan
 
         ax.plot(gt_t, gt_x, ".", ms=3.5, color=VERM, label="ground truth frames")
-        ax.plot(tr_t, tr_x, ".", ms=2.5, color=MUTED, label="pYIN frames")
+        ax.plot(tr_t, tr_x, ".", ms=2.5, color="#009E73", label="pYIN frames")
         ax.plot(tg, curve, color=BLUE, lw=1.6,
                 label=f"from the waveform ({rmse_curve:.1f} c vs GT)")
         ax.fill_between(tg, curve - 1.645 * band, curve + 1.645 * band,
