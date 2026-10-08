@@ -311,6 +311,23 @@
 \divider{Strings and winds}{Intonation, vibrato, loudness, timing, estimated from tracked audio}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Setup: audio instead of MIDI}
+  \begin{itemize}
+    \item No key sensors here: the performance is an audio recording
+          (URMP, each instrument on its own track).
+    \item Pitch now carries expression: players control intonation and
+          vibrato within every note.
+    \item A pitch tracker (pYIN) turns each track into frames: time,
+          $f_0$, voicing confidence. The variables must be
+          \textbf{estimated} from these frames, noisily, with a variance
+          per note.
+    \item Two measurements of every note exist: our tracked curve, and
+          the corpus's own annotation of the same track (cleaner, but
+          still a measurement). Evaluation uses the second.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Example frames: tracked vs ground truth}
   \centering
   \includegraphics[width=0.98\linewidth]{phase2_frames_intro.png}
@@ -336,9 +353,6 @@
           equal temperament at 440 Hz,
           $x_j = 1200 \log_2 (f_{0,j}/440) - 100\,(p_i - 69)$
           ($p_i$: MIDI pitch).
-    \item \textbf{Two curves per note.} Tracked: pYIN, run by us.
-          Ground truth: the corpus's own annotation of the same stem.
-          Cleaner, but still a measurement.
   \end{itemize}
   \vfill
   The pipeline consumes the tracked curve.
