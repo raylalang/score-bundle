@@ -531,20 +531,37 @@
 \divider{Audio (development studies)}{A waveform likelihood with marginalized amplitudes}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Waveform likelihood: first results}
-  The likelihood block becomes the audio itself: pitch deviations are
-  scored directly against the waveform, with the amplitudes marginalized
-  exactly,
+\begin{frame}{Setup: sound as the observation}
+  From the pitch curve to the waveform, deterministically:
   \begin{equation*}
-    x = \Phi(z)\, a + \epsilon, \quad
-    a \sim \N(0, \Sigma_a),\ \epsilon \sim \N(0, \sigma^2 I)
-    \;\Longrightarrow\;
-    p(x \mid z) = \N\bigl(x;\, 0,\ \Phi \Sigma_a \Phi^{\!\top} + \sigma^2 I\bigr)
+    f_0(t) = f_{\text{pitch}} \cdot 2^{\,\mathrm{cents}(t)/1200},
+    \qquad
+    \varphi_k(t) = 2\pi k \!\int_0^t\! f_0,
+    \qquad
+    \Phi(z) = [\cos\varphi_k,\ \sin\varphi_k]_{k=1..8}
   \end{equation*}
-  {\small $x$: audio samples. $z$: per-note pitch deviations. $\Phi(z)$:
-  the harmonic synthesis basis. $a$: amplitudes, never estimated. The
-  determinant and quadratic form cost $O(m p^2)$ for $m$ samples and $p$
-  basis columns, so whole tracks are exact.}
+  \begin{itemize}
+    \item The amplitudes (the timbre) enter linearly and are
+          marginalized exactly:
+          $p(x \mid z) = \mathcal N(x;\, 0,\ \Phi\Sigma_a\Phi^{\!\top}
+          + \sigma^2 I)$, cost $O(mp^2)$ for $m$ samples.
+    \item So a pitch curve is scored directly against every audio
+          sample. No pitch tracker anywhere.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{One note: the model against the raw audio}
+  \figslotw{waveform_viz.png}{0.95}{waveform fit}
+  \vspace{-2mm}
+  {\small\textcolor{muted}{A clarinet note. A: the harmonic model on
+  40 ms of the recording, at the fitted intonation. B: the collapsed
+  log likelihood as $c$ varies: tens of thousands of samples make it
+  needle-sharp.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Waveform likelihood: first results}
   \begin{itemize}
     \item \textbf{Feasibility} (7 URMP development tracks, 376 notes): waveform intonation
           lands median 2.29 cents from the annotated reference with
