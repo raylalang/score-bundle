@@ -262,8 +262,10 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: aligned performance MIDI}
-  A Disklavier performance: per written note, three variables, read
-  directly, no estimation.
+  Data: \textbf{ASAP}, score-aligned Disklavier performances.
+  Development 30 pieces, one-shot test 20 untouched pieces, 400 notes
+  per piece (12{,}000 and 8{,}000 notes). Per written note, three
+  variables, read directly, no estimation.
   \begin{equation*}
     y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{onset timing}},\;\;
       \underbrace{\log r_i}_{\text{articulation}},\;\;
@@ -313,8 +315,10 @@
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: audio instead of MIDI}
   \begin{itemize}
-    \item No key sensors here: the performance is an audio recording
-          (URMP, each instrument on its own track).
+    \item Data: \textbf{URMP}, 44 chamber pieces, each instrument
+          recorded on its own track. Split by composition: development
+          31 pieces (78 tracks, about 17{,}000 notes), one-shot test 13
+          pieces.
     \item Pitch now carries expression: players control intonation and
           vibrato within every note.
     \item A pitch tracker (pYIN) turns each track into frames: time,
@@ -543,7 +547,7 @@
   determinant and quadratic form cost $O(m p^2)$ for $m$ samples and $p$
   basis columns, so whole tracks are exact.}
   \begin{itemize}
-    \item \textbf{Feasibility} (376 notes, 7 tracks): waveform intonation
+    \item \textbf{Feasibility} (7 URMP development tracks, 376 notes): waveform intonation
           lands median 2.29 cents from quasi-truth with \textbf{no pitch
           tracker}, and beats the estimator chain on winds.
     \item \textbf{Integration}: as a seventh bundle channel with a
