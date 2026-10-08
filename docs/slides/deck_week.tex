@@ -538,7 +538,7 @@
 % ---------------------------------------------------------------------
 
 
-\divider{Audio (development studies)}{A waveform likelihood with marginalized amplitudes}
+\divider{Where this goes}{The waveform as the observation}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: what the audio of one note is}
@@ -598,35 +598,13 @@
   \figslotw{waveform_viz.png}{0.95}{waveform fit}
   \vspace{-2mm}
   {\small\textcolor{muted}{On an expressive note even the best
-  constant pitch slips within 40 ms and underfits the swell: the whole
-  curve is needed, which is where the next slides go.}}
+  constant pitch slips within 40 ms and underfits the swell: inferring
+  the whole curve from the audio is the direction ahead.}}
 \end{frame}
 
-% ---------------------------------------------------------------------
-\begin{frame}{Waveform likelihood: first results}
-  \begin{itemize}
-    \item \textbf{Feasibility} (7 URMP development tracks, 376 notes): waveform intonation
-          lands median 2.29 cents from the annotated reference with
-          \textbf{no pitch tracker}, and beats the estimator chain on
-          winds.
-    \item \textbf{Integration}: as a seventh bundle channel with a
-          visible-notes discrepancy floor, better calibrated on 14 of 14
-          pairs (significant). The no-floor control is worse, so the floor
-          is necessary.
-    \item \textbf{Open}: joint inference over note positions.
-  \end{itemize}
-  \vfill
-\end{frame}
 
-% ---------------------------------------------------------------------
-\begin{frame}{Curve inference from the waveform}
-  \centering
-  \includegraphics[width=0.98\linewidth]{phase3_curve_proto.png}
 
-  {\scriptsize\textcolor{muted}{The within-note GP prior meets the
-  waveform likelihood directly. No tracker, no estimator. Better than
-  the pYIN frames on two of three notes.}}
-\end{frame}
+
 
 % ============================================== THE TIMING RESULTS
 % ---------------------------------------------------------------------
@@ -652,8 +630,8 @@
           calibration, confirmed on untouched pieces.
     \item \textbf{Strings and winds}: the graph improves recovery and
           calibration on the estimated channels.
-    \item \textbf{Audio}: curve inference from the waveform, no tracker,
-          at 1 to 5 cents on first notes.
+    \item \textbf{Audio}: the waveform itself as the observation, no
+          pitch tracker: the direction ahead.
   \end{itemize}
 \end{frame}
 
@@ -664,8 +642,7 @@
   \begin{tabular}{@{}lp{96mm}@{}}
     \toprule
     October & freeze the correlated timing noise registration once the
-          pool is decided. Batch-evaluate curve-from-waveform inference
-          across the corpus. \\
+          pool is decided. First curve-from-waveform studies. \\
     November & decide the channel design (scalars or curve level). Run
           the registered timing confirmation on the chosen pool, one
           shot. \\
