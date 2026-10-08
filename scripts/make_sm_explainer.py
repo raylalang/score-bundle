@@ -164,6 +164,35 @@ def main() -> None:
     plt.close(fig)
     print("wrote", OUT)
 
+    # GP-only two-panel version for the zemi deck (no sine anywhere)
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(9.8, 3.1))
+    axA.plot(tt, x, ".", ms=3, color=MUTED, label="tracked frames")
+    axA.plot(tg, m_curve, color=BLUE, lw=1.6, label="posterior mean")
+    axA.fill_between(tg, m_curve - 1.645 * np.sqrt(v_curve),
+                     m_curve + 1.645 * np.sqrt(v_curve),
+                     color=BLUE, alpha=0.18, linewidth=0,
+                     label="90% band")
+    axA.set_xlabel("time in the note (s)")
+    axA.set_ylabel("pitch deviation (cents)")
+    axA.margins(y=0.22)
+    axA.set_title("A  the posterior over the curve", loc="left")
+    axA.legend(fontsize=7.5, loc="lower right")
+    axB.axhline(sm["c"], color=INK, lw=1.2, ls=":",
+                label=f"centre c = {sm['c']:.1f} cents")
+    axB.plot(tg, c_hat + m2, color=ORANGE, lw=1.6,
+             label="+ drift component")
+    axB.plot(tg, c_hat + m2 + m1, color=BLUE, lw=1.2, alpha=0.9,
+             label=f"+ vibrato component ({sm['f']:.1f} Hz)")
+    axB.set_xlabel("time in the note (s)")
+    axB.margins(y=0.22)
+    axB.set_title("B  the same posterior, split into the channels",
+                  loc="left")
+    axB.legend(fontsize=7.5, loc="lower right")
+    fig.tight_layout()
+    fig.savefig("docs/thesis/figures/example_note_posterior.png",
+                bbox_inches="tight")
+    print("wrote example_note_posterior.png")
+
 
 if __name__ == "__main__":
     main()
