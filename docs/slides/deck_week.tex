@@ -561,13 +561,11 @@
   \begin{equation*}
     x = \Phi(z)\, a + \varepsilon,
     \qquad
-    \Phi(z) = [\cos\varphi_k,\ \sin\varphi_k]_{k = 1..8}
+    \Phi(z) = [\cos\varphi_k,\ \sin\varphi_k]_{k = 1..K}
   \end{equation*}
   {\small $x$: the note's audio samples. $z$: the pitch curve. $a$: the
   harmonic amplitudes. The curve fixes the \textbf{shape} of every
-  column; the amplitudes only scale them. Eight harmonics: they carry
-  nearly all the energy at 16 kHz, and pitch is already over-determined
-  by the low ones (a cost choice, not a tuned one).}
+  column; the amplitudes only scale them.}
 \end{frame}
 
 % ---------------------------------------------------------------------
