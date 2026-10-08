@@ -542,42 +542,57 @@
 \divider{Audio (development studies)}{A waveform likelihood with marginalized amplitudes}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Setup: sound as the observation}
-  From the pitch curve to the waveform, deterministically:
+\begin{frame}{Setup: what the audio of one note is}
+  A sustained note is, to a good approximation, a stack of harmonics:
+  waves at $1\times, 2\times, 3\times, \ldots$ the fundamental.
+  \begin{itemize}
+    \item If the pitch curve is known, every harmonic's wave is known
+          exactly: frequency accumulates into phase,
+  \end{itemize}
   \begin{equation*}
     f_0(t) = f_{\text{pitch}} \cdot 2^{\,\mathrm{cents}(t)/1200},
     \qquad
-    \varphi_k(t) = 2\pi k \!\int_0^t\! f_0,
-    \qquad
-    \Phi(z) = [\cos\varphi_k,\ \sin\varphi_k]_{k=1..8}
+    \varphi_k(t) = 2\pi k \!\int_0^t\! f_0 .
   \end{equation*}
   \begin{itemize}
-    \item The amplitudes (the timbre) enter linearly and are
-          marginalized exactly:
-          $p(x \mid z) = \mathcal N(x;\, 0,\ \Phi\Sigma_a\Phi^{\!\top}
-          + \sigma^2 I)$, cost $O(mp^2)$ for $m$ samples.
-    \item So a pitch curve is scored directly against every audio
-          sample. No pitch tracker anywhere.
-    \item Where the curve comes from: the \textbf{score} anchors the
-          pitch, and a \textbf{GP over the curve} (the same
-          two-component kernel as before: a vibrato band plus drift)
-          says which deviation shapes are plausible; the \textbf{audio}
-          decides among them. The search starts at the score-nominal
-          pitch.
-    \item Note boundaries still come from annotations: inferring them
-          jointly is the open problem.
+    \item What stays unknown is how loud each harmonic is over time,
+          the \textbf{timbre}. It enters linearly:
   \end{itemize}
+  \begin{equation*}
+    x = \Phi(z)\, a + \varepsilon,
+    \qquad
+    \Phi(z) = [\cos\varphi_k,\ \sin\varphi_k]_{k = 1..8}
+  \end{equation*}
+  {\small $x$: the note's audio samples. $z$: the pitch curve. $a$: the
+  harmonic amplitudes. The curve fixes the \textbf{shape} of every
+  column; the amplitudes only scale them.}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The pipeline: inputs, processing, output}
-  \figslotw{audio_pipeline.png}{0.97}{pipeline}
-  \vspace{-1mm}
-  {\small\textcolor{muted}{The score anchors the pitch; the GP proposes
-  deviation curves; each candidate is synthesized and scored against the
-  recording with the timbre integrated out; the best-scoring curve and
-  its uncertainty are the output.}}
+\begin{frame}{Setup: scoring a curve, finding the curve}
+  \begin{itemize}
+    \item The timbre is a nuisance: give it a Gaussian prior and
+          integrate it out \textbf{exactly},
+  \end{itemize}
+  \begin{equation*}
+    p(x \mid \text{curve}) =
+    \mathcal N\bigl(x;\, 0,\ \Phi\Sigma_a\Phi^{\!\top} + \sigma^2 I\bigr)
+  \end{equation*}
+  \begin{itemize}
+    \item One number per candidate curve, timbre-free; every audio
+          sample votes ($O(mp^2)$ for $m$ samples). No pitch tracker
+          anywhere.
+    \item Candidates: the \textbf{score} anchors the pitch (the search
+          starts there), and the two-component \textbf{GP} from the
+          previous chapter proposes plausible deviations (vibrato band
+          plus drift).
+    \item Output: the curve maximizing prior $\times$ likelihood, with
+          its uncertainty. Note boundaries still come from annotations,
+          the open problem.
+  \end{itemize}
 \end{frame}
+
+
 
 % ---------------------------------------------------------------------
 \begin{frame}{One note: the model against the raw audio}
