@@ -166,7 +166,7 @@ def main() -> None:
 
     # GP-only two-panel version for the zemi deck (no sine anywhere)
     fig, (axA, axB) = plt.subplots(1, 2, figsize=(9.8, 3.1))
-    axA.plot(tt, x, ".", ms=3, color=MUTED, label="tracked frames")
+    axA.plot(tt, x, ".", ms=3, color=MUTED, label="tracked frames (pYIN)")
     axA.plot(tg, m_curve, color=BLUE, lw=1.6, label="posterior mean")
     axA.fill_between(tg, m_curve - 1.645 * np.sqrt(v_curve),
                      m_curve + 1.645 * np.sqrt(v_curve),
