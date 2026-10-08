@@ -1,6 +1,6 @@
 # Zemi prep (2026-10-08, 20 minutes, English) — private
 
-Deck: `docs/slides/deck_week.pdf`, 28 slides (4 chapter dividers), no backups. Order: concept 2, thesis 3, related work 4, model 5-11 (notation 11), piano 12-15 (posterior example 15), strings and winds 16-25 (kernel visualized on 21, timing runs on 24), audio 26-28, summary 29, plan 30. Results are tables: best bolded, comparator in the header. Development language appears once, on the Audio divider. Audience: lab
+Deck: `docs/slides/deck_week.pdf`, 28 slides (4 chapter dividers), no backups. Order: concept 2, thesis 3, related work 4, model 5-11 (notation 11), piano 12-15 (posterior example 15), strings and winds 16-25 (data figure first at 17, kernel visualized on 21, timing runs on 24), audio 26-28, summary 29, plan 30. Results are tables: best bolded, comparator in the header. Development language appears once, on the Audio divider. Audience: lab
 members with no prior context. Say "the GP estimator", never "SM-GP";
 say "correlated timing noise across notes", never bare "AR(1)".
 
