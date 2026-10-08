@@ -266,6 +266,12 @@
   Development 30 pieces, one-shot test 20 untouched pieces, 400 notes
   per piece (12{,}000 and 8{,}000 notes). Per written note, three
   variables, read directly, no estimation.
+  \vspace{1mm}
+
+  Task: hide a fraction of the notes, predict them from the rest, score
+  the hidden notes on accuracy and calibration. Headline operating
+  point: 40 percent hidden; the sweep runs 50 percent down to
+  leave-one-out.
   \begin{equation*}
     y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{onset timing}},\;\;
       \underbrace{\log r_i}_{\text{articulation}},\;\;
@@ -277,9 +283,10 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Results (piano, ASAP)}
-  Preregistered, scored once on 20 untouched pieces. Baseline: the
-  two-stage pipeline built from the same ingredients (regression mean
-  first, then a per-channel graph residual).
+  Preregistered, scored once on 20 untouched pieces at 40 percent
+  hidden. Baseline: the two-stage pipeline built from the same
+  ingredients (regression mean first, then a per-channel graph
+  residual).
   \begin{center}
   \small
   \begin{tabular}{@{}lcc@{}}
@@ -298,6 +305,16 @@
           carries the mean, the graph carries the calibration, and the
           two components are near-orthogonal complements.
   \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Across masking levels: 50 percent to leave-one-out}
+  \figslotw{masksweep_dev.png}{0.88}{masking sweep}
+  \vspace{-2mm}
+  {\small\textcolor{muted}{Development set. Left: held-out error by
+  fraction hidden, the three systems; open markers the leave-one-out
+  limit. Right: what the graph and the music-model features each add,
+  per level. The ordering is stable at every level.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
