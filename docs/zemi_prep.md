@@ -17,7 +17,7 @@ winds, and where it's going: reading pitch curves straight from audio."
 |---|---|---|
 | 2–3 | expression concept (audio demo) · thesis + three problems | 2.5 min |
 | 4–9 | THE MODEL: approach · graph · coupled GP · covariance · picture | 6 min |
-| 10–12 | PIANO: setting · results | 2.5 min |
+| 11–15 | PIANO: setup · posterior example · results · masking sweep | 3 min |
 | 13–21 | STRINGS AND WINDS: cents curve · channels · data · GP estimator · one-note figure · results · timing + picture | 6.5 min |
 | 22–24 | THE WAVEFORM: first studies · prototype | 2 min |
 | 25 | plan | 0.5 min |
