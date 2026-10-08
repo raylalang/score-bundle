@@ -41,8 +41,9 @@ beta, *_ = np.linalg.lstsq(Phi, x, rcond=None)
 recon = Phi @ beta
 fig, (A, B) = plt.subplots(1, 2, figsize=(9.8, 2.9))
 w = slice(int(0.40 * SR), int(0.44 * SR))
-A.plot(t[w] * 1000, x[w], color=MUTED, lw=1.0, label="recorded audio $x$")
-A.plot(t[w] * 1000, recon[w], color=BLUE, lw=1.0,
+A.plot(t[w] * 1000, x[w], color="#B8BEC7", lw=2.6, solid_capstyle="round",
+       label="recorded audio $x$")
+A.plot(t[w] * 1000, recon[w], color=BLUE, lw=1.2, ls=(0, (4, 2)),
        label="model $\\Phi(z)\\,\\hat a$")
 A.set_xlabel("time (ms)"); A.set_ylabel("amplitude")
 A.set_title("A  40 ms of the note: audio vs model", loc="left")
