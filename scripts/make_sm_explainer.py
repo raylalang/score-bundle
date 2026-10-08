@@ -166,6 +166,14 @@ def main() -> None:
 
     # GP-only two-panel version for the zemi deck (no sine anywhere)
     fig, (axA, axB) = plt.subplots(1, 2, figsize=(9.8, 3.1))
+    from make_phase2_intro import note_curves as _nc
+    from eval_phase2_real import dev_unique_tracks as _dut
+    _data = pickle.load(open(".cache/urmp_targets_dev.pkl", "rb"))
+    _f0s = pickle.load(open(".cache/urmp_f0_dev.pkl", "rb"))
+    _tracks = {(p.index, t.number): t for p, t in _dut()}
+    _, _, ttg, xg = _nc(key, i, _data, _f0s, _tracks)
+    axA.plot(ttg, xg, ".", ms=3, color=VERM, alpha=0.8,
+             label="ground truth frames")
     axA.plot(tt, x, ".", ms=3, color=MUTED, label="tracked frames (pYIN)")
     axA.plot(tg, m_curve, color=BLUE, lw=1.6, label="posterior mean")
     axA.fill_between(tg, m_curve - 1.645 * np.sqrt(v_curve),

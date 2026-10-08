@@ -20,12 +20,22 @@ from eval_phase3_waveform_dev import (SR, chunked_design, f0_curve,
                                       fit_noise, loglik, selected)
 from score_bundle.phase2.urmp import read_notes_annotation
 
-# the clarinet note of the prototype figure
+# a strong-vibrato violin note (expressive, so a constant pitch slips)
+import numpy as _np
+best = None
 for key, d, tr in selected():
-    if d["instrument"] == "cl":
-        break
+    if d["instrument"] != "vn":
+        continue
+    for j in range(d["onset"].size):
+        if (d["ident"][j] and _np.isfinite(d["est"][j, 1])
+                and d["n_frames"][j] >= 80):
+            ext = float(_np.exp(d["est"][j, 1]))
+            if best is None or ext > best[0]:
+                best = (ext, j)
+    break
+i = best[1]
+print("violin note", i, "extent", round(best[0], 1), "cents")
 notes = read_notes_annotation(tr.notes)
-i = 96
 audio48, sr48 = sf.read(tr.audio)
 audio = resample_poly(np.asarray(audio48, float), SR, int(sr48))
 on = float(notes["onset"][i]); du = min(float(notes["duration"][i]), 2.0)
@@ -45,7 +55,7 @@ A.plot(t[w] * 1000, x[w], color=VERM, lw=1.0, label="recorded audio $x$")
 A.plot(t[w] * 1000, recon[w], color=BLUE, lw=1.0, ls=(0, (4, 2)),
        label="model $\\Phi(z)\\,\\hat a$")
 A.set_xlabel("time (ms)"); A.set_ylabel("amplitude")
-A.set_title("40 ms of a clarinet note: audio vs model, at the fitted intonation", loc="left")
+A.set_title("40 ms of a strong-vibrato violin note: the best constant pitch already slips", loc="left")
 A.legend(fontsize=8)
 fig.tight_layout()
 fig.savefig("docs/thesis/figures/waveform_viz.png", bbox_inches="tight")
