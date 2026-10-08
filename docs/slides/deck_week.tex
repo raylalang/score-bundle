@@ -547,6 +547,12 @@
           + \sigma^2 I)$, cost $O(mp^2)$ for $m$ samples.
     \item So a pitch curve is scored directly against every audio
           sample. No pitch tracker anywhere.
+    \item Where the curve comes from: the \textbf{score} anchors the
+          pitch, the within-note \textbf{prior} proposes deviation
+          curves, the \textbf{audio} decides. The search starts at the
+          score-nominal pitch.
+    \item Note boundaries still come from annotations: inferring them
+          jointly is the open problem.
   \end{itemize}
 \end{frame}
 
