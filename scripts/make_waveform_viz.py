@@ -47,13 +47,15 @@ A.plot(t[w] * 1000, recon[w], color=BLUE, lw=1.0, ls=(0, (4, 2)),
 A.set_xlabel("time (ms)"); A.set_ylabel("amplitude")
 A.set_title("A  40 ms of the note: audio vs model", loc="left")
 A.legend(fontsize=8)
-B.plot(grid, lls - lls.max(), color=BLUE, lw=1.4)
-B.axvline(c_hat, color=VERM, lw=1.0, ls=":")
-B.set_xlabel("intonation c (cents)")
-B.set_ylabel("log likelihood (rel.)")
-B.set_ylim(-3000, 100)
-B.set_title(f"B  the likelihood over c: sharp at {c_hat:+.0f} cents",
-            loc="left")
+B.plot(grid, lls - lls.max(), color=BLUE, lw=1.4,
+       label="log p(audio | curve at offset c)")
+B.axvline(c_hat, color=VERM, lw=1.0, ls=":",
+          label=f"best c = {c_hat:+.1f} cents")
+B.set_xlabel("proposed intonation offset c (cents)")
+B.set_ylabel("log probability, relative to peak")
+B.set_ylim(-3000, 150)
+B.legend(fontsize=8, loc="lower right")
+B.set_title("B  how sharply the audio picks the pitch", loc="left")
 fig.tight_layout()
 fig.savefig("docs/thesis/figures/waveform_viz.png", bbox_inches="tight")
 print("wrote waveform_viz.png, c_hat", c_hat)

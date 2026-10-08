@@ -548,9 +548,11 @@
     \item So a pitch curve is scored directly against every audio
           sample. No pitch tracker anywhere.
     \item Where the curve comes from: the \textbf{score} anchors the
-          pitch, the within-note \textbf{prior} proposes deviation
-          curves, the \textbf{audio} decides. The search starts at the
-          score-nominal pitch.
+          pitch, and a \textbf{GP over the curve} (the same
+          two-component kernel as before: a vibrato band plus drift)
+          says which deviation shapes are plausible; the \textbf{audio}
+          decides among them. The search starts at the score-nominal
+          pitch.
     \item Note boundaries still come from annotations: inferring them
           jointly is the open problem.
   \end{itemize}
@@ -562,8 +564,8 @@
   \vspace{-2mm}
   {\small\textcolor{muted}{A clarinet note. A: the harmonic model on
   40 ms of the recording, at the fitted intonation. B: the collapsed
-  log likelihood as $c$ varies: tens of thousands of samples make it
-  needle-sharp.}}
+  log probability of the recording as the proposed offset $c$ varies:
+  tens of thousands of samples make it needle-sharp.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
