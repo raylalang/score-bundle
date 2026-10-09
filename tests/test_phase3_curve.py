@@ -174,6 +174,26 @@ def test_laplace_matches_finite_differences():
     assert fit.laplace_pd
     assert np.allclose(sd_auto, sd_fd, rtol=2e-2, atol=1e-3)
 
+    # Pin 3: evidence_fixed_map at the fit's own hyperparameters
+    # reproduces CurveFit.log_evidence (the coordinate-ascent base point).
+    from score_bundle.phase3.curve import (chunked_design_torch,
+                                           collapsed_loglik_torch,
+                                           evidence_fixed_map, interp_knots,
+                                           loglik_hessian)
+
+    x_t = torch.as_tensor(x, dtype=torch.float64)
+    t_t = torch.as_tensor(t, dtype=torch.float64)
+    u_t = torch.as_tensor(fit.u, dtype=torch.float64)
+    cents = fit.c + interp_knots(u_t, knots, t_t)
+    Phi = chunked_design_torch(cents, t_t, 60.0, 3, 2)
+    loglik_map = float(collapsed_loglik_torch(x_t, Phi, fit.noise_var, 10.0))
+    H_lik = torch.as_tensor(
+        loglik_hessian(x, t, 60.0, fit, n_harm=3, n_chunk=2),
+        dtype=torch.float64)
+    ev = float(evidence_fixed_map(loglik_map, u_t, knots, H_lik, prior))
+    assert abs(ev - fit.log_evidence) < 1e-6 * abs(fit.log_evidence), (
+        ev, fit.log_evidence)
+
 
 def test_map_recovery_model_true():
     if not HAS_TORCH:

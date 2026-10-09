@@ -269,6 +269,63 @@ def _laplace(nlj: Callable, theta) -> Tuple[np.ndarray, float, bool]:
         return cov.cpu().numpy(), logdet_h, False
 
 
+def loglik_hessian(x: np.ndarray, t: np.ndarray, midi: float, fit: CurveFit,
+                   *, n_harm: int = 8, n_chunk: int = 4,
+                   amp_var: float = 10.0, device: str = "cpu") -> np.ndarray:
+    """Hessian of the NEGATIVE log likelihood alone at the fit's MAP.
+
+    No prior terms: this is the hyperparameter-independent curvature block,
+    precomputed once per note so :func:`evidence_fixed_map` can move the
+    kernel hyperparameters cheaply (the full Laplace Hessian is this plus
+    the prior precision padded over u).
+    """
+    _require_torch()
+    dev = torch.device(device)
+    x_t = torch.as_tensor(np.asarray(x, float), dtype=torch.float64,
+                          device=dev)
+    t_t = torch.as_tensor(np.asarray(t, float), dtype=torch.float64,
+                          device=dev)
+    knots = torch.as_tensor(fit.knots, dtype=torch.float64, device=dev)
+
+    def nll(theta):
+        cents = theta[0] + interp_knots(theta[1:], knots, t_t)
+        Phi = chunked_design_torch(cents, t_t, midi, n_harm, n_chunk)
+        return -collapsed_loglik_torch(x_t, Phi, fit.noise_var, amp_var)
+
+    theta = torch.as_tensor(np.concatenate([[fit.c], fit.u]),
+                            dtype=torch.float64, device=dev)
+    H = torch.autograd.functional.hessian(nll, theta)
+    return (0.5 * (H + H.T)).cpu().numpy()
+
+
+def evidence_fixed_map(loglik_map: float, u, knots, H_lik, prior: CurvePrior,
+                       hypers: Optional[dict] = None):
+    """Laplace log evidence as a function of the kernel hyperparameters,
+    with the MAP and the likelihood curvature FROZEN (coordinate-ascent /
+    envelope step of the evidence-based hyperparameter fit).
+
+    log Z(phi) = loglik(theta*) - u*^T K(phi)^{-1} u* / 2
+                 - log det K(phi) / 2 - log det H(phi) / 2 + log(2 pi) / 2,
+    H(phi) = H_lik + blockdiag(0, K(phi)^{-1}).
+
+    ``u``, ``knots``, ``H_lik`` are torch tensors; ``hypers`` values may
+    require grad.  At the fit's own hyperparameters this reproduces
+    CurveFit.log_evidence exactly (test-pinned).  Returns a torch scalar.
+    """
+    _require_torch()
+    j = knots.shape[0]
+    _, chol_k = knot_gram(knots, prior, **(hypers or {}))
+    logdet_k = 2.0 * torch.log(torch.diagonal(chol_k)).sum()
+    eye = torch.eye(j, dtype=knots.dtype, device=knots.device)
+    k_inv = torch.cholesky_solve(eye, chol_k)
+    prec = torch.zeros(j + 1, j + 1, dtype=knots.dtype, device=knots.device)
+    prec[1:, 1:] = k_inv
+    sign, logdet_h = torch.linalg.slogdet(H_lik + prec)
+    alpha = torch.cholesky_solve(u.unsqueeze(1), chol_k).squeeze(1)
+    return (loglik_map - 0.5 * (u @ alpha) - 0.5 * logdet_k
+            - 0.5 * logdet_h + 0.5 * _LOG2PI)
+
+
 def fit_note(x: np.ndarray, t: np.ndarray, midi: float,
              prior: CurvePrior = CurvePrior(), *, n_harm: int = 8,
              n_chunk: int = 4, amp_var: float = 10.0, n_steps: int = 400,
