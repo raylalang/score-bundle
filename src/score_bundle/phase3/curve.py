@@ -227,12 +227,8 @@ class CurveFit:
     laplace_pd: bool              # Hessian was PD (eigen-clipped if False)
     midi: float = 0.0
 
-    def curve(self, tq: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """Posterior mean and sd of cents(t) at query times tq.
-
-        cents(t) is linear in (c, u), so the band is exact given the
-        Laplace covariance: var = a^T Cov a with a the interp weights.
-        """
+    def _weights(self, tq: np.ndarray) -> np.ndarray:
+        """Rows of interp weights over (c, u) — cents(tq) = A @ [c, u]."""
         tq = np.asarray(tq, dtype=float)
         j = self.knots.size
         idx = np.clip(np.searchsorted(self.knots, tq) - 1, 0, j - 2)
@@ -242,9 +238,33 @@ class CurveFit:
         rows = np.arange(tq.size)
         A[rows, 1 + idx] += 1.0 - w
         A[rows, 1 + idx + 1] += w
+        return A
+
+    def curve(self, tq: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Posterior mean and sd of cents(t) at query times tq.
+
+        cents(t) is linear in (c, u), so the band is exact given the
+        Laplace covariance: var = a^T Cov a with a the interp weights.
+        """
+        A = self._weights(tq)
         mean = A @ np.concatenate([[self.c], self.u])
         var = np.einsum("ij,jk,ik->i", A, self.cov, A)
         return mean, np.sqrt(np.maximum(var, 0.0))
+
+    def average(self, n_grid: int = 200) -> Tuple[float, float]:
+        """Posterior mean and sd of the realized average deviation.
+
+        The uniform-grid time average of cents(t) over the note — the
+        Phase-2 intonation channel's estimand — is a linear functional
+        of (c, u), so its variance is exact under the Laplace covariance
+        (and, like the bands, invariant to the likelihood-flat (c, u)
+        direction).
+        """
+        a = self._weights(
+            np.linspace(self.knots[0], self.knots[-1], n_grid)).mean(axis=0)
+        avg = float(a @ np.concatenate([[self.c], self.u]))
+        var = float(a @ self.cov @ a)
+        return avg, float(np.sqrt(max(var, 0.0)))
 
 
 def _laplace(nlj: Callable, theta) -> Tuple[np.ndarray, float, bool]:

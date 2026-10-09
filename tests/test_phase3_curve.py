@@ -229,3 +229,12 @@ def test_map_recovery_model_true():
     assert rmse < 2.0, rmse
     assert cover >= 0.5, cover
     assert np.isfinite(fit.log_evidence)
+
+    # average(): the linear-functional read-out is consistent with the
+    # curve means and carries a positive, sub-pointwise sd.
+    avg, avg_sd = fit.average(n_grid=200)
+    mean200, sd200 = fit.curve(np.linspace(fit.knots[0], fit.knots[-1], 200))
+    assert abs(avg - mean200.mean()) < 1e-9
+    assert 0.0 < avg_sd <= sd200.max() + 1e-12
+    true_avg = cents_fn(np.linspace(t[0], t[-1], 200)).mean()
+    assert abs(avg - true_avg) < 2.0

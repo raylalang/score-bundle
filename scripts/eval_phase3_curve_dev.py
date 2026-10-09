@@ -131,8 +131,10 @@ def stage_run(shard: str) -> None:
                 t0 = time.time()
                 fit = fit_note(x, t, midi, hypers=hypers)
                 rmse, nll, cov, med_sd = score_curve(fit, gt_t, gt_x)
+                avg, avg_sd = fit.average()
                 rec[arm] = {"rmse": rmse, "nll": nll, "cov": cov,
                             "med_sd": med_sd, "c": fit.c,
+                            "avg": avg, "avg_sd": avg_sd,
                             "pd": fit.laplace_pd,
                             "logev": fit.log_evidence,
                             "wall": time.time() - t0}

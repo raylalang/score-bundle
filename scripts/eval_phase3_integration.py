@@ -60,6 +60,20 @@ def wave_posteriors():
     return dev
 
 
+def curve_posteriors(arm: str = "fitted"):
+    """Realized-average read-out of the curve posterior (2026-10 study,
+    eval_phase3_curve_dev cells): the curve-level replacement for the
+    scalar dev8 channel.  (mean, sd) per (key, i), sd = exact Laplace sd
+    of the time average (CurveFit.average)."""
+    dev = {}
+    for f in sorted(glob.glob(f"{CELLS_DIR}/curve.shard*.pkl")):
+        for r in pickle.load(open(f, "rb")):
+            if arm in r and np.isfinite(r[arm]["avg"]):
+                dev[(tuple(r["key"]), r["i"])] = (r[arm]["avg"],
+                                                  r[arm]["avg_sd"])
+    return dev
+
+
 def fit_three(eig, feats, est7, var7, mask, n):
     from score_bundle.gp import MultiOutputGraphGP
 
@@ -97,14 +111,14 @@ def fit_three(eig, feats, est7, var7, mask, n):
     return fits
 
 
-def stage_run(shard: str) -> None:
+def stage_run(shard: str, source: str = "wave") -> None:
     from score_bundle.baselines import rich_score_features
     from score_bundle.graph import build_adjacency, laplacian
     from score_bundle.score import Score
     from eval_phase3_waveform_dev import selected
 
     k_sh, nsh = (int(v) for v in shard.split("/"))
-    wave = wave_posteriors()
+    wave = wave_posteriors() if source == "wave" else curve_posteriors()
     data = pickle.load(open(".cache/urmp_targets_dev.pkl", "rb"))
     frags = []
     for ti, (key, d, _tr) in enumerate(selected()):
@@ -171,7 +185,8 @@ def stage_run(shard: str) -> None:
             print(f"{key} seed {seed}: 3 systems in {time.time()-t0:.0f}s "
                   f"(floor {np.sqrt(floor2):.2f} cents, "
                   f"{rec['n_wave']} wave cells)", flush=True)
-    out = f"{CELLS_DIR}/integ.shard{k_sh}of{nsh}.pkl"
+    tag = "integ" if source == "wave" else "integ_curve"
+    out = f"{CELLS_DIR}/{tag}.shard{k_sh}of{nsh}.pkl"
     pickle.dump(frags, open(out, "wb"))
     print(f"wrote {out} ({len(frags)} cells)")
 
@@ -227,9 +242,94 @@ def stage_report() -> None:
     print(f"wrote {OUT_MD}")
 
 
+def stage_report_curve() -> None:
+    """The curve channel vs the scalar channel, paired per (track, seed).
+
+    Loads the curve-sourced cells (integ_curve) AND the August
+    scalar-sourced cells (integ); the hold-out rng recipe is identical,
+    so (key, seed) cells pair exactly — pinned by the base6 cross-run
+    equality check below.
+    """
+    cur, old = [], {}
+    for f in sorted(glob.glob(f"{CELLS_DIR}/integ_curve.shard*.pkl")):
+        cur.extend(pickle.load(open(f, "rb")))
+    for f in sorted(glob.glob(f"{CELLS_DIR}/integ.shard*.pkl")):
+        for r in pickle.load(open(f, "rb")):
+            old[(tuple(r["key"]), r["seed"])] = r
+    if not cur or not old:
+        print("missing shards (need both integ_curve and integ)")
+        return
+    pairs = [(r, old[(tuple(r["key"]), r["seed"])]) for r in cur
+             if (tuple(r["key"]), r["seed"]) in old]
+    b6 = max(abs(r["base6_est"][0] - o["base6_est"][0]) for r, o in pairs)
+    rng = np.random.default_rng(31)
+
+    def paired(d):
+        d = np.asarray(d)
+        bs = np.array([rng.choice(d, d.size).mean() for _ in range(2000)])
+        lo, hi = np.quantile(bs, [.025, .975])
+        star = "*" if (hi < 0 or lo > 0) else " "
+        return (f"{d.mean():+.3f} [{lo:+.3f}, {hi:+.3f}]{star} "
+                f"(better on {np.mean(d < 0):.0%})")
+
+    lines = [
+        "# Phase 3 integration: the CURVE posterior as the waveform "
+        "channel (DEV, exploratory, no claims)\n",
+        "\nRe-run of the August integration design "
+        "(results/phase3_integration_dev.md) with the\nrealized-average "
+        "read-out of the curve posterior (CurveFit.average, fitted-prior "
+        "arm,\nexact Laplace sd) replacing the scalar dev8 channel; same "
+        "hold-out recipe, so cells\npair exactly across runs (base6 "
+        f"cross-run max |RMSE diff| = {b6:.2e}, must be ~0).\n",
+        f"\nn = {len(pairs)} (track, seed) pairs; curve-source floor "
+        f"median {np.median([r['floor'] for r, _ in pairs]):.2f} cents "
+        f"(scalar-source {np.median([o['floor'] for _, o in pairs]):.2f})."
+        "\n",
+        "\n| system | vs estimator: RMSE / NLL / cov@90 | vs quasi-truth: "
+        "RMSE / NLL / cov@90 |\n|---|---|---|\n"]
+    named = [("base6", lambda r, o: r), ("scalar wave_floor",
+             lambda r, o: o), ("curve_floor", lambda r, o: r),
+             ("curve_nofloor", lambda r, o: r)]
+    keymap = {"base6": "base6", "scalar wave_floor": "wave_floor",
+              "curve_floor": "wave_floor", "curve_nofloor": "wave_nofloor"}
+    for name, pick in named:
+        cells = []
+        for tgt in ("est", "gt"):
+            kk = f"{keymap[name]}_{tgt}"
+            r_ = np.mean([pick(r, o)[kk][0] for r, o in pairs])
+            nll = np.mean([pick(r, o)[kk][1] for r, o in pairs])
+            cov = np.mean([pick(r, o)[kk][2] for r, o in pairs])
+            cells.append(f"{r_:.3f} / {nll:+.3f} / {cov:.2f}")
+        lines.append(f"| {name} | {cells[0]} | {cells[1]} |\n")
+    lines.append("\n## Paired contrasts (negative favours the first)\n\n")
+    for label, da in (
+        ("curve_floor vs base6 (the curve channel's value)",
+         lambda tgt, i: [r[f"wave_floor_{tgt}"][i] - r[f"base6_{tgt}"][i]
+                         for r, _ in pairs]),
+        ("curve_floor vs scalar wave_floor (curve vs scalar read-out)",
+         lambda tgt, i: [r[f"wave_floor_{tgt}"][i] - o[f"wave_floor_{tgt}"][i]
+                         for r, o in pairs]),
+        ("curve_floor vs curve_nofloor (the floor's value)",
+         lambda tgt, i: [r[f"wave_floor_{tgt}"][i]
+                         - r[f"wave_nofloor_{tgt}"][i] for r, _ in pairs]),
+    ):
+        for tgt in ("est", "gt"):
+            for i, met in ((0, "RMSE"), (1, "NLL")):
+                lines.append(f"- {label}, {tgt} {met}: "
+                             f"{paired(da(tgt, i))}\n")
+    out = "results/phase3_curve_integration_dev.md"
+    open(out, "w").writelines(lines)
+    print("".join(lines))
+    print(f"wrote {out}")
+
+
 if __name__ == "__main__":
     verb = sys.argv[1] if len(sys.argv) > 1 else "report"
     if verb == "run":
         stage_run(sys.argv[2])
+    elif verb == "runcurve":
+        stage_run(sys.argv[2], source="curve")
+    elif verb == "reportcurve":
+        stage_report_curve()
     else:
         stage_report()
