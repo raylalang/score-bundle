@@ -2058,12 +2058,16 @@ analytically and the nonlinear positions $z$ inferred approximately (Laplace/VI,
 score-based initialisation). This is the most novel part of the programme. Its
 conjugate inner blocks exist as tested helpers --- the synthesis basis $\Phi(z)$
 and the amplitude marginalisation \eqref{eq:amp-post}--\eqref{eq:collapsed} are
-implemented and unit-tested --- and a first slice of the $z$-inference is
-now measured (Appendix~\ref{app:phase3}): exact grid inference over the
-intonation coordinate of $z$ on real notes, and the waveform posterior's
-integration into the Phase-2 bundle. The \emph{joint} loop --- all notes
-and coordinates at once under the graph prior (Laplace/VI), with the
-estimand bridge and the amplitude envelope $A_i(t)$ under the prior ---
+implemented and unit-tested --- and the $z$-inference is now measured in
+two slices (Appendix~\ref{app:phase3}): exact grid inference over the
+intonation coordinate of $z$ on real notes with the waveform posterior's
+integration into the Phase-2 bundle, and --- since 2026-10 --- the full
+within-note pitch \emph{curve} by gradients through the synthesizer
+(torch port of the collapsed likelihood; \S\ref{sec:phase3-curve}), with
+the note-boundary gradient mechanism measured as workable. The
+\emph{joint} loop --- all notes at once under the graph prior
+(Laplace/VI), with a transition-region model at the boundaries, the
+estimand bridge, and the amplitude envelope $A_i(t)$ under the prior ---
 is the open work. The reviewed spectral-kernel families
 (\cite{wilson2013,remes2017,alvarado2016}; supervisor-suggested) were
 measured at exactly this slot (development, exploratory): swapping the
@@ -3077,6 +3081,56 @@ task graduates from held-out imputation to full inference: in Phase 3 the natura
 evaluation is held-out pieces and posterior-predictive resynthesis, not note-level
 masking.
 
+\section{The differentiable curve posterior (development studies, 2026-10)}
+\label{sec:phase3-curve}
+
+\paragraph{Design.} The October step implements what the module has promised
+from the start: the chunked harmonic design and the collapsed likelihood
+\eqref{eq:collapsed} in an automatic-differentiation framework (equality with
+the reference implementation is test-pinned), so that inference over a
+\emph{within-note pitch curve} --- a constant $c$ plus knot values $u$ under the
+two-component kernel of the estimator studies, here acting as a prior over $u$
+--- runs by gradient descent, with a full joint Laplace approximation at the MAP
+supplying bands and a per-note evidence. This takes the differentiable-synthesis
+idea of the DDSP line of work \cite{engel2020} at the implementation level
+only: the objective remains the exact amplitude-marginalised likelihood and the
+prior remains the Gaussian process --- no neural encoder, no spectral surrogate
+loss. The five kernel hyperparameters were additionally fitted by evidence
+ascent, shared across notes ($+717$ nats over 24 notes; both component scales
+loosen $2$--$3\times$ while the vibrato mean stays at $5.5$--$5.7$\,Hz).
+
+\figph{phase3_curve_proto.png}{1.0}{The first three curve posteriors from the
+waveform (development notes; violin, cello, clarinet): inferred curve and band
+vs the corpus ground-truth frames and the pYIN frames, neither of which the fit
+sees.\label{fig:phase3-curve-proto}}
+
+\paragraph{Findings.} Four development measurements (376 notes, the seven
+study tracks of \S\ref{sec:phase3-study}; records in the repository). (i)
+\emph{Accuracy:} the curve posterior reaches a median ground-truth-frame RMSE
+of $3.2$ cents against the pYIN frames' $4.1$ (paired $-0.46$, better on 56\%
+of notes) --- decisively better on winds ($2.3$ vs $5.2$), still behind the
+tracker on strings ($4.9$ vs $3.1$), reproducing the scalar study's family
+split, with a heavier failure tail (q90 $\sim 11$ vs $8.6$ cents). The
+evidence-fitted prior beats the hand-set scales on 70\% of notes. (ii)
+\emph{Calibration:} the Laplace band is a parameter band and covers the
+annotation frames at $0.32$--$0.36$ --- the estimand/measurement gap of
+\S\ref{sec:phase3-study} reproduced at curve level (model-true coverage is
+nominal, test-pinned). (iii) \emph{Integration:} replacing the scalar waveform
+channel of the bundle study by the curve's realized-average read-out (a linear
+functional of the Laplace posterior) reproduces the integration gain
+($-1.36^*$ cents on all 14 pairs) and \emph{halves} the empirical discrepancy
+floor ($3.1 \to 1.8$ cents): reading out the estimator's own functional from
+the inferred curve closes about half the estimand gap by construction; curve
+vs scalar read-out is otherwise a tie at $n=14$. (iv) \emph{Boundaries:} a
+perturb-and-recover pilot on two-note segments (complementary sigmoid windows
+over per-note designs, flat prior on the boundary) converges
+start-independently (spread $\le 1$\,ms from $\pm 40/\pm 80$\,ms starts) in 7
+of 8 pairs --- the gradient mechanism for joint inference works and no phase
+pathology appears --- but to an acoustic transition point $11$--$87$\,ms
+(median $25$) from the annotated onset. The open design question for the joint
+loop is therefore the boundary \emph{estimand} (a transition is a region, not
+a point), not the optimisation.
+
 
 \chapter{Additional results}\label{app:extra}
 
@@ -3190,6 +3244,8 @@ Non-stationary spectral kernels. \emph{NeurIPS}, 2017.
 \bibitem{alvarado2016} P.~A.~Alvarado, D.~Stowell.
 Gaussian processes for music audio modelling and content analysis.
 arXiv:1606.01039, 2016.
+\bibitem{engel2020} J.~Engel, L.~Hantrakul, C.~Gu, A.~Roberts.
+DDSP: Differentiable digital signal processing. \emph{ICLR}, 2020.
 \bibitem{nosek2018} B.~A.~Nosek, C.~R.~Ebersole, A.~C.~DeHaven, D.~T.~Mellor.
 The preregistration revolution.
 \emph{Proc.\ Natl.\ Acad.\ Sci.}, 115(11):2600--2606, 2018.

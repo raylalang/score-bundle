@@ -68,3 +68,28 @@ standing rule).
 Next steps if the prototype holds: fit the prior hyperparameters by
 evidence (differentiable too), batch evaluation on the dev tracks, then
 joint note boundaries — the open problem the gradients exist to unlock.
+
+## Status (2026-10-09, end of day: all four steps measured)
+
+- **Packaged**: `src/score_bundle/phase3/curve.py` (import-guarded torch;
+  full joint Laplace replaces the prototype's diagonal; equality with the
+  numpy path test-pinned; reproduces the prototype notes at
+  2.29/4.80/1.13 cents, ~4 s/note median).
+- **Prior evidence-fit** (`results/phase3_prior_fit_dev.md`): +717 nats
+  /24 notes, scales loosen 2–3x, vibrato mean stays ~5.6 Hz; mixed at the
+  n=3 gate, wins at n=376 (70% of notes) → dev default.
+- **Batch study** (`results/phase3_curve_dev.md`, 376 notes): median
+  3.16 cents vs pYIN frames 4.09; winds 2.3 vs 5.2, strings still favour
+  the tracker (4.9 vs 3.1); parameter-band coverage 0.32–0.36 = the
+  estimand gap at curve level.
+- **Integration** (`results/phase3_curve_integration_dev.md`): curve
+  read-out channel −1.36* est RMSE on 14/14 pairs; tie vs the scalar
+  read-out; discrepancy floor HALVES (3.1 → 1.8 cents).
+- **Boundary pilot** (`results/phase3_boundary_pilot_dev.md`): gradients
+  through sigmoid soft windows converge start-independently (7/8 pairs,
+  ≤1 ms spread) — no phase pathology; the optimum sits 11–87 ms from the
+  annotated onset → the December design question is the boundary
+  ESTIMAND (transition region), not optimization.
+- Thesis: appendix §sec:phase3-curve + future-work update; `engel2020`
+  cited. Spectral surrogate loss remains on the shelf (unneeded so far —
+  no hostile surfaces encountered).
