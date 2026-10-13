@@ -93,3 +93,16 @@ joint note boundaries — the open problem the gradients exist to unlock.
 - Thesis: appendix §sec:phase3-curve + future-work update; `engel2020`
   cited. Spectral surrogate loss remains on the shelf (unneeded so far —
   no hostile surfaces encountered).
+
+## Status 2 (2026-10-14: joint chains measured)
+
+- **Chain study** (`results/phase3_chain_dev.md`, 47 chains / 154
+  boundaries): the transition-REGION hypothesis is rejected productively
+  (widths collapse to 1 ms yet beat the fixed-width control −3.4 ms on
+  77%; the acoustic transition is sharp); edge error improves on the
+  pilot (median ~18 vs 25 ms); **deployment inference works** —
+  score-nominal tempo-line inits, no annotation, 39.4 → 19.5 ms median.
+  Residual ~18 ms = the acoustic-vs-musical onset gap → the
+  transient/broadband boundary columns are the named next lever. Joint
+  chains cost ~1.8 cents guarded curve RMSE vs single-note fits (chains
+  for boundaries, single-note refits for curves, for now).
