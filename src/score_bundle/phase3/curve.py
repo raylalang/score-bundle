@@ -289,6 +289,285 @@ def _laplace(nlj: Callable, theta) -> Tuple[np.ndarray, float, bool]:
         return cov.cpu().numpy(), logdet_h, False
 
 
+@dataclass
+class ChainFit:
+    """Joint MAP over a chain of notes with transition-region boundaries.
+
+    Boundary k sits between notes k and k+1 and is a REGION, not a point:
+    note k+1 fades in at ``b_lo[k]``, note k fades out at
+    ``b_hi[k] = b_lo[k] + width[k]`` (two independent sigmoid edges of
+    fixed softness; the overlap is where both notes sound).  No Laplace
+    here — batch fits report MAP quantities only.
+    """
+
+    c: np.ndarray                 # per-note centres (K,)
+    us: list                      # per-note knot values
+    knots: list                   # per-note knot times (segment-local)
+    b_lo: np.ndarray              # fade-in of note k+1 (K-1,)
+    b_hi: np.ndarray              # fade-out of note k (K-1,)
+    widths: np.ndarray            # b_hi - b_lo (K-1,)
+    window_mass: np.ndarray       # per-note mean window over its init extent
+    noise_var: float              # after the mid-run refit
+    noise_var_init: float         # at the reference initializer
+    neg_log_joint: float
+
+    def curve(self, k: int, tq: np.ndarray) -> np.ndarray:
+        """MAP cents curve of note k at segment-local times tq."""
+        return self.c[k] + np.interp(np.asarray(tq, float),
+                                     self.knots[k], self.us[k])
+
+
+def design_support_torch(cents, t_slice, midi: float, ia: int, m: int,
+                         n_harm: int = 8, n_chunk: int = 2):
+    """Harmonic design on a sample slice [ia, ia+len(t_slice)), zero-padded
+    to m rows.
+
+    The chunked design of :func:`chunked_design_torch` built only over the
+    note's support (phase origin at the slice start — the quadrature pair
+    absorbs the offset), so chain designs don't waste columns on regions a
+    note's window has already zeroed.  Differentiable in cents.
+    """
+    _require_torch()
+    block = chunked_design_torch(cents, t_slice, midi, n_harm, n_chunk)
+    ms, p = block.shape
+    pads = []
+    if ia > 0:
+        pads.append(torch.zeros(ia, p, dtype=block.dtype,
+                                device=block.device))
+    pads.append(block)
+    if ia + ms < m:
+        pads.append(torch.zeros(m - ia - ms, p, dtype=block.dtype,
+                                device=block.device))
+    return torch.cat(pads, dim=0)
+
+
+def chain_reference(x: np.ndarray, t: np.ndarray, midis, b_ref, *,
+                    prior: CurvePrior = CurvePrior(), n_harm: int = 8,
+                    n_chunk: int = 2, amp_var: float = 10.0,
+                    init_guard: float = 0.03, guard_frac: float = 0.0,
+                    c_half_range: float = 50.0,
+                    device: str = "cpu") -> Tuple[np.ndarray, float]:
+    """Per-note coarse c's and the shared segment noise variance, computed
+    at REFERENCE boundaries b_ref (delta-independent — every perturbation
+    arm of one chain must reuse this, or the arms optimize different
+    objectives; the 10-09 pilot had that confound).
+
+    Each note is hard-sliced at b_ref with an ``init_guard`` margin (plus
+    ``guard_frac`` of the slice per side, for low-trust references like
+    score-nominal boundaries); the single-note coarse 1-cent grid under a
+    flat curve picks c; noise_var is then profiled once on the full
+    segment with the stitched flat-curve design at those c's.
+    """
+    _require_torch()
+    dev = torch.device(device)
+    x_t = torch.as_tensor(np.asarray(x, float), dtype=torch.float64,
+                          device=dev)
+    t_np = np.asarray(t, float)
+    m = t_np.size
+    sr = (m - 1) / max(t_np[-1] - t_np[0], 1e-9)
+    k_n = len(midis)
+    cuts = np.concatenate([[t_np[0]], np.asarray(b_ref, float),
+                           [t_np[-1]]])
+    c0s = np.zeros(k_n)
+    grid = np.arange(-c_half_range, c_half_range, 1.0)
+    with torch.no_grad():
+        for k in range(k_n):
+            lo, hi = cuts[k], cuts[k + 1]
+            g = init_guard + guard_frac * (hi - lo)
+            ia = int(np.searchsorted(t_np, lo + g))
+            ib = int(np.searchsorted(t_np, hi - g))
+            if ib - ia < int(0.08 * sr):          # degenerate slice
+                ia = int(np.searchsorted(t_np, lo))
+                ib = int(np.searchsorted(t_np, hi))
+            xs = x_t[ia:ib]
+            ts = torch.as_tensor(t_np[ia:ib], dtype=torch.float64,
+                                 device=dev)
+            Phi0 = chunked_design_torch(torch.zeros_like(ts), ts,
+                                        float(midis[k]), n_harm, n_chunk)
+            nv = fit_noise_torch(xs, Phi0)
+            lls = []
+            for c in grid:
+                Phi = chunked_design_torch(torch.full_like(ts, float(c)),
+                                           ts, float(midis[k]), n_harm,
+                                           n_chunk)
+                lls.append(float(collapsed_loglik_torch(xs, Phi, nv,
+                                                        amp_var)))
+            c0s[k] = float(grid[int(np.argmax(lls))])
+        # shared noise at the stitched flat-curve design (hard cuts)
+        cols = []
+        for k in range(k_n):
+            ia = int(np.searchsorted(t_np, cuts[k]))
+            ib = int(np.searchsorted(t_np, cuts[k + 1]))
+            ts = torch.as_tensor(t_np[ia:ib], dtype=torch.float64,
+                                 device=dev)
+            cents = torch.full_like(ts, c0s[k])
+            cols.append(design_support_torch(cents, ts, float(midis[k]),
+                                             ia, m, n_harm, n_chunk))
+        noise_var = fit_noise_torch(x_t, torch.cat(cols, dim=1))
+    return c0s, noise_var
+
+
+def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
+              prior: CurvePrior = CurvePrior(),
+              hypers: Optional[dict] = None,
+              c_init: Optional[np.ndarray] = None,
+              noise_var: Optional[float] = None,
+              free_width: bool = True, width_init: float = 0.018,
+              fixed_width: float = 0.010,
+              width_prior_median: float = 0.018,
+              width_prior_sigma: float = 0.6,
+              softness: float = 0.010, min_width: float = 0.001,
+              n_steps: int = 500, lr_curve: float = 0.4,
+              lr_db_ms: float = 2.0, lr_gap: float = 0.1,
+              n_harm: int = 8, n_chunk: int = 2, amp_var: float = 10.0,
+              support_margin: float = 0.2, order_margin: float = 0.05,
+              order_weight: float = 1e7,
+              device: str = "cpu") -> ChainFit:
+    """Joint gradient MAP over per-note curves + transition-region
+    boundaries for one chain of notes.
+
+    Boundaries are optimized as offsets db (ms) from ``b_init``; with
+    ``free_width`` the gap carries a lognormal width prior (soft bounds —
+    a sigmoid-bounded width parks at the bound with zero gradient),
+    otherwise the width is frozen at ``fixed_width`` (the control arm).
+    An ordering hinge keeps note k's fade-out from overrunning boundary
+    k+1's fade-in.  ``c_init``/``noise_var`` should come from
+    :func:`chain_reference` at the chain's REFERENCE boundaries so that
+    perturbation arms share one objective; if omitted they are computed
+    at ``b_init`` itself.  noise_var is refit once (no-grad) halfway.
+    """
+    _require_torch()
+    dev = torch.device(device)
+    x_t = torch.as_tensor(np.asarray(x, float), dtype=torch.float64,
+                          device=dev)
+    t_np = np.asarray(t, float)
+    t_t = torch.as_tensor(t_np, dtype=torch.float64, device=dev)
+    m = t_np.size
+    k_n = len(midis)
+    b_init = np.asarray(b_init, float)
+    assert b_init.size == k_n - 1
+
+    if c_init is None or noise_var is None:
+        c0s, nv0 = chain_reference(x, t, midis, b_init, prior=prior,
+                                   n_harm=n_harm, n_chunk=n_chunk,
+                                   amp_var=amp_var, device=device)
+        c_init = c0s if c_init is None else c_init
+        noise_var = nv0 if noise_var is None else noise_var
+    nv_init = float(noise_var)
+
+    cuts = np.concatenate([[t_np[0]], b_init, [t_np[-1]]])
+    knots_list, chol_list, slices = [], [], []
+    for k in range(k_n):
+        lo, hi = cuts[k], cuts[k + 1]
+        j = prior.n_knots(hi - lo)
+        kn = np.linspace(lo, hi, j)
+        kt = torch.as_tensor(kn, dtype=torch.float64, device=dev)
+        _, chol = knot_gram(kt, prior, **(hypers or {}))
+        knots_list.append((kn, kt))
+        chol_list.append(chol)
+        ia = int(np.searchsorted(t_np, max(t_np[0], lo - support_margin)))
+        ib = int(np.searchsorted(t_np, min(t_np[-1], hi + support_margin)))
+        slices.append((ia, ib))
+
+    c = torch.tensor(np.asarray(c_init, float), dtype=torch.float64,
+                     device=dev, requires_grad=True)
+    us = [torch.zeros(kn.size, dtype=torch.float64, device=dev,
+                      requires_grad=True) for kn, _ in knots_list]
+    db_ms = torch.zeros(k_n - 1, dtype=torch.float64, device=dev,
+                        requires_grad=True)
+    g0 = float(np.log(np.expm1(max(width_init - min_width, 1e-4))))
+    gap = torch.full((k_n - 1,), g0, dtype=torch.float64, device=dev,
+                     requires_grad=free_width)
+    b_init_t = torch.as_tensor(b_init, dtype=torch.float64, device=dev)
+
+    def edges():
+        b_lo = b_init_t + db_ms / 1000.0
+        width = (min_width + torch.nn.functional.softplus(gap)
+                 if free_width
+                 else torch.full_like(b_lo, fixed_width))
+        return b_lo, b_lo + width, width
+
+    def assemble(b_lo, b_hi):
+        cols = []
+        for k in range(k_n):
+            ia, ib = slices[k]
+            ts = t_t[ia:ib]
+            _, kt = knots_list[k]
+            cents = c[k] + interp_knots(us[k], kt, ts)
+            Phi_k = design_support_torch(cents, ts, float(midis[k]), ia,
+                                         m, n_harm, n_chunk)
+            w = torch.ones(m, dtype=torch.float64, device=dev)
+            if k > 0:
+                w = w * torch.sigmoid((t_t - b_lo[k - 1]) / softness)
+            if k < k_n - 1:
+                w = w * torch.sigmoid((b_hi[k] - t_t) / softness)
+            cols.append(Phi_k * w.unsqueeze(1))
+        return torch.cat(cols, dim=1)
+
+    def nlj():
+        b_lo, b_hi, width = edges()
+        Phi = assemble(b_lo, b_hi)
+        loss = -collapsed_loglik_torch(x_t, Phi, noise_var, amp_var)
+        for u, chol in zip(us, chol_list):
+            loss = loss + 0.5 * (u @ torch.cholesky_solve(
+                u.unsqueeze(1), chol).squeeze(1))
+        if free_width:
+            loss = loss + 0.5 * (((torch.log(width)
+                                   - math.log(width_prior_median))
+                                  / width_prior_sigma) ** 2).sum()
+        for k in range(k_n - 2):
+            viol = torch.relu(b_hi[k] - (b_lo[k + 1] - order_margin))
+            loss = loss + order_weight * viol ** 2
+        return loss
+
+    groups = [{"params": [c] + us, "lr": lr_curve},
+              {"params": [db_ms], "lr": lr_db_ms}]
+    if free_width:
+        groups.append({"params": [gap], "lr": lr_gap})
+    opt = torch.optim.Adam(groups)
+    base_lrs = [g["lr"] for g in opt.param_groups]
+    decay_from = int(0.75 * n_steps)
+    for step in range(n_steps):
+        if step >= decay_from:
+            s = 0.5 * (1.0 + math.cos(
+                math.pi * (step - decay_from) / max(n_steps - decay_from,
+                                                    1)))
+            for pg, b in zip(opt.param_groups, base_lrs):
+                pg["lr"] = b * s
+        opt.zero_grad()
+        loss = nlj()
+        loss.backward()
+        opt.step()
+        if step == n_steps // 2:          # one no-grad noise refit
+            with torch.no_grad():
+                b_lo, b_hi, _ = edges()
+                Phi = assemble(b_lo, b_hi)
+                noise_var = fit_noise_torch(x_t, Phi)
+
+    with torch.no_grad():
+        final = float(nlj())
+        b_lo, b_hi, width = edges()
+        mass = np.zeros(k_n)
+        for k in range(k_n):
+            w = torch.ones(m, dtype=torch.float64, device=dev)
+            if k > 0:
+                w = w * torch.sigmoid((t_t - b_lo[k - 1]) / softness)
+            if k < k_n - 1:
+                w = w * torch.sigmoid((b_hi[k] - t_t) / softness)
+            ia = int(np.searchsorted(t_np, cuts[k]))
+            ib = max(int(np.searchsorted(t_np, cuts[k + 1])), ia + 1)
+            mass[k] = float(w[ia:ib].mean())
+
+    return ChainFit(
+        c=c.detach().cpu().numpy(),
+        us=[u.detach().cpu().numpy() for u in us],
+        knots=[kn for kn, _ in knots_list],
+        b_lo=b_lo.cpu().numpy(), b_hi=b_hi.cpu().numpy(),
+        widths=width.cpu().numpy(), window_mass=mass,
+        noise_var=float(noise_var), noise_var_init=nv_init,
+        neg_log_joint=final)
+
+
 def loglik_hessian(x: np.ndarray, t: np.ndarray, midi: float, fit: CurveFit,
                    *, n_harm: int = 8, n_chunk: int = 4,
                    amp_var: float = 10.0, device: str = "cpu") -> np.ndarray:
