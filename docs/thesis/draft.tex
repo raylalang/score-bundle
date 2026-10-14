@@ -2224,6 +2224,44 @@ acoustic-vs-musical onset gap restated, which makes a transient model at
 the note joint (broadband columns the harmonic basis cannot represent)
 the measured next lever, not a larger optimiser.
 
+\figph{chain_boundary_deck.png}{1.0}{One chain of the study under the
+deployment protocol (five consecutive violin notes, score-nominal
+starting points, no annotation access in the fit). Top: the waveform
+with annotated onsets, tempo-line starting points, and inferred
+boundaries. Bottom: the per-note pitch curves from the same joint fit
+with their 90\% bands (a one-off joint Laplace over all curve
+parameters at the MAP, boundaries fixed --- batch fits are MAP-only),
+against annotation frames the fit never sees; the band widens exactly
+at the note joints, where information runs
+out.\label{fig:chain-boundary}}
+
+\figph{boundary_deploy_deck.png}{0.6}{The deployment arm at scale: one
+dot per non-unison boundary, the score-only (tempo-line) starting error
+against the inferred error. The median halves ($39.7 \to 19.5$\,ms on
+this pairing; $39.4$ over all boundaries) and $73\%$ of boundaries
+improve; the dots far above the diagonal are the systematic
+acoustic-vs-musical remainder.\label{fig:boundary-deploy}}
+
+\paragraph{The chapter's output, end to end on one passage.} The same
+machinery already produces the intended output at small scale:
+Figure~\ref{fig:endgoal} runs the deployment protocol over a 13-note,
+8-second violin passage (three chains fitted independently) and shows
+all three strands on one timeline --- the recording segmented into
+notes, the per-note pitch expression with bands, and the \emph{timbre}
+strand: per-note harmonic envelopes read back from the closed-form
+amplitude posterior \eqref{eq:amp-post} at the MAP. The read-out
+direction of the timbre thus works today; what remains, per the
+asymmetry recorded at the top of this chapter, is bringing the
+amplitudes and envelopes \emph{under the prior} rather than reading
+them out post hoc --- together with the joint whole-performance loop,
+that is the open work.
+
+\figph{endgoal_viz.png}{1.0}{A real passage decomposed from the score
+and the waveform alone (deployment protocol; development). Notes
+outside the chain-eligibility rule are honestly unfitted (the gap);
+the envelope strand is a post-hoc read-out, not yet under the
+prior.\label{fig:endgoal}}
+
 
 % =====================================================================
 \chapter{Discussion}\label{ch:discussion}
