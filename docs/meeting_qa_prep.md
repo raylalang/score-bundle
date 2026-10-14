@@ -75,12 +75,13 @@ decide.
    with an explicit differentiable harmonic likelihood: candidate pitch
    trajectories and note boundaries scored directly against the audio,
    timbre marginalized analytically. Development studies only.
-4. **The intended endpoint (not achieved):** the score-graph prior
-   joined with the waveform likelihood — all notes of a performance
-   inferred jointly from score + audio. **Verified status: not
-   implemented.** The waveform fits use independent per-note curve
-   priors; the graph prior currently meets waveform output only post
-   hoc, as one observation channel of the stage-2 bundle.
+4. **The intended endpoint (first span built 2026-10-14):** the
+   score-graph prior joined with the waveform likelihood — all notes of
+   a performance inferred jointly from score + audio. Status: the graph
+   now couples the per-note intonation constants *inside* the waveform
+   inference on short chains (the prior-value experiment, §G); the
+   curve-level and boundary coupling, the remaining channels, and
+   whole-performance scale are still open.
 
 ## E. Current results (verified against the repository)
 
@@ -132,11 +133,12 @@ decide.
 
 ## F. Open technical problems (the discussion core)
 
-1. **Graph prior × waveform likelihood — the unbuilt bridge.** The most
-   important unverified connection, now verified as *absent in code*:
-   nothing couples notes inside the waveform inference. Design question:
-   which variables does the graph couple there first (per-note centres?
-   boundary offsets? curve-level?).
+1. **Graph prior × waveform likelihood — the bridge, span by span.**
+   Until today nothing coupled notes inside the waveform inference; the
+   prior-value experiment (§G) built and measured the first span
+   (per-note intonation constants, short chains). Open: the tuning-
+   scalar follow-up, coupling boundary offsets and curve level, the
+   remaining channels, and whole-performance scale.
 2. **Identifiability from audio.** Measured so far: pitch trajectories
    strongly identifiable (phase accumulation); boundaries identifiable
    except at repeated pitches; loudness/articulation live in amplitudes
