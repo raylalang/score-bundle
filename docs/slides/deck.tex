@@ -553,7 +553,37 @@
   Coverage 0.88 to 0.91 at nominal 0.90 on all six channels.
 \end{frame}
 
-\divider{The waveform as the observation}{No pitch tracker: score and audio in, curves and boundaries out}
+\divider{The waveform as the observation}{Methodology and first development studies, no claims}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The method, and where it comes from}
+  \begin{columns}[T,onlytextwidth]
+  \column{0.52\textwidth}
+  \textbf{Reference works}
+  {\small
+  \begin{itemize}
+    \item \textbf{DDSP} (Engel et al.\ 2020): gradients through a
+          differentiable synthesizer; MIDI-DDSP (Wu et al.\ 2022) the
+          closest cousin for performance control.
+    \item GPs for music audio (Alvarado and Stowell 2016): per-note
+          windows over a shared time axis.
+    \item Spectral mixture kernels (Wilson and Adams 2013): the curve
+          prior's two-component kernel is a special case.
+  \end{itemize}}
+  \column{0.44\textwidth}
+  \textbf{What this thesis does with them}
+  {\small
+  \begin{itemize}
+    \item \textbf{Takes}: gradient descent through the synthesizer
+          (the implementation idea).
+    \item \textbf{Keeps}: the exact amplitude-marginalized likelihood
+          and the GP priors --- no neural encoder, no spectral
+          surrogate loss as the objective.
+    \item \textbf{Measured}: a learned many-component spectrum adds
+          nothing over the hand structure on these curves.
+  \end{itemize}}
+  \end{columns}
+\end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: what the audio of one note is}
@@ -636,25 +666,7 @@
   calibrated floor.}}
 \end{frame}
 
-% ---------------------------------------------------------------------
-\begin{frame}{Results: the curve from the waveform, at scale (development)}
-  376 notes on 7 development tracks, one per instrument. No tracker in
-  the fit; scored against the corpus annotation frames. Comparator: the
-  tracker's own frames (pYIN) against the same annotation.
-  \vspace{-1mm}
-  \figslotw{curve_scale_deck.png}{0.86}{per-family dumbbell}
-  \vspace{-3mm}
-  \begin{itemize}
-    \item Honest edges: the tracker stays ahead on strings, and the
-          waveform fit's failure tail is heavier (90th percentile 10.6
-          vs 8.6 cents).
-    \item The inferred curve then feeds the strings-and-winds bundle as
-          a seventh channel: held-out intonation improves on 14 of 14
-          track and seed pairs ($-1.36$ cents vs the six-channel bundle,
-          significant), and the empirical calibration floor halves
-          (3.1 to 1.8 cents).
-  \end{itemize}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
 \begin{frame}{Note boundaries from the waveform}
@@ -672,27 +684,7 @@
   joint is the next step.}
 \end{frame}
 
-% ---------------------------------------------------------------------
-\begin{frame}{Boundary accuracy from score-only starting points}
-  \begin{columns}[T,onlytextwidth]
-  \column{0.52\textwidth}
-  \vspace{2mm}
-  \includegraphics[width=\textwidth]{boundary_deploy_deck.png}
-  \column{0.44\textwidth}
-  \vspace{6mm}
-  {\small
-  \begin{itemize}
-    \item Starting point: the score through the local tempo line, no
-          annotation access.
-    \item The joint fit improves 73 percent of boundaries; the median
-          error halves, 40 to 20 ms.
-    \item Repeated-pitch boundaries excluded (a harmonic likelihood
-          carries no boundary there); they are reported separately.
-    \item The dots far above the diagonal are the systematic remainder:
-          the acoustic transition is not the written onset.
-  \end{itemize}}
-  \end{columns}
-\end{frame}
+
 
 % ---------------------------------------------------------------------
 \begin{frame}{Where this chapter ends: the joint loop}
@@ -732,10 +724,10 @@
     \item \textbf{Strings and winds}: the graph improves recovery and
           calibration on the estimated channels, confirmed once on
           held-out pieces.
-    \item \textbf{Audio}: first measured results. The curve inferred
-          from the raw waveform beats the tracker's frames at the
-          median, strengthens the bundle, and note boundaries come from
-          the score and the waveform alone.
+    \item \textbf{Audio}: methodology in place and running at
+          development level --- curves, boundaries, the timbre
+          read-out --- no claims yet; the joint loop over a whole
+          performance is the direction ahead.
   \end{itemize}
 \end{frame}
 
@@ -757,6 +749,51 @@
     \bottomrule
   \end{tabular}
   \end{center}
+\end{frame}
+
+
+\divider{Backup}{Development numbers, if asked}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Development evidence: the curve against the tracker, at scale}
+  376 notes on 7 development tracks, one per instrument. No tracker in
+  the fit; scored against the corpus annotation frames. Comparator: the
+  tracker's own frames (pYIN) against the same annotation.
+  \vspace{-1mm}
+  \figslotw{curve_scale_deck.png}{0.86}{per-family dumbbell}
+  \vspace{-3mm}
+  \begin{itemize}
+    \item Honest edges: the tracker stays ahead on strings, and the
+          waveform fit's failure tail is heavier (90th percentile 10.6
+          vs 8.6 cents).
+    \item The inferred curve then feeds the strings-and-winds bundle as
+          a seventh channel: held-out intonation improves on 14 of 14
+          track and seed pairs ($-1.36$ cents vs the six-channel bundle,
+          significant), and the empirical calibration floor halves
+          (3.1 to 1.8 cents).
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Boundary accuracy from score-only starting points}
+  \begin{columns}[T,onlytextwidth]
+  \column{0.52\textwidth}
+  \vspace{2mm}
+  \includegraphics[width=\textwidth]{boundary_deploy_deck.png}
+  \column{0.44\textwidth}
+  \vspace{6mm}
+  {\small
+  \begin{itemize}
+    \item Starting point: the score through the local tempo line, no
+          annotation access.
+    \item The joint fit improves 73 percent of boundaries; the median
+          error halves, 40 to 20 ms.
+    \item Repeated-pitch boundaries excluded (a harmonic likelihood
+          carries no boundary there); they are reported separately.
+    \item The dots far above the diagonal are the systematic remainder:
+          the acoustic transition is not the written onset.
+  \end{itemize}}
+  \end{columns}
 \end{frame}
 
 \end{document}
