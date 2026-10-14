@@ -979,7 +979,7 @@ For the one task ASAP cannot support (performer identity), the small Vienna~4x22
 corpus (22 pianists $\times$ 4 shared excerpts) is used \cite{vienna4x22}.
 
 % =====================================================================
-\chapter{Phase-1 Results}\label{ch:results}
+\chapter{Results: Piano from Aligned MIDI}\label{ch:results}
 
 \section{Headline: recovery and calibration (confirmation set --- preregistered, run once)}
 Development used \nPieces{} held-out pieces, which necessarily also served model
@@ -1258,7 +1258,7 @@ profile of Appendix~\ref{app:extra} quantifies. The dynamics panel shows the
 phrase-level structure the model exploits; the timing band is honest about how
 little of $\tau$ is predictable.\label{fig:posterior-example}}
 
-\section{Target leakage: found, fixed, pinned}\label{sec:leak}
+\section{Leakage control}\label{sec:leak}
 An earlier read-out let the music model see a note's own velocity --- the
 very target it was asked to predict --- inflating its apparent advantage;
 the read-out was moved one position earlier, everything re-measured, and
@@ -1418,7 +1418,7 @@ where the cross-piece head remains the honest tool. Both boundaries are claims o
 the thesis, bounded by evidence on both sides.
 
 % =====================================================================
-\chapter{Phase-2 Results: Intonation and Vibrato on Real Recordings}
+\chapter{Results: Strings and Winds from Tracked Audio}
 \label{ch:phase2}\label{sec:phase2}
 Phase 2 carries the model to voice, strings and winds, where the performer controls
 pitch. \emph{Nothing in the latent prior changes}: the graph and feature kernels
@@ -1838,11 +1838,11 @@ timing calibration as a secondary claim that does not gate the others ---
 the delay channel deliberately carries no claim, and the rule is one-shot
 with every number reported.
 
-\section{The one-shot confirmation (run once, 2026-08-27)}
+\section{The one-shot confirmation}
 \label{sec:phase2-conf}
 The frozen 13-piece pool --- 40 unique tracks after recording
-deduplication, two seeds, the registered protocol verbatim --- was then
-spent in a single run. Scored against the registered rule
+deduplication, two seeds, the registered protocol verbatim --- was
+spent in a single run on 2026-08-27. Scored against the registered rule
 (Table~\ref{tab:phase2-conf}): \textbf{C1 confirmed} --- intonation
 recovery $-0.877\,[-1.236, -0.538]^{*}$, reproducing the development basis
 ($-0.891^{*}$) almost exactly; \textbf{C2 confirmed on both vibrato
@@ -2690,7 +2690,7 @@ Performer-ID (Vienna) & mixed (raw 0.14 $>$ denoised 0.08) & mixed, milder (GP-d
 
 % =====================================================================
 \chapter{Methodology record: the leakage episode}\label{app:methods}
-Relocated from the Phase-1 results chapter; the main line carries the
+Relocated from the piano results chapter; the main line carries the
 verdict (\S\ref{sec:leak}).
 
 An earlier read-out let the music model see a note's own velocity --- the very target it
