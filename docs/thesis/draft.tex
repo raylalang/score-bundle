@@ -99,7 +99,12 @@
 \noindent Given a printed score and a recording of a performance (as piano
 MIDI in this work), we recover \emph{how} each written note was played ---
 its micro-timing, articulation, and dynamics --- together with a calibrated
-statement of confidence. The model is \textbf{one multi-output Gaussian
+statement of confidence. The aim, in one line, is an \emph{interpretable,
+score-aligned representation of expressive performance}, inferable from a
+recording with explicit uncertainty; the method is Bayesian
+\emph{score-conditioned inverse synthesis} --- a score-structured prior
+met by progressively rawer observation models, ending at the waveform
+itself. The model is \textbf{one multi-output Gaussian
 process on the score graph}: notes related in the score are related in
 performance (a graph GP in the sense of Borovitskiy et al.), the expressive
 channels are coupled by a coregionalization matrix, and all side
@@ -155,6 +160,20 @@ full transcription. Second, \emph{uncertainty is a primary output}: a per-note
 estimate is only actionable with a calibrated error bar, and calibration is
 evaluated as rigorously as accuracy.
 
+Two claims of different kinds run through the thesis and are kept
+distinct. The \emph{scientific objective} is the representation itself:
+an interpretable, score-aligned description of how a performance was
+played --- per-note variables and, later, within-note trajectories ---
+that can be inferred from a recording with explicit uncertainty. The
+\emph{methodological contribution} is the inference framework that
+recovers it: Bayesian score-conditioned inverse synthesis, a
+score-structured prior combined with an observation model of the
+performance. They are complementary, and neither is claimed beyond what
+the experiments validate: the representation is interpretable by
+construction, not semantically validated, and the framework is validated
+stage by stage --- its full integration at the waveform remains open
+(\S\ref{sec:future-phase3}).
+
 The title names the object of study. With each note of the known score we
 associate a small \emph{bundle} of expressive variables --- timing,
 articulation, dynamics; later intonation, vibrato, loudness --- so a
@@ -172,16 +191,44 @@ $\log r$, and normalised velocity $v$. Given the score and an aligned performanc
 the task is to infer the posterior over these per-note variables, including for
 notes that are held out (masked), and to do so with calibrated uncertainty. This is
 \emph{score-informed performance transcription} (equivalently, probabilistic
-inverse synthesis). Inferring the score itself (full automatic music transcription)
-is out of scope; see \S\ref{sec:scope} and \S\ref{sec:future-amt}. The central
-empirical question is:
-\begin{quote}
-\itshape Does a score-structured prior improve expressive-variable recovery
-\emph{and} uncertainty calibration compared with independent or purely temporal
-baselines?
-\end{quote}
-A \emph{win} is defined before any test number is seen, and requires improvement on
-\emph{both} axes at once (\S\ref{sec:metrics}).
+inverse synthesis). In symbols, with $S$ the score, $x$ the observation of
+the performance, and $z$ the latent expressive variables,
+\begin{equation*}
+  p(z \mid x, S) \;\propto\; p(x \mid z, S)\, p(z \mid S),
+\end{equation*}
+where $p(z \mid S)$ is the score-structured prior
+(Chapter~\ref{ch:model}) and $p(x \mid z, S)$ is an observation model
+that the thesis makes progressively rawer: per-note values read from
+aligned MIDI (Chapter~\ref{ch:results}), tracker-derived per-note
+estimates with their variances (Chapter~\ref{ch:phase2}), and the
+waveform itself through a differentiable harmonic synthesizer
+(Chapter~\ref{app:phase3}). Inferring the score itself (full automatic
+music transcription) is out of scope; see \S\ref{sec:scope} and
+\S\ref{sec:future-amt}.
+
+The thesis asks three questions, in the order the stages answer them:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{RQ1 (representation).} What do interpretable per-note
+        variables --- and, later, within-note trajectories --- capture of
+        expressive performance, and what do they measurably discard?
+  \item \textbf{RQ2 (structured inference).} Does a score-structured
+        prior improve expressive-variable recovery \emph{and}
+        uncertainty calibration compared with independent or purely
+        temporal baselines, when observations are missing (piano) or
+        noisy (strings and winds)?
+  \item \textbf{RQ3 (direct waveform inference).} Can a differentiable
+        harmonic observation model recover expressive trajectories
+        directly from the waveform --- and can its uncertainty separate
+        genuine performance ambiguity from the model's own mismatch?
+\end{itemize}
+RQ2 is the confirmed core of the thesis: a \emph{win} is defined before
+any test number is seen, and requires improvement on \emph{both} axes at
+once (\S\ref{sec:metrics}). RQ1 is answered by construction plus
+measured discards (the within-note drift study, Appendix~\ref{app:drift};
+the curve-level extension, Chapter~\ref{app:phase3}). RQ3 is answered at
+development level only (Chapter~\ref{app:phase3}); joining its
+observation model to the RQ2 prior --- the complete inverse-synthesis
+loop --- is the programme's endpoint, not a claim.
 
 \section{Terminology: the proposed model and the two-stage pipeline}\label{sec:twostage}
 Two names recur throughout. \textbf{The proposed model} is the thesis model:
@@ -224,11 +271,16 @@ graph GP on the residual.
         development/confirmation split that caught selection inflation in the act
         (\S\ref{sec:hygiene}).
 \end{enumerate}
-The audio step (a differentiable-synthesizer likelihood) and a
-geometric ``connection-Laplacian'' generalisation of the graph prior are
-deliberately \emph{not} claimed as contributions: the former is carried
-as measured development studies (Chapter~\ref{app:phase3}), the latter
-as future work (Chapter~\ref{ch:future}).
+The waveform endpoint --- the full inverse-synthesis loop, with the
+score-graph prior inside the waveform inference --- is the programme's
+intended destination and is deliberately \emph{not} claimed as a
+contribution: its components are measured as development studies
+(Chapter~\ref{app:phase3}), and the integration itself is not yet
+implemented (the waveform fits use independent per-note curve priors;
+the graph prior meets the waveform posterior only post hoc, as an
+observation channel of the Chapter~\ref{ch:phase2} bundle). A geometric
+``connection-Laplacian'' generalisation of the graph prior likewise
+remains future work (Chapter~\ref{ch:future}).
 
 \section{Scope and non-goals}\label{sec:scope}
 In scope for the core result: piano; symbolic (MIDI) performance variables --- onset timing
@@ -246,8 +298,10 @@ score onsets, score durations); held-out evaluation with calibration.
 \end{itemize}
 Audio input/output and continuously pitched instruments enter only with
 the strings-and-winds and waveform settings.
-The work is staged so that each stage produces a defensible result before the
-next risk is taken; Table~\ref{tab:phases} records the stages and their
+The work is staged so that each stage produces a defensible result before
+the next risk is taken, and the stages are ordered toward the waveform
+endpoint: each isolates one new difficulty on the way to inference from
+sound alone. Table~\ref{tab:phases} records the stages and their
 status. (Internally and in the registered artifacts the stages are
 numbered Phases~0--3 --- the music model, piano, strings and winds, the
 waveform; the thesis names them by content.)
@@ -262,12 +316,12 @@ Stage & Scope & Adds & Status \\
 \midrule
 music model --- foundation & From-scratch symbolic music model (backbone + representations) &
 Per-note embeddings $h_i$ (a feature kernel of the GP; the plug-in mean $\muLM$ of the two-stage baseline) & \textbf{Done} \\
-piano --- core & Timing, articulation, dynamics from aligned score+performance &
+piano --- stage 1: isolate the prior & Timing, articulation, dynamics from aligned score+performance &
 Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 \textbf{Done}; result in and hardened \\
-strings and winds --- extension & Intonation, vibrato, loudness on continuously pitched instruments &
+strings and winds --- stage 2: measurement uncertainty & Intonation, vibrato, loudness on continuously pitched instruments &
 $f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP, registered one-shot: intonation recovery, vibrato calibration, coverage; the secondary timing claim failed, reported verbatim --- Chapter~\ref{ch:phase2}) \\
-waveform --- extension & Differentiable synthesizer as audio likelihood &
+waveform --- stage 3: the endpoint & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Development studies measured: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); no confirmed claims yet \\
 \bottomrule
 \end{tabular}
@@ -341,7 +395,18 @@ Differentiable digital signal processing renders audio from interpretable contro
 synthesizer \cite{ddsp}. This is the intended waveform likelihood: it connects the
 latent performance variables to a waveform while keeping the amplitudes
 conditionally Gaussian, so they can be marginalised in closed form
-(Chapter~\ref{app:phase3}).
+(Chapter~\ref{app:phase3}). The DDSP line has since grown hierarchical
+note-to-performance-to-audio \emph{generation} (MIDI-DDSP
+\cite{wu2022midi}), physically structured interpretable effect modules
+(a differentiable guitar amplifier, \cite{yeh2024ddspamp}), and
+semantically disentangled timbre control for multitimbral synthesis
+\cite{dalri2026}. Those works run the synthesis direction, with learned
+neural encoders and decoders. This thesis runs the \emph{inverse
+analysis} direction: the synthesizer is a hand-structured probabilistic
+observation model --- a harmonic basis with Gaussian amplitudes
+marginalised exactly --- not a trained neural decoder, and the recovered
+object is the posterior over score-aligned performance variables, not
+audio.
 
 A complementary line puts the periodicity itself into a Gaussian-process
 \emph{kernel} rather than a deterministic basis. Spectral mixture
@@ -992,6 +1057,10 @@ corpus (22 pianists $\times$ 4 shared excerpts) is used \cite{vienna4x22}.
 
 % =====================================================================
 \chapter{Results: Piano from Aligned MIDI}\label{ch:results}
+This chapter is stage 1 of the progression: aligned MIDI supplies the
+per-note variables almost noise-free, isolating the question of whether
+score structure provides informative priors over expression (RQ2) from
+every complication of audio analysis.
 
 \section{Headline: recovery and calibration (confirmation set --- preregistered, run once)}
 Development used \nPieces{} held-out pieces, which necessarily also served model
@@ -1432,8 +1501,9 @@ the thesis, bounded by evidence on both sides.
 % =====================================================================
 \chapter{Results: Strings and Winds from Tracked Audio}
 \label{ch:phase2}\label{sec:phase2}
-This chapter carries the model to strings and winds, where the performer
-controls pitch. \emph{Nothing in the latent prior changes}: the graph and feature kernels
+This chapter is stage 2 of the progression: the same prior meets
+realistic measurement uncertainty. It carries the model to strings and
+winds, where the performer controls pitch. \emph{Nothing in the latent prior changes}: the graph and feature kernels
 of \eqref{eq:gpfirst} (its first two terms), the hyperparameter fit
 (\S\ref{sec:eb}) and the exact conjugate posterior (\S\ref{sec:gpfirst}) are
 reused (with one absence: the music model is piano-trained, so its
@@ -1946,7 +2016,9 @@ designed for --- now shown on real recordings and \emph{confirmed} once on the f
 
 % =====================================================================
 \chapter{The Waveform as the Observation}\label{ch:phase3}\label{app:phase3}\label{sec:phase3-math}
-\emph{Evidence level: everything in this chapter is a development study --- exploratory, no
+\emph{Stage 3 of the progression: the observation becomes the waveform
+itself --- the endpoint the earlier stages de-risked. Evidence level:
+everything in this chapter is a development study --- exploratory, no
 preregistered confirmation has been run. The chapter sits in the main line because it is
 the programme's most novel step and its design constraints are now measured.}
 
@@ -2162,7 +2234,7 @@ the reference implementation is test-pinned), so that inference over a
 two-component kernel of the estimator studies, here acting as a prior over $u$
 --- runs by gradient descent, with a full joint Laplace approximation at the MAP
 supplying bands and a per-note evidence. This takes the differentiable-synthesis
-idea of the DDSP line of work \cite{engel2020} at the implementation level
+idea of the DDSP line of work \cite{ddsp} at the implementation level
 only: the objective remains the exact amplitude-marginalised likelihood and the
 prior remains the Gaussian process --- no neural encoder, no spectral surrogate
 loss. The five kernel hyperparameters were additionally fitted by evidence
@@ -3309,8 +3381,6 @@ Non-stationary spectral kernels. \emph{NeurIPS}, 2017.
 \bibitem{alvarado2016} P.~A.~Alvarado, D.~Stowell.
 Gaussian processes for music audio modelling and content analysis.
 arXiv:1606.01039, 2016.
-\bibitem{engel2020} J.~Engel, L.~Hantrakul, C.~Gu, A.~Roberts.
-DDSP: Differentiable digital signal processing. \emph{ICLR}, 2020.
 \bibitem{nosek2018} B.~A.~Nosek, C.~R.~Ebersole, A.~C.~DeHaven, D.~T.~Mellor.
 The preregistration revolution.
 \emph{Proc.\ Natl.\ Acad.\ Sci.}, 115(11):2600--2606, 2018.
@@ -3332,6 +3402,17 @@ In \emph{Proc.\ of the International Society for Music Information Retrieval
 Conference (ISMIR)}, pages 239--245, 2016.
 \bibitem{ddsp} J.~Engel, L.~Hantrakul, C.~Gu, A.~Roberts.
   DDSP: Differentiable Digital Signal Processing. \emph{ICLR}, 2020.
+\bibitem{wu2022midi} Y.~Wu, E.~Manilow, Y.~Deng, R.~Swavely, K.~Kastner,
+  T.~Cooijmans, A.~Courville, C.-Z.~A.~Huang, J.~Engel.
+  MIDI-DDSP: Detailed control of musical performance via hierarchical
+  modeling. \emph{ICLR}, 2022.
+\bibitem{yeh2024ddspamp} Y.-T.~Yeh, Y.-H.~Chen, Y.-C.~Cheng, J.-T.~Wu,
+  J.-J.~Fu, Y.-F.~Yeh, Y.-H.~Yang.
+  DDSP guitar amp: Interpretable guitar amplifier modeling.
+  arXiv:2408.11405, 2024.
+\bibitem{dalri2026} F.~A.~Dal~R\`i, N.~Conci.
+  Improving interpretability in generative multitimbral DDSP frameworks
+  via semantically-disentangled musical attributes. \emph{ICASSP}, 2026.
 \bibitem{musictransformer} C.-Z.~A.~Huang et al.
   Music Transformer. \emph{ICLR}, 2019.
 \bibitem{remi} Y.-S.~Huang, Y.-H.~Yang.
