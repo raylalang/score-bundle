@@ -128,11 +128,14 @@ noise, and the registered claim set was \emph{confirmed in a single
 one-shot} on the frozen 13-piece pool --- intonation recovery, vibrato
 calibration on both channels, coverage on target on all six channels; the
 secondary timing-calibration claim failed and is reported verbatim.
-Phase~3 (audio via a differentiable synthesizer) is scoped, with a first
-development study measured: the waveform alone localizes intonation to
-within about two cents of the ground-truth-derived centre, and the study
-fixes the phase's central design constraint --- calibration must bridge
-the estimand gap.
+Phase~3 (audio via a differentiable synthesizer) has its development
+studies measured, no claims yet: from the raw waveform alone --- no pitch
+tracker --- the model infers whole within-note pitch curves (beating the
+tracker's frames at the median), strengthens the six-channel bundle as a
+further observation channel, and infers note boundaries jointly from
+score-nominal starting points; its central design constraint is measured
+--- calibration must bridge the estimand gap between the harmonic model
+and the annotation chain.
 \end{abstract}
 
 \tableofcontents
@@ -219,11 +222,11 @@ graph GP on the residual.
         development/confirmation split that caught selection inflation in the act
         (\S\ref{sec:hygiene}).
 \end{enumerate}
-A path to audio via a differentiable-synthesizer likelihood (Phase~3) and
-a geometric ``connection-Laplacian'' generalisation of the graph prior are
-deliberately \emph{not} claimed as contributions: both are future work
-(Chapter~\ref{ch:future}), the former with a first development study
-already measured (Chapter~\ref{app:phase3}).
+The audio step (Phase~3, a differentiable-synthesizer likelihood) and a
+geometric ``connection-Laplacian'' generalisation of the graph prior are
+deliberately \emph{not} claimed as contributions: the former is carried
+as measured development studies (Chapter~\ref{app:phase3}), the latter
+as future work (Chapter~\ref{ch:future}).
 
 \section{Scope and non-goals}\label{sec:scope}
 In scope (Phase~1): piano; symbolic (MIDI) performance variables --- onset timing
@@ -2270,11 +2273,10 @@ studied corpora (ASAP piano; URMP chamber ensembles).
 % =====================================================================
 \chapter{Future Work}\label{ch:future}
 
-\section{Model-level refinements: measured needs, now measured answers}
-Three refinements were named here as needs following from measured
-limitations; all three have since been measured on development data, and
-two of the original recommendations turned out to be wrong (all
-exploratory, published tables unchanged). A \textbf{heavy-tailed
+\section{Robust observation models and safe completion (measured, opt-in)}
+Three refinements that follow from measured limitations of the confirmed
+model are themselves measured on development data; each is implemented as
+an opt-in capability, with the published paths unchanged. A \textbf{heavy-tailed
 (Student-$t$) observation model for timing} works at both levels. As a
 deploy-time predictive (variance-matched, $\nu = 5$) it defuses the
 demonstrated NLL tail of \S\ref{sec:guard-gp} completely --- the
@@ -2286,12 +2288,12 @@ additionally brings timing coverage to nominal and improves
 outlier corrupts the coupled channels through the coregionalization, and
 only robustifying the fit undoes that. Its fits must be scored with the
 matched $t$ predictive --- a Gaussian score of a $t$ fit is incoherent.
-\textbf{Deploy-time predictive floors}, previously suggested here as the
-cheap engineering alternative, are measured ineffective: the failure is a
+\textbf{Deploy-time predictive floors}, the seemingly cheap engineering
+alternative, are measured ineffective: the failure is a
 tail-shape problem, not a scale problem, and a floor cannot reach
 outliers whose predictive scale is already honest. The
 \textbf{extrapolation-safe completion mode} is closed by a measured
-combination: the Mahalanobis coverage test suggested here (workable only
+combination: a Mahalanobis coverage test (workable only
 in the observed excerpt's low-rank frame) is half the answer --- silent
 on interpolation, as required, but blind to catastrophic notes lying
 inside the excerpt's feature coverage --- and a $3\sigma$ disagreement
@@ -2299,14 +2301,11 @@ guard against the cross-piece head is the other half, taming every
 blow-up (worst cell $480{,}266 \to 0.7$) while keeping the per-piece
 model's advantage where adaptation wins; blow-ups also occur under
 interpolation masks, so the boundary is about feature-weight
-determination, not extrapolation alone. All three remedies are
-implemented as opt-in capabilities under the safeguard precedent
-(published paths bit-unchanged); adopting any into a reported protocol
-requires its own registration.
+determination, not extrapolation alone. Adopting any of the three into a
+reported protocol requires its own registration.
 
-\section{Phase 2: what remains}
-Phase 2 itself is now a result (Chapter~\ref{ch:phase2}); what remains is
-fourfold. \textbf{Beyond URMP:} on any corpus without note-level onset
+\section{Strings and winds: what remains}
+The confirmed result of Chapter~\ref{ch:phase2} leaves four open items. \textbf{Beyond URMP:} on any corpus without note-level onset
 annotations the general audio-alignment problem returns, and $\tau$'s
 noise row must then carry an aligner's error. \textbf{The timing claim:}
 the one registered claim that failed at confirmation --- $\tau$
@@ -2436,9 +2435,12 @@ now been carried, unchanged in form, to intonation, vibrato, loudness,
 timing, and vibrato onset delay on real recordings --- and confirmed at
 one-shot level on the frozen pool (intonation recovery, vibrato
 calibration, coverage; the secondary timing claim failed and is reported
-verbatim). The step to audio through a differentiable synthesizer is
-where the most novel work still lies; its first development study
-already fixes the design constraint the phase must solve.
+verbatim). The step to audio through a differentiable synthesizer is where the
+most novel work lies; its development studies now reach whole pitch
+curves that beat the tracker's frames at the median and note boundaries
+inferred jointly from score-nominal starting points, and they fix the
+design constraint the remaining joint loop must solve --- bridging the
+estimand gap between the harmonic model and the annotation chain.
 
 % =====================================================================
 \appendix
