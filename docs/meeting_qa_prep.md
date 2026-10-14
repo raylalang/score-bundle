@@ -156,30 +156,38 @@ decide.
    (validated at development level) or a likelihood that models the
    correlated residual.
 
-## G. Proposed next experiment
+## G. The next experiment — now RUN (2026-10-14, development)
 
-**Target: joint waveform inference on short note sequences, three priors
-at matched everything else** — independent (current), temporal chain,
-score-graph GP — over the per-note scalars of the chain (centres c_k,
-boundary offsets), same acoustic model, same optimizer, same notes.
+**The three-prior comparison exists and is measured**
+(`results/prior_value_dev.md`): independent / temporal-chain /
+score-graph priors over per-note intonation constants, matched marginal
+variance, identical waveform likelihood and optimizer, boundaries fixed;
+ambiguity created by *masking one note's audio* per chain (the
+waveform-level analogue of the thesis's held-out imputation task), with
+clean audio as the control. 47 chains, 4 development tracks.
 
-Feasibility, assessed against the code: the chain machinery exists
-(`fit_chain`); the comparison needs one modest extension (a cross-note
-prior term over per-note scalars inside the chain objective — not yet
-written; code changes await your separate authorization). Two honest
-power caveats, stated before anything runs: (i) on 3–5 consecutive
-monophonic notes the score graph nearly coincides with a temporal chain
-— the distinguishing edge is pitch-proximity coupling (repeated/near
-pitches sharing intonation), so chains containing recurring pitches
-must be selected deliberately; (ii) the waveform's own evidence is
-strong mid-note, so prior effects concentrate at joints and short notes.
+- **Under ambiguity, structure wins, significantly**: hidden-note
+  intonation error 21.2 → 18.8 cents median with the score graph
+  (paired −4.63, significant, better on 85% of cells); temporal gains
+  similarly.
+- **The score graph's edge over a plain temporal prior appears exactly
+  where predicted**: cells with a recurring pitch (−0.72, significant,
+  64%) — pitch-proximity coupling transfers intonation across
+  recurrences. First waveform-level evidence that *score* structure
+  specifically carries information.
+- **With clean audio the arms tie exactly** — the prior's value is
+  specific to ambiguity, which is the methodological hypothesis in one
+  line.
+- Honest caveats: much of the structured win is common-mode (track
+  tuning offset transferred from neighbors) — the named follow-up
+  separates tuning transfer from note-level expression transfer (a free
+  per-chain tuning scalar, all arms); masked-condition coverage is far
+  below nominal for every arm (zero-mean prior miscentred under tuning
+  offsets — itself a prior-design finding); development only.
 
-**Smaller preliminary that needs no new inference code (recommended
-first):** run the three priors at the *measurement* level through the
-existing stage-2 bundle machinery — the waveform-derived channels with
-no-graph / time-only-chain / score-graph adjacency (all three exist in
-the codebase) — answering open problem 4 cheaply and sizing the effect
-before building the joint version.
+**Proposed follow-up (small):** re-run with a shared free tuning scalar
+per chain; if the graph-vs-independent gap survives, the win is
+note-level expression transfer, not tuning bookkeeping.
 
 ## H. Questions for the professor (prioritized)
 
