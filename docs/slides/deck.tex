@@ -617,9 +617,9 @@
 \begin{frame}{One note: the model against the raw audio}
   \figslotw{waveform_viz.png}{0.95}{waveform fit}
   \vspace{-2mm}
-  {\small\textcolor{muted}{On an expressive note even the best
-  constant pitch slips within 40 ms and underfits the swell: the whole
-  curve must be inferred.}}
+  {\small\textcolor{muted}{On an expressive note even the best constant
+  pitch slips out of phase within 40 ms; the curve inferred from the
+  waveform stays in phase. The next slides measure this at scale.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -629,7 +629,11 @@
   {\small\textcolor{muted}{Development notes (violin, cello, clarinet):
   the curve inferred from the raw waveform, against the corpus
   annotation frames and the tracker's frames, neither of which the fit
-  ever sees.}}
+  ever sees. The 90 percent band is drawn but thinner than the line at
+  this scale (about half a cent): tight for the curve itself, and
+  honestly so --- it does not claim to cover the annotation chain's own
+  2 to 4 cent measurement offset, which is carried separately as a
+  calibrated floor.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -662,9 +666,10 @@
   \vspace{-3mm}
   {\small From score-only starting points (the local tempo line), the
   median boundary error halves: 40 to 20 ms over 128 boundaries
-  (development, 4 tracks). The remainder is systematic, the acoustic
-  transition vs the written onset: a transient model at the joint is the
-  next step.}
+  (development, 4 tracks). The 90 percent band in B widens exactly where
+  information runs out, at the note joints. The remainder is systematic,
+  the acoustic transition vs the written onset: a transient model at the
+  joint is the next step.}
 \end{frame}
 
 % ---------------------------------------------------------------------
