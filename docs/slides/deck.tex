@@ -281,7 +281,9 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: aligned performance MIDI}
-  Data: \textbf{ASAP}, score-aligned Disklavier performances.
+  Data: \textbf{ASAP}, score-aligned Disklavier performances. ASAP
+  reuses MAESTRO recordings, and the music model pretrains on MAESTRO,
+  so every performance seen in pretraining is removed (1036 to 653).
   Development 30 pieces, one-shot test 20 untouched pieces, 400 notes
   per piece (12{,}000 and 8{,}000 notes). Per written note, three
   variables, read directly, no estimation.
@@ -419,8 +421,10 @@
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: audio instead of MIDI}
   \begin{itemize}
-    \item Data: \textbf{URMP}, 44 chamber pieces, each instrument
-          recorded on its own track. Split by composition: development
+    \item Data: \textbf{URMP}, 44 chamber pieces (duets to quintets, 13
+          instrument types), each instrument recorded on its own
+          monophonic track with note annotations and the score. Split by
+          composition, since arrangements share recordings: development
           31 pieces (78 tracks, about 17{,}000 notes), one-shot test 13
           pieces.
     \item Pitch now carries expression: players control intonation and
@@ -553,6 +557,12 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: what the audio of one note is}
+  Data: the same URMP development tracks, audio only --- 7 tracks, one
+  per instrument, notes cut at annotated boundaries and resampled to
+  16\,kHz. 376 notes in the curve studies; 47 chains of 3 to 5 notes
+  (154 boundaries) in the boundary study.
+  \vspace{1mm}
+
   A sustained note is, to a good approximation, a stack of harmonics:
   waves at $1\times, 2\times, 3\times, \ldots$ the fundamental.
   \begin{itemize}
