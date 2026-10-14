@@ -223,7 +223,7 @@ A path to audio via a differentiable-synthesizer likelihood (Phase~3) and
 a geometric ``connection-Laplacian'' generalisation of the graph prior are
 deliberately \emph{not} claimed as contributions: both are future work
 (Chapter~\ref{ch:future}), the former with a first development study
-already measured (Appendix~\ref{app:phase3}).
+already measured (Chapter~\ref{app:phase3}).
 
 \section{Scope and non-goals}\label{sec:scope}
 In scope (Phase~1): piano; symbolic (MIDI) performance variables --- onset timing
@@ -260,7 +260,7 @@ Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
 2 --- extension (mono) & Intonation, vibrato, loudness on continuously pitched instruments &
 $f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & \textbf{Confirmed} (URMP, registered one-shot: intonation recovery, vibrato calibration, coverage; the secondary timing claim failed, reported verbatim --- Chapter~\ref{ch:phase2}) \\
 3 --- extension (waveform) & Differentiable synthesizer as audio likelihood &
-Harmonic amplitudes $a$, audio $x$ & Scoped; first waveform study measured (development, exploratory --- Appendix~\ref{app:phase3}) \\
+Harmonic amplitudes $a$, audio $x$ & Development studies measured: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); no confirmed claims yet \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -278,8 +278,7 @@ Chapters~\ref{ch:discussion}--\ref{ch:conclusion} discuss, situate, and conclude
 appendices hold the notation summary (\ref{app:notation}), the two-stage
 development lineage (\ref{app:lineage}), the methodology record
 (\ref{app:methods}), the relocated Phase-1 and Phase-2 development studies
-(\ref{app:phase1dev}, \ref{app:phase2dev}), the Phase-3 mathematics and
-study (\ref{app:phase3}), and additional tables (\ref{app:extra}).
+(\ref{app:phase1dev}, \ref{app:phase2dev}), and additional tables (\ref{app:extra}).
 
 % =====================================================================
 \chapter{Background and Related Work}\label{ch:related}
@@ -333,7 +332,7 @@ Differentiable digital signal processing renders audio from interpretable contro
 synthesizer \cite{ddsp}. This is the intended Phase-3 likelihood: it connects the
 latent performance variables to a waveform while keeping the amplitudes
 conditionally Gaussian, so they can be marginalised in closed form
-(Appendix~\ref{app:phase3}).
+(Chapter~\ref{app:phase3}).
 
 A complementary line puts the periodicity itself into a Gaussian-process
 \emph{kernel} rather than a deterministic basis. Spectral mixture
@@ -360,7 +359,7 @@ the variables themselves are the object of study.
 \chapter{Model and Formulation}\label{ch:model}
 \emph{This chapter gives the complete Phase-1 model derivation; Phase 2's
 delta is specified with its results (Chapter~\ref{ch:phase2}), and the
-Phase-3 mathematics in Appendix~\ref{app:phase3}. Notation is summarised
+Phase-3 mathematics in Chapter~\ref{app:phase3}. Notation is summarised
 in Appendix~\ref{app:notation}.}
 
 \section{Setting}
@@ -411,7 +410,7 @@ forward, synthesises a performance.
 \begin{longtable}{@{}p{3.1cm}p{2.0cm}p{2.0cm}p{0.9cm}p{4.4cm}@{}}
 \caption{Performance variables by phase (Phases 1--2), with what they are
 realistic for. Phase-3 quantities --- harmonic amplitudes $\mathbf a_i$,
-amplitude envelope $A_i(t)$ --- are defined in Appendix~\ref{app:phase3}.}
+amplitude envelope $A_i(t)$ --- are defined in Chapter~\ref{app:phase3}.}
 \label{tab:variables}\\
 \toprule
 Variable & Symbol & Unit & Phase & Realistic for \\
@@ -533,7 +532,7 @@ two families the \emph{chord} and \emph{voice-leading} edges --- edges
 \emph{of harmony}: which notes sound together, and which move by step. The
 name deliberately avoids ``harmonic'', which this thesis reserves for the
 \emph{harmonic amplitudes} $a$ of the Phase-3 synthesiser
-(Appendix~\ref{app:phase3}), the overtones of a single note's fundamental;
+(Chapter~\ref{app:phase3}), the overtones of a single note's fundamental;
 the two senses never interact.
 
 \paragraph{Two design axes.}
@@ -1934,6 +1933,287 @@ designed for --- now shown on real recordings and \emph{confirmed} once on the f
 (C1--C3; the secondary timing claim failed and is reported verbatim).
 
 % =====================================================================
+\chapter{The Waveform as the Observation}\label{ch:phase3}\label{app:phase3}\label{sec:phase3-math}
+\emph{Evidence level: everything in this chapter is a development study --- exploratory, no
+preregistered confirmation has been run. The chapter sits in the main line because it is
+the programme's most novel step and its design constraints are now measured.}
+
+The optional audio likelihood replaces $\tilde y$ with the waveform $x \in \R^{M}$:
+\begin{equation}
+  x \;=\; \Phi(z)\, a + \epsilon, \qquad \epsilon \sim \N(0,\, K_n),
+  \label{eq:waveform}
+\end{equation}
+where $z$ collects the \emph{nonlinear position variables} (tempo, timing,
+intonation, vibrato), $\Phi(z) \in \R^{M \times 2HN}$ is the deterministic harmonic
+synthesis basis --- the horizontal concatenation of one $M \times 2K$ block per note,
+quadrature columns $\cos\phi_k(t), \sin\phi_k(t)$ with cumulative phase
+$\phi_k(t) = 2\pi k \int_0^t f_0(s)\, ds$ determined by $z$ ($H$ counts
+harmonics) --- and
+$a \in \R^{2HN}$ are the stacked per-note harmonic amplitudes. Per-note amplitudes
+are shaped in time by an amplitude envelope $A_i(t)$, which multiplies the columns
+of $\Phi(z)$ belonging to note $i$. An honest asymmetry must be recorded: in this
+sketch loudness lives in the amplitudes $a$ and articulation in the envelope
+supports, and \emph{neither is under the graph prior} --- assigning every Phase-1/2
+channel a home ($z$, $a$, or $A_i$) with its structure stated is part of designing
+Phase 3 in earnest, not a detail. With a Gaussian amplitude prior
+$a \sim \N(\mu_a, \Sigma_a)$, the amplitudes marginalise exactly:
+\begin{align}
+  p(a \mid x, z) &= \N(m_a,\, S_a), \qquad
+  S_a = \bigl( \Sigma_a^{-1} + \Phi^\top K_n^{-1} \Phi \bigr)^{-1}, \qquad
+  m_a = S_a \bigl( \Sigma_a^{-1} \mu_a + \Phi^\top K_n^{-1} x \bigr),
+  \label{eq:amp-post}\\[2pt]
+  p(x \mid z) &= \N\bigl( x;\; \Phi\, \mu_a,\; \Phi\, \Sigma_a\, \Phi^\top + K_n \bigr),
+  \label{eq:collapsed}
+\end{align}
+writing $\Phi = \Phi(z)$, with $\mu_a \in \R^{2HN}$ and
+$\Sigma_a \in \R^{2HN \times 2HN}$ for $H$ harmonics (two quadrature columns
+each); the implemented helpers specialize $K_n = \sigma^2 I$, and the
+amplitude envelope $A_i(t)$ belongs to the specification, not yet to the
+helpers. Inference over the nonlinear $z$ (Laplace approximation or
+variational inference, initialised from the nominal score) is the open Phase-3 step;
+the coupled graph prior --- the first two terms of \eqref{eq:gpfirst} --- plays the
+role of $p(z)$'s structured component.
+
+\figph{arch_phase3.pdf}{1.0}{Phase 3 (dashed: the joint system is not yet implemented; the likelihood block is the part exercised in \S\ref{sec:phase3-study}). The
+observation is the waveform itself: the same joint kernel now serves as the
+prior over $z$, the likelihood block becomes the marginalised audio likelihood
+$p(x \mid z) = \N\bigl(\Phi\mu_a,\ \Phi\Sigma_a\Phi^{\top} + K_n\bigr)$, and the
+head is the one non-conjugate element (Laplace/VI over $z$, amplitudes recovered
+in closed form). Relative to Figure~\ref{fig:arch-phase1} the likelihood moved
+and the inference head became approximate; the prior branches carry
+over.\label{fig:arch-phase3}}
+
+\section{The measured constraint: scalar intonation from the waveform}
+\label{sec:phase3-study}
+
+The collapsed likelihood \eqref{eq:collapsed} first met real audio in a
+development study (2026-08) built to answer two questions: does the waveform carry
+the per-note expressive information directly, with no tracker in the loop
+--- and is the resulting posterior honest?
+
+\paragraph{Design.} One observation is one note's audio segment: $m$
+samples at $16$\,kHz (up to two seconds; $m \approx 10^{3.5}$--$10^{4.5}$),
+cut at the annotated note boundaries of a development URMP track. The
+study covers $376$ notes from seven tracks spanning all three instrument
+families. Per note, the $f_0$ curve is parameterized by the Phase-2
+channel variables (eqs.~\eqref{eq:cents-curve}--\eqref{eq:vibrato}; on
+vibrato-identifiable notes the extent/rate/delay scaffold is taken from
+the Phase-2 estimator --- the one estimator-supplied ingredient, recorded
+as such), and the design matrix is the harmonic basis of
+\eqref{eq:waveform} with amplitudes piecewise-constant over the four
+chunks of \eqref{eq:loudness}: $p = 2H \times 4 = 64$ columns at $H=8$
+harmonics. Amplitudes are marginalized exactly; an $O(mp^{2})$ Woodbury
+form of \eqref{eq:collapsed} (equality with the dense form unit-pinned)
+makes the segment-length likelihoods tractable. Inference over the
+intonation centre $c$ is by grid --- coarse $1$-cent pass over
+$\pm 50$ cents around the \emph{score-nominal} pitch, then a
+fine refinement ($0.03$ cents; $0.06$ for the deviation variant) ---
+i.e.\ exact 1-D inference up to discretization, with no Laplace
+machinery claimed. Four position models
+are compared: constant $c$; $c$ plus AR(1) observation noise (residual
+whitening, correlation fit per note); $c$ plus the linear drift term of
+the \S\ref{sec:phase2} drift study (slope profiled on a grid); and $c$
+plus a marginalized pitch-curve deviation prior (eight zero-mean Hann
+bumps along the curve Jacobian, prior standard deviation $5$ cents per
+coefficient, treated exactly like the amplitudes).
+Each posterior is scored against the quasi-truth centre (the Phase-2
+NLLS estimator applied to URMP's ground-truth curve): absolute error and
+coverage at nominal $90\%$. A fifth condition calibrates the machinery
+itself: synthetic notes built from real notes' fitted structure, where
+the model is true by construction.
+
+\begin{table}[t]\centering
+\caption{Phase-3 development study: waveform-likelihood inference of the
+intonation centre on $376$ real notes (seven tracks, three families), no
+tracker in the loop. Score: distance to the quasi-truth centre; coverage
+at nominal $90\%$. The estimator row is the full pyin-plus-NLLS chain.
+Development, exploratory; no claims registered.}
+\label{tab:phase3-study}
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+position model & median $|$err$|$ (cents) & q90 & coverage@90 \\
+\midrule
+constant $c$ & 2.81 & 8.72 & 0.03 \\
+$+$ AR(1) noise & 2.73 & 8.37 & 0.02 \\
+$+$ drift term & 2.40 & 7.23 & 0.01 \\
+$+$ deviation prior & 2.29 & 6.77 & 0.03 \\
+\midrule
+pyin $+$ NLLS estimator chain & 2.01 & --- & (supplies its own $\sigma$) \\
+model-true synthetics (self-check) & --- & --- & \textbf{0.90} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/phase3_study_dev.png}
+  \caption{The Phase-3 study at a glance (development, exploratory).
+  \textbf{A}: median distance to the quasi-truth intonation centre falls
+  with every position-model refinement, approaching the dedicated
+  estimator chain (dashed) --- with no tracker in the loop, and beating
+  the estimator on the wind family ($2.67$ vs $3.27$ cents). \textbf{B}:
+  coverage against quasi-truth is invariantly near zero for every
+  variant, while the same machinery covers at exactly nominal on
+  model-true synthetics (green) --- locating the failure in the estimand
+  gap, not the inference.}
+  \label{fig:phase3-study}
+\end{figure}
+
+\paragraph{Findings.} Three facts, visible in
+Table~\ref{tab:phase3-study} and Figure~\ref{fig:phase3-study}. First,
+\textbf{the waveform carries the information}: median $2.29$ cents from
+quasi-truth in the best variant, approaching the estimator chain's
+$2.01$ overall and beating it on winds ($2.67$ vs $3.27$), where the
+tracker's failure modes live. The two-note pilot that seeded the study
+showed the same at $0.7$--$1.6$ cents on long clean notes. Second,
+\textbf{every model refinement improves accuracy} --- the drift term of
+the \S\ref{sec:phase2} study transfers to the waveform domain (paired
+median $-0.18$ cents), and the deviation prior improves it further ---
+\textbf{yet coverage against quasi-truth is invariant at $0.01$--$0.03$}:
+a better mean model shrinks the posterior width as fast as the error,
+and the AR(1) floor fails diagnostically because the structured misfit
+is concentrated \emph{in band}, at the harmonics, where a stationary
+colored floor cannot reach. Third, \textbf{the machinery itself is
+calibrated}: on model-true synthetics the same posterior covers at
+exactly $0.90$ (median $|z| = 0.53$).
+
+\paragraph{Diagnosis and design consequence.} Together these locate the
+overconfidence precisely: it is an \emph{estimand} gap --- the constant
+the harmonic model estimates and the constant the NLLS estimator defines
+on the ground-truth curve are different functionals of the same
+performance, about two cents apart --- and no within-model refinement can
+close a between-question gap, which is why all three failed to. The
+design conclusion follows. The waveform posterior should enter the
+Phase-2 bundle the way every estimator does: as a measurement whose
+noise row is its posterior variance \emph{plus} an empirically
+calibrated per-note discrepancy floor at the measured $\sim 2$-cent
+scale --- restoring calibration by construction under the as-given
+discipline the thesis already runs on. A first integration study
+(development, exploratory; same seven tracks) measures exactly this
+design: with the waveform posterior as a seventh bundle channel ---
+coupling learned per piece by the evidence, discrepancy floor calibrated
+from visible notes only (median $3.1$ cents: the estimand-gap scale,
+found automatically) --- held-out intonation recovery improves on
+\emph{every} track-seed pair ($-1.21$ cents$^{*}$, NLL $-0.24^{*}$,
+coverage held), and removing the floor degrades calibration against
+quasi-truth significantly ($+0.22^{*}$) while helping nothing --- the
+floor doing precisely its designed job. Waveform-native calibration ---
+a bridge model for the estimand gap --- is the frontier beyond that.
+This measured constraint, not the synthesis sketch, is what the phase's
+design now starts from.
+
+
+\paragraph{A spectral-mixture deviation prior adds nothing.} The reviewed
+spectral-kernel families (\cite{wilson2013,remes2017,alvarado2016}) were
+measured at exactly this slot (development, exploratory): swapping the
+study's deviation prior for a matched-rank spectral-mixture prior changes
+nothing at the median ($2.25$ vs $2.29$ cents) and is significantly worse
+on the paired mean ($+0.11$), the harm concentrated where the scaffold
+rate is unreliable --- a vibrato band pinned at a wrong rate is worse
+than frequency-neutral bumps. The bump basis stays; the families'
+measured contribution is conceptual (curve-level scoring, the coherence
+bound, the realized-quantity read-out rule), and a revival would
+marginalize the band location rather than pin it.
+
+\paragraph{From imputation to audio: the task structure across phases.}
+It is worth being explicit that the \emph{visible/hidden partition of
+\S\ref{sec:gpfirst} is a Phase-1 evaluation device, not a feature of the method}.
+In Phase 1 the performance is supplied as clean MIDI, so the per-note targets are
+read off almost exactly ($\Sigma_e \approx 0$); there is nothing to infer unless we
+manufacture a prediction task, which is why we \emph{mask} a fraction of notes and
+impute them from the rest. The masking makes the structured prior testable; it is
+not intrinsic to score-informed transcription. In Phase 2 the observation is
+still note-level --- audio enters only to \emph{derive} per-note targets, so the
+imputation protocol carries over, now with substantive noise. Phase 3 is where the
+situation becomes the genuine one: the model is given \textbf{only the score and
+the waveform}, there are \textbf{no} per-note observations of any kind, and hence
+\emph{no} visible/hidden split --- \emph{every} note's expressive variables are
+latent and inferred \emph{jointly} from the single audio observation through the
+likelihood (Eq.~\eqref{eq:waveform}). The unifying view across all three phases is
+that \textbf{only the likelihood changes} --- from per-note noisy targets with a mask
+($P = 0$ on held-out notes) in Phase 1, to $f_0$-derived targets in Phase 2, to the
+global audio likelihood $p(x \mid z)$ in Phase 3 --- while the graph Gaussian process
+prior (\S\ref{sec:graphgp}) is carried over \emph{unchanged}. Correspondingly the
+task graduates from held-out imputation to full inference: in Phase 3 the natural
+evaluation is held-out pieces and posterior-predictive resynthesis, not note-level
+masking.
+
+\section{The differentiable curve posterior}
+\label{sec:phase3-curve}
+
+\paragraph{Design.} The second round of studies (2026-10) implements what the module has promised
+from the start: the chunked harmonic design and the collapsed likelihood
+\eqref{eq:collapsed} in an automatic-differentiation framework (equality with
+the reference implementation is test-pinned), so that inference over a
+\emph{within-note pitch curve} --- a constant $c$ plus knot values $u$ under the
+two-component kernel of the estimator studies, here acting as a prior over $u$
+--- runs by gradient descent, with a full joint Laplace approximation at the MAP
+supplying bands and a per-note evidence. This takes the differentiable-synthesis
+idea of the DDSP line of work \cite{engel2020} at the implementation level
+only: the objective remains the exact amplitude-marginalised likelihood and the
+prior remains the Gaussian process --- no neural encoder, no spectral surrogate
+loss. The five kernel hyperparameters were additionally fitted by evidence
+ascent, shared across notes ($+717$ nats over 24 notes; both component scales
+loosen $2$--$3\times$ while the vibrato mean stays at $5.5$--$5.7$\,Hz).
+
+\figph{phase3_curve_proto.png}{1.0}{The first three curve posteriors from the
+waveform (development notes; violin, cello, clarinet): inferred curve and band
+vs the corpus ground-truth frames and the pYIN frames, neither of which the fit
+sees.\label{fig:phase3-curve-proto}}
+
+\paragraph{Findings.} Four development measurements (376 notes, the seven
+study tracks of \S\ref{sec:phase3-study}; records in the repository). (i)
+\emph{Accuracy:} the curve posterior reaches a median ground-truth-frame RMSE
+of $3.2$ cents against the pYIN frames' $4.1$ (paired $-0.46$, better on 56\%
+of notes) --- decisively better on winds ($2.3$ vs $5.2$), still behind the
+tracker on strings ($4.9$ vs $3.1$), reproducing the scalar study's family
+split, with a heavier failure tail (q90 $\sim 11$ vs $8.6$ cents). The
+evidence-fitted prior beats the hand-set scales on 70\% of notes. (ii)
+\emph{Calibration:} the Laplace band is a parameter band and covers the
+annotation frames at $0.32$--$0.36$ --- the estimand/measurement gap of
+\S\ref{sec:phase3-study} reproduced at curve level (model-true coverage is
+nominal, test-pinned). (iii) \emph{Integration:} replacing the scalar waveform
+channel of the bundle study by the curve's realized-average read-out (a linear
+functional of the Laplace posterior) reproduces the integration gain
+($-1.36^*$ cents on all 14 pairs) and \emph{halves} the empirical discrepancy
+floor ($3.1 \to 1.8$ cents): reading out the estimator's own functional from
+the inferred curve closes about half the estimand gap by construction; curve
+vs scalar read-out is otherwise a tie at $n=14$. (iv) \emph{Boundaries:} a
+perturb-and-recover pilot on two-note segments (complementary sigmoid windows
+over per-note designs, flat prior on the boundary) converges
+start-independently (spread $\le 1$\,ms from $\pm 40/\pm 80$\,ms starts) in 7
+of 8 pairs --- the gradient mechanism for joint inference works and no phase
+pathology appears --- but to an acoustic transition point $11$--$87$\,ms
+(median $25$) from the annotated onset: the likelihood finds the acoustic
+transition, the annotation marks the musical onset.
+
+\paragraph{Joint chains and the transition region.} The follow-up study
+models the transition as a region: chains of 3--5 consecutive notes fit
+jointly (per-note curves plus boundaries; 47 chains, 154 boundaries, four
+of the seven tracks yielded eligible chains), each boundary two
+independent sigmoid edges --- the old note's fade-out and the new note's
+fade-in --- with the width between them under a lognormal prior. The data
+reject the region productively: free widths collapse to the 1\,ms
+minimum on essentially every boundary, yet beat a fixed 10\,ms control
+on 77\% of 256 paired fits (median $-3.4$\,ms edge error), and width
+does not absorb pitch error (correlation $-0.01$) --- the acoustic
+transition, as a harmonic likelihood sees it, is sharp. Median edge error
+improves to ${\sim}18$\,ms from the pilot's 25. The headline is the
+deployment arm: initialised from \emph{score-nominal} boundaries (the
+local tempo-line prediction, no annotation access anywhere), the joint
+fit halves the median boundary error, $39.4 \to 19.5$\,ms --- the first
+genuine instance of the chapter's inference problem, score and waveform
+in, boundaries and curves out. Two honest costs are measured alongside:
+joint chains lose curve accuracy relative to single-note fits
+(boundary-guarded ground-truth-frame RMSE $4.9$--$5.2$ vs $3.16$ cents),
+and the residual ${\sim}18$\,ms is systematic --- the
+acoustic-vs-musical onset gap restated, which makes a transient model at
+the note joint (broadband columns the harmonic basis cannot represent)
+the measured next lever, not a larger optimiser.
+
+
+% =====================================================================
 \chapter{Discussion}\label{ch:discussion}
 
 \section{Interpretation}
@@ -2051,48 +2331,17 @@ the recovery contrast is underpowered below ${\sim}20$ pieces).
 $d^{\mathrm{vib}}$ template (adopt as output, claim nothing) if a
 transcription use-case wants them.
 
-\section{Phase 3: a differentiable-synthesizer audio likelihood}
-\label{sec:future-phase3}The intended step to audio: $x = \Phi(z)\,a + \varepsilon$
-(Appendix~\ref{app:phase3}), with conditionally linear amplitudes marginalised
-analytically and the nonlinear positions $z$ inferred approximately (Laplace/VI,
-score-based initialisation). This is the most novel part of the programme. Its
-conjugate inner blocks exist as tested helpers --- the synthesis basis $\Phi(z)$
-and the amplitude marginalisation \eqref{eq:amp-post}--\eqref{eq:collapsed} are
-implemented and unit-tested --- and the $z$-inference is now measured in
-two slices (Appendix~\ref{app:phase3}): exact grid inference over the
-intonation coordinate of $z$ on real notes with the waveform posterior's
-integration into the Phase-2 bundle, and --- since 2026-10 --- the full
-within-note pitch \emph{curve} by gradients through the synthesizer
-(torch port of the collapsed likelihood; \S\ref{sec:phase3-curve}), with
-the note-boundary gradient mechanism measured as workable. The
-\emph{joint} loop --- all notes at once under the graph prior
-(Laplace/VI), with a transition-region model at the boundaries, the
-estimand bridge, and the amplitude envelope $A_i(t)$ under the prior ---
-is the open work. The reviewed spectral-kernel families
-(\cite{wilson2013,remes2017,alvarado2016}; supervisor-suggested) were
-measured at exactly this slot (development, exploratory): swapping the
-deviation prior of \S\ref{sec:phase3-study} for a matched-rank
-spectral-mixture prior adds nothing --- median tie ($2.25$ vs $2.29$
-cents), paired mean significantly against ($+0.11$), the harm
-concentrated where the scaffold rate is unreliable, since a vibrato band
-pinned at a wrong rate is worse than frequency-neutral bumps. The bump
-basis therefore stays; the families' measured contribution to this
-thesis is conceptual (curve-level scoring, the coherence bound, the
-realized-quantity read-out rule), and a revival would marginalize the
-band location rather than pin it. Figure~\ref{fig:arch-phase3} shows what survives and what breaks:
-the whole prior --- graph branch, evidence branch, joint kernel --- carries over
-as the structured component of $p(z)$, but with no performance MIDI there are no
-per-note observations and no visible/hidden split; every note's expression is
-latent, and the audio likelihood costs conjugacy.
-
-\figph{arch_phase3.pdf}{1.0}{Phase 3 (dashed: the joint system is not yet implemented; the likelihood block is the part exercised in \S\ref{sec:phase3-study}). The
-observation is the waveform itself: the same joint kernel now serves as the
-prior over $z$, the likelihood block becomes the marginalised audio likelihood
-$p(x \mid z) = \N\bigl(\Phi\mu_a,\ \Phi\Sigma_a\Phi^{\top} + K_n\bigr)$, and the
-head is the one non-conjugate element (Laplace/VI over $z$, amplitudes recovered
-in closed form). Relative to Figure~\ref{fig:arch-phase1} the likelihood moved
-and the inference head became approximate; the prior branches carry
-over.\label{fig:arch-phase3}}
+\section{The waveform: the joint loop}
+\label{sec:future-phase3}Chapter~\ref{ch:phase3} stops at chains of a few
+notes with independent curve priors. What remains is the \emph{joint}
+loop: all notes of a performance at once under the graph prior
+(Laplace or variational inference over $z$), a transient model at the
+note joints (the measured next lever), the estimand bridge between the
+harmonic model's constant and the annotation chain's functional, and the
+amplitude envelope $A_i(t)$ brought under the prior. Evaluation design
+changes with it: with no per-note observations there is no
+visible/hidden split, and the natural protocol is held-out pieces with
+posterior-predictive resynthesis.
 
 \section{Incorporating music theory}\label{sec:musictheory}
 Music theory can inform the model in three distinct places --- the graph/kernel, the
@@ -2579,7 +2828,7 @@ as a flat list of rivals, is what makes the result legible.
 $K_G(s) = U \operatorname{diag}(g(\nu;s))\, U^{\!\top}$, so a row changes either the Laplacian $\Lg$ that supplies
 the spectrum $\nu$, or the profile $g$ that reshapes it. ``Chord'' and ``voice-leading''
 edges are edges of \emph{harmony}; they are unrelated to the harmonic amplitudes of
-Appendix~\ref{app:phase3}.}
+Chapter~\ref{app:phase3}.}
 \label{tab:kernel-defs}
 \footnotesize
 \begin{tabular}{@{}llp{62mm}l@{}}
@@ -2897,240 +3146,6 @@ deltas, tonal minus plain graph, under the as-given variant --- mean
 $-0.21$ cents $[-0.34, -0.09]$, with $61\%$ of pairs improving and the
 full spread shown. Exploratory by the registered design; adoption would
 need its own preregistered confirmation.\label{fig:tonal-intonation}}
-
-\chapter{Phase 3: the waveform likelihood}\label{app:phase3}\label{sec:phase3-math}
-\emph{Relocated development material: the Phase-3 mathematics and its measured
-development study. Main-line summary: \S\ref{sec:future-phase3}.}
-
-The optional audio likelihood replaces $\tilde y$ with the waveform $x \in \R^{M}$:
-\begin{equation}
-  x \;=\; \Phi(z)\, a + \epsilon, \qquad \epsilon \sim \N(0,\, K_n),
-  \label{eq:waveform}
-\end{equation}
-where $z$ collects the \emph{nonlinear position variables} (tempo, timing,
-intonation, vibrato), $\Phi(z) \in \R^{M \times 2HN}$ is the deterministic harmonic
-synthesis basis --- the horizontal concatenation of one $M \times 2K$ block per note,
-quadrature columns $\cos\phi_k(t), \sin\phi_k(t)$ with cumulative phase
-$\phi_k(t) = 2\pi k \int_0^t f_0(s)\, ds$ determined by $z$ ($H$ counts
-harmonics) --- and
-$a \in \R^{2HN}$ are the stacked per-note harmonic amplitudes. Per-note amplitudes
-are shaped in time by an amplitude envelope $A_i(t)$, which multiplies the columns
-of $\Phi(z)$ belonging to note $i$. An honest asymmetry must be recorded: in this
-sketch loudness lives in the amplitudes $a$ and articulation in the envelope
-supports, and \emph{neither is under the graph prior} --- assigning every Phase-1/2
-channel a home ($z$, $a$, or $A_i$) with its structure stated is part of designing
-Phase 3 in earnest, not a detail. With a Gaussian amplitude prior
-$a \sim \N(\mu_a, \Sigma_a)$, the amplitudes marginalise exactly:
-\begin{align}
-  p(a \mid x, z) &= \N(m_a,\, S_a), \qquad
-  S_a = \bigl( \Sigma_a^{-1} + \Phi^\top K_n^{-1} \Phi \bigr)^{-1}, \qquad
-  m_a = S_a \bigl( \Sigma_a^{-1} \mu_a + \Phi^\top K_n^{-1} x \bigr),
-  \label{eq:amp-post}\\[2pt]
-  p(x \mid z) &= \N\bigl( x;\; \Phi\, \mu_a,\; \Phi\, \Sigma_a\, \Phi^\top + K_n \bigr),
-  \label{eq:collapsed}
-\end{align}
-writing $\Phi = \Phi(z)$, with $\mu_a \in \R^{2HN}$ and
-$\Sigma_a \in \R^{2HN \times 2HN}$ for $H$ harmonics (two quadrature columns
-each); the implemented helpers specialize $K_n = \sigma^2 I$, and the
-amplitude envelope $A_i(t)$ belongs to the specification, not yet to the
-helpers. Inference over the nonlinear $z$ (Laplace approximation or
-variational inference, initialised from the nominal score) is the open Phase-3 step;
-the coupled graph prior --- the first two terms of \eqref{eq:gpfirst} --- plays the
-role of $p(z)$'s structured component.
-
-\section{The measured constraint (development study, 2026-08)}
-\label{sec:phase3-study}
-
-The collapsed likelihood \eqref{eq:collapsed} has now met real audio, in a
-development study built to answer two questions: does the waveform carry
-the per-note expressive information directly, with no tracker in the loop
---- and is the resulting posterior honest?
-
-\paragraph{Design.} One observation is one note's audio segment: $m$
-samples at $16$\,kHz (up to two seconds; $m \approx 10^{3.5}$--$10^{4.5}$),
-cut at the annotated note boundaries of a development URMP track. The
-study covers $376$ notes from seven tracks spanning all three instrument
-families. Per note, the $f_0$ curve is parameterized by the Phase-2
-channel variables (eqs.~\eqref{eq:cents-curve}--\eqref{eq:vibrato}; on
-vibrato-identifiable notes the extent/rate/delay scaffold is taken from
-the Phase-2 estimator --- the one estimator-supplied ingredient, recorded
-as such), and the design matrix is the harmonic basis of
-\eqref{eq:waveform} with amplitudes piecewise-constant over the four
-chunks of \eqref{eq:loudness}: $p = 2H \times 4 = 64$ columns at $H=8$
-harmonics. Amplitudes are marginalized exactly; an $O(mp^{2})$ Woodbury
-form of \eqref{eq:collapsed} (equality with the dense form unit-pinned)
-makes the segment-length likelihoods tractable. Inference over the
-intonation centre $c$ is by grid --- coarse $1$-cent pass over
-$\pm 50$ cents around the \emph{score-nominal} pitch, then a
-fine refinement ($0.03$ cents; $0.06$ for the deviation variant) ---
-i.e.\ exact 1-D inference up to discretization, with no Laplace
-machinery claimed. Four position models
-are compared: constant $c$; $c$ plus AR(1) observation noise (residual
-whitening, correlation fit per note); $c$ plus the linear drift term of
-the \S\ref{sec:phase2} drift study (slope profiled on a grid); and $c$
-plus a marginalized pitch-curve deviation prior (eight zero-mean Hann
-bumps along the curve Jacobian, prior standard deviation $5$ cents per
-coefficient, treated exactly like the amplitudes).
-Each posterior is scored against the quasi-truth centre (the Phase-2
-NLLS estimator applied to URMP's ground-truth curve): absolute error and
-coverage at nominal $90\%$. A fifth condition calibrates the machinery
-itself: synthetic notes built from real notes' fitted structure, where
-the model is true by construction.
-
-\begin{table}[t]\centering
-\caption{Phase-3 development study: waveform-likelihood inference of the
-intonation centre on $376$ real notes (seven tracks, three families), no
-tracker in the loop. Score: distance to the quasi-truth centre; coverage
-at nominal $90\%$. The estimator row is the full pyin-plus-NLLS chain.
-Development, exploratory; no claims registered.}
-\label{tab:phase3-study}
-\footnotesize
-\begin{tabular}{@{}lccc@{}}
-\toprule
-position model & median $|$err$|$ (cents) & q90 & coverage@90 \\
-\midrule
-constant $c$ & 2.81 & 8.72 & 0.03 \\
-$+$ AR(1) noise & 2.73 & 8.37 & 0.02 \\
-$+$ drift term & 2.40 & 7.23 & 0.01 \\
-$+$ deviation prior & 2.29 & 6.77 & 0.03 \\
-\midrule
-pyin $+$ NLLS estimator chain & 2.01 & --- & (supplies its own $\sigma$) \\
-model-true synthetics (self-check) & --- & --- & \textbf{0.90} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/phase3_study_dev.png}
-  \caption{The Phase-3 study at a glance (development, exploratory).
-  \textbf{A}: median distance to the quasi-truth intonation centre falls
-  with every position-model refinement, approaching the dedicated
-  estimator chain (dashed) --- with no tracker in the loop, and beating
-  the estimator on the wind family ($2.67$ vs $3.27$ cents). \textbf{B}:
-  coverage against quasi-truth is invariantly near zero for every
-  variant, while the same machinery covers at exactly nominal on
-  model-true synthetics (green) --- locating the failure in the estimand
-  gap, not the inference.}
-  \label{fig:phase3-study}
-\end{figure}
-
-\paragraph{Findings.} Three facts, visible in
-Table~\ref{tab:phase3-study} and Figure~\ref{fig:phase3-study}. First,
-\textbf{the waveform carries the information}: median $2.29$ cents from
-quasi-truth in the best variant, approaching the estimator chain's
-$2.01$ overall and beating it on winds ($2.67$ vs $3.27$), where the
-tracker's failure modes live. The two-note pilot that seeded the study
-showed the same at $0.7$--$1.6$ cents on long clean notes. Second,
-\textbf{every model refinement improves accuracy} --- the drift term of
-the \S\ref{sec:phase2} study transfers to the waveform domain (paired
-median $-0.18$ cents), and the deviation prior improves it further ---
-\textbf{yet coverage against quasi-truth is invariant at $0.01$--$0.03$}:
-a better mean model shrinks the posterior width as fast as the error,
-and the AR(1) floor fails diagnostically because the structured misfit
-is concentrated \emph{in band}, at the harmonics, where a stationary
-colored floor cannot reach. Third, \textbf{the machinery itself is
-calibrated}: on model-true synthetics the same posterior covers at
-exactly $0.90$ (median $|z| = 0.53$).
-
-\paragraph{Diagnosis and design consequence.} Together these locate the
-overconfidence precisely: it is an \emph{estimand} gap --- the constant
-the harmonic model estimates and the constant the NLLS estimator defines
-on the ground-truth curve are different functionals of the same
-performance, about two cents apart --- and no within-model refinement can
-close a between-question gap, which is why all three failed to. The
-design conclusion follows. The waveform posterior should enter the
-Phase-2 bundle the way every estimator does: as a measurement whose
-noise row is its posterior variance \emph{plus} an empirically
-calibrated per-note discrepancy floor at the measured $\sim 2$-cent
-scale --- restoring calibration by construction under the as-given
-discipline the thesis already runs on. A first integration study
-(development, exploratory; same seven tracks) measures exactly this
-design: with the waveform posterior as a seventh bundle channel ---
-coupling learned per piece by the evidence, discrepancy floor calibrated
-from visible notes only (median $3.1$ cents: the estimand-gap scale,
-found automatically) --- held-out intonation recovery improves on
-\emph{every} track-seed pair ($-1.21$ cents$^{*}$, NLL $-0.24^{*}$,
-coverage held), and removing the floor degrades calibration against
-quasi-truth significantly ($+0.22^{*}$) while helping nothing --- the
-floor doing precisely its designed job. Waveform-native calibration ---
-a bridge model for the estimand gap --- is the frontier beyond that.
-This measured constraint, not the synthesis sketch, is what the phase's
-design now starts from.
-
-\paragraph{From imputation to audio: the task structure across phases.}
-It is worth being explicit that the \emph{visible/hidden partition of
-\S\ref{sec:gpfirst} is a Phase-1 evaluation device, not a feature of the method}.
-In Phase 1 the performance is supplied as clean MIDI, so the per-note targets are
-read off almost exactly ($\Sigma_e \approx 0$); there is nothing to infer unless we
-manufacture a prediction task, which is why we \emph{mask} a fraction of notes and
-impute them from the rest. The masking makes the structured prior testable; it is
-not intrinsic to score-informed transcription. In Phase 2 the observation is
-still note-level --- audio enters only to \emph{derive} per-note targets, so the
-imputation protocol carries over, now with substantive noise. Phase 3 is where the
-situation becomes the genuine one: the model is given \textbf{only the score and
-the waveform}, there are \textbf{no} per-note observations of any kind, and hence
-\emph{no} visible/hidden split --- \emph{every} note's expressive variables are
-latent and inferred \emph{jointly} from the single audio observation through the
-likelihood (Eq.~\eqref{eq:waveform}). The unifying view across all three phases is
-that \textbf{only the likelihood changes} --- from per-note noisy targets with a mask
-($P = 0$ on held-out notes) in Phase 1, to $f_0$-derived targets in Phase 2, to the
-global audio likelihood $p(x \mid z)$ in Phase 3 --- while the graph Gaussian process
-prior (\S\ref{sec:graphgp}) is carried over \emph{unchanged}. Correspondingly the
-task graduates from held-out imputation to full inference: in Phase 3 the natural
-evaluation is held-out pieces and posterior-predictive resynthesis, not note-level
-masking.
-
-\section{The differentiable curve posterior (development studies, 2026-10)}
-\label{sec:phase3-curve}
-
-\paragraph{Design.} The October step implements what the module has promised
-from the start: the chunked harmonic design and the collapsed likelihood
-\eqref{eq:collapsed} in an automatic-differentiation framework (equality with
-the reference implementation is test-pinned), so that inference over a
-\emph{within-note pitch curve} --- a constant $c$ plus knot values $u$ under the
-two-component kernel of the estimator studies, here acting as a prior over $u$
---- runs by gradient descent, with a full joint Laplace approximation at the MAP
-supplying bands and a per-note evidence. This takes the differentiable-synthesis
-idea of the DDSP line of work \cite{engel2020} at the implementation level
-only: the objective remains the exact amplitude-marginalised likelihood and the
-prior remains the Gaussian process --- no neural encoder, no spectral surrogate
-loss. The five kernel hyperparameters were additionally fitted by evidence
-ascent, shared across notes ($+717$ nats over 24 notes; both component scales
-loosen $2$--$3\times$ while the vibrato mean stays at $5.5$--$5.7$\,Hz).
-
-\figph{phase3_curve_proto.png}{1.0}{The first three curve posteriors from the
-waveform (development notes; violin, cello, clarinet): inferred curve and band
-vs the corpus ground-truth frames and the pYIN frames, neither of which the fit
-sees.\label{fig:phase3-curve-proto}}
-
-\paragraph{Findings.} Four development measurements (376 notes, the seven
-study tracks of \S\ref{sec:phase3-study}; records in the repository). (i)
-\emph{Accuracy:} the curve posterior reaches a median ground-truth-frame RMSE
-of $3.2$ cents against the pYIN frames' $4.1$ (paired $-0.46$, better on 56\%
-of notes) --- decisively better on winds ($2.3$ vs $5.2$), still behind the
-tracker on strings ($4.9$ vs $3.1$), reproducing the scalar study's family
-split, with a heavier failure tail (q90 $\sim 11$ vs $8.6$ cents). The
-evidence-fitted prior beats the hand-set scales on 70\% of notes. (ii)
-\emph{Calibration:} the Laplace band is a parameter band and covers the
-annotation frames at $0.32$--$0.36$ --- the estimand/measurement gap of
-\S\ref{sec:phase3-study} reproduced at curve level (model-true coverage is
-nominal, test-pinned). (iii) \emph{Integration:} replacing the scalar waveform
-channel of the bundle study by the curve's realized-average read-out (a linear
-functional of the Laplace posterior) reproduces the integration gain
-($-1.36^*$ cents on all 14 pairs) and \emph{halves} the empirical discrepancy
-floor ($3.1 \to 1.8$ cents): reading out the estimator's own functional from
-the inferred curve closes about half the estimand gap by construction; curve
-vs scalar read-out is otherwise a tie at $n=14$. (iv) \emph{Boundaries:} a
-perturb-and-recover pilot on two-note segments (complementary sigmoid windows
-over per-note designs, flat prior on the boundary) converges
-start-independently (spread $\le 1$\,ms from $\pm 40/\pm 80$\,ms starts) in 7
-of 8 pairs --- the gradient mechanism for joint inference works and no phase
-pathology appears --- but to an acoustic transition point $11$--$87$\,ms
-(median $25$) from the annotated onset. The open design question for the joint
-loop is therefore the boundary \emph{estimand} (a transition is a region, not
-a point), not the optimisation.
-
 
 \chapter{Additional results}\label{app:extra}
 
