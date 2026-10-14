@@ -627,22 +627,10 @@
   376 notes on 7 development tracks, one per instrument. No tracker in
   the fit; scored against the corpus annotation frames. Comparator: the
   tracker's own frames (pYIN) against the same annotation.
-  \begin{center}
-  \small
-  \begin{tabular}{@{}lcc@{}}
-    \toprule
-    median error vs annotation (cents) & from the waveform & tracker frames \\
-    \midrule
-    all notes & \textbf{3.16} & 4.09 \\
-    winds & \textbf{2.26} & 5.15 \\
-    brass & \textbf{3.15} & 3.51 \\
-    strings & 4.90 & \textbf{3.09} \\
-    \bottomrule
-  \end{tabular}
-  \end{center}
+  \vspace{-1mm}
+  \figslotw{curve_scale_deck.png}{0.86}{per-family dumbbell}
+  \vspace{-3mm}
   \begin{itemize}
-    \item Prior hyperparameters fitted by evidence, shared across notes:
-          better than the hand-set scales on 70 percent of notes.
     \item Honest edges: the tracker stays ahead on strings, and the
           waveform fit's failure tail is heavier (90th percentile 10.6
           vs 8.6 cents).
@@ -663,10 +651,32 @@
   \figslotw{chain_boundary_deck.png}{0.68}{chain fit}
   \vspace{-3mm}
   {\small From score-only starting points (the local tempo line), the
-  median boundary error halves: 39 to 20 ms over 128 boundaries
+  median boundary error halves: 40 to 20 ms over 128 boundaries
   (development, 4 tracks). The remainder is systematic, the acoustic
   transition vs the written onset: a transient model at the joint is the
   next step.}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Boundary accuracy from score-only starting points}
+  \begin{columns}[T,onlytextwidth]
+  \column{0.52\textwidth}
+  \vspace{2mm}
+  \includegraphics[width=\textwidth]{boundary_deploy_deck.png}
+  \column{0.44\textwidth}
+  \vspace{6mm}
+  {\small
+  \begin{itemize}
+    \item Starting point: the score through the local tempo line, no
+          annotation access.
+    \item The joint fit improves 73 percent of boundaries; the median
+          error halves, 40 to 20 ms.
+    \item Repeated-pitch boundaries excluded (a harmonic likelihood
+          carries no boundary there); they are reported separately.
+    \item The dots far above the diagonal are the systematic remainder:
+          the acoustic transition is not the written onset.
+  \end{itemize}}
+  \end{columns}
 \end{frame}
 
 % ---------------------------------------------------------------------
