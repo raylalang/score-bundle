@@ -695,6 +695,35 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Where this chapter ends: the joint loop}
+  \figslotw{arch_phase3_deck.png}{0.78}{waveform architecture}
+  \vspace{-2mm}
+  {\small
+  \begin{itemize}
+    \item One posterior for a whole recording: every note's expression
+          latent, all notes coupled by the same score-graph prior,
+          the audio likelihood in place of per-note targets.
+    \item With nothing observed per note there is no masking task:
+          evaluation becomes held-out pieces and posterior-predictive
+          resynthesis.
+    \item Measured so far: pitch curves and boundaries (solid blocks).
+          Remaining: a transient model at the note joints, loudness and
+          articulation brought under the prior (dashed).
+  \end{itemize}}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The end goal on one passage (development)}
+  \figslotw{endgoal_viz.png}{0.72}{passage decomposition}
+  \vspace{-2mm}
+  {\small\textcolor{muted}{A real violin passage (13 notes, 8 s)
+  decomposed from the score and the waveform alone: notes, pitch
+  expression with uncertainty, timbre envelopes from the amplitude
+  posterior. Chains fitted independently; the envelope strand is read
+  out after the fit, not yet under the prior: the remaining work.}}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Summary}
   One Gaussian process on the score graph, three observation types:
   \begin{itemize}
