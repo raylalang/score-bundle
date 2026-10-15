@@ -175,23 +175,34 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   **deployment works** — score-nominal tempo-line inits, no annotation,
   39.4→19.5 ms median; chains cost ~1.8 cents guarded curve RMSE vs
   single-note fits; next lever, pre-named: transient columns at the joints).
-  **The first span of the bridge (2026-10-14 evening, dev): the score graph now
-  couples per-note intonation constants INSIDE the waveform inference on short
-  chains** — the prior-value experiment (`scripts/eval_prior_value_dev.py`,
-  `results/prior_value_dev.md`, runner `run_prior_value_eval.sh`; cross-note
-  prior term in `fit_chain`, test-pinned): independent / temporal-chain /
-  score-graph priors at matched marginal variance, same likelihood/data/
-  optimizer, boundaries fixed, the middle note's audio MASKED vs clean, 47
-  chains / 4 dev tracks, hypotheses + falsification rule committed before the
-  run. Under masking the graph cuts hidden-note error 21.2→18.8 cents (−4.63*,
-  85%); graph vs temporal −0.24 ns overall but −0.72* on the pre-stated
-  recurring-pitch stratum; with clean audio the arms tie exactly. Caveats: the
-  structured win is largely common-mode tuning transfer (follow-up = a free
-  per-chain tuning scalar, all arms, needs Ray's go); masked coverage 0.38–0.49
-  for every arm (zero-mean c prior miscentred). Still open: coupling boundary
-  offsets and the curve level, the remaining channels, whole-performance scale
-  — the curves themselves carry independent priors, amplitudes are read out
-  post hoc. Thesis: main-line Ch. 8
+  **The first span of the bridge (2026-10-14/15, dev, measured THREE times on
+  the same 47 chains): the score graph couples per-note intonation constants
+  INSIDE the waveform inference on short chains** — the prior-value experiment
+  (`scripts/eval_prior_value_dev.py`, runner `run_prior_value_eval.sh [N]
+  [sd|-] [v2]`; independent / temporal-chain / score-graph priors at matched
+  marginal variance, same likelihood/data/optimizer, boundaries fixed, one note
+  removed per chain vs clean, 4 dev tracks, hypotheses + falsification rule
+  committed before each run). **First run WITHDRAWN by erratum**
+  (`results/prior_value_dev.md`): masking the audio samples but leaving the
+  note's soft-window columns in the likelihood leaked ~4 samples' worth of
+  column mass whose marginalized-amplitude evidence dominated the prior —
+  every arm's estimate uncorrelated with the truth. Protocol v2 =
+  `fit_chain(drop_notes=)` (hidden note acoustically absent, test-pinned:
+  independent prior returns exactly its mean). **Verdict**
+  (`results/prior_value_v2_dev.md`, `prior_value_v2_tuning_dev.md`): without
+  a common-mode term structure halves the hidden note's error (14.4→6.8/7.6,
+  −6*, 79%) and graph = temporal; with a free per-chain tuning scalar in every
+  arm ALL ARMS TIE (graph vs indep −0.02 [−0.33,+0.32]) → **on 3–5-note chains
+  score structure adds nothing measurable beyond the shared tuning offset**
+  (a rigorous negative; the falsification rule fired). Conditional bands
+  calibrated (0.89–0.96); clean rows tie. Lesson for every future prior-value
+  design: the common-mode scalar is mandatory in every arm, and a masked note
+  must be dropped from the design, not just its samples. Still open (and where
+  the hypothesis could still hold): boundary offsets
+  (`docs/boundary_prior_proposal.md`, not run), longer spans with distant
+  recurring pitches, the other channels, the curve level, whole-performance
+  scale — the curves themselves carry independent priors, amplitudes are read
+  out post hoc. Thesis: main-line Ch. 8
   (`ch:phase3`) + Future Work `sec:future-phase3`. The three spectral-kernel
   papers (`related_works/`, `docs/kernel_papers_review.md`,
   `docs/gp_everywhere_memo.md`) are the design vocabulary for the within-note

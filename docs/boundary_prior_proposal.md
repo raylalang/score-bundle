@@ -121,3 +121,20 @@ Chain fits ran ~138 s median in the chain study; 47 chains × 3 arms ×
 2 conditions ≈ 282 fits ≈ 11 h CPU ≈ 1.4 h wall on 8 shards at
 OMP_NUM_THREADS=2, plus the Laplace. Estimate from one smoke cell first
 (long-run rule).
+
+## Update (2026-10-15, after the intonation result)
+
+The intonation comparison, run under protocol v2 with and without the
+common-mode scalar (`results/prior_value_v2_dev.md`,
+`results/prior_value_v2_tuning_dev.md`), ended as a negative: all of
+the structured priors' gain was the shared tuning offset, and with that
+offset available to every arm the three priors tie. Two consequences
+for this proposal. (i) The free per-chain offset scalar above is not
+optional but the design's core control: without it any structure-vs-
+none win is uninterpretable. (ii) The expectation is sharpened: the
+decisive contrast is structure-vs-none *given* the common mode; the
+prior expectation for boundaries is the same null, and the proposal's
+value is in establishing it rigorously for timing as it now is for
+intonation, or in finding the first channel where note-level structure
+carries information at chain scale. The chain-scale power caveat
+stands. Nothing here has been run.

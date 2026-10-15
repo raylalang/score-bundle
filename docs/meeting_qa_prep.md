@@ -27,8 +27,9 @@ probabilistic inverse-inference framework that recovers it. They are
 complementary. Honesty guards: the representation is interpretable *by
 construction* (named parameters), not semantically validated; the
 framework is validated stage by stage, and its full integration at the
-waveform is not yet complete (the first span is measured, §G; the rest
-is open).
+waveform is not yet complete (the first span is measured and is a
+negative for note-level structure at chain scale, §G; the rest is
+open).
 
 ## B. Why it matters
 
@@ -76,12 +77,14 @@ decide.
    with an explicit differentiable harmonic likelihood: candidate pitch
    trajectories and note boundaries scored directly against the audio,
    timbre marginalized analytically. Development studies only.
-4. **The intended endpoint (first span built 2026-10-14):** the
-   score-graph prior joined with the waveform likelihood — all notes of
-   a performance inferred jointly from score + audio. Status: the graph
-   now couples the per-note intonation constants *inside* the waveform
-   inference on short chains (the prior-value experiment, §G); the
-   curve-level and boundary coupling, the remaining channels, and
+4. **The intended endpoint (first span built 2026-10-14, measured
+   honestly 2026-10-15):** the score-graph prior joined with the
+   waveform likelihood — all notes of a performance inferred jointly
+   from score + audio. Status: the graph couples the per-note
+   intonation constants *inside* the waveform inference on short
+   chains, where its measured value is the shared tuning offset and
+   nothing beyond it (the prior-value experiment, §G); the curve-level
+   and boundary coupling, longer spans, the remaining channels, and
    whole-performance scale are still open.
 
 ## E. Current results (verified against the repository)
@@ -135,11 +138,14 @@ decide.
 ## F. Open technical problems (the discussion core)
 
 1. **Graph prior × waveform likelihood — the bridge, span by span.**
-   Until today nothing coupled notes inside the waveform inference; the
-   prior-value experiment (§G) built and measured the first span
-   (per-note intonation constants, short chains). Open: the tuning-
-   scalar follow-up, coupling boundary offsets and curve level, the
-   remaining channels, and whole-performance scale.
+   The first span (per-note intonation constants, short chains) is
+   built and measured, and the measurement is a negative for note-level
+   structure (§G): at chain scale the prior transfers the tuning offset
+   and nothing more. Design question now: which variable or span is the
+   first where note-level structure could carry information — boundary
+   offsets (proposal written), longer spans, the curve level, the other
+   channels — and how to make the common-mode control part of every
+   design.
 2. **Identifiability from audio.** Measured so far: pitch trajectories
    strongly identifiable (phase accumulation); boundaries identifiable
    except at repeated pitches; loudness/articulation live in amplitudes
@@ -159,38 +165,53 @@ decide.
    (validated at development level) or a likelihood that models the
    correlated residual.
 
-## G. The next experiment — now RUN (2026-10-14, development)
+## G. The next experiment — RUN, with its follow-ups (2026-10-14/15, development)
 
-**The three-prior comparison exists and is measured**
-(`results/prior_value_dev.md`): independent / temporal-chain /
-score-graph priors over per-note intonation constants, matched marginal
-variance, identical waveform likelihood and optimizer, boundaries fixed;
-ambiguity created by *masking one note's audio* per chain (the
-waveform-level analogue of the thesis's held-out imputation task), with
-clean audio as the control. 47 chains, 4 development tracks.
+**The three-prior comparison exists and is measured three times on
+the same 47 chains** (independent / temporal-chain / score-graph priors
+over per-note intonation constants, matched marginal variance,
+identical waveform likelihood and optimizer, boundaries fixed; ambiguity
+= one note removed per chain, clean audio as the control; four
+development tracks). Hypotheses and a falsification rule were committed
+before every run.
 
-- **Under ambiguity, structure wins, significantly**: hidden-note
-  intonation error 21.2 → 18.8 cents median with the score graph
-  (paired −4.63, significant, better on 85% of cells); temporal gains
-  similarly.
-- **The score graph's edge over a plain temporal prior appears exactly
-  where predicted**: cells with a recurring pitch (−0.72, significant,
-  64%) — pitch-proximity coupling transfers intonation across
-  recurrences. First waveform-level evidence that *score* structure
-  specifically carries information.
-- **With clean audio the arms tie exactly** — the prior's value is
-  specific to ambiguity, which is the methodological hypothesis in one
-  line.
-- Honest caveats: much of the structured win is common-mode (track
-  tuning offset transferred from neighbors) — the named follow-up
-  separates tuning transfer from note-level expression transfer (a free
-  per-chain tuning scalar, all arms); masked-condition coverage is far
-  below nominal for every arm (zero-mean prior miscentred under tuning
-  offsets — itself a prior-design finding); development only.
+- **The first run (10-14) contained a protocol error, found on 10-15
+  and recorded as an erratum.** It masked the hidden note's audio but
+  left its soft-window design columns in the likelihood; the window
+  tails beyond the mask guard leaked a few samples' worth of evidence,
+  which with marginalized amplitudes dominated the prior. Every arm's
+  masked estimate was uncorrelated with the truth and worse than
+  predicting zero. Its "structure wins" headline is withdrawn.
+- **Corrected protocol, no tuning scalar** (`results/prior_value_v2_dev.md`):
+  a cross-note prior halves the hidden note's error, 14.4 → 6.8–7.6
+  cents (paired −5.8 / −6.2, significant, better on 79%); score graph
+  and temporal chain tie; the recurring-pitch stratum trends the
+  predicted way but is not significant (n = 25).
+- **Corrected protocol, free per-chain tuning scalar in every arm**
+  (`results/prior_value_v2_tuning_dev.md`): the independent arm now
+  inherits the chain mean and reaches 6.4 cents; **all three arms tie**
+  (graph vs independent −0.02 [−0.33, +0.32]; recurring stratum +0.01).
+  The falsification rule fires: **on 3–5-note chains, score structure
+  carries no measurable note-level intonation information beyond the
+  shared tuning offset.**
+- Clean audio: exact ties in every run. Calibration honest: structured
+  conditional bands 0.89–0.94; the zero-mean independent band 0.77
+  (miscentred), repaired by the scalar (0.96).
 
-**Proposed follow-up (small):** re-run with a shared free tuning scalar
-per chain; if the graph-vs-independent gap survives, the win is
-note-level expression transfer, not tuning bookkeeping.
+**What this says for the discussion.** The methodological hypothesis has
+its first waveform-level test at the smallest scale, and the answer is
+a rigorous negative for intonation constants: the prior's value there
+is tuning bookkeeping, done with calibrated uncertainty. Where the
+hypothesis could still hold, untested: longer spans with recurring
+pitches at a distance (the whole-phrase loop), the other channels
+(vibrato, dynamics), and the curve level — each needing the common-mode
+term in every arm by design, which this experiment shows is mandatory.
+
+**Proposed follow-ups (not run):** (i) the boundary-prior extension
+(`docs/boundary_prior_proposal.md`, same design over the joint offsets,
+with the offset scalar as its core control; expectation sharpened to
+the same null); (ii) a phrase-scale version of the intonation
+comparison where recurring pitches occur at a distance.
 
 ## H. Questions for the professor (prioritized)
 

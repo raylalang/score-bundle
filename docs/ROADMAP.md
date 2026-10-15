@@ -21,13 +21,13 @@ the deck or the brief. New runs happen only on Ray's go.
 
 | when | what | gate |
 |---|---|---|
-| October (done) | first curve-from-waveform studies at scale; the curve as a bundle channel; joint note boundaries; **the first span of the bridge** (score prior over per-note constants inside the waveform inference: structure wins under ambiguity, ties on clean audio) | — |
+| October (done) | first curve-from-waveform studies at scale; the curve as a bundle channel; joint note boundaries; **the first span of the bridge**, measured three times: the first run withdrawn by erratum (window leakage), the corrected protocol shows structure transfers the shared tuning offset and nothing measurable beyond it on short chains (a rigorous negative) | — |
 | October (now) | the direction-and-scope meeting: objective, positioning, integration scope, variables, evidence bar, registration pool (brief §H) | Ray + professor |
-| October/November | **tuning-scalar follow-up** of the prior-value experiment (free per-chain tuning scalar, all arms): decides whether the win is expression transfer or tuning bookkeeping and should repair masked coverage; same script, one parameter | Ray's go |
+| October (done) | tuning-scalar follow-up of the prior-value experiment: run under the corrected protocol; verdict = tuning bookkeeping, coverage repaired | — |
 | November | decide the registration pool (correlated timing noise, tonal metric: Bach10 / disclosed URMP re-use / both), then run the registered timing confirmation, one shot | professor |
 | November | decide the channel design for the waveform strand: scalars or curve level | Ray |
 | November | a transient model at the note boundary (the pre-named next lever for the ~18 ms acoustic-vs-musical gap) | Ray's go |
-| November *(proposed)* | decide whether masked-audio imputation becomes the registered waveform claim (registration-friendly: clean protocol, pre-stated rule); if yes, freeze a prereg like `docs/corrnoise_prereg_DRAFT.md` before any further waveform run touches the would-be pool | Ray |
+| November *(proposed)* | the registered waveform claim: the masked-imputation design is clean and registration-friendly, but the measured first span is a negative, so there is currently no positive waveform claim to register; decide which follow-up (NEXT) could supply one, or whether the negative itself is the chapter's measured answer | Ray |
 | December | **whole-phrase joint inference from the waveform** — the "December row": all notes of a performance under the graph prior, the transient model at the joints, loudness/articulation (amplitudes) brought under the prior instead of read out post hoc, the estimand bridge between the harmonic constant and the annotation functional; consolidate thesis chapters as results land | — |
 | December *(proposed)* | adopt the decomposition framing (score + expression + timbre + noise) in the intro/abstract, held since 2026-10-14 for after the meeting | Ray |
 | 2027-01-07 (approx.) | **progress presentation**: deck from `deck.tex`, results that stand on their own only | — |
@@ -35,8 +35,9 @@ the deck or the brief. New runs happen only on Ray's go.
 | 2027-02-02 (tentative) | **thesis submission** | — |
 
 Decisions still open from the 2026-10-14 session, verbatim list:
-(a) tuning-scalar follow-up next (recommended); (b) masked-imputation as
-the registered waveform claim; (c) the brief's H questions; (d) whether
+(a) tuning-scalar follow-up — DONE 10-15, verdict negative; (b)
+masked-imputation as the registered waveform claim — see the November
+row; (c) the brief's H questions; (d) whether
 the piano chapter should also carry explicit independent/temporal
 baseline rows under the final model in the main line (flagged, not
 fixed); (e) whether "decomposition" becomes the intro's literal
@@ -71,46 +72,44 @@ restructured and reframed on 2026-10-14); `docs/slides/README.md` still
 describes the 16+5-frame content-first build and `docs/zemi_prep.md`
 the 28-slide zemi deck — both are superseded by `deck.tex`.
 
-## DONE — The first span of the bridge (2026-10-14 evening, Ray's go)
+## DONE — The first span of the bridge, measured three times (2026-10-14/15)
 
-The brief's proposed experiment was built and measured the same day
-(`scripts/eval_prior_value_dev.py`, `results/prior_value_dev.md`;
-cross-note prior term over the per-note intonation constants inside
-`fit_chain`, `tests/test_phase3_chain.py` extended): independent /
-temporal-chain / score-graph priors at matched marginal variance,
-identical likelihood, data, optimizer; boundaries fixed at annotations;
-ambiguity = the middle note's audio MASKED from the likelihood, clean
-audio as the control; hypotheses and falsification rule committed in
-the docstring. 47 chains, 4 development tracks. Development, no claims:
+The brief's proposed experiment (`scripts/eval_prior_value_dev.py`;
+cross-note prior over the per-note intonation constants inside
+`fit_chain`): independent / temporal-chain / score-graph priors at
+matched marginal variance, identical likelihood, data, optimizer;
+boundaries fixed; ambiguity = one note removed per chain; 47 chains on
+4 development tracks; hypotheses + falsification rule committed before
+every run. Development, no claims.
 
-- Under masking, structure wins: hidden-note error 21.2 → 18.8 cents
-  median with the score graph (paired −4.63*, better on 85%); the
-  temporal prior gains similarly (−4.39*).
-- Graph vs temporal: −0.24 (ns) overall, −0.72* on the 25 recurring-pitch
-  cells — the pre-stated stratum. First waveform-level evidence that
-  SCORE structure (pitch proximity, not just time adjacency) carries
-  information.
-- With clean audio the three arms tie exactly: the prior's value is
-  specific to ambiguity (the methodological hypothesis in one line).
-- Caveats: much of the structured win is common-mode (track tuning
-  offset transferred from neighbours); masked coverage 0.38–0.49 for
-  every arm (zero-mean c prior miscentred under tuning offsets); clean
-  coverage nominal. ~155 s per fit incl. Laplace.
+- **First run (10-14, `results/prior_value_dev.md`): WITHDRAWN by
+  erratum.** It masked the hidden note's audio samples but left its
+  soft-window design columns in the likelihood; the leak dominated the
+  prior and every arm's estimate was uncorrelated with the truth.
+- **Protocol v2 (10-15, `results/prior_value_v2_dev.md`)**: the hidden
+  note's columns removed (`fit_chain(drop_notes=)`, test-pinned);
+  structure halves the error, 14.4 → 6.8/7.6 cents (−5.8*/−6.2*, 79%);
+  graph = temporal; recurring-pitch stratum trend ns.
+- **Protocol v2 + free per-chain tuning scalar in every arm
+  (`results/prior_value_v2_tuning_dev.md`)**: all arms tie (graph vs
+  indep −0.02 [−0.33, +0.32]); the falsification rule fires — **on
+  short chains, score structure adds nothing measurable beyond the
+  shared tuning offset**. Clean ties; conditional bands calibrated.
 
-Thesis: `sec:phase3-priorvalue` in Ch. 8; contributions paragraph,
-RQ3 paragraph, abstract, and Future Work say "first span measured, the
-rest open". Brief sections D.4, F.1, G updated.
+Thesis `sec:phase3-priorvalue` carries the corrected, two-sided story;
+contributions, RQ3, abstract, Future Work reworded. Brief §D.4/F.1/G
+rewritten. `docs/boundary_prior_proposal.md` written (not run; the
+offset scalar is its core control).
 
-## NEXT (needs Ray's go) — the tuning-scalar follow-up
+## NEXT (needs Ray's go) — where could note-level structure show?
 
-Re-run the prior-value experiment with a free per-chain tuning scalar
-shared by all three arms (or demeaning by the observed notes). If the
-graph-vs-independent gap survives, the win is note-level expression
-transfer, not tuning bookkeeping; the same scalar should also repair the
-masked-condition coverage. Small: same script, one extra parameter.
-After that, span by span: coupling boundary offsets, then curve level,
-then the remaining channels, then whole-performance scale (thesis
-`sec:future-phase3`).
+The first span's negative narrows the question. Candidates, each with
+the common-mode term in every arm by design, each a proposal before a
+run: (a) the boundary-prior extension (proposal written, same null
+expected, establishes timing rigorously); (b) a phrase-scale intonation
+comparison where recurring pitches occur at a distance (the score
+graph's distinguishing edge needs that); (c) the other channels
+(vibrato, dynamics) at chain scale. Ray chooses; none runs unprompted.
 
 ## DONE — The waveform setting goes active (2026-10-07..14, Ray's go)
 

@@ -139,10 +139,11 @@ development studies measured, no claims yet: from the raw waveform alone --- no 
 tracker --- the model infers whole within-note pitch curves (beating the
 tracker's frames at the median), strengthens the six-channel bundle as a
 further observation channel, infers note boundaries jointly from
-score-nominal starting points, and --- on short chains with one note's
-audio removed --- recovers the hidden note better under the score prior
-than under independent or purely temporal priors while costing nothing
-when the audio is present; its central design constraint is measured
+score-nominal starting points, and --- on short chains with one note
+removed --- recovers the hidden note from its neighbours under a
+cross-note prior, a gain that is, at chain scale, entirely the shared
+tuning offset: beyond it score structure adds nothing measurable, a
+negative result reported as such; its central design constraint is measured
 --- calibration must bridge the estimand gap between the harmonic model
 and the annotation chain.
 \end{abstract}
@@ -231,9 +232,11 @@ measured discards (the within-note drift study, Appendix~\ref{app:drift};
 the curve-level extension, Chapter~\ref{app:phase3}). RQ3 is answered at
 development level only (Chapter~\ref{app:phase3}); joining its
 observation model to the RQ2 prior --- the complete inverse-synthesis
-loop --- is the programme's endpoint, not a claim, and its first span
-(the score prior over per-note constants inside the waveform inference,
-\S\ref{sec:phase3-priorvalue}) is measured at development level.
+loop --- is the programme's endpoint, not a claim; its first span (the
+score prior over per-note constants inside the waveform inference,
+\S\ref{sec:phase3-priorvalue}) is measured at development level, and
+on short chains the structure's value is the shared tuning offset and
+nothing measurable beyond it.
 
 \section{Terminology: the proposed model and the two-stage pipeline}\label{sec:twostage}
 Two names recur throughout. \textbf{The proposed model} is the thesis model:
@@ -283,13 +286,16 @@ contribution: its components are measured as development studies
 (Chapter~\ref{app:phase3}), and the integration is built only in its
 first span: the score-graph prior couples the per-note intonation
 constants \emph{inside} the waveform inference on short chains, where
-it is measured --- at development level --- to add value exactly when a
-note's acoustic evidence is removed and to cost nothing when it is
-present (\S\ref{sec:phase3-priorvalue}). The curve-level and boundary
-coupling, the remaining channels, and whole-performance scale remain
-open (the within-note curves still carry independent priors; the graph
-meets the full waveform posterior only post hoc, as an observation
-channel of the Chapter~\ref{ch:phase2} bundle). A geometric
+its measured value --- at development level, with pre-stated
+hypotheses, after a protocol error was found and fixed --- is the
+transfer of the track's shared tuning offset to a note whose audio is
+absent; beyond that common mode, score structure adds nothing
+measurable on $3$--$5$-note chains, a negative result reported as such
+(\S\ref{sec:phase3-priorvalue}). The curve-level and boundary
+coupling, longer spans, the remaining channels, and whole-performance
+scale remain open (the within-note curves still carry independent
+priors; the graph meets the full waveform posterior only post hoc, as
+an observation channel of the Chapter~\ref{ch:phase2} bundle). A geometric
 ``connection-Laplacian'' generalisation of the graph prior likewise
 remains future work (Chapter~\ref{ch:future}).
 
@@ -2352,8 +2358,10 @@ the score graph of Chapter~\ref{ch:model} has not yet entered the
 waveform inference. This development study builds the first span of
 that bridge and asks the thesis's methodological question at the
 waveform: does score-informed structure add value where the acoustic
-evidence is ambiguous, and does it cost anything where the evidence is
-strong?
+evidence is absent, and does it cost anything where the evidence is
+strong? The answer, measured in three runs on the same chains, is
+two-sided and is reported in full, including the protocol error the
+first run contained.
 
 \paragraph{Design.} Three cross-note priors over the per-note intonation
 constants $c$ of a chain, at matched marginal variance and with
@@ -2365,84 +2373,106 @@ score graph, $c \sim \N(0,\sigma^2 K_{G})$ with the score graph of
 \S\ref{sec:scoregraph} (time \emph{and} pitch proximity). Both structured
 kernels are $(I+L)^{-1}$, diagonal-normalised; $\sigma^2$ is the track's
 own quasi-truth variance of $c$ (a population scale, not tuned). Two
-conditions per chain: \emph{masked}, in which the middle eligible note's
-audio is removed from the likelihood --- the waveform-level analogue of
-the held-out imputation task of Chapter~\ref{ch:results}, and the
-regime of maximal acoustic ambiguity --- and \emph{clean}, the full
-audio. Two hypotheses were committed before the run: H1, under masking
-the structured priors recover the hidden note better than the
-independent prior, which can only return its mean, and the score
-graph's edge over the temporal chain, if any, appears where the chain
-contains a recurring pitch; H2, with clean audio the three arms tie.
-H1 is falsified if the graph arm is not better than the independent arm
-on the masked cells, paired. Scoring: the hidden note's $|\hat c -
-c_{\mathrm{qt}}|$ against the quasi-truth centre, and coverage at
-$90\%$ from a joint Laplace at the MAP. The chain-eligible notes of
-four development tracks give $47$ chains, $25$ of which contain a
-recurring pitch.
+conditions per chain: \emph{masked}, in which the middle eligible note
+is removed from the likelihood --- the waveform-level analogue of the
+held-out imputation task of Chapter~\ref{ch:results}, so that the
+note's posterior is exactly the prior conditional given its observed
+neighbours --- and \emph{clean}, the full audio. A second configuration
+adds to every arm a free per-chain tuning scalar $t \sim \N(0, 50^2)$,
+$c = t\mathbf{1} + \tilde c$, marginalised as a rank-one term: it hands
+the independent prior the chain's observed mean, so that whatever
+structured gain survives it is note-level transfer rather than the
+bookkeeping of a shared tuning offset. Hypotheses and a falsification
+rule were committed before each run: structure beats independence on
+masked cells (paired), the score graph's edge over the temporal chain,
+if any, appears where the chain contains a recurring pitch, and the
+arms tie on clean audio; no significant structured-vs-independent gap
+under the tuning scalar means that score structure carries no
+note-level intonation information on short chains beyond tuning
+bookkeeping. Scoring: the hidden note's $|\hat c - c_{\mathrm{qt}}|$
+against the quasi-truth centre, and coverage at $90\%$ from a joint
+Laplace at the MAP. The chain-eligible notes of four development tracks
+give $47$ chains, $25$ of which contain a recurring pitch.
+
+\paragraph{A protocol error, found and fixed.} The first run masked the
+hidden note's audio samples but left its soft-window design columns in
+the likelihood. The window tails beyond the $50$\,ms mask guard leave a
+few samples' worth of column mass on the neighbours' audio, and with
+the amplitudes marginalised that leak carved a well of about $38$ nats
+along the hidden constant across $\pm100$ cents, against $4$--$35$ nats
+from the prior: every arm's masked estimate was a leakage-driven
+optimum, uncorrelated with the truth and worse than predicting zero.
+That run's apparent structured win is therefore not evidence and its
+record carries an erratum. The corrected protocol removes the hidden
+note's columns altogether, and its independent arm then returns
+exactly the prior mean, as it must.
 
 \begin{table}[t]\centering
-\caption{The prior-value experiment: three cross-note priors over
-per-note intonation constants inside the waveform inference, $47$
-chains on four development tracks. Score: the hidden (masked) or
-corresponding (clean) note's distance to the quasi-truth centre;
-coverage at nominal $90\%$. The deadpan row is $|c_{\mathrm{qt}}|$
-itself, the no-information reference. Development, exploratory; no
-claims registered.}
+\caption{The prior-value experiment under the corrected protocol: three
+cross-note priors over per-note intonation constants inside the
+waveform inference, $47$ chains on four development tracks, without
+and with the free per-chain tuning scalar in every arm. Score: the
+hidden (masked) or corresponding (clean) note's distance to the
+quasi-truth centre; coverage at nominal $90\%$. Predicting zero scores
+$14.42$ cents. Development, exploratory; no claims registered.}
 \label{tab:phase3-priorvalue}
 \footnotesize
-\begin{tabular}{@{}llccc@{}}
+\begin{tabular}{@{}lllcc@{}}
 \toprule
-condition & prior & median $|$err$|$ (cents) & coverage@90 & median sd \\
+condition & prior & tuning scalar & median $|$err$|$ (cents) & coverage@90 \\
 \midrule
-masked & independent & 21.23 & 0.38 & 10.88 \\
-masked & temporal chain & 18.94 & 0.45 & 10.06 \\
-masked & score graph & \textbf{18.78} & 0.49 & 9.95 \\
-masked & deadpan reference & 14.42 & --- & --- \\
+masked & independent & no & 14.42 & 0.77 \\
+masked & temporal chain & no & 6.80 & 0.94 \\
+masked & score graph & no & 7.62 & 0.94 \\
+masked & independent & yes & 6.42 & 0.96 \\
+masked & temporal chain & yes & 6.55 & 0.89 \\
+masked & score graph & yes & 5.90 & 0.89 \\
 \midrule
-clean & independent & 2.37 & 0.91 & 6.56 \\
-clean & temporal chain & 2.30 & 0.89 & 6.31 \\
-clean & score graph & 2.28 & 0.89 & 6.32 \\
+clean & independent & either & 2.35--2.37 & 0.91 \\
+clean & temporal chain & either & 2.24--2.30 & 0.89--0.91 \\
+clean & score graph & either & 2.22--2.28 & 0.89 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Reading.} H1 holds at development level: with the note's
-audio removed, the score graph cuts the hidden note's error from
-$21.2$ to $18.8$ cents at the median (paired $-4.63$, 95\% interval
-$[-6.29, -2.87]$, better on $85\%$ of the $47$ chains); the temporal
-prior gains similarly ($-4.39$, interval $[-6.40, -2.45]$). The graph's
-edge over the temporal chain is small overall ($-0.24$, interval
-$[-0.88, +0.42]$) but lands in the pre-stated stratum: on the $25$
-chains with a recurring pitch it is $-0.72$ (interval $[-1.26,
--0.18]$, better on $64\%$) --- pitch-proximity coupling transfers
-intonation across recurrences of the same pitch. This is the first
-waveform-level evidence that \emph{score} structure, not merely
-adjacency in time, carries information, and it was predicted rather
-than found. H2 holds as well: with clean audio the three arms tie to
-the second decimal (medians $2.28$--$2.37$ cents, coverage
-$0.89$--$0.91$), so the structure costs nothing where the evidence
-dominates. The prior's value is specific to ambiguity, which is the
-methodological hypothesis of the thesis in one line.
+\paragraph{Reading.} Without the tuning scalar, structure halves the
+hidden note's error: $14.4 \to 6.8$ (temporal) and $7.6$ (score graph)
+cents at the median, paired $-5.78$ (interval $[-8.16, -3.27]$) and
+$-6.24$ ($[-8.49, -3.79]$), each better on $79\%$ of the $47$ chains;
+the two structured arms tie ($-0.46$, $[-1.48, +0.51]$), and the
+pre-stated recurring-pitch stratum shows a trend in the predicted
+direction that does not reach significance ($-0.86$, $[-2.04, +0.34]$,
+$n=25$). With the tuning scalar, the independent arm reaches $6.42$
+cents and all three arms tie: score graph against independent $-0.02$
+($[-0.33, +0.32]$), temporal against independent $+0.17$ ($[-0.55,
++0.91]$), the recurring-pitch stratum $+0.01$ ($[-0.88, +0.91]$). The
+scalar moves the independent arm by $-6.85$ (significant) and the
+structured arms by $-0.9$ and $-0.6$ (not significant): the whole
+structured gain was the transfer of the track's shared tuning offset.
+The falsification rule fires. \emph{On $3$--$5$-note chains, score
+structure --- and plain temporal adjacency --- carries no measurable
+note-level intonation information beyond tuning bookkeeping.} On clean
+audio the arms tie to the second decimal in both configurations, so
+the structure costs nothing where the evidence dominates. Calibration
+is honest: the structured conditional bands cover at $0.94$ without and
+$0.89$ with the scalar; the zero-mean independent band covers at $0.77$,
+miscentred on tuning-offset tracks, and the scalar repairs it ($0.96$,
+conservative).
 
-Two caveats are part of the result. First, much of the structured win
-is common-mode: the deadpan reference ($14.4$ cents) says the hidden
-notes sit far from zero largely because a track carries a shared tuning
-offset, which the neighbours transfer under either structured prior.
-That transfer is genuine information, but the named follow-up ---
-a free per-chain tuning scalar shared by all arms --- must separate
-tuning-offset transfer from note-level expression transfer; the
-recurring-pitch contrast already survives the concern qualitatively,
-since all arms share the common mode. Second, masked-condition
-coverage is far below nominal for every arm ($0.38$--$0.49$): the
-zero-mean prior on $c$ is miscentred on tuning-offset tracks, a
-prior-design finding in its own right that the same tuning scalar
-would repair; clean-condition coverage is at nominal, so the Laplace
-machinery itself behaves. Scope: intonation constants only, boundaries
-fixed at the annotation, kernel shape $s=1$ for both structured arms,
-about $155$\,s per fit including the Laplace; any claim needs its own
-registration.
-
+What the first span says, then, is two-sided. A cross-note prior lets a
+note whose audio is absent inherit its chain's tuning offset, with
+calibrated uncertainty, which a zero-mean prior cannot do; beyond that
+common mode, the pitch-proximity coupling that distinguishes the score
+graph from time adjacency adds nothing on these chains, and neither
+does adjacency itself. The methodological hypothesis of the thesis is
+therefore not supported for intonation constants at chain scale, a
+negative result established with pre-stated hypotheses and reported as
+such. Where it could still hold, untested: longer spans with recurring
+pitches at a distance, the other channels (vibrato, dynamics), and the
+curve level --- each with the common-mode term in every arm by design,
+which this experiment shows to be mandatory. Scope: intonation
+constants only, boundaries fixed at the annotation, kernel shape $s=1$,
+about $150$\,s per fit including the Laplace; development evidence.
 
 % =====================================================================
 \chapter{Discussion}\label{ch:discussion}
@@ -2561,8 +2591,9 @@ transcription use-case wants them.
 \section{The waveform: the joint loop}
 \label{sec:future-phase3}Chapter~\ref{ch:phase3} stops at chains of a few
 notes: the score prior couples their per-note constants
-(\S\ref{sec:phase3-priorvalue}), the curves themselves still carry
-independent priors. What remains is the \emph{joint} loop: all notes of a performance at once under the graph prior
+(\S\ref{sec:phase3-priorvalue}), where it transfers only the shared
+tuning offset, and the curves themselves still carry independent
+priors. What remains is the \emph{joint} loop: all notes of a performance at once under the graph prior
 (Laplace or variational inference over $z$), a transient model at the
 note joints (the measured next lever), the estimand bridge between the
 harmonic model's constant and the annotation chain's functional, and the
