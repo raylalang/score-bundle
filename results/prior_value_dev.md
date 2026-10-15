@@ -74,3 +74,39 @@ wall per fit incl. Laplace: median 155 s
    s = 1 for both structured kernels (sensitivity unprobed), ~155 s per
    fit including the Laplace. Development evidence; any claim needs its
    own registration.
+
+## ERRATUM (2026-10-15): the masked condition above was contaminated by window leakage
+
+Diagnosed while running the tuning-scalar follow-up
+(`results/prior_value_tuning_dev.md`) on the same 47 cells. Facts, from
+the stored cells and a profile of the objective on cell 0:
+
+1. Under masking, every arm's hidden-note estimate has **zero
+   correlation with the truth** (Pearson −0.00 / +0.01 / +0.00 for
+   indep / temporal / graph) and spreads over ±85 cents (sd across cells
+   31–35 cents, wider than the prior's own 12.7), and **every arm is
+   worse than predicting zero** (deadpan 14.42 vs 18.8–21.2 above). A
+   prior-mean-returning independent arm would have scored exactly the
+   deadpan value; it did not.
+2. Cause: a masked note's sigmoid window tails beyond the 50 ms mask
+   guard leave ~4 samples' worth of column mass on the neighbours'
+   unmasked audio, and with the amplitudes marginalized that leak
+   carves a ~38-nat well along the hidden note's c across ±100 cents,
+   against 4–35 nats from the prior. The masked estimates were
+   leakage-driven likelihood optima, not prior conditionals (on cell 0
+   the optimizer converged to the leaked optimum; the mechanism is the
+   leak, not the optimizer).
+3. Therefore the reading's point 1 ("the independent prior can only
+   return its mean") is false for this protocol, and the headline
+   "structure wins under ambiguity" is **not supported as stated**: the
+   structured priors' 4.6-cent edge is an edge against leakage-driven
+   noise, measured on contaminated ambiguity. Points 2 and 4 (the
+   recurring-pitch stratum; the common-mode caveat) are likewise not
+   interpretable from this run. The clean-condition rows (point 3) are
+   unaffected.
+4. Protocol v2 (`PRIORVAL_DROP_HIDDEN=1`; `fit_chain(drop_notes=)`)
+   removes the hidden note's design columns from the likelihood so its
+   posterior is exactly the prior conditional given the observed notes.
+   Its records: `results/prior_value_v2_dev.md` and
+   `results/prior_value_v2_tuning_dev.md`. The table above stays as
+   measured; nothing in it should be quoted as evidence for the prior.

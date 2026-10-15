@@ -36,7 +36,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -439,6 +439,7 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
               c_prior_cov: Optional[np.ndarray] = None,
               sample_mask: Optional[np.ndarray] = None,
               fix_boundaries: bool = False,
+              drop_notes: Optional[Sequence[int]] = None,
               free_width: bool = True, width_init: float = 0.018,
               fixed_width: float = 0.010,
               width_prior_median: float = 0.018,
@@ -471,6 +472,15 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
     samples (False = the model never sees those samples --- masked-audio
     imputation); ``fix_boundaries`` freezes the boundaries at ``b_init``
     (no db/width optimization), isolating the per-note-constant question.
+    ``drop_notes`` removes the listed notes' design columns from the
+    likelihood altogether (their window weight is zero everywhere), so
+    those notes' parameters see the PRIOR ONLY: the exact held-out
+    imputation protocol.  Needed because a sample mask alone is not
+    enough --- a masked note's sigmoid window tails beyond the mask guard
+    leave a few samples' worth of column mass on the neighbours' audio,
+    and under a marginalized amplitude that leak carries tens of nats
+    of wrong evidence about the hidden note's c (measured 2026-10-15,
+    results/prior_value_v2_dev.md).
     """
     _require_torch()
     dev = torch.device(device)
@@ -493,6 +503,7 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
     nv_init = float(noise_var)
     msk = (torch.as_tensor(np.asarray(sample_mask, bool))
            if sample_mask is not None else None)
+    dropped = set(int(k) for k in (drop_notes or ()))
     chol_c = None
     if c_prior_cov is not None:
         chol_c = torch.linalg.cholesky(torch.as_tensor(
@@ -544,6 +555,8 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
                 w = w * torch.sigmoid((t_t - b_lo[k - 1]) / softness)
             if k < k_n - 1:
                 w = w * torch.sigmoid((b_hi[k] - t_t) / softness)
+            if k in dropped:
+                w = w * 0.0
             cols.append(Phi_k * w.unsqueeze(1))
         return torch.cat(cols, dim=1)
 

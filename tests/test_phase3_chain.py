@@ -8,6 +8,7 @@ a perturbed init; window masses are sane; the ordering hinge activates.
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 try:
     import torch
@@ -210,3 +211,48 @@ def test_c_prior_pulls_masked_note():
     assert abs(fit_i.c[0] - fit_g.c[0]) < 3.0
     # boundaries stayed exactly at init
     assert np.allclose(fit_g.b_lo, [b_true], atol=1e-12)
+
+
+def test_drop_notes_hidden_c_is_exactly_the_prior_conditional():
+    """Protocol v2 of the prior-value experiment: with the hidden note's
+    design columns dropped, its c sees the prior only --- independent
+    prior => exactly the prior mean (zero gradient at the init), coupled
+    prior => the conditional mean given the observed note's c."""
+    torch = pytest.importorskip("torch")
+    from score_bundle.phase3.curve import (CurvePrior, design_support_torch,
+                                           fit_chain)
+    rng = np.random.default_rng(5)
+    sr, dur, b_true = 4000, 1.2, 0.6
+    t = np.arange(int(dur * sr)) / sr
+    m = t.size
+    x = np.zeros(m)
+    for k, (midi, cval) in enumerate(((60.0, 18.0), (64.0, 15.0))):
+        Phi = design_support_torch(
+            torch.as_tensor(np.full(m, cval), dtype=torch.float64),
+            torch.as_tensor(t, dtype=torch.float64), midi, 0, m, 3,
+            2).numpy()
+        w = (1.0 / (1.0 + np.exp(-(b_true - t) / 0.01)) if k == 0
+             else 1.0 / (1.0 + np.exp(-(t - b_true) / 0.01)))
+        x += (Phi * w[:, None]) @ rng.normal(0.0, np.sqrt(10.0),
+                                             Phi.shape[1])
+    x += rng.normal(0.0, 0.05 * x.std(), m)
+    mask = np.ones(m, dtype=bool)
+    mask[int((b_true - 0.05) * sr):] = False
+    prior = CurvePrior(knots_per_s=8.0, j_min=4, j_max=6)
+    var_c = 20.0 ** 2
+    rho = 0.95
+    k_ind = np.eye(2) * var_c
+    k_cpl = var_c * np.array([[1.0, rho], [rho, 1.0]])
+    common = dict(prior=prior, n_harm=3, n_chunk=2, n_steps=250,
+                  sample_mask=mask, fix_boundaries=True, drop_notes=[1])
+    fit_i = fit_chain(x, t, (60.0, 64.0), [b_true], c_prior_cov=k_ind,
+                      **common)
+    fit_g = fit_chain(x, t, (60.0, 64.0), [b_true], c_prior_cov=k_cpl,
+                      **common)
+    # independent: the hidden c is EXACTLY the prior mean (no evidence,
+    # zero gradient at the init)
+    assert fit_i.c[1] == 0.0, fit_i.c
+    # coupled: the hidden c is the prior conditional mean rho * c_obs
+    assert abs(fit_g.c[1] - rho * fit_g.c[0]) < 0.5, fit_g.c
+    # the observed note is recovered in both arms
+    assert abs(fit_i.c[0] - 18.0) < 2.0 and abs(fit_g.c[0] - 18.0) < 2.0

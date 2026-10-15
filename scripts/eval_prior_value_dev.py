@@ -72,9 +72,47 @@ Committed hypotheses, stated before the run:
       per-arm tuning-minus-first contrasts are exactly paired when the
       first run's cells are present (they are gitignored artifacts).
 
-    PRIORVAL_TUNING_SD=50 OMP_NUM_THREADS=2 PYTHONPATH=src:scripts \
-        python scripts/eval_prior_value_dev.py smoke
-    bash scripts/run_prior_value_eval.sh 8 50     # sharded + report
+PROTOCOL V2 --- THE HIDDEN NOTE ACOUSTICALLY ABSENT (2026-10-15; env
+PRIORVAL_DROP_HIDDEN=1; prefixes priorval_v2 / priorval_v2_tuning).
+Diagnosis of the first run and of the tuning follow-up on the same
+cells: under masking, every arm's hidden-note estimate had ZERO
+correlation with the truth, spread over +/-85 cents (wider than the
+prior itself), and every arm lost to the deadpan reference (predict
+zero: 14.4 cents) --- 21-28 cents.  Profiling the objective along the
+hidden note's c on cell 0 showed why: the note's sigmoid window tails
+beyond the 50 ms mask guard leave ~4 samples' worth of column mass on
+the neighbours' audio, and with the amplitudes marginalized that leak
+carves a ~38-nat well across +/-100 cents, dwarfing the prior's 4-35
+nats.  The masked estimates were leakage-driven optima, so the first
+span's "structure wins under ambiguity" was measured against
+contaminated ambiguity and is NOT supported as stated (recorded as an
+erratum in results/prior_value_dev.md).  V2 removes the hidden note's
+design columns from the likelihood (fit_chain(drop_notes=[j]); the same
+in the Laplace), so its likelihood is exactly flat and its posterior is
+the prior conditional given the observed notes --- the held-out
+imputation task proper.  Full per-note c and sd vectors are stored.
+
+Committed hypotheses for v2, stated before the run:
+  H1' (structure under true ambiguity): the structured arms beat the
+      independent arm on masked cells (paired).  Without the tuning
+      scalar the independent arm returns exactly the prior mean (error
+      = deadpan), so the contrast includes tuning-offset transfer; WITH
+      the scalar (PRIORVAL_TUNING_SD=50) the independent arm returns the
+      chain mean and the surviving contrast is note-level transfer.
+      Falsification: no significant structured-vs-independent gap under
+      the scalar => score structure carries no note-level intonation
+      information on short chains beyond tuning bookkeeping; reported
+      verbatim.  Graph-vs-temporal stays stratified by recurring pitch.
+  H4' (prior calibration): the hidden note's band is now the prior's
+      conditional sd; coverage@90 on masked cells tests whether the c
+      prior's scale and structure are honest.  No target pre-stated
+      beyond "nearer nominal than the leaked 0.38-0.51".
+  H5' (control): clean rows are bit-identical to the previous run of
+      the same configuration (no note is dropped without a mask).
+
+    PRIORVAL_DROP_HIDDEN=1 [PRIORVAL_TUNING_SD=50] OMP_NUM_THREADS=2 \
+        PYTHONPATH=src:scripts python scripts/eval_prior_value_dev.py smoke
+    bash scripts/run_prior_value_eval.sh 8 [50|-] v2   # sharded + report
 
     OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_prior_value_dev.py smoke
     OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_prior_value_dev.py run 0/8
@@ -101,12 +139,17 @@ CELLS_DIR = "results/phase3_cells"
 ARMS = ("indep", "temporal", "graph")
 TUNING_SD = (float(os.environ["PRIORVAL_TUNING_SD"])
              if os.environ.get("PRIORVAL_TUNING_SD") else None)
-# separate artifacts per variant: the first run's cells and results file
-# are never clobbered by the follow-up (and vice versa)
-CELLS_PREFIX = "priorval" if TUNING_SD is None else "priorval_tuning"
-BASE_PREFIX = "priorval"
-OUT_MD = ("results/prior_value_dev.md" if TUNING_SD is None
-          else "results/prior_value_tuning_dev.md")
+DROP_HIDDEN = os.environ.get("PRIORVAL_DROP_HIDDEN", "") == "1"
+# separate artifacts per variant: no run's cells or results file is ever
+# clobbered by another's
+CELLS_PREFIX = ("priorval" + ("_v2" if DROP_HIDDEN else "")
+                + ("_tuning" if TUNING_SD is not None else ""))
+# the run each variant is paired against in the report: the follow-ups
+# pair against the configuration they changed one thing from
+BASE_PREFIX = {"priorval": None, "priorval_tuning": "priorval",
+               "priorval_v2": "priorval",
+               "priorval_v2_tuning": "priorval_v2"}[CELLS_PREFIX]
+OUT_MD = "results/" + CELLS_PREFIX.replace("priorval", "prior_value") + "_dev.md"
 N_STEPS = 300
 S_SCALE = 1.0
 MASK_GUARD_S = 0.05   # mask 5x the window softness beyond the note's
@@ -151,7 +194,8 @@ def _with_tuning(K: np.ndarray) -> np.ndarray:
 
 
 def chain_c_laplace(x, t, midis, fit, hypers, c_prior_cov, sample_mask,
-                    n_harm=8, n_chunk=2, amp_var=10.0, softness=0.010):
+                    n_harm=8, n_chunk=2, amp_var=10.0, softness=0.010,
+                    drop_notes=None):
     """sd of each c_k from the joint (c, u) Laplace at the MAP, with the
     c prior and the sample mask included, boundaries fixed."""
     import torch
@@ -171,6 +215,7 @@ def chain_c_laplace(x, t, midis, fit, hypers, c_prior_cov, sample_mask,
     b_hi = torch.as_tensor(fit.b_hi, dtype=torch.float64)
     msk = (torch.as_tensor(np.asarray(sample_mask, bool))
            if sample_mask is not None else None)
+    dropped = set(int(k) for k in (drop_notes or ()))
     chol_c = torch.linalg.cholesky(torch.as_tensor(
         np.asarray(c_prior_cov, float), dtype=torch.float64))
     knots_t, chols, slices, sizes = [], [], [], []
@@ -203,6 +248,8 @@ def chain_c_laplace(x, t, midis, fit, hypers, c_prior_cov, sample_mask,
                 w = w * torch.sigmoid((t_t - b_lo[k - 1]) / softness)
             if k < k_n - 1:
                 w = w * torch.sigmoid((b_hi[k] - t_t) / softness)
+            if k in dropped:
+                w = w * 0.0
             cols.append(Phi_k * w.unsqueeze(1))
             prior_term = prior_term + 0.5 * (u_k @ torch.cholesky_solve(
                 u_k.unsqueeze(1), chols[k]).squeeze(1))
@@ -295,15 +342,20 @@ def run_cell(ch, hypers, n_steps=N_STEPS):
             K_c = arm_cov(arm, ch["midis"], ch["onsets"], ch["durs"],
                           ch["var_c"])
             t0_ = time.time()
+            drop = ([ch["j"]] if (DROP_HIDDEN and cond == "masked")
+                    else None)
             fit = fit_chain(ch["x"], ch["t"], ch["midis"], ch["b_annot"],
                             hypers=hypers, c_init=c0, noise_var=nv,
                             c_prior_cov=K_c, sample_mask=mask,
-                            fix_boundaries=True, n_steps=n_steps)
+                            fix_boundaries=True, n_steps=n_steps,
+                            drop_notes=drop)
             sds = chain_c_laplace(ch["x"], ch["t"], ch["midis"], fit,
-                                  hypers, K_c, mask)
+                                  hypers, K_c, mask, drop_notes=drop)
             j = ch["j"]
             out[f"{cond}_{arm}"] = {
                 "c": float(fit.c[j]), "sd": float(sds[j]),
+                "c_all": np.asarray(fit.c, float).copy(),
+                "sd_all": np.asarray(sds, float).copy(),
                 "wall": time.time() - t0_}
     return out
 
@@ -366,7 +418,7 @@ def stage_report() -> None:
         return
     rng = np.random.default_rng(31)
     base = []
-    if TUNING_SD is not None:
+    if BASE_PREFIX is not None:
         for f in sorted(glob.glob(f"{CELLS_DIR}/{BASE_PREFIX}.shard*.pkl")):
             base.extend(pickle.load(open(f, "rb")))
         if base and [(r["key"], tuple(r["idx"])) for r in base] != \
@@ -387,12 +439,14 @@ def stage_report() -> None:
         return (f"{d.mean():+.2f} [{lo:+.2f}, {hi:+.2f}]{star} "
                 f"(better on {np.mean(d < 0):.0%}, n={d.size})")
 
+    v2 = ("protocol v2, hidden note acoustically absent; "
+          if DROP_HIDDEN else "")
     title = ("# The prior-value experiment: score structure in direct "
-             "waveform inference (DEV, exploratory, no claims)\n"
+             f"waveform inference ({v2}DEV, exploratory, no claims)\n"
              if TUNING_SD is None else
              "# The prior-value experiment, tuning-scalar follow-up: "
              f"free per-chain tuning scalar (sd {TUNING_SD:.0f} cents) "
-             "in all arms (DEV, exploratory, no claims)\n")
+             f"in all arms ({v2}DEV, exploratory, no claims)\n")
     lines = [
         title,
         "\nThree cross-note priors over per-note intonation constants at "
@@ -437,8 +491,8 @@ def stage_report() -> None:
         lines.append(f"- {a} vs {b}: {paired('clean', a, b)}\n")
     if base:
         lines.append("\n## Cross-run, masked condition: this run minus "
-                     "the first run, per arm (negative = the scalar "
-                     "helped; exactly paired cells)\n\n")
+                     f"`{BASE_PREFIX}`, per arm (negative = this run "
+                     "better; exactly paired cells)\n\n")
         for arm in ARMS:
             d = np.array([err(r, "masked", arm) - err(b, "masked", arm)
                           for r, b in zip(rows, base)])
@@ -452,8 +506,9 @@ def stage_report() -> None:
             lines.append(f"- {arm}: {d.mean():+.2f} [{lo:+.2f}, "
                          f"{hi:+.2f}]{star} (better on {np.mean(d < 0):.0%}"
                          f", n={d.size}); first-run cov@90 {cov0:.2f}\n")
-        lines.append("\nFirst-run graph vs indep, masked, same cells: "
-                     + paired("masked", "graph", "indep", base) + "\n")
+        lines.append(f"\n`{BASE_PREFIX}` graph vs indep, masked, same "
+                     "cells: " + paired("masked", "graph", "indep", base)
+                     + "\n")
     walls = [v["wall"] for r in rows for k, v in r.items()
              if isinstance(v, dict) and "wall" in v]
     lines.append(f"\nwall per fit incl. Laplace: median "
