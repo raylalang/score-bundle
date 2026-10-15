@@ -129,3 +129,84 @@ def test_ordering_hinge_activates():
                     n_harm=2, n_chunk=2, n_steps=80, order_margin=0.05)
     assert fit.b_hi[0] <= fit.b_lo[1] - 0.05 + 0.005, (fit.b_hi, fit.b_lo)
     assert fit.window_mass[1] > 0.3, fit.window_mass
+
+
+def test_sample_mask_equals_truncated_likelihood():
+    if not HAS_TORCH:
+        return
+    # masking rows must equal fitting on the kept samples only: the
+    # reference noise and the fit on (x, mask) match a fit on a chain
+    # whose masked note is pure (unmodelled) noise in the unmasked arm
+    # only through the mask; here we pin the mechanical identity that
+    # chain_reference with a mask ignores the masked span entirely.
+    from score_bundle.phase3.curve import chain_reference
+
+    rng = np.random.default_rng(5)
+    x, t, _, _ = _two_note_audio(rng)
+    mask = np.ones(t.size, dtype=bool)
+    sl = slice(int(0.55 * 4000), int(1.2 * 4000))
+    mask[sl] = False
+    x_perturbed = x.copy()
+    x_perturbed[sl] = rng.normal(0.0, 10.0, sl.stop - sl.start)
+    c_a, nv_a = chain_reference(x, t, (60.0, 64.0), [0.6],
+                                sample_mask=mask, n_harm=3, n_chunk=2)
+    c_b, nv_b = chain_reference(x_perturbed, t, (60.0, 64.0), [0.6],
+                                sample_mask=mask, n_harm=3, n_chunk=2)
+    assert np.allclose(c_a, c_b) and abs(nv_a - nv_b) < 1e-12
+    # masked note 2 falls back to the prior-mean initializer
+    assert c_b[1] == 0.0
+
+
+def test_c_prior_pulls_masked_note():
+    if not HAS_TORCH:
+        return
+    # two-note model-true chain, note 2's audio masked out: with a
+    # strongly coupled c prior the hidden note's constant is pulled
+    # toward note 1's (informative); with an independent prior it stays
+    # at the prior mean (0). Boundaries fixed throughout.
+    from score_bundle.phase3.curve import CurvePrior, fit_chain
+
+    rng = np.random.default_rng(6)
+    b_true = 0.6
+
+    # build audio with constant offsets +18 and +15 cents (correlated)
+    from score_bundle.phase3.curve import design_support_torch
+    sr, dur = 4000, 1.2
+    t = np.arange(int(dur * sr)) / sr
+    m = t.size
+    x = np.zeros(m)
+    for k, (midi, cval) in enumerate(((60.0, 18.0), (64.0, 15.0))):
+        ce = np.full(m, cval)
+        Phi = design_support_torch(
+            torch.as_tensor(ce, dtype=torch.float64),
+            torch.as_tensor(t, dtype=torch.float64), midi, 0, m, 3,
+            2).numpy()
+        w = (1.0 / (1.0 + np.exp(-(b_true - t) / 0.01)) if k == 0
+             else 1.0 / (1.0 + np.exp(-(t - b_true) / 0.01)))
+        a = rng.normal(0.0, np.sqrt(10.0), Phi.shape[1])
+        x += (Phi * w[:, None]) @ a
+    x += rng.normal(0.0, 0.05 * x.std(), m)
+
+    mask = np.ones(m, dtype=bool)
+    # note 2 unobserved; the mask extends 50 ms before the boundary so
+    # the note's sigmoid window leak carries no evidence (the same guard
+    # the experiment uses -- without it the leak pulls the "hidden" c)
+    mask[int((b_true - 0.05) * sr):] = False
+    prior = CurvePrior(knots_per_s=8.0, j_min=4, j_max=6)
+    var_c = 20.0 ** 2
+    k_ind = np.eye(2) * var_c
+    k_cpl = var_c * np.array([[1.0, 0.95], [0.95, 1.0]])
+    common = dict(prior=prior, n_harm=3, n_chunk=2, n_steps=250,
+                  sample_mask=mask, fix_boundaries=True)
+    fit_i = fit_chain(x, t, (60.0, 64.0), [b_true], c_prior_cov=k_ind,
+                      **common)
+    fit_g = fit_chain(x, t, (60.0, 64.0), [b_true], c_prior_cov=k_cpl,
+                      **common)
+    # independent: hidden c stays near the prior mean
+    assert abs(fit_i.c[1]) < 6.0, fit_i.c
+    # coupled: hidden c pulled most of the way to the observed note's c
+    assert fit_g.c[1] > 9.0, fit_g.c
+    # observed note barely differs between arms
+    assert abs(fit_i.c[0] - fit_g.c[0]) < 3.0
+    # boundaries stayed exactly at init
+    assert np.allclose(fit_g.b_lo, [b_true], atol=1e-12)

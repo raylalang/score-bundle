@@ -151,11 +151,23 @@ def collapsed_loglik_torch(x, Phi, noise_var: float, amp_var: float):
 
 
 def fit_noise_torch(x, Phi) -> float:
-    """Residual noise variance at the least-squares amplitudes (profile)."""
+    """Residual noise variance at the least-squares amplitudes (profile).
+
+    Solved by ridge-regularized normal equations (tiny trace-scaled
+    jitter) rather than ``torch.linalg.lstsq``: on rank-deficient designs
+    (e.g.\ a masked note's exactly-zero columns) lstsq was measured to be
+    NONDETERMINISTIC call-to-call; the ridge solve is deterministic and
+    sends zero columns' coefficients to exactly zero.
+    """
     _require_torch()
-    beta = torch.linalg.lstsq(Phi, x.unsqueeze(1)).solution.squeeze(1)
+    p = Phi.shape[1]
+    G = Phi.T @ Phi
+    eps = 1e-10 * (torch.diagonal(G).sum() / p + 1.0)
+    beta = torch.linalg.solve(
+        G + eps * torch.eye(p, dtype=Phi.dtype, device=Phi.device),
+        Phi.T @ x)
     r = x - Phi @ beta
-    return float(r @ r) / max(x.shape[0] - Phi.shape[1], 1)
+    return float(r @ r) / max(x.shape[0] - p, 1)
 
 
 def knot_gram(knots, prior: CurvePrior, w1=None, mu1=None, v1=None,
@@ -345,8 +357,9 @@ def chain_reference(x: np.ndarray, t: np.ndarray, midis, b_ref, *,
                     prior: CurvePrior = CurvePrior(), n_harm: int = 8,
                     n_chunk: int = 2, amp_var: float = 10.0,
                     init_guard: float = 0.03, guard_frac: float = 0.0,
-                    c_half_range: float = 50.0,
-                    device: str = "cpu") -> Tuple[np.ndarray, float]:
+                    c_half_range: float = 50.0, device: str = "cpu",
+                    sample_mask: Optional[np.ndarray] = None,
+                    ) -> Tuple[np.ndarray, float]:
     """Per-note coarse c's and the shared segment noise variance, computed
     at REFERENCE boundaries b_ref (delta-independent — every perturbation
     arm of one chain must reuse this, or the arms optimize different
@@ -370,6 +383,8 @@ def chain_reference(x: np.ndarray, t: np.ndarray, midis, b_ref, *,
                            [t_np[-1]]])
     c0s = np.zeros(k_n)
     grid = np.arange(-c_half_range, c_half_range, 1.0)
+    mask_np = (np.asarray(sample_mask, bool) if sample_mask is not None
+               else np.ones(m, dtype=bool))
     with torch.no_grad():
         for k in range(k_n):
             lo, hi = cuts[k], cuts[k + 1]
@@ -379,8 +394,12 @@ def chain_reference(x: np.ndarray, t: np.ndarray, midis, b_ref, *,
             if ib - ia < int(0.08 * sr):          # degenerate slice
                 ia = int(np.searchsorted(t_np, lo))
                 ib = int(np.searchsorted(t_np, hi))
-            xs = x_t[ia:ib]
-            ts = torch.as_tensor(t_np[ia:ib], dtype=torch.float64,
+            keep = mask_np[ia:ib]
+            if keep.sum() < int(0.08 * sr):       # masked note: prior mean
+                c0s[k] = 0.0
+                continue
+            xs = x_t[ia:ib][torch.as_tensor(keep)]
+            ts = torch.as_tensor(t_np[ia:ib][keep], dtype=torch.float64,
                                  device=dev)
             Phi0 = chunked_design_torch(torch.zeros_like(ts), ts,
                                         float(midis[k]), n_harm, n_chunk)
@@ -403,7 +422,12 @@ def chain_reference(x: np.ndarray, t: np.ndarray, midis, b_ref, *,
             cents = torch.full_like(ts, c0s[k])
             cols.append(design_support_torch(cents, ts, float(midis[k]),
                                              ia, m, n_harm, n_chunk))
-        noise_var = fit_noise_torch(x_t, torch.cat(cols, dim=1))
+        Phi_all = torch.cat(cols, dim=1)
+        if sample_mask is not None:
+            keep_t = torch.as_tensor(mask_np)
+            noise_var = fit_noise_torch(x_t[keep_t], Phi_all[keep_t])
+        else:
+            noise_var = fit_noise_torch(x_t, Phi_all)
     return c0s, noise_var
 
 
@@ -412,6 +436,9 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
               hypers: Optional[dict] = None,
               c_init: Optional[np.ndarray] = None,
               noise_var: Optional[float] = None,
+              c_prior_cov: Optional[np.ndarray] = None,
+              sample_mask: Optional[np.ndarray] = None,
+              fix_boundaries: bool = False,
               free_width: bool = True, width_init: float = 0.018,
               fixed_width: float = 0.010,
               width_prior_median: float = 0.018,
@@ -435,6 +462,15 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
     :func:`chain_reference` at the chain's REFERENCE boundaries so that
     perturbation arms share one objective; if omitted they are computed
     at ``b_init`` itself.  noise_var is refit once (no-grad) halfway.
+
+    Cross-note structure and ambiguity (the prior-value experiment):
+    ``c_prior_cov`` (K, K) puts a proper Gaussian prior over the per-note
+    constants c (replacing the default flat prior) --- independent,
+    temporal, or score-graph structure enters here and ONLY here;
+    ``sample_mask`` (m,) bool restricts the likelihood to the marked
+    samples (False = the model never sees those samples --- masked-audio
+    imputation); ``fix_boundaries`` freezes the boundaries at ``b_init``
+    (no db/width optimization), isolating the per-note-constant question.
     """
     _require_torch()
     dev = torch.device(device)
@@ -450,10 +486,17 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
     if c_init is None or noise_var is None:
         c0s, nv0 = chain_reference(x, t, midis, b_init, prior=prior,
                                    n_harm=n_harm, n_chunk=n_chunk,
-                                   amp_var=amp_var, device=device)
+                                   amp_var=amp_var, device=device,
+                                   sample_mask=sample_mask)
         c_init = c0s if c_init is None else c_init
         noise_var = nv0 if noise_var is None else noise_var
     nv_init = float(noise_var)
+    msk = (torch.as_tensor(np.asarray(sample_mask, bool))
+           if sample_mask is not None else None)
+    chol_c = None
+    if c_prior_cov is not None:
+        chol_c = torch.linalg.cholesky(torch.as_tensor(
+            np.asarray(c_prior_cov, float), dtype=torch.float64))
 
     cuts = np.concatenate([[t_np[0]], b_init, [t_np[-1]]])
     knots_list, chol_list, slices = [], [], []
@@ -483,7 +526,7 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
     def edges():
         b_lo = b_init_t + db_ms / 1000.0
         width = (min_width + torch.nn.functional.softplus(gap)
-                 if free_width
+                 if free_width and not fix_boundaries
                  else torch.full_like(b_lo, fixed_width))
         return b_lo, b_lo + width, width
 
@@ -507,11 +550,18 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
     def nlj():
         b_lo, b_hi, width = edges()
         Phi = assemble(b_lo, b_hi)
-        loss = -collapsed_loglik_torch(x_t, Phi, noise_var, amp_var)
+        if msk is not None:
+            loss = -collapsed_loglik_torch(x_t[msk], Phi[msk], noise_var,
+                                           amp_var)
+        else:
+            loss = -collapsed_loglik_torch(x_t, Phi, noise_var, amp_var)
         for u, chol in zip(us, chol_list):
             loss = loss + 0.5 * (u @ torch.cholesky_solve(
                 u.unsqueeze(1), chol).squeeze(1))
-        if free_width:
+        if chol_c is not None:
+            loss = loss + 0.5 * (c @ torch.cholesky_solve(
+                c.unsqueeze(1), chol_c).squeeze(1))
+        if free_width and not fix_boundaries:
             loss = loss + 0.5 * (((torch.log(width)
                                    - math.log(width_prior_median))
                                   / width_prior_sigma) ** 2).sum()
@@ -520,10 +570,11 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
             loss = loss + order_weight * viol ** 2
         return loss
 
-    groups = [{"params": [c] + us, "lr": lr_curve},
-              {"params": [db_ms], "lr": lr_db_ms}]
-    if free_width:
-        groups.append({"params": [gap], "lr": lr_gap})
+    groups = [{"params": [c] + us, "lr": lr_curve}]
+    if not fix_boundaries:
+        groups.append({"params": [db_ms], "lr": lr_db_ms})
+        if free_width:
+            groups.append({"params": [gap], "lr": lr_gap})
     opt = torch.optim.Adam(groups)
     base_lrs = [g["lr"] for g in opt.param_groups]
     decay_from = int(0.75 * n_steps)
@@ -542,7 +593,9 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
             with torch.no_grad():
                 b_lo, b_hi, _ = edges()
                 Phi = assemble(b_lo, b_hi)
-                noise_var = fit_noise_torch(x_t, Phi)
+                noise_var = (fit_noise_torch(x_t[msk], Phi[msk])
+                             if msk is not None
+                             else fit_noise_torch(x_t, Phi))
 
     with torch.no_grad():
         final = float(nlj())
