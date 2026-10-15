@@ -12,6 +12,38 @@ the chronology, the music model named directly. The internal Phase-0..3
 numbering survives only in code, results files, and the frozen names of
 registered artifacts; this file uses the content names.
 
+## THE PLAN to submission (restored 2026-10-15 from the 2026-10-14 session)
+
+The plan the deck's Plan frame and the 2026-10-14 session carried, in one
+place, with the decision gates that are Ray's. Rows marked *(proposed)*
+are sequencing suggestions, not agreed; everything else was stated in
+the deck or the brief. New runs happen only on Ray's go.
+
+| when | what | gate |
+|---|---|---|
+| October (done) | first curve-from-waveform studies at scale; the curve as a bundle channel; joint note boundaries; **the first span of the bridge** (score prior over per-note constants inside the waveform inference: structure wins under ambiguity, ties on clean audio) | — |
+| October (now) | the direction-and-scope meeting: objective, positioning, integration scope, variables, evidence bar, registration pool (brief §H) | Ray + professor |
+| October/November | **tuning-scalar follow-up** of the prior-value experiment (free per-chain tuning scalar, all arms): decides whether the win is expression transfer or tuning bookkeeping and should repair masked coverage; same script, one parameter | Ray's go |
+| November | decide the registration pool (correlated timing noise, tonal metric: Bach10 / disclosed URMP re-use / both), then run the registered timing confirmation, one shot | professor |
+| November | decide the channel design for the waveform strand: scalars or curve level | Ray |
+| November | a transient model at the note boundary (the pre-named next lever for the ~18 ms acoustic-vs-musical gap) | Ray's go |
+| November *(proposed)* | decide whether masked-audio imputation becomes the registered waveform claim (registration-friendly: clean protocol, pre-stated rule); if yes, freeze a prereg like `docs/corrnoise_prereg_DRAFT.md` before any further waveform run touches the would-be pool | Ray |
+| December | **whole-phrase joint inference from the waveform** — the "December row": all notes of a performance under the graph prior, the transient model at the joints, loudness/articulation (amplitudes) brought under the prior instead of read out post hoc, the estimand bridge between the harmonic constant and the annotation functional; consolidate thesis chapters as results land | — |
+| December *(proposed)* | adopt the decomposition framing (score + expression + timbre + noise) in the intro/abstract, held since 2026-10-14 for after the meeting | Ray |
+| 2027-01-07 (approx.) | **progress presentation**: deck from `deck.tex`, results that stand on their own only | — |
+| January *(proposed)* | writing freeze: no new runs after the progress talk; Discussion / Limitations / Conclusion finalized; Codex review pass; Overleaf synced | Ray |
+| 2027-02-02 (tentative) | **thesis submission** | — |
+
+Decisions still open from the 2026-10-14 session, verbatim list:
+(a) tuning-scalar follow-up next (recommended); (b) masked-imputation as
+the registered waveform claim; (c) the brief's H questions; (d) whether
+the piano chapter should also carry explicit independent/temporal
+baseline rows under the final model in the main line (flagged, not
+fixed); (e) whether "decomposition" becomes the intro's literal
+vocabulary. The worktree branch is merged (2026-10-15); its raw cell
+pickles and shard logs are gitignored and still live only in
+`.claude/worktrees/audit-week-0813` — copy or archive before removing it.
+
 ## NOW — Direction and scope (meeting brief dated 2026-10-14)
 
 `docs/meeting_qa_prep.md` is the direction-and-scope brief (sections
