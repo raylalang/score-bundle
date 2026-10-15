@@ -38,6 +38,44 @@ on the corpus ground-truth curve), z and coverage at 90% from a joint
 Laplace over (c, u) at the MAP, deadpan |c_qt| as the no-information
 reference. Sharded run k/n + report; cells in results/phase3_cells/.
 
+THE TUNING-SCALAR FOLLOW-UP (2026-10-15; env PRIORVAL_TUNING_SD=<cents>,
+unset = the measured first run, bit-unchanged).  The first run's reading
+flagged that much of the structured win may be common-mode: a track's
+shared tuning offset, transferred from the observed notes to the hidden
+one by either structured prior, while the independent prior can only
+return zero.  The follow-up gives EVERY arm a free per-chain tuning
+scalar t ~ N(0, sd_t^2), c = t*1 + c~, with c~ under the arm's own prior
+as before.  Marginalizing t is exact and needs no new machinery: the
+prior covariance becomes K_arm + sd_t^2 * 1 1^T (rank-one, identical
+addition in all three arms, so marginal variances stay matched).  With
+sd_t = 50 cents the scalar is effectively free: the observed notes pin
+it (prior shrinkage of the chain mean <= var_c / (var_c + n_obs sd_t^2),
+printed by the smoke verb), which makes the independent arm a
+demeaning baseline while keeping one Laplace, one optimizer, one
+scoring.  The note-level scale var_c is deliberately left as in the
+first run (one change at a time: any movement is the scalar's).
+
+Committed hypotheses, stated before the run:
+  H3 (attribution): the independent arm's masked error drops (it now
+      receives the common mode).  If the graph-vs-independent paired
+      gap on masked cells survives (bootstrap CI excludes zero), the
+      first-span headline is NOTE-LEVEL expression transfer; if it
+      collapses (CI covers zero), the headline was tuning bookkeeping
+      and is reported verbatim as such.  The recurring-pitch stratum
+      for graph-vs-temporal stays the pre-stated place for a score-
+      specific edge.
+  H4 (calibration): masked coverage@90 rises toward nominal for all
+      arms (the miscentring diagnosis); if it stays far below, the
+      diagnosis was wrong and the Laplace band itself is suspect.
+  H5 (control): the clean condition still ties three ways.
+  Cross-run: the same 47 cells in the same order as the first run, so
+      per-arm tuning-minus-first contrasts are exactly paired when the
+      first run's cells are present (they are gitignored artifacts).
+
+    PRIORVAL_TUNING_SD=50 OMP_NUM_THREADS=2 PYTHONPATH=src:scripts \
+        python scripts/eval_prior_value_dev.py smoke
+    bash scripts/run_prior_value_eval.sh 8 50     # sharded + report
+
     OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_prior_value_dev.py smoke
     OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_prior_value_dev.py run 0/8
     OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_prior_value_dev.py report
@@ -60,8 +98,15 @@ from eval_phase3_chain_dev import SR, chain_segment, select_chains
 from eval_phase3_curve_dev import load_hypers
 
 CELLS_DIR = "results/phase3_cells"
-OUT_MD = "results/prior_value_dev.md"
 ARMS = ("indep", "temporal", "graph")
+TUNING_SD = (float(os.environ["PRIORVAL_TUNING_SD"])
+             if os.environ.get("PRIORVAL_TUNING_SD") else None)
+# separate artifacts per variant: the first run's cells and results file
+# are never clobbered by the follow-up (and vice versa)
+CELLS_PREFIX = "priorval" if TUNING_SD is None else "priorval_tuning"
+BASE_PREFIX = "priorval"
+OUT_MD = ("results/prior_value_dev.md" if TUNING_SD is None
+          else "results/prior_value_tuning_dev.md")
 N_STEPS = 300
 S_SCALE = 1.0
 MASK_GUARD_S = 0.05   # mask 5x the window softness beyond the note's
@@ -76,7 +121,7 @@ def arm_cov(arm: str, midis, onsets, durs, var_c: float) -> np.ndarray:
     """(K, K) prior covariance over c, diagonal-matched to var_c."""
     k_n = len(midis)
     if arm == "indep":
-        return var_c * np.eye(k_n)
+        return _with_tuning(var_c * np.eye(k_n))
     if arm == "temporal":
         A = np.zeros((k_n, k_n))
         for i in range(k_n - 1):
@@ -94,7 +139,15 @@ def arm_cov(arm: str, midis, onsets, durs, var_c: float) -> np.ndarray:
     K = np.linalg.inv(np.eye(k_n) + S_SCALE * L)
     d = np.sqrt(np.diag(K))
     K = K / d[:, None] / d[None, :]
-    return var_c * K
+    return _with_tuning(var_c * K)
+
+
+def _with_tuning(K: np.ndarray) -> np.ndarray:
+    """The free per-chain tuning scalar, marginalized: + sd_t^2 1 1^T
+    (no-op in the first-run configuration)."""
+    if TUNING_SD is None:
+        return K
+    return K + TUNING_SD ** 2 * np.ones_like(K)
 
 
 def chain_c_laplace(x, t, midis, fit, hypers, c_prior_cov, sample_mask,
@@ -264,6 +317,12 @@ def stage_smoke():
         n = sum(1 for _ in iter_cells())
         print(f"cell 0: {ch['key']} notes {ch['idx']} mask #{ch['j']} "
               f"(gt_c {ch['gt_c']:+.1f}, recur={ch['recur']})")
+        if TUNING_SD is not None:
+            n_obs = len(ch["idx"]) - 1
+            shrink = ch["var_c"] / (ch["var_c"] + n_obs * TUNING_SD ** 2)
+            print(f"  tuning scalar sd {TUNING_SD:.0f} cents: var_c "
+                  f"{ch['var_c']:.0f}, n_obs {n_obs}, prior shrinkage of "
+                  f"the chain mean <= {shrink:.3f}")
         for k, v in res.items():
             print(f"  {k}: c {v['c']:+.2f} +/- {v['sd']:.2f} "
                   f"[{v['wall']:.0f}s]")
@@ -293,19 +352,28 @@ def stage_run(shard: str) -> None:
                          for a in ARMS)
               + f" [{sum(v['wall'] for v in res.values()):.0f}s]",
               flush=True)
-    out = f"{CELLS_DIR}/priorval.shard{k_sh}of{nsh}.pkl"
+    out = f"{CELLS_DIR}/{CELLS_PREFIX}.shard{k_sh}of{nsh}.pkl"
     pickle.dump(rows, open(out, "wb"))
     print(f"wrote {out} ({len(rows)} cells)")
 
 
 def stage_report() -> None:
     rows = []
-    for f in sorted(glob.glob(f"{CELLS_DIR}/priorval.shard*.pkl")):
+    for f in sorted(glob.glob(f"{CELLS_DIR}/{CELLS_PREFIX}.shard*.pkl")):
         rows.extend(pickle.load(open(f, "rb")))
     if not rows:
         print("no shards")
         return
     rng = np.random.default_rng(31)
+    base = []
+    if TUNING_SD is not None:
+        for f in sorted(glob.glob(f"{CELLS_DIR}/{BASE_PREFIX}.shard*.pkl")):
+            base.extend(pickle.load(open(f, "rb")))
+        if base and [(r["key"], tuple(r["idx"])) for r in base] != \
+                [(r["key"], tuple(r["idx"])) for r in rows]:
+            print("WARNING: first-run cells do not pair with this run; "
+                  "cross-run contrasts skipped")
+            base = []
 
     def err(r, cond, arm):
         return abs(r[f"{cond}_{arm}"]["c"] - r["gt_c"])
@@ -319,9 +387,14 @@ def stage_report() -> None:
         return (f"{d.mean():+.2f} [{lo:+.2f}, {hi:+.2f}]{star} "
                 f"(better on {np.mean(d < 0):.0%}, n={d.size})")
 
+    title = ("# The prior-value experiment: score structure in direct "
+             "waveform inference (DEV, exploratory, no claims)\n"
+             if TUNING_SD is None else
+             "# The prior-value experiment, tuning-scalar follow-up: "
+             f"free per-chain tuning scalar (sd {TUNING_SD:.0f} cents) "
+             "in all arms (DEV, exploratory, no claims)\n")
     lines = [
-        "# The prior-value experiment: score structure in direct "
-        "waveform inference (DEV, exploratory, no claims)\n",
+        title,
         "\nThree cross-note priors over per-note intonation constants at "
         "matched marginal\nvariance, identical likelihood/data/optimizer, "
         "boundaries fixed at annotations.\nConditions: the middle "
@@ -362,6 +435,25 @@ def stage_report() -> None:
                  "ties)\n\n")
     for a, b in (("graph", "indep"), ("temporal", "indep")):
         lines.append(f"- {a} vs {b}: {paired('clean', a, b)}\n")
+    if base:
+        lines.append("\n## Cross-run, masked condition: this run minus "
+                     "the first run, per arm (negative = the scalar "
+                     "helped; exactly paired cells)\n\n")
+        for arm in ARMS:
+            d = np.array([err(r, "masked", arm) - err(b, "masked", arm)
+                          for r, b in zip(rows, base)])
+            bs = np.array([rng.choice(d, d.size).mean()
+                           for _ in range(2000)])
+            lo, hi = np.quantile(bs, [.025, .975])
+            star = "*" if (hi < 0 or lo > 0) else " "
+            cov0 = np.mean([abs((b[f"masked_{arm}"]["c"] - b["gt_c"])
+                                / max(b[f"masked_{arm}"]["sd"], 1e-9))
+                            <= _Z90 for b in base])
+            lines.append(f"- {arm}: {d.mean():+.2f} [{lo:+.2f}, "
+                         f"{hi:+.2f}]{star} (better on {np.mean(d < 0):.0%}"
+                         f", n={d.size}); first-run cov@90 {cov0:.2f}\n")
+        lines.append("\nFirst-run graph vs indep, masked, same cells: "
+                     + paired("masked", "graph", "indep", base) + "\n")
     walls = [v["wall"] for r in rows for k, v in r.items()
              if isinstance(v, dict) and "wall" in v]
     lines.append(f"\nwall per fit incl. Laplace: median "
