@@ -22,6 +22,12 @@ do not create, sync, or reference one.)
 
 ## Phases (and what's implemented)
 
+(Vocabulary, 2026-10-14: the thesis and the deck no longer say "Phase N" — they use
+the content names: the **piano**, **strings-and-winds**, and **waveform** settings,
+"stages" for the chronology, the music model named directly. The Phase-0..3
+numbering below survives in code, results files, and the frozen names of registered
+artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
+
 - **Phase 0 — music LM (implemented).** From-scratch **PyTorch** decoder-only Transformer
   over note-structured MIDI tokens (`src/score_bundle/lm/`, hand-written causal attention).
   Provides per-note embeddings `h_i` that feed the Phase-1 GP as a feature kernel (in the
@@ -135,24 +141,50 @@ do not create, sync, or reference one.)
   (`results/phase2_seeds23_dev.md`); δ_vib decision
   (`results/delta_vib_dev.md`); tracker calibration
   (`results/tracker_calibration_dev.md`).
-- **Phase 3 — waveform likelihood: dev studies exist (all exploratory,
-  no claims).** `src/score_bundle/phase3/`: synthesis basis Φ(z) +
-  exact amplitude marginalization incl. the O(mp²) Woodbury form
-  (`collapsed_loglik_lowrank`, dense-equality unit-pinned). Measured
-  record: `results/phase3_waveform_feasibility.md` (2-note pilot),
-  `results/phase3_waveform_dev.md` (376 notes / 7 tracks: waveform
-  median 2.29 cents from quasi-truth with NO tracker, beats the
-  estimator chain on winds; coverage vs quasi-truth invariant ~0.02
-  under mean/noise/deviation-prior fixes; self-check on model-true
-  synthetics covers at 0.90 exactly ⇒ the gap is an ESTIMAND gap),
-  `results/phase3_integration_dev.md` (waveform c as 7th bundle channel
-  + visible-notes discrepancy floor: better on 14/14 pairs, −1.21*;
-  no-floor control worse-calibrated ⇒ the floor is necessary). Thesis
-  §3.10 carries the study; joint inference over z remains open. The
-  three spectral-kernel papers (`related_works/`, reviewed in
-  `docs/kernel_papers_review.md`; unification option in
-  `docs/gp_everywhere_memo.md`) are the design vocabulary for the
-  within-note curve prior.
+- **Phase 3 — the waveform as the observation: ACTIVE since 2026-10-09 (dev
+  studies only, all exploratory, no claims; nothing registered touched).**
+  `src/score_bundle/phase3/`: `synth.py` + `waveform_model.py` = synthesis basis
+  Φ(z) + exact amplitude marginalization incl. the O(mp²) Woodbury form
+  (`collapsed_loglik_lowrank`, dense-equality unit-pinned); `curve.py` = the
+  differentiable step of the DDSP direction (`docs/ddsp_review.md`: gradients
+  through OUR synthesizer, the exact marginalized likelihood and the GP priors
+  kept; no neural encoder, no spectral surrogate loss) — PyTorch, import-guarded,
+  gradient MAP + full joint Laplace over the within-note curve on a knot grid,
+  numpy-path equality test-pinned (`tests/test_phase3_curve.py`,
+  `test_phase3_chain.py`); API `fit_note`, `fit_chain`, `CurveFit.average`
+  (the realized-average read-out that feeds the bundle). Measured record,
+  August: `results/phase3_waveform_feasibility.md` (2-note pilot),
+  `results/phase3_waveform_dev.md` (376 notes / 7 tracks: waveform median
+  2.29 cents from quasi-truth with NO tracker, beats the estimator chain on
+  winds; coverage vs quasi-truth invariant ~0.02 under mean/noise/deviation-prior
+  fixes; self-check on model-true synthetics covers at 0.90 exactly ⇒ the gap
+  is an ESTIMAND gap), `results/phase3_integration_dev.md` (scalar waveform c
+  as 7th bundle channel + visible-notes discrepancy floor: −1.21*; no-floor
+  control worse-calibrated ⇒ the floor is necessary). October (all `results/
+  phase3_*_dev.md`, runners `scripts/run_phase3_{curve,chain}_eval.sh`,
+  sharded): evidence-fitted curve prior = dev default (`phase3_prior_fit_dev`,
+  wins at n=376); batch curve study (`phase3_curve_dev`: median 3.16 cents vs
+  pYIN frames 4.09, winds win, strings favour the tracker, parameter-band
+  coverage 0.32–0.36 = the estimand gap at curve level); curve read-out as the
+  bundle's waveform channel (`phase3_curve_integration_dev`: −1.36* on 14/14
+  pairs, floor halves 3.09→1.80 cents); boundary pilot
+  (`phase3_boundary_pilot_dev`: soft-window gradients converge
+  start-independently; optimum ~25 ms from the annotation = acoustic vs
+  musical onset); chain study (`phase3_chain_dev`, 47 chains / 154 boundaries:
+  transition-REGION hypothesis REJECTED, sharp edges win; edge error ~18 ms;
+  **deployment works** — score-nominal tempo-line inits, no annotation,
+  39.4→19.5 ms median; chains cost ~1.8 cents guarded curve RMSE vs
+  single-note fits; next lever, pre-named: transient columns at the joints).
+  **Verified boundary, stated in the thesis contributions: the graph prior is
+  NOT inside the waveform inference** (independent per-note curve priors; the
+  graph meets waveform output only post hoc, as one bundle channel). Proposed
+  next experiment (brief §G, awaits the meeting + Ray's separate code
+  authorization): three priors (independent / temporal chain / score-graph GP)
+  over the per-note scalars inside `fit_chain`. Thesis: main-line Ch. 8
+  (`ch:phase3`) + Future Work `sec:future-phase3`. The three spectral-kernel
+  papers (`related_works/`, `docs/kernel_papers_review.md`,
+  `docs/gp_everywhere_memo.md`) are the design vocabulary for the within-note
+  curve prior (Slot B measured no-gain, `results/phase3_smprior_dev.md`).
 - **Exploration week (2026-09-10/11, dev-only) + adoption (2026-09-16).**
   Seven development studies, ledger `results/exploration_week_2026-09.md`:
   timing tail defused at both levels (deploy-time t predictive; EM t noise
@@ -171,6 +203,17 @@ do not create, sync, or reference one.)
   the study machinery), `downstream.completion_guard`. Tests:
   `tests/test_adoption_optin.py` (incl. ρ=0 bit-equality and brute-force
   conditioning pins).
+- **Thesis state (2026-10-14, main=25791ab): 74 pp, compile clean.** Main line =
+  Intro / Background / Model / Data / piano results / Downstream / strings-and-winds
+  results / **the waveform as the observation (Ch. 8)** / Discussion / Future Work /
+  Conclusion; appendices A–G. Refocus: objective = an interpretable, score-aligned
+  representation with uncertainty; method = Bayesian score-conditioned inverse
+  synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
+  ladder; three-question RQ hierarchy. `docs/slides/deck.tex` is the one full
+  thesis deck (44 frames). `docs/meeting_qa_prep.md` = the 2026-10-14
+  direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT. Held
+  for after the meeting (Ray's call): the decomposition framing (score +
+  expression + timbre + noise) in the intro/abstract.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,
