@@ -27,7 +27,8 @@ probabilistic inverse-inference framework that recovers it. They are
 complementary. Honesty guards: the representation is interpretable *by
 construction* (named parameters), not semantically validated; the
 framework is validated stage by stage, and its full integration at the
-waveform is not yet implemented.
+waveform is not yet complete (the first span is measured, §G; the rest
+is open).
 
 ## B. Why it matters
 

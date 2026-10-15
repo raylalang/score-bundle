@@ -1,6 +1,7 @@
 # Roadmap
 
-Updated 2026-10-15. One ongoing task at a time. Order stays deliberate:
+Updated 2026-10-15. Submission tentatively **2027-02-02**; progress
+presentation expected around **2027-01-07**. One ongoing task at a time. Order stays deliberate:
 understanding, then legibility, then modelling. New studies run only on
 Ray's explicit mandate (the 2026-09-03 rule stands); the September
 exploration week and the October waveform studies were both mandated.
@@ -38,21 +39,46 @@ restructured and reframed on 2026-10-14); `docs/slides/README.md` still
 describes the 16+5-frame content-first build and `docs/zemi_prep.md`
 the 28-slide zemi deck — both are superseded by `deck.tex`.
 
-## NEXT (conditional on the meeting) — the three-prior comparison
+## DONE — The first span of the bridge (2026-10-14 evening, Ray's go)
 
-The brief's proposed experiment: joint waveform inference on short note
-sequences under three priors at matched everything else — independent
-(current), temporal chain, score-graph GP — over the per-note scalars
-of the chain (centres, boundary offsets), same acoustic model, same
-optimizer, same notes. The chain machinery exists (`phase3/curve.py`
-`fit_chain`); the comparison needs a cross-note prior term over the
-per-note scalars inside the chain objective, which is NOT written and
-awaits Ray's separate authorization. Power caveats stated in the brief
-(score graph ≈ temporal chain on 3–5 monophonic notes unless chains with
-recurring pitches are selected; prior effects concentrate at joints).
-Recommended first, no new inference code: the same three priors at the
-measurement level through the existing strings-and-winds bundle
-machinery (no-graph / time-only chain / score-graph adjacency all exist).
+The brief's proposed experiment was built and measured the same day
+(`scripts/eval_prior_value_dev.py`, `results/prior_value_dev.md`;
+cross-note prior term over the per-note intonation constants inside
+`fit_chain`, `tests/test_phase3_chain.py` extended): independent /
+temporal-chain / score-graph priors at matched marginal variance,
+identical likelihood, data, optimizer; boundaries fixed at annotations;
+ambiguity = the middle note's audio MASKED from the likelihood, clean
+audio as the control; hypotheses and falsification rule committed in
+the docstring. 47 chains, 4 development tracks. Development, no claims:
+
+- Under masking, structure wins: hidden-note error 21.2 → 18.8 cents
+  median with the score graph (paired −4.63*, better on 85%); the
+  temporal prior gains similarly (−4.39*).
+- Graph vs temporal: −0.24 (ns) overall, −0.72* on the 25 recurring-pitch
+  cells — the pre-stated stratum. First waveform-level evidence that
+  SCORE structure (pitch proximity, not just time adjacency) carries
+  information.
+- With clean audio the three arms tie exactly: the prior's value is
+  specific to ambiguity (the methodological hypothesis in one line).
+- Caveats: much of the structured win is common-mode (track tuning
+  offset transferred from neighbours); masked coverage 0.38–0.49 for
+  every arm (zero-mean c prior miscentred under tuning offsets); clean
+  coverage nominal. ~155 s per fit incl. Laplace.
+
+Thesis: `sec:phase3-priorvalue` in Ch. 8; contributions paragraph,
+RQ3 paragraph, abstract, and Future Work say "first span measured, the
+rest open". Brief sections D.4, F.1, G updated.
+
+## NEXT (needs Ray's go) — the tuning-scalar follow-up
+
+Re-run the prior-value experiment with a free per-chain tuning scalar
+shared by all three arms (or demeaning by the observed notes). If the
+graph-vs-independent gap survives, the win is note-level expression
+transfer, not tuning bookkeeping; the same scalar should also repair the
+masked-condition coverage. Small: same script, one extra parameter.
+After that, span by span: coupling boundary offsets, then curve level,
+then the remaining channels, then whole-performance scale (thesis
+`sec:future-phase3`).
 
 ## DONE — The waveform setting goes active (2026-10-07..14, Ray's go)
 
@@ -86,10 +112,9 @@ nothing registered touched:
   boundary error 39.4 → 19.5 ms. Chains cost ~1.8 cents guarded curve
   RMSE vs single-note fits. Next lever (pre-named): transient/broadband
   columns at the joints.
-- Verified status, stated in the thesis contributions: the graph prior
-  is NOT inside the waveform inference (independent per-note curve
-  priors; the graph meets waveform output only post hoc, as one bundle
-  channel).
+- Status at the end of these studies (superseded the same evening, see
+  the next block): the graph prior was not yet inside the waveform
+  inference; it met waveform output only post hoc, as one bundle channel.
 
 ## DONE — Thesis restructure and refocus (2026-10-14)
 
@@ -193,6 +218,7 @@ coherence bound, the realized-vs-process estimand rule).
   meeting (Ray's call).
 - Joint loop over all notes under the graph prior, transient columns at
   the joints, amplitudes under the prior: thesis Future Work
-  (`sec:future-phase3`); the NEXT item above is its first measured step.
+  (`sec:future-phase3`); the first span is measured, the NEXT item above
+  is the next.
 - Historical meeting materials: `docs/zemi_prep.md`, `deck_zemi_v1`,
   `deck_week`, `deck_kernels` — git history and frozen copies only.

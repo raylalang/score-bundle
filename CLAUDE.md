@@ -175,12 +175,23 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   **deployment works** — score-nominal tempo-line inits, no annotation,
   39.4→19.5 ms median; chains cost ~1.8 cents guarded curve RMSE vs
   single-note fits; next lever, pre-named: transient columns at the joints).
-  **Verified boundary, stated in the thesis contributions: the graph prior is
-  NOT inside the waveform inference** (independent per-note curve priors; the
-  graph meets waveform output only post hoc, as one bundle channel). Proposed
-  next experiment (brief §G, awaits the meeting + Ray's separate code
-  authorization): three priors (independent / temporal chain / score-graph GP)
-  over the per-note scalars inside `fit_chain`. Thesis: main-line Ch. 8
+  **The first span of the bridge (2026-10-14 evening, dev): the score graph now
+  couples per-note intonation constants INSIDE the waveform inference on short
+  chains** — the prior-value experiment (`scripts/eval_prior_value_dev.py`,
+  `results/prior_value_dev.md`, runner `run_prior_value_eval.sh`; cross-note
+  prior term in `fit_chain`, test-pinned): independent / temporal-chain /
+  score-graph priors at matched marginal variance, same likelihood/data/
+  optimizer, boundaries fixed, the middle note's audio MASKED vs clean, 47
+  chains / 4 dev tracks, hypotheses + falsification rule committed before the
+  run. Under masking the graph cuts hidden-note error 21.2→18.8 cents (−4.63*,
+  85%); graph vs temporal −0.24 ns overall but −0.72* on the pre-stated
+  recurring-pitch stratum; with clean audio the arms tie exactly. Caveats: the
+  structured win is largely common-mode tuning transfer (follow-up = a free
+  per-chain tuning scalar, all arms, needs Ray's go); masked coverage 0.38–0.49
+  for every arm (zero-mean c prior miscentred). Still open: coupling boundary
+  offsets and the curve level, the remaining channels, whole-performance scale
+  — the curves themselves carry independent priors, amplitudes are read out
+  post hoc. Thesis: main-line Ch. 8
   (`ch:phase3`) + Future Work `sec:future-phase3`. The three spectral-kernel
   papers (`related_works/`, `docs/kernel_papers_review.md`,
   `docs/gp_everywhere_memo.md`) are the design vocabulary for the within-note
