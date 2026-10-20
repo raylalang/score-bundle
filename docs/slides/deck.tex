@@ -796,4 +796,63 @@
   \end{columns}
 \end{frame}
 
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: the score prior inside the waveform inference, the design}
+  One latent per note (intonation constant) or per joint (boundary
+  offset). Three cross-note priors at matched variance, the same
+  likelihood, data and optimizer. The hidden element has its audio
+  removed and its design columns dropped. Every arm carries a free
+  common-mode scalar. URMP development tracks, no claims.
+  \vspace{-1mm}
+  \figslotw{span_schematic.png}{0.80}{design schematic}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: one chain end to end}
+  \figslotw{span_protocol.png}{0.60}{protocol example}
+  \vspace{-2mm}
+  Observed notes: pinned by the audio to the same value under every
+  prior. Hidden note: each prior's conditional with its 90 percent band.
+  Comparator: the quasi-truth centre.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: the three spans, paired}
+  \figslotw{span_contrasts.png}{0.88}{paired contrasts}
+  \vspace{-1mm}
+  \begin{itemize}
+    \item Score graph against independent: a tie at every span once the
+          common offset is shared.
+    \item Phrase scale: the score graph beats the temporal chain by
+          1.6 cents (interval excludes zero), and the temporal chain is
+          worse than independent by 1.6 cents. The win repairs the
+          temporal prior's harm.
+    \item The common offset alone is worth 7 cents (intonation) and
+          10 to 14 ms (boundaries) against the no-transfer references.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: why the first intonation run was withdrawn}
+  \figslotw{span_leakage.png}{0.90}{leakage diagnosis}
+  \vspace{-1mm}
+  Masking a note's samples left its soft-window columns in the
+  likelihood. The leak carved a 38 nat well along the hidden constant
+  against a 4 to 35 nat prior (A), so every arm's estimate was
+  uncorrelated with the truth (B). Dropping the note from the design
+  restores the prior conditional (C).
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: calibration of the hidden element's band}
+  \figslotw{span_calibration.png}{0.94}{z-score strips}
+  \vspace{-1mm}
+  Intonation bands at nominal at both spans. Hidden-joint bands too
+  wide (the prior scale is the track's full timing variance).
+  Observed-joint bands on clean audio far too narrow, 0.7 ms: the
+  likelihood pins the acoustic transition, the annotation marks the
+  musical onset.
+\end{frame}
+
 \end{document}

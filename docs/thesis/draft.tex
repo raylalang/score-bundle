@@ -2397,6 +2397,26 @@ against the quasi-truth centre, and coverage at $90\%$ from a joint
 Laplace at the MAP. The chain-eligible notes of four development tracks
 give $47$ chains, $25$ of which contain a recurring pitch.
 
+\figph{span_schematic.png}{1.0}{The prior-value design as a system. One
+latent per note (the intonation constant $c$; for the boundary span, one
+offset per joint), three cross-note priors at matched marginal variance
+--- independent, temporal chain, score graph (time and pitch proximity)
+--- a free common-mode scalar shared by all notes in every arm, the
+same likelihood, data and optimiser; the hidden note has its audio
+removed and its design columns dropped, so its posterior is the prior
+conditional given the observed notes. Output: the hidden element's
+posterior mean and standard deviation.\label{fig:span-schematic}}
+
+\figph{span_protocol.png}{1.0}{One chain end to end (track~1, violin;
+corrected protocol with the tuning scalar). Top: the segment's waveform
+with the five note regions; the middle note's samples are masked
+(hatched) and its columns dropped. Bottom: per-note posteriors of $c$
+under the three priors against the quasi-truth centres. The observed
+notes are pinned by the audio to the same value under every prior; the
+hidden note receives each prior's conditional, with its $90\%$ band ---
+here all three land near the chain's mean, short of the truth, which
+is sharper than its context.\label{fig:span-protocol}}
+
 \paragraph{A protocol error, found and fixed.} The first run masked the
 hidden note's audio samples but left its soft-window design columns in
 the likelihood. The window tails beyond the $50$\,ms mask guard leave a
@@ -2409,6 +2429,16 @@ That run's apparent structured win is therefore not evidence and its
 record carries an erratum. The corrected protocol removes the hidden
 note's columns altogether, and its independent arm then returns
 exactly the prior mean, as it must.
+
+\figph{span_leakage.png}{1.0}{Why the first run was withdrawn. (A) The
+objective along the hidden note's $c$ on one chain under the first
+protocol: the leaked likelihood (vermilion) carves a $38$-nat well
+across $\pm100$ cents against the prior's $4$--$35$ nats (grey). (B)
+Under that protocol the masked estimates of all three arms are
+uncorrelated with the truth and spread over $\pm85$ cents. (C) With the
+hidden note dropped from the design, the independent arm returns
+exactly the prior mean and the structured arms follow the truth through
+the common offset.\label{fig:span-leakage}}
 
 \begin{table}[t]\centering
 \caption{The prior-value experiment under the corrected protocol: three
@@ -2462,6 +2492,21 @@ $0.89$ with the scalar; the zero-mean independent band covers at $0.77$,
 miscentred on tuning-offset tracks, and the scalar repairs it ($0.96$,
 conservative).
 
+\figph{span_commonmode.png}{1.0}{The attribution step, per chain. Adding
+the free tuning scalar to the independent prior cuts the hidden note's
+error on most chains (left; paired $-6.85$ cents, significant), while
+the score-graph prior barely moves (right; $-0.62$, not significant):
+the structured gain of the no-scalar run was the common
+offset.\label{fig:span-commonmode}}
+
+\figph{span_contrasts.png}{1.0}{The three spans, paired. Mean paired
+difference in the hidden element's error with $95\%$ bootstrap
+intervals, every arm carrying the common-mode scalar: intonation on
+$47$ chains (cents), boundaries on $40$ non-unison joints (ms),
+intonation on $48$ phrases (cents). Score graph against independent is
+a tie at every span; at phrase scale the score graph beats the temporal
+chain and the temporal chain is worse than independent.\label{fig:span-contrasts}}
+
 What the first span says, then, is two-sided. A cross-note prior lets a
 note whose audio is absent inherit its chain's tuning offset, with
 calibrated uncertainty, which a zero-mean prior cannot do; beyond that
@@ -2497,6 +2542,21 @@ too narrow (coverage $0.05$ at $0.7$\,ms): the likelihood pins the
 marks the musical onset some $20$\,ms away, the estimand gap of
 \S\ref{sec:phase3-study} restated at the boundary.
 
+\figph{span_boundary.png}{1.0}{Boundaries at chain scale, per hidden
+joint ($40$ non-unison), sorted by the tempo line's error. Every prior
+moves the hidden joint from the tempo line toward the annotation
+through the chain's common offset (medians $28$--$31$ versus $38$\,ms),
+and the three priors tie.\label{fig:span-boundary}}
+
+\figph{span_calibration.png}{1.0}{Calibration of the hidden element's
+band. Standardised errors (estimate minus truth over posterior sd) with
+the nominal $90\%$ band shaded: intonation bands at chain and phrase
+scale sit at nominal; the hidden joints' bands are too wide (coverage
+$1.00$, the prior scale being the track's full timing variance); the
+observed joints' bands on clean audio are far too narrow (coverage
+$0.05$, $27$ of $40$ beyond $\pm8$ sd): the likelihood pins the acoustic
+transition, the annotation marks the musical onset.\label{fig:span-calibration}}
+
 \paragraph{The third span: phrase scale.} If pitch-proximity coupling
 carries information anywhere, it should be where a pitch recurs at a
 distance the temporal chain cannot reach directly. From all $78$
@@ -2515,6 +2575,14 @@ toward neighbours that resemble it less than the chain mean does, and
 the pitch edge pulls it back to about the chain mean; the graph's win
 over the temporal prior is that prior's harm repaired. Clean rows tie;
 coverage $0.90$--$0.96$ throughout.
+
+\figph{span_phrase_dose.png}{1.0}{Phrase scale, the mechanism test. Per
+phrase, the score graph's error minus the temporal chain's (left) and
+minus the independent arm's (right) against the score-graph edge weight
+between the hidden note and its nearest pitch recurrence. A pitch edge
+that carried intonation information would make the left panel slope
+downward with the weight; it does not ($r=-0.03$), and the right panel
+centres on zero.\label{fig:span-phrase-dose}}
 
 Across the three spans, then: against the thesis's own stated
 baselines, independent or purely temporal, the score-graph prior is

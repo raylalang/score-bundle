@@ -8,8 +8,11 @@ frames, content-named chapters (piano / strings-and-winds / waveform),
 no "Phase N" wording, datasets with pieces and notes on every setup
 frame, every delta naming its comparator. The waveform chapter presents
 methodology and first development studies, no claims; the three-span
-prior-value verdict of 2026-10-20 is NOT on the deck (Ray's call: speech
-only, see `docs/meeting_qa_prep.md` §G). Figures live in
+prior-value verdict of 2026-10-20 is not on the main line (speech, see
+`docs/meeting_qa_prep.md` §G) but has five backup frames at the end
+(design, one chain, paired contrasts, the withdrawn first run,
+calibration; figures `span_*.png` from `scripts/make_span_viz.py`).
+Figures live in
 `../thesis/figures/`; house style Okabe–Ito (blue = this model,
 vermilion = reference, green = pYIN), dpi 200. Audio demo clips for the
 opening frame: `expressive.wav`, `flat.wav`. `deck_kernels.tex` is the
