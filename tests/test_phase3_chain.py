@@ -256,3 +256,55 @@ def test_drop_notes_hidden_c_is_exactly_the_prior_conditional():
     assert abs(fit_g.c[1] - rho * fit_g.c[0]) < 0.5, fit_g.c
     # the observed note is recovered in both arms
     assert abs(fit_i.c[0] - 18.0) < 2.0 and abs(fit_g.c[0] - 18.0) < 2.0
+
+
+def test_drop_joint_db_is_exactly_the_prior_conditional():
+    """Boundary-prior protocol: a dropped joint's offset sees the prior
+    only --- independent prior => exactly zero (init), coupled prior =>
+    rho times the observed joint's offset, which the audio pins."""
+    torch = pytest.importorskip("torch")
+    from score_bundle.phase3.curve import (CurvePrior, design_support_torch,
+                                           fit_chain)
+    rng = np.random.default_rng(7)
+    sr, dur = 4000, 1.8
+    t = np.arange(int(dur * sr)) / sr
+    m = t.size
+    b_true = np.array([0.63, 1.20])          # joint 0 is +30 ms from init
+    b_init = np.array([0.60, 1.20])
+    midis = (60.0, 64.0, 67.0)
+    x = np.zeros(m)
+    edges = [(None, b_true[0]), (b_true[0], b_true[1]), (b_true[1], None)]
+    for k, (midi, (lo, hi)) in enumerate(zip(midis, edges)):
+        Phi = design_support_torch(
+            torch.as_tensor(np.full(m, 5.0), dtype=torch.float64),
+            torch.as_tensor(t, dtype=torch.float64), midi, 0, m, 3,
+            2).numpy()
+        w = np.ones(m)
+        if lo is not None:
+            w *= 1.0 / (1.0 + np.exp(-(t - lo) / 0.01))
+        if hi is not None:
+            w *= 1.0 / (1.0 + np.exp(-(hi - t) / 0.01))
+        x += (Phi * w[:, None]) @ rng.normal(0.0, np.sqrt(10.0),
+                                             Phi.shape[1])
+    x += rng.normal(0.0, 0.05 * x.std(), m)
+    # hidden joint 1: samples masked and the joint dropped over +/-100 ms
+    lo, hi = b_true[1] - 0.1, b_true[1] + 0.1
+    mask = ~((t >= lo) & (t < hi))
+    prior = CurvePrior(knots_per_s=8.0, j_min=4, j_max=6)
+    var_b = 40.0 ** 2
+    rho = 0.9
+    k_ind = np.eye(2) * var_b
+    k_cpl = var_b * np.array([[1.0, rho], [rho, 1.0]])
+    common = dict(prior=prior, n_harm=3, n_chunk=2, n_steps=200,
+                  sample_mask=mask, drop_joints={1: (lo, hi)},
+                  free_width=False, fixed_width=0.001, lr_db_ms=2.0)
+    fit_i = fit_chain(x, t, midis, b_init, b_prior_cov=k_ind, **common)
+    fit_g = fit_chain(x, t, midis, b_init, b_prior_cov=k_cpl, **common)
+    db_i = (fit_i.b_lo - b_init) * 1000.0
+    db_g = (fit_g.b_lo - b_init) * 1000.0
+    # the observed joint is recovered by the audio in both arms
+    assert abs(db_i[0] - 30.0) < 8.0 and abs(db_g[0] - 30.0) < 8.0, (db_i, db_g)
+    # independent: the hidden offset is EXACTLY its init (zero gradient)
+    assert db_i[1] == 0.0, db_i
+    # coupled: the hidden offset is the prior conditional mean rho * db_0
+    assert abs(db_g[1] - rho * db_g[0]) < 3.0, db_g

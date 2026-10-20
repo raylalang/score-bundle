@@ -440,6 +440,8 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
               sample_mask: Optional[np.ndarray] = None,
               fix_boundaries: bool = False,
               drop_notes: Optional[Sequence[int]] = None,
+              b_prior_cov: Optional[np.ndarray] = None,
+              drop_joints: Optional[dict] = None,
               free_width: bool = True, width_init: float = 0.018,
               fixed_width: float = 0.010,
               width_prior_median: float = 0.018,
@@ -481,6 +483,15 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
     and under a marginalized amplitude that leak carries tens of nats
     of wrong evidence about the hidden note's c (measured 2026-10-15,
     results/prior_value_v2_dev.md).
+    ``b_prior_cov`` (K-1, K-1), in ms^2, puts a proper Gaussian prior over
+    the boundary offsets ``db`` (default: flat) --- the boundary-prior
+    experiment's cross-joint structure enters here and only here.
+    ``drop_joints`` maps a joint index k to a (lo, hi) interval in segment
+    seconds: that joint's two sigmoid edges are replaced by HARD cuts at
+    the interval's ends (note k ends at ``lo``, note k+1 starts at
+    ``hi``), so the likelihood is exactly independent of ``db[k]`` and
+    the offset sees the prior only --- the held-out-joint protocol
+    (pair it with a sample mask over the same interval).
     """
     _require_torch()
     dev = torch.device(device)
@@ -504,10 +515,16 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
     msk = (torch.as_tensor(np.asarray(sample_mask, bool))
            if sample_mask is not None else None)
     dropped = set(int(k) for k in (drop_notes or ()))
+    djoints = {int(k): (float(lo), float(hi))
+               for k, (lo, hi) in (drop_joints or {}).items()}
     chol_c = None
     if c_prior_cov is not None:
         chol_c = torch.linalg.cholesky(torch.as_tensor(
             np.asarray(c_prior_cov, float), dtype=torch.float64))
+    chol_b = None
+    if b_prior_cov is not None:
+        chol_b = torch.linalg.cholesky(torch.as_tensor(
+            np.asarray(b_prior_cov, float), dtype=torch.float64))
 
     cuts = np.concatenate([[t_np[0]], b_init, [t_np[-1]]])
     knots_list, chol_list, slices = [], [], []
@@ -552,9 +569,15 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
                                          m, n_harm, n_chunk)
             w = torch.ones(m, dtype=torch.float64, device=dev)
             if k > 0:
-                w = w * torch.sigmoid((t_t - b_lo[k - 1]) / softness)
+                if (k - 1) in djoints:
+                    w = w * (t_t >= djoints[k - 1][1]).to(w.dtype)
+                else:
+                    w = w * torch.sigmoid((t_t - b_lo[k - 1]) / softness)
             if k < k_n - 1:
-                w = w * torch.sigmoid((b_hi[k] - t_t) / softness)
+                if k in djoints:
+                    w = w * (t_t < djoints[k][0]).to(w.dtype)
+                else:
+                    w = w * torch.sigmoid((b_hi[k] - t_t) / softness)
             if k in dropped:
                 w = w * 0.0
             cols.append(Phi_k * w.unsqueeze(1))
@@ -574,11 +597,16 @@ def fit_chain(x: np.ndarray, t: np.ndarray, midis, b_init, *,
         if chol_c is not None:
             loss = loss + 0.5 * (c @ torch.cholesky_solve(
                 c.unsqueeze(1), chol_c).squeeze(1))
+        if chol_b is not None:
+            loss = loss + 0.5 * (db_ms @ torch.cholesky_solve(
+                db_ms.unsqueeze(1), chol_b).squeeze(1))
         if free_width and not fix_boundaries:
             loss = loss + 0.5 * (((torch.log(width)
                                    - math.log(width_prior_median))
                                   / width_prior_sigma) ** 2).sum()
         for k in range(k_n - 2):
+            if k in djoints or (k + 1) in djoints:
+                continue
             viol = torch.relu(b_hi[k] - (b_lo[k + 1] - order_margin))
             loss = loss + order_weight * viol ** 2
         return loss
