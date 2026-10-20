@@ -138,3 +138,14 @@ value is in establishing it rigorously for timing as it now is for
 intonation, or in finding the first channel where note-level structure
 carries information at chain scale. The chain-scale power caveat
 stands. Nothing here has been run.
+
+## Measured (2026-10-20): `results/boundary_prior_dev.md`
+
+Run as proposed (Ray's go 2026-10-18). Verdict: the falsification rule
+fired — graph vs independent −2.45 [−8.38, +3.32] on 40 non-unison
+masked joints, all arms tied; the common offset alone is worth 10–14 ms
+against the tempo line (significant); clean deployment unchanged at
+19.6 ms. Calibration findings: masked conditional bands too wide (σ_b
+is a population scale), observed-joint bands too narrow (0.7 ms, the
+estimand gap at the boundary). Timing joins intonation as a chain-scale
+negative for note-level structure.
