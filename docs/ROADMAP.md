@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 2026-10-15. Submission tentatively **2027-02-02**; progress
+Updated 2026-10-21. Submission tentatively **2027-02-02**; progress
 presentation expected around **2027-01-07**. One ongoing task at a time. Order stays deliberate:
 understanding, then legibility, then modelling. New studies run only on
 Ray's explicit mandate (the 2026-09-03 rule stands); the September

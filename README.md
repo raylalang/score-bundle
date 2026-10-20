@@ -31,8 +31,8 @@ The editable diagram is `docs/architecture.excalidraw`.
 |------:|-------|-----------------|-----------|------|
 | **0 — foundation** | from-scratch symbolic music LM (backbone + representations) | — (per-note embeddings `h_i`, a feature kernel of the Phase-1 GP; `μ_LM` in the development form) | next-token (autoregressive) pretraining | MAESTRO/ATEPP, Lakh, GiantMIDI |
 | **1 — core (piano)** | timing, articulation, dynamics | `y = [τ, log r, v]` | closed-form Gaussian posterior over the graph field | ASAP, MAESTRO |
-| **2 — extension (mono)** | intonation, vibrato, loudness, timing, vibrato delay | `[c, log γ, log f, ℓ, τ, δ_vib]` from tracked `f₀` + annotated onsets | same prior, cell-mask heteroscedastic likelihood | URMP (dev results in; claims registered, confirmation pool unspent) |
-| **3 — extension (waveform)** | timbre | harmonic amplitudes `a` | marginalize `a` exactly, Laplace/VI over nonlinear `z` | + audio |
+| **2 — extension (mono)** | intonation, vibrato, loudness, timing, vibrato delay | `[c, log γ, log f, ℓ, τ, δ_vib]` from tracked `f₀` + annotated onsets | same prior, cell-mask heteroscedastic likelihood | URMP (claims registered and CONFIRMED one-shot 2026-08-27; the timing-calibration claim failed, reported verbatim) |
+| **3 — extension (waveform)** | within-note pitch curves, note boundaries; timbre read out | harmonic amplitudes `a` marginalized exactly; curves and boundaries by gradient MAP + Laplace (`phase3/curve.py`) | development studies only; cross-note priors measured over three spans | + audio (URMP dev tracks) |
 
 Phase 0 (the music LM) and Phase 1 are implemented: a from-scratch tokenizer, a from-scratch
 **PyTorch** Transformer (hand-written attention, `forward`/`embed`/`generate` + training
@@ -40,10 +40,21 @@ loop), and the embedding→prior-mean bridge. The Phase-1 core runs on numpy alo
 needs torch (`pip install -e ".[train]"`). Phase 2 runs end to end on real
 recordings (URMP, development side): tracked f0 → per-note estimators (incl.
 the gated vibrato-delay fit) → onset-anchored timing → six-channel cell-mask
-GP, with the claim set preregistered and the 13-piece confirmation pool
-deliberately unspent (`docs/phase2_prereg_design.md`). Phase 3 remains a clean
-interface with working helpers (harmonic synthesizer; closed-form amplitude
-posterior) and documented stubs (position inference over `z`).
+GP; the claim set was preregistered (`docs/phase2_prereg_design.md`) and
+confirmed in a single one-shot on the frozen 13-piece pool on 2026-08-27
+(`results/phase2_confirmation_results.md`; the secondary timing-calibration
+claim failed and is reported verbatim; the pool is spent). Phase 3 (the
+waveform as the observation) is active development work, no claims: the
+harmonic synthesizer and the exact amplitude marginalization
+(`phase3/waveform_model.py`), a differentiable curve-from-waveform posterior
+(`phase3/curve.py`: gradient MAP + Laplace over within-note pitch curves and
+joint note boundaries), and the first cross-note priors inside the waveform
+inference, measured over three spans (`results/prior_value_v2_tuning_dev.md`,
+`results/boundary_prior_dev.md`, `results/prior_value_phrase_dev.md`): the
+score prior transfers the context's common offset to a note or joint with no
+acoustic evidence, beats a purely temporal prior at phrase scale, and adds
+nothing measurable beyond the common offset so far. Thesis Chapter 8 and
+`docs/ROADMAP.md` carry the current state.
 
 **Phase 0 — music language model.** A decoder-only Transformer over note-structured MIDI
 tokens, built from the ground up (`src/score_bundle/lm/`). It is the generative backbone and

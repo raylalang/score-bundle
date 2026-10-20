@@ -106,3 +106,35 @@ joint note boundaries — the open problem the gradients exist to unlock.
   transient/broadband boundary columns are the named next lever. Joint
   chains cost ~1.8 cents guarded curve RMSE vs single-note fits (chains
   for boundaries, single-note refits for curves, for now).
+
+## Status 3 (2026-10-15..20: the score prior enters the waveform inference, three spans)
+
+- **First span, intonation at chain scale** (`results/prior_value_dev.md`
+  → erratum; `results/prior_value_v2_dev.md`,
+  `results/prior_value_v2_tuning_dev.md`): the 10-14 run masked the
+  hidden note's samples but left its soft-window columns in the
+  likelihood, and the leak (tens of nats under marginalized amplitudes)
+  drove every arm's estimate — withdrawn. Protocol v2 drops the hidden
+  note from the design (`fit_chain(drop_notes=)`); with a free per-chain
+  tuning scalar in every arm the independent / temporal / score-graph
+  priors tie: the structure's value is the shared tuning offset.
+- **Second span, boundaries at chain scale**
+  (`results/boundary_prior_dev.md`; `fit_chain(b_prior_cov=,
+  drop_joints=)`): same verdict — arms tie on the hidden joint, all beat
+  the tempo line by 10–14 ms through the common offset; clean deployment
+  unchanged at 19.6 ms; masked bands too wide (population σ_b),
+  observed-joint bands 0.7 ms = the estimand gap at the boundary.
+- **Third span, intonation at phrase scale**
+  (`results/prior_value_phrase_dev.md`, 48 cells from all 78 dev tracks,
+  hidden pitch recurring ≥2 notes away): the score graph beats the
+  temporal chain (−1.63 cents*) but ties the scalar-augmented
+  independent arm, and the temporal chain is worse than independent —
+  the win is the temporal prior's harm repaired; no dose-response.
+- **Verdict**: the methodological hypothesis survives in its weak form
+  (score structure ≥ naive temporal structure) and fails so far in its
+  strong form (nothing beyond the context's common offset). Design
+  lessons now standard: the common-mode scalar in every arm; a hidden
+  element dropped from the design, not just its samples; check that
+  the independent arm equals the analytic reference before reading a
+  contrast. Open: the curve level, the other channels, whole phrases
+  under the joint loop (ROADMAP NEXT, Ray's choice).

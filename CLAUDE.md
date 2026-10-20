@@ -236,7 +236,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   the study machinery), `downstream.completion_guard`. Tests:
   `tests/test_adoption_optin.py` (incl. ρ=0 bit-equality and brute-force
   conditioning pins).
-- **Thesis state (2026-10-14, main=25791ab): 74 pp, compile clean.** Main line =
+- **Thesis state (2026-10-21, main=acd3076+): 76 pp, compile clean.** Main line =
   Intro / Background / Model / Data / piano results / Downstream / strings-and-winds
   results / **the waveform as the observation (Ch. 8)** / Discussion / Future Work /
   Conclusion; appendices A–G. Refocus: objective = an interpretable, score-aligned
