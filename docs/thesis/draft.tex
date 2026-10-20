@@ -140,10 +140,11 @@ tracker --- the model infers whole within-note pitch curves (beating the
 tracker's frames at the median), strengthens the six-channel bundle as a
 further observation channel, infers note boundaries jointly from
 score-nominal starting points, and --- on short chains with one note
-removed --- recovers the hidden note from its neighbours under a
-cross-note prior, a gain that is, at chain scale, entirely the shared
-tuning offset: beyond it score structure adds nothing measurable, a
-negative result reported as such; its central design constraint is measured
+removed --- recovers the hidden note or joint from its context under a
+cross-note prior, a gain that is entirely the context's common offset:
+beyond it score structure adds nothing measurable at chain or phrase
+scale, though it beats a purely temporal prior at phrase scale, three
+negatives-with-a-caveat reported as such; its central design constraint is measured
 --- calibration must bridge the estimand gap between the harmonic model
 and the annotation chain.
 \end{abstract}
@@ -234,9 +235,10 @@ development level only (Chapter~\ref{app:phase3}); joining its
 observation model to the RQ2 prior --- the complete inverse-synthesis
 loop --- is the programme's endpoint, not a claim; its first span (the
 score prior over per-note constants inside the waveform inference,
-\S\ref{sec:phase3-priorvalue}) is measured at development level, and
-on short chains the structure's value is the shared tuning offset and
-nothing measurable beyond it.
+\S\ref{sec:phase3-priorvalue}) is measured at development level over
+three spans: the structure's value is the context's common offset, with
+nothing measurable beyond it against that baseline, and a significant
+edge over a purely temporal prior at phrase scale.
 
 \section{Terminology: the proposed model and the two-stage pipeline}\label{sec:twostage}
 Two names recur throughout. \textbf{The proposed model} is the thesis model:
@@ -290,10 +292,11 @@ its measured value --- at development level, with pre-stated
 hypotheses, after a protocol error was found and fixed --- is the
 transfer of the track's shared tuning offset to a note whose audio is
 absent; beyond that common mode, score structure adds nothing
-measurable on $3$--$5$-note chains, a negative result reported as such
-(\S\ref{sec:phase3-priorvalue}). The curve-level and boundary
-coupling, longer spans, the remaining channels, and whole-performance
-scale remain open (the within-note curves still carry independent
+measurable for intonation at chain or phrase scale or for timing at
+chain scale, though at phrase scale it beats a purely temporal prior
+--- three development studies, reported as such
+(\S\ref{sec:phase3-priorvalue}). The curve-level coupling, the
+remaining channels, and whole-performance scale remain open (the within-note curves still carry independent
 priors; the graph meets the full waveform posterior only post hoc, as
 an observation channel of the Chapter~\ref{ch:phase2} bundle). A geometric
 ``connection-Laplacian'' generalisation of the graph prior likewise
@@ -2474,6 +2477,57 @@ which this experiment shows to be mandatory. Scope: intonation
 constants only, boundaries fixed at the annotation, kernel shape $s=1$,
 about $150$\,s per fit including the Laplace; development evidence.
 
+\paragraph{The second span: boundaries.} The same design over the
+per-joint boundary offsets from the tempo line (the chain study's
+deployment inits), with the hidden middle joint removed from the design
+by hard cuts and a free per-chain offset scalar in every arm, on the
+same $47$ chains ($40$ non-unison). The verdict repeats: on masked
+joints the arms tie (score graph against independent $-2.45$\,ms,
+interval $[-8.38, +3.32]$; temporal against independent $-3.65$,
+$[-10.90, +3.03]$; medians $28$--$31$\,ms), while every arm beats the
+tempo line by $10$--$14$\,ms (all significant): a hidden joint inherits
+its chain's common offset, and nothing beyond it. On clean audio the
+three arms land on identical boundaries ($19.6$\,ms median, the chain
+study's $19.5$), so the prior costs deployment nothing. Two calibration
+facts come with it: the masked conditional bands are far too wide
+(coverage $1.00$ at $73$--$95$\,ms, because the prior scale is the
+track's full timing variance), and the observed joints' bands are far
+too narrow (coverage $0.05$ at $0.7$\,ms): the likelihood pins the
+\emph{acoustic} transition to under a millisecond while the annotation
+marks the musical onset some $20$\,ms away, the estimand gap of
+\S\ref{sec:phase3-study} restated at the boundary.
+
+\paragraph{The third span: phrase scale.} If pitch-proximity coupling
+carries information anywhere, it should be where a pitch recurs at a
+distance the temporal chain cannot reach directly. From all $78$
+development tracks, $48$ legato runs of $6$--$10$ notes were selected
+in which the hidden middle note's pitch recurs at an index distance of
+at least two (median three notes, $1.2$\,s; hidden-to-recurrence edge
+weight $0.83$), with the corrected protocol and the tuning scalar in
+every arm. The pre-stated primary contrast passes: the score graph
+beats the temporal chain, $-1.63$ cents ($[-2.93, -0.46]$, better on
+$65\%$). But the mechanism does not: the graph ties the
+scalar-augmented independent arm ($-0.07$, $[-0.42, +0.27]$), the
+temporal chain is significantly \emph{worse} than independent
+($+1.56$, $[+0.26, +2.92]$), and the dose-response with the edge weight
+is nil ($r=-0.03$). At phrase scale, adjacency pulls the hidden note
+toward neighbours that resemble it less than the chain mean does, and
+the pitch edge pulls it back to about the chain mean; the graph's win
+over the temporal prior is that prior's harm repaired. Clean rows tie;
+coverage $0.90$--$0.96$ throughout.
+
+Across the three spans, then: against the thesis's own stated
+baselines, independent or purely temporal, the score-graph prior is
+never worse and at phrase scale beats the temporal prior; against the
+common-mode baseline that the first span showed to be mandatory, it
+adds nothing measurable, for intonation at either span or for timing
+at chain scale. The methodological hypothesis survives in its weak form
+and fails, so far, in its strong form. What the waveform does get from
+the score prior is honest: a note or a joint with no acoustic evidence
+inherits its context's common offset with a calibrated band. Each
+study is development evidence on four to nine instruments; none is
+registered.
+
 % =====================================================================
 \chapter{Discussion}\label{ch:discussion}
 
@@ -2591,8 +2645,8 @@ transcription use-case wants them.
 \section{The waveform: the joint loop}
 \label{sec:future-phase3}Chapter~\ref{ch:phase3} stops at chains of a few
 notes: the score prior couples their per-note constants
-(\S\ref{sec:phase3-priorvalue}), where it transfers only the shared
-tuning offset, and the curves themselves still carry independent
+(\S\ref{sec:phase3-priorvalue}), where it transfers only the context's
+common offset, and the curves themselves still carry independent
 priors. What remains is the \emph{joint} loop: all notes of a performance at once under the graph prior
 (Laplace or variational inference over $z$), a transient model at the
 note joints (the measured next lever), the estimand bridge between the

@@ -197,12 +197,23 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   (a rigorous negative; the falsification rule fired). Conditional bands
   calibrated (0.89–0.96); clean rows tie. Lesson for every future prior-value
   design: the common-mode scalar is mandatory in every arm, and a masked note
-  must be dropped from the design, not just its samples. Still open (and where
-  the hypothesis could still hold): boundary offsets
-  (`docs/boundary_prior_proposal.md`, not run), longer spans with distant
-  recurring pitches, the other channels, the curve level, whole-performance
-  scale — the curves themselves carry independent priors, amplitudes are read
-  out post hoc. Thesis: main-line Ch. 8
+  must be dropped from the design, not just its samples. **Second span,
+  boundaries (2026-10-20, `scripts/eval_boundary_prior_dev.py`,
+  `results/boundary_prior_dev.md`; `fit_chain(b_prior_cov=, drop_joints=)`,
+  test-pinned)**: same verdict — arms tie on the hidden joint (graph vs indep
+  −2.45 ms ns), all beat the tempo line by 10–14 ms* (common offset), clean
+  deployment identical at 19.6 ms; masked bands too wide (σ_b = population
+  scale), observed-joint bands too narrow (0.7 ms = the estimand gap at the
+  boundary). **Third span, phrase scale (2026-10-20,
+  `scripts/eval_prior_value_phrase_dev.py`, `results/prior_value_phrase_dev.md`;
+  48 cells from ALL 78 dev tracks, hidden pitch recurring ≥2 notes away)**:
+  graph beats temporal −1.63* (the pre-stated primary), but graph = indep
+  (−0.07) and temporal < indep (+1.56*) → the win is the temporal prior's harm
+  repaired, no dose-response on edge weight. **Three-span verdict: weak form
+  survives (score structure ≥ naive temporal), strong form fails so far
+  (nothing beyond the common offset).** Still open: the curve level, the other
+  channels, whole-performance scale — the curves themselves carry independent
+  priors, amplitudes are read out post hoc. Thesis: main-line Ch. 8
   (`ch:phase3`) + Future Work `sec:future-phase3`. The three spectral-kernel
   papers (`related_works/`, `docs/kernel_papers_review.md`,
   `docs/gp_everywhere_memo.md`) are the design vocabulary for the within-note

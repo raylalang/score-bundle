@@ -21,13 +21,13 @@ the deck or the brief. New runs happen only on Ray's go.
 
 | when | what | gate |
 |---|---|---|
-| October (done) | first curve-from-waveform studies at scale; the curve as a bundle channel; joint note boundaries; **the first span of the bridge**, measured three times: the first run withdrawn by erratum (window leakage), the corrected protocol shows structure transfers the shared tuning offset and nothing measurable beyond it on short chains (a rigorous negative) | — |
+| October (done) | first curve-from-waveform studies at scale; the curve as a bundle channel; joint note boundaries; **three spans of the bridge** (intonation at chain scale, boundaries at chain scale, intonation at phrase scale): the score prior transfers the context's common offset and nothing measurable beyond it; at phrase scale it beats a purely temporal prior | — |
 | October (now) | the direction-and-scope meeting: objective, positioning, integration scope, variables, evidence bar, registration pool (brief §H) | Ray + professor |
 | October (done) | tuning-scalar follow-up of the prior-value experiment: run under the corrected protocol; verdict = tuning bookkeeping, coverage repaired | — |
 | November | decide the registration pool (correlated timing noise, tonal metric: Bach10 / disclosed URMP re-use / both), then run the registered timing confirmation, one shot | professor |
 | November | decide the channel design for the waveform strand: scalars or curve level | Ray |
 | November | a transient model at the note boundary (the pre-named next lever for the ~18 ms acoustic-vs-musical gap) | Ray's go |
-| November *(proposed)* | the registered waveform claim: the masked-imputation design is clean and registration-friendly, but the measured first span is a negative, so there is currently no positive waveform claim to register; decide which follow-up (NEXT) could supply one, or whether the negative itself is the chapter's measured answer | Ray |
+| November *(proposed)* | the registered waveform claim: after three spans the only positive is the weak form (score graph beats a purely temporal prior at phrase scale, −1.63*) and the common-offset gain; decide whether that is worth registering (power check first) or whether the three-span verdict is the chapter's measured answer | Ray |
 | December | **whole-phrase joint inference from the waveform** — the "December row": all notes of a performance under the graph prior, the transient model at the joints, loudness/articulation (amplitudes) brought under the prior instead of read out post hoc, the estimand bridge between the harmonic constant and the annotation functional; consolidate thesis chapters as results land | — |
 | December *(proposed)* | adopt the decomposition framing (score + expression + timbre + noise) in the intro/abstract, held since 2026-10-14 for after the meeting | Ray |
 | 2027-01-07 (approx.) | **progress presentation**: deck from `deck.tex`, results that stand on their own only | — |
@@ -101,15 +101,36 @@ contributions, RQ3, abstract, Future Work reworded. Brief §D.4/F.1/G
 rewritten. `docs/boundary_prior_proposal.md` written (not run; the
 offset scalar is its core control).
 
-## NEXT (needs Ray's go) — where could note-level structure show?
+## DONE — The second and third spans (2026-10-20, Ray's go 2026-10-18: "B and C")
 
-The first span's negative narrows the question. Candidates, each with
-the common-mode term in every arm by design, each a proposal before a
-run: (a) the boundary-prior extension (proposal written, same null
-expected, establishes timing rigorously); (b) a phrase-scale intonation
-comparison where recurring pitches occur at a distance (the score
-graph's distinguishing edge needs that); (c) the other channels
-(vibrato, dynamics) at chain scale. Ray chooses; none runs unprompted.
+- **B, boundaries** (`scripts/eval_boundary_prior_dev.py`,
+  `results/boundary_prior_dev.md`; `fit_chain(b_prior_cov=, drop_joints=)`
+  test-pinned): 47 chains, hidden middle joint removed from the design,
+  offset scalar in every arm. Arms tie (graph vs indep −2.45 ms
+  [−8.38, +3.32]); all beat the tempo line by 10–14 ms* (the common
+  offset); clean deployment identical at 19.6 ms. Calibration: masked
+  bands too wide (σ_b = population scale), observed-joint bands too
+  narrow (0.7 ms, the estimand gap at the boundary).
+- **C, phrase scale** (`scripts/eval_prior_value_phrase_dev.py`,
+  `results/prior_value_phrase_dev.md`): 48 cells from all 78 dev
+  tracks, hidden pitch recurring ≥2 notes away. Primary contrast
+  passes (graph vs temporal −1.63* cents, 65%), but graph = indep
+  (−0.07) and temporal < indep (+1.56*): the win is the temporal
+  prior's harm repaired; no dose-response on the edge weight.
+- **Three-span verdict**: weak form of the hypothesis survives (score
+  structure ≥ naive temporal structure), strong form fails so far
+  (nothing beyond the common offset). Thesis `sec:phase3-priorvalue`,
+  brief §D.4/F.1/G, CLAUDE.md updated.
+
+## NEXT (needs Ray's go) — after three spans
+
+Ray decides between: (a) stop here and present the three-span verdict
+as the waveform chapter's measured answer (my recommendation before
+the meeting); (b) the curve level (the within-note curve under a
+cross-note prior, the one untested place) — a proposal before a run;
+(c) the other channels (vibrato, dynamics) at chain scale — proposal
+first; (d) a chain-scale σ_b for the boundary prior's band (small,
+calibration-only). Nothing runs unprompted.
 
 ## DONE — The waveform setting goes active (2026-10-07..14, Ray's go)
 

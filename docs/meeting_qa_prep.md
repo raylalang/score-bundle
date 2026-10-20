@@ -82,10 +82,11 @@ decide.
    waveform likelihood — all notes of a performance inferred jointly
    from score + audio. Status: the graph couples the per-note
    intonation constants *inside* the waveform inference on short
-   chains, where its measured value is the shared tuning offset and
-   nothing beyond it (the prior-value experiment, §G); the curve-level
-   and boundary coupling, longer spans, the remaining channels, and
-   whole-performance scale are still open.
+   chains and phrases, and the per-joint boundary offsets on short
+   chains; its measured value is the context's common offset and
+   nothing beyond it, plus a significant edge over a purely temporal
+   prior at phrase scale (§G); the curve-level coupling, the remaining
+   channels, and whole-performance scale are still open.
 
 ## E. Current results (verified against the repository)
 
@@ -139,13 +140,16 @@ decide.
 
 1. **Graph prior × waveform likelihood — the bridge, span by span.**
    The first span (per-note intonation constants, short chains) is
-   built and measured, and the measurement is a negative for note-level
-   structure (§G): at chain scale the prior transfers the tuning offset
-   and nothing more. Design question now: which variable or span is the
-   first where note-level structure could carry information — boundary
-   offsets (proposal written), longer spans, the curve level, the other
-   channels — and how to make the common-mode control part of every
-   design.
+   built and measured three times over (§G): intonation at chain scale,
+   timing at chain scale, intonation at phrase scale. Each time the
+   prior transfers the context's common offset and nothing measurable
+   beyond it; at phrase scale the score graph beats a purely temporal
+   prior, by repairing that prior's harm. Design question now: is the
+   strong form of the hypothesis worth pursuing further (the curve
+   level, the other channels, whole phrases under the joint loop), or
+   is the weak form — score structure beats naive temporal structure,
+   and the common offset is the honest gain — the chapter's measured
+   answer?
 2. **Identifiability from audio.** Measured so far: pitch trajectories
    strongly identifiable (phase accumulation); boundaries identifiable
    except at repeated pitches; loudness/articulation live in amplitudes
@@ -207,11 +211,35 @@ pitches at a distance (the whole-phrase loop), the other channels
 (vibrato, dynamics), and the curve level — each needing the common-mode
 term in every arm by design, which this experiment shows is mandatory.
 
-**Proposed follow-ups (not run):** (i) the boundary-prior extension
-(`docs/boundary_prior_proposal.md`, same design over the joint offsets,
-with the offset scalar as its core control; expectation sharpened to
-the same null); (ii) a phrase-scale version of the intonation
-comparison where recurring pitches occur at a distance.
+**Both follow-ups RUN (Ray's go 2026-10-18; measured 2026-10-20):**
+
+- **The second span, boundaries** (`results/boundary_prior_dev.md`,
+  47 chains, 40 non-unison): same design over the joint offsets from
+  the tempo line, hidden joint removed from the design, offset scalar
+  in every arm. Arms tie on the hidden joint (graph vs independent
+  −2.45 ms [−8.38, +3.32]); every arm beats the tempo line by 10–14 ms
+  (significant) — the common offset again; clean deployment identical
+  across arms at 19.6 ms. Calibration: masked bands far too wide (the
+  prior scale is a population scale), observed-joint bands far too
+  narrow (0.7 ms: the acoustic-vs-musical estimand gap at the
+  boundary).
+- **The third span, phrase scale** (`results/prior_value_phrase_dev.md`,
+  48 cells from all 78 development tracks, 6–10-note legato runs with
+  the hidden pitch recurring 2+ notes away): the pre-stated primary
+  contrast passes — graph beats temporal, −1.63 cents [−2.93, −0.46],
+  65% — but the graph ties the scalar-augmented independent arm
+  (−0.07) and the temporal chain is significantly worse than
+  independent (+1.56): the graph's win is the temporal prior's harm
+  repaired, with no dose-response on the edge weight.
+
+**The three-span verdict, for the room:** against the thesis's own
+baselines (independent, purely temporal) the score-graph prior is never
+worse and beats the temporal prior at phrase scale; against the
+common-mode baseline it adds nothing measurable for intonation at
+either span or for timing at chain scale. Weak form survives, strong
+form fails so far. The positive content is honest and small: a note or
+joint with no acoustic evidence inherits its context's common offset
+with a calibrated band.
 
 ## H. Questions for the professor (prioritized)
 
