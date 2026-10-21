@@ -587,60 +587,71 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: what the audio of one note is}
-  Data: the same URMP development tracks, audio only --- 7 tracks, one
-  per instrument, notes cut at annotated boundaries and resampled to
-  16\,kHz. 376 notes in the curve studies; 47 chains of 3 to 5 notes
-  (154 boundaries) in the boundary study.
+  \small
+  Data: URMP development tracks, audio only: 7 tracks, one per
+  instrument, notes cut at annotated boundaries, 16\,kHz. 376 notes in the
+  curve studies; 47 chains of 3 to 5 notes (154 boundaries) in the boundary
+  study.
   \vspace{1mm}
 
-  A sustained note is, to a good approximation, a stack of harmonics:
-  waves at $1\times, 2\times, 3\times, \ldots$ the fundamental.
-  \begin{itemize}
-    \item The pitch curve is the \textbf{unknown} we are after. But for
-          any \textbf{candidate} curve, every harmonic's wave follows
-          exactly: frequency accumulates into phase,
-  \end{itemize}
-  \begin{equation*}
-    f_0(t) = f_{\text{pitch}} \cdot 2^{\,\mathrm{cents}(t)/1200},
-    \qquad
-    \varphi_k(t) = 2\pi k \!\int_0^t\! f_0 .
-  \end{equation*}
-  \begin{itemize}
-    \item What stays unknown is how loud each harmonic is over time,
-          the \textbf{timbre}. It enters linearly:
-  \end{itemize}
-  \begin{equation*}
-    x = \Phi(z)\, a + \varepsilon,
-    \qquad
-    \Phi(z) = [\cos\varphi_k,\ \sin\varphi_k]_{k = 1..K}
-  \end{equation*}
-  {\small $x$: the note's audio samples. $z$: the pitch curve. $a$: the
-  harmonic amplitudes. The curve fixes the \textbf{shape} of every
-  column; the amplitudes only scale them.}
+  A sustained note is a stack of $K$ harmonics at $1\times, 2\times,
+  \ldots, K\times$ the fundamental. The pitch curve is the unknown; for any
+  candidate curve every harmonic's wave follows exactly:
+  \vspace{-2mm}
+  {\footnotesize
+  \begin{align*}
+    z &= \text{cents}(t),\quad \text{cents}(t_i) = \mathrm{interp}(u;\,t_i),
+       \quad u \in \mathbb R^{J}\ \text{(knot values)},\quad i = 1..m
+       \qquad\text{\scriptsize the curve}\\
+    f_0(t_i) &= f_{\text{pitch}} \cdot 2^{\,\text{cents}(t_i)/1200}
+       \qquad\text{\scriptsize cents to frequency}\\
+    \varphi(t_i) &= 2\pi \sum_{j \le i} f_0(t_j)\,\Delta t,
+       \qquad \varphi_k = k\,\varphi,\quad k = 1..K
+       \qquad\text{\scriptsize frequency accumulates into phase}\\
+    \Phi(z) &= \bigl[\cos\varphi_k(t),\ \sin\varphi_k(t)\bigr]_{k=1..K}
+       \ \text{repeated per time chunk } c = 1..C
+       \ \in \mathbb R^{m \times p},\quad p = 2KC
+       \qquad\text{\scriptsize the design}\\
+    x &= \Phi(z)\,a + \varepsilon,\qquad a \in \mathbb R^{p},\quad
+       \varepsilon \sim \mathcal N(0,\ \sigma^2 I_m),\quad x \in \mathbb R^{m}
+       \qquad\text{\scriptsize the audio}
+  \end{align*}}
+  $x$: the $m$ audio samples. $z$: the pitch curve. $a$: the harmonic
+  amplitudes (timbre), linear. $\varepsilon$: what the harmonics do not
+  explain. The curve fixes the shape of every column; the amplitudes only
+  scale them.
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Setup: scoring a curve, finding the curve}
-  \begin{itemize}
-    \item The timbre is unknown but linear: give it a Gaussian prior and
-          integrate it out \textbf{exactly},
-  \end{itemize}
-  \begin{equation*}
-    p(x \mid z) =
-    \mathcal N\bigl(x;\, 0,\ \Phi(z)\,\Sigma_a\,\Phi(z)^{\!\top} + \sigma^2 I\bigr)
-  \end{equation*}
-  \begin{itemize}
-    \item One number per candidate curve $z$, timbre-free; every audio
-          sample votes ($O(mp^2)$ for $m$ samples). No pitch tracker
-          anywhere.
-    \item Candidates: the \textbf{score} anchors the pitch, and the
-          two-component \textbf{GP} from the previous chapter proposes
-          plausible deviations (vibrato band plus drift).
-    \item The synthesis and the likelihood are differentiable in the
-          curve, so the search is \textbf{gradient descent through the
-          synthesizer} (cf.\ Engel et al.\ 2020), seconds per note, with
-          uncertainty from the curvature at the optimum.
-  \end{itemize}
+  \small
+  The timbre is unknown but linear: give it a Gaussian prior and
+  integrate it out exactly.
+  \vspace{-2mm}
+  {\footnotesize
+  \begin{align*}
+    a \sim \mathcal N(0,\ \Sigma_a)\ \Rightarrow\
+    p(x \mid z) &= \mathcal N\bigl(x;\ 0,\ \Phi(z)\,\Sigma_a\,\Phi(z)^{\!\top}
+      + \sigma^2 I_m\bigr)
+      \qquad\text{\scriptsize timbre-free score of a curve}\\
+    \Sigma_a = \sigma_a^2 I_p:\qquad
+    G &= \Phi^{\!\top}\Phi + \tfrac{\sigma^2}{\sigma_a^2} I_p \in \mathbb R^{p\times p}
+      \qquad\text{\scriptsize never form the } m\times m\\
+    \log p(x \mid z) &= -\tfrac12\Bigl[\,m\log 2\pi + (m-p)\log\sigma^2
+      + \log|G| + p\log\sigma_a^2\\
+      &\qquad\quad + \tfrac{1}{\sigma^2}\bigl(x^{\!\top}x
+      - x^{\!\top}\Phi\,G^{-1}\Phi^{\!\top}x\bigr)\Bigr]
+      \qquad\text{\scriptsize cost } O(mp^2)\\
+    u &\sim \mathcal N(0,\ K_{\text{knots}})
+      \qquad\text{\scriptsize prior on the curve: the two-component GP (vibrato band plus drift)}\\
+    \hat z &= \arg\max_z\ \bigl[\log p(x \mid z) + \log p(z)\bigr]
+      \qquad\text{\scriptsize gradient descent through } \Phi(z)\\
+    \Sigma_{z} &\approx \Bigl[-\nabla_z^2 \bigl(\log p(x \mid z) + \log p(z)\bigr)\Bigr]^{-1}_{\hat z}
+      \qquad\text{\scriptsize Laplace: the band from the curvature}
+  \end{align*}}
+  Every audio sample votes; no pitch tracker anywhere. The score anchors
+  $f_{\text{pitch}}$. Gradients through the synthesizer, cf.\ Engel et
+  al.\ 2020; seconds per note.
 \end{frame}
 
 % ---------------------------------------------------------------------

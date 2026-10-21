@@ -14,6 +14,14 @@ holds the older notes for the piano and strings-and-winds chapters.
 
 ## Slide 33. Setup: what the audio of one note is
 
+**What is on the slide (rewritten 2026-10-21: minimal words, full
+mathematics).** Five lines: the curve `z` from knot values `u ∈ R^J`
+interpolated to the `m` sample instants; cents to frequency; frequency
+accumulated into phase, `φ_k = k φ`; the design `Φ(z) ∈ R^{m×p}`,
+`p = 2KC`, cosine and sine per harmonic repeated per time chunk; and the
+audio `x = Φ(z) a + ε` with `a ∈ R^p`, `ε ~ N(0, σ² I_m)`, `x ∈ R^m`.
+Every symbol is defined below.
+
 **Data.** The same URMP development tracks as the strings-and-winds
 chapter, 7 tracks, one instrument each. Each note is cut out of the
 recording at its annotated start and end and resampled to 16,000
@@ -167,6 +175,31 @@ Cost `O(m p²)`: forming `Φ^T Φ` is `m` rows times `p × p` entries; the
 Cholesky of `G` is `p³`, negligible since `p ≪ m`.
 
 ## Slide 34. Setup: scoring a curve, finding the curve
+
+**What is on the slide (rewritten 2026-10-21: minimal words, full
+mathematics).** Six lines, read top to bottom:
+1. `a ~ N(0, Σ_a) ⇒ p(x | z) = N(x; 0, Φ(z) Σ_a Φ(z)^T + σ² I_m)`: put a
+   Gaussian prior on the amplitudes and integrate them out; the result
+   is the timbre-free score of a curve. Exact, not approximate.
+2. `Σ_a = σ_a² I_p`, `G = Φ^T Φ + (σ²/σ_a²) I_p`: the studies use an
+   isotropic amplitude prior with variance `σ_a²` (`amp_var` in code);
+   `G` is the `p × p` matrix the computation actually forms, instead of
+   the `m × m` covariance.
+3. `log p(x | z) = −½ [ m log 2π + (m−p) log σ² + log|G| + p log σ_a² +
+   (xᵀx − xᵀΦ G⁻¹ Φᵀx)/σ² ]`: the same Gaussian written through `G`
+   (the Woodbury identity). `|G|` is the determinant; the bracketed
+   quadratic is the residual energy after the best amplitudes explain
+   what they can. Every term costs at most `m p²`.
+4. `u ~ N(0, K_knots)`: the prior on the curve. `u` are the knot values
+   of the pitch curve, `K_knots` their covariance from the two-component
+   Gaussian process of the strings-and-winds chapter (a vibrato band
+   near 5 to 6 Hz plus a slow drift), fitted by evidence.
+5. `ẑ = argmax_z [log p(x | z) + log p(z)]`: the best curve maximizes
+   score plus prior, found by gradient descent because `Φ(z)` is
+   differentiable in `z`.
+6. `Σ_z ≈ [−∇²_z (log p(x | z) + log p(z))]⁻¹ at ẑ`: the band. `∇²` is
+   the matrix of second derivatives, the curvature; a sharply curved
+   peak gives a small inverse, a narrow band. The Laplace approximation.
 
 **The problem.** We want `z` but do not know `a`. **The trick.** `a`
 enters linearly, so with a Gaussian prior on the knobs we can average
