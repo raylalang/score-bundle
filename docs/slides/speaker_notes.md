@@ -113,6 +113,32 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   concatenated side by side: `p` becomes the sum over notes and `m` the
   whole segment. That concatenation is where the leak of slide 48 lived.
 
+**From `z` to `Φ(z)`, step by step** (`chunked_design_torch`).
+1. `z` is the pitch deviation at every sample instant, `cents(t_i)` for
+   `i = 1…m` (stored as `J` knot values and interpolated to the grid).
+2. Deviation to frequency, per sample:
+   `f_0(t_i) = f_pitch · 2^(cents(t_i)/1200)`.
+3. Frequency to phase, by accumulation (the odometer):
+   `φ(t_i) = 2π Σ_{j ≤ i} f_0(t_j) Δt`, a cumulative sum with
+   `Δt = 1/16000`.
+4. Harmonic `k` has `k` times the phase: `φ_k(t_i) = k · φ(t_i)`. Its two
+   columns are `cos φ_k(t_i)` and `sin φ_k(t_i)` for `i = 1…m`.
+5. Chunking: copy the `2K` columns once per time block, zeroed outside
+   the block.
+6. Stack all columns side by side: `Φ(z)`, `m × p`.
+So `Φ` depends on `z` only through the phase, and changing `z` changes
+the shape of every column; `a` never touches `z`. Toy example: one
+sample per millisecond, `f_pitch = 100` Hz, `cents = 0` throughout, so
+`f_0 = 100` Hz and the phase advances `2π · 100 · 0.001 = 0.628` rad
+(36°) per sample. Harmonic 1's cosine column over four samples is
+`[cos 36°, cos 72°, cos 108°, cos 144°] = [0.81, 0.31, −0.31, −0.81]`,
+its sine column `[0.59, 0.95, 0.95, 0.59]`; harmonic 2 uses 72°, 144°,
+216°, 288°. Raise the whole note one semitone (`cents = +100`): `f_0 =
+105.9` Hz, the step becomes 38.1°, every column changes shape. Let the
+cents wobble (vibrato): the step varies sample to sample, and the
+columns become chirped sinusoids. That is the whole bridge from a pitch
+curve to a matrix.
+
 **Sizes of everything on slides 33 and 34, symbolically.**
 
 | object | size | what it is |
@@ -147,9 +173,13 @@ enters linearly, so with a Gaussian prior on the knobs we can average
 over every knob setting exactly. The result is a score for a candidate
 curve that no longer mentions the timbre:
 
-- `p(x | curve) = N(x; 0, Φ Σ_a Φ^T + σ² I)`. Under this curve the
-  audio should look like Gaussian noise with a covariance built from
-  the harmonic waves. `Σ_a` is the prior covariance of the knobs, `σ²`
+- `p(x | z) = N(x; 0, Φ(z) Σ_a Φ(z)^T + σ² I)` (the slide wrote "curve"
+  in words until 2026-10-21; `z` IS the curve, slide 33). Under this
+  curve the audio should look like Gaussian noise with a covariance
+  built from the harmonic waves. In the thesis `z` names every
+  nonlinear position the synthesizer needs, so in a chain fit it also
+  holds the boundary offsets; on slides 33 to 36, one note with fixed
+  boundaries, `z` is just the pitch curve. `Σ_a` is the prior covariance of the knobs, `σ²`
   the noise variance, `I` the identity. `m` is the number of samples,
   `p` the number of columns; the cost grows as `m · p²`, which is cheap.
 - "Every audio sample votes": each of the thousands of samples

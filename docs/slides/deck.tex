@@ -626,11 +626,11 @@
           integrate it out \textbf{exactly},
   \end{itemize}
   \begin{equation*}
-    p(x \mid \text{curve}) =
-    \mathcal N\bigl(x;\, 0,\ \Phi\Sigma_a\Phi^{\!\top} + \sigma^2 I\bigr)
+    p(x \mid z) =
+    \mathcal N\bigl(x;\, 0,\ \Phi(z)\,\Sigma_a\,\Phi(z)^{\!\top} + \sigma^2 I\bigr)
   \end{equation*}
   \begin{itemize}
-    \item One number per candidate curve, timbre-free; every audio
+    \item One number per candidate curve $z$, timbre-free; every audio
           sample votes ($O(mp^2)$ for $m$ samples). No pitch tracker
           anywhere.
     \item Candidates: the \textbf{score} anchors the pitch, and the
