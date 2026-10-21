@@ -78,7 +78,14 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   rows are deleted from both, and `m` is the number of kept samples.
   The columns: for each harmonic `k = 1…n_harm`, the phase
   `φ_k(t) = 2π k · cumsum(f_0 dt)` gives two columns, `cos φ_k` and
-  `sin φ_k` (the pair lets the harmonic take any starting phase); the
+  `sin φ_k`; the pair lets the harmonic take any starting phase: by
+  `A cos(φ − θ) = (A cos θ) cos φ + (A sin θ) sin φ`, a sinusoid of any
+  amplitude `A` and any starting phase `θ` is a cosine column times one
+  weight plus a sine column times another, so the two weights
+  `a_cos = A cos θ`, `a_sin = A sin θ` absorb the unknown starting phase
+  (example: `a_cos = 0.3, a_sin = 0.4` is `A = 0.5`, `θ = 53°`) and the
+  timbre stays linear in `a`, which is what lets slide 34 integrate it
+  out exactly; the
   time axis is then split into `n_chunk` equal blocks and the column set
   is repeated once per block, zeroed outside it, so each harmonic's
   loudness can differ per block. Hence `p = 2 · n_harm · n_chunk = 32`,
