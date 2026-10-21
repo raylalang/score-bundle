@@ -70,6 +70,25 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   intuition: `m` is huge and `p` is small, so thousands of samples pin
   down a few dozen loudnesses very precisely, and the pitch curve is
   what remains to be found.
+- Technically (`phase3/curve.py`, `chunked_design_torch`, and the line
+  `m, p = Phi.shape` in the likelihood): the time grid `t` is the vector
+  of sample instants `[0, 1/16000, 2/16000, …]` and `m = len(t)`; every
+  column of `Φ` is evaluated at those instants, so `Φ` has one row per
+  instant and `x` one entry per instant. With a sample mask the masked
+  rows are deleted from both, and `m` is the number of kept samples.
+  The columns: for each harmonic `k = 1…n_harm`, the phase
+  `φ_k(t) = 2π k · cumsum(f_0 dt)` gives two columns, `cos φ_k` and
+  `sin φ_k` (the pair lets the harmonic take any starting phase); the
+  time axis is then split into `n_chunk` equal blocks and the column set
+  is repeated once per block, zeroed outside it, so each harmonic's
+  loudness can differ per block. Hence `p = 2 · n_harm · n_chunk = 32`,
+  and `a` has 32 entries: cosine and sine weight for each of 8 harmonics
+  in each of 2 chunks. `Φ a` is the synthesized signal at every instant.
+  The likelihood forms `Φ^T Φ`, `p × p`, never anything `m × m`. In a
+  chain fit each note's `Φ` is built on its own slice plus a 0.2 s
+  margin, multiplied by its fade windows, and the notes' blocks are
+  concatenated side by side: `p` becomes the sum over notes and `m` the
+  whole segment. That concatenation is where the leak of slide 48 lived.
 
 ## Slide 34. Setup: scoring a curve, finding the curve
 
