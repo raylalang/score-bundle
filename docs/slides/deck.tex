@@ -586,72 +586,96 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Setup: what the audio of one note is}
+\begin{frame}{Setup: the data and the signal model}
   \small
-  Data: URMP development tracks, audio only: 7 tracks, one per
-  instrument, notes cut at annotated boundaries, 16\,kHz. 376 notes in the
-  curve studies; 47 chains of 3 to 5 notes (154 boundaries) in the boundary
-  study.
-  \vspace{1mm}
+  Data: URMP development tracks, audio only. 7 tracks, one per
+  instrument, notes cut at annotated boundaries, 16\,kHz. 376 notes in
+  the curve studies; 47 chains of 3 to 5 notes (154 boundaries) in the
+  boundary study.
+  \vspace{3mm}
 
-  A sustained note is a stack of $K$ harmonics at $1\times, 2\times,
-  \ldots, K\times$ the fundamental. The pitch curve is the unknown; for any
-  candidate curve every harmonic's wave follows exactly:
+  A sustained note is a stack of $K$ harmonics. Its audio is
+  \begin{equation*}
+    x \;=\; \Phi(z)\,a \;+\; \varepsilon,
+    \qquad x \in \mathbb R^{m},\quad \Phi(z) \in \mathbb R^{m\times p},\quad
+    a \in \mathbb R^{p},\quad \varepsilon \sim \mathcal N(0,\ \sigma^2 I_m)
+  \end{equation*}
   \vspace{-2mm}
-  {\footnotesize
-  \begin{align*}
-    z &= \text{cents}(t),\quad \text{cents}(t_i) = \mathrm{interp}(u;\,t_i),
-       \quad u \in \mathbb R^{J}\ \text{(knot values)},\quad i = 1..m
-       \qquad\text{\scriptsize the curve}\\
-    f_0(t_i) &= f_{\text{pitch}} \cdot 2^{\,\text{cents}(t_i)/1200}
-       \qquad\text{\scriptsize cents to frequency}\\
-    \varphi(t_i) &= 2\pi \sum_{j \le i} f_0(t_j)\,\Delta t,
-       \qquad \varphi_k = k\,\varphi,\quad k = 1..K
-       \qquad\text{\scriptsize frequency accumulates into phase}\\
-    \Phi(z) &= \bigl[\cos\varphi_k(t),\ \sin\varphi_k(t)\bigr]_{k=1..K}
-       \ \text{repeated per time chunk } c = 1..C
-       \ \in \mathbb R^{m \times p},\quad p = 2KC
-       \qquad\text{\scriptsize the design}\\
-    x &= \Phi(z)\,a + \varepsilon,\qquad a \in \mathbb R^{p},\quad
-       \varepsilon \sim \mathcal N(0,\ \sigma^2 I_m),\quad x \in \mathbb R^{m}
-       \qquad\text{\scriptsize the audio}
-  \end{align*}}
-  $x$: the $m$ audio samples. $z$: the pitch curve. $a$: the harmonic
-  amplitudes (timbre), linear. $\varepsilon$: what the harmonics do not
-  explain. The curve fixes the shape of every column; the amplitudes only
-  scale them.
+  \begin{tabular}{@{}ll@{}}
+    $x$ & the $m$ recorded samples \\
+    $z$ & the pitch curve, the \textbf{unknown} we are after \\
+    $\Phi(z)$ & one column per harmonic wave; the curve fixes every column's \textbf{shape} \\
+    $a$ & the harmonic amplitudes, the timbre; they only \textbf{scale} the columns \\
+    $\varepsilon$ & what the harmonics do not explain
+  \end{tabular}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Setup: scoring a curve, finding the curve}
+\begin{frame}{From the pitch curve to the design matrix}
   \small
-  The timbre is unknown but linear: give it a Gaussian prior and
-  integrate it out exactly.
-  \vspace{-2mm}
-  {\footnotesize
-  \begin{align*}
-    a \sim \mathcal N(0,\ \Sigma_a)\ \Rightarrow\
-    p(x \mid z) &= \mathcal N\bigl(x;\ 0,\ \Phi(z)\,\Sigma_a\,\Phi(z)^{\!\top}
-      + \sigma^2 I_m\bigr)
-      \qquad\text{\scriptsize timbre-free score of a curve}\\
-    \Sigma_a = \sigma_a^2 I_p:\qquad
-    G &= \Phi^{\!\top}\Phi + \tfrac{\sigma^2}{\sigma_a^2} I_p \in \mathbb R^{p\times p}
-      \qquad\text{\scriptsize never form the } m\times m\\
-    \log p(x \mid z) &= -\tfrac12\Bigl[\,m\log 2\pi + (m-p)\log\sigma^2
-      + \log|G| + p\log\sigma_a^2\\
-      &\qquad\quad + \tfrac{1}{\sigma^2}\bigl(x^{\!\top}x
-      - x^{\!\top}\Phi\,G^{-1}\Phi^{\!\top}x\bigr)\Bigr]
-      \qquad\text{\scriptsize cost } O(mp^2)\\
-    u &\sim \mathcal N(0,\ K_{\text{knots}})
-      \qquad\text{\scriptsize prior on the curve: the two-component GP (vibrato band plus drift)}\\
-    \hat z &= \arg\max_z\ \bigl[\log p(x \mid z) + \log p(z)\bigr]
-      \qquad\text{\scriptsize gradient descent through } \Phi(z)\\
-    \Sigma_{z} &\approx \Bigl[-\nabla_z^2 \bigl(\log p(x \mid z) + \log p(z)\bigr)\Bigr]^{-1}_{\hat z}
-      \qquad\text{\scriptsize Laplace: the band from the curvature}
-  \end{align*}}
-  Every audio sample votes; no pitch tracker anywhere. The score anchors
-  $f_{\text{pitch}}$. Gradients through the synthesizer, cf.\ Engel et
-  al.\ 2020; seconds per note.
+  For any candidate curve, every harmonic's wave follows exactly:
+  \vspace{1mm}
+  \begin{alignat*}{2}
+    &\text{pitch curve}\qquad & z &= \text{cents}(t)\\[1mm]
+    &\text{frequency} & f_0(t) &= f_{\text{pitch}}\cdot 2^{\,\text{cents}(t)/1200}\\[1mm]
+    &\text{phase} & \varphi_k(t) &= 2\pi k \int_0^{t} f_0,
+       \qquad k = 1..K\\[1mm]
+    &\text{design} & \Phi(z) &= \bigl[\cos\varphi_k(t),\ \sin\varphi_k(t)\bigr]_{k=1..K}
+       \ \in \mathbb R^{m\times p}
+  \end{alignat*}
+  \vspace{1mm}
+
+  Frequency is the speed, phase is the distance travelled: a small
+  pitch error grows into a large phase error over time.
+  \vspace{1mm}
+
+  {\footnotesize The curve is held at $J$ knot values $u$ and
+  interpolated to the $m$ samples; the columns are repeated per time
+  chunk so loudness can change within the note, $p = 2KC$.}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Scoring a curve: the timbre integrated out}
+  \small
+  The amplitudes are unknown but \textbf{linear}. A Gaussian prior on
+  them integrates out exactly:
+  \begin{equation*}
+    a \sim \mathcal N(0,\ \sigma_a^2 I_p)
+    \quad\Longrightarrow\quad
+    p(x \mid z) \;=\; \mathcal N\!\bigl(x;\ 0,\ \sigma_a^2\,\Phi(z)\Phi(z)^{\!\top} + \sigma^2 I_m\bigr)
+  \end{equation*}
+  \vspace{-1mm}
+  \begin{itemize}
+    \item One number per candidate curve, timbre-free. Every audio
+          sample votes. No pitch tracker anywhere.
+    \item Computed through the $p \times p$ matrix
+          $G = \Phi^{\!\top}\Phi + \tfrac{\sigma^2}{\sigma_a^2} I_p$,
+          never the $m \times m$ covariance: cost $O(mp^2)$, with
+          $p \ll m$.
+    \item $\sigma^2$ is the residual variance at the best amplitudes,
+          fitted per note.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Finding the curve, with its uncertainty}
+  \small
+  \begin{alignat*}{2}
+    &\text{prior on the curve} \qquad & u &\sim \mathcal N(0,\ K_{\text{knots}})\\[1mm]
+    &\text{best curve} & \hat z &= \arg\max_z\ \bigl[\log p(x \mid z) + \log p(z)\bigr]\\[1mm]
+    &\text{its band} & \Sigma_z &\approx
+       \Bigl[-\nabla_z^2\bigl(\log p(x \mid z) + \log p(z)\bigr)\Bigr]^{-1}_{\hat z}
+  \end{alignat*}
+  \vspace{1mm}
+  \begin{itemize}
+    \item The score anchors $f_{\text{pitch}}$; $K_{\text{knots}}$ is the
+          two-component GP of the previous chapter (vibrato band plus
+          drift), so candidates are curves a player would produce.
+    \item $\Phi(z)$ is differentiable in $z$: gradient descent through
+          the synthesizer (cf.\ Engel et al.\ 2020), seconds per note.
+    \item The band is the Laplace approximation: a sharply curved peak
+          gives a narrow band.
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------

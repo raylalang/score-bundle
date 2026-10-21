@@ -124,7 +124,8 @@ Eight figures from the stored cells (`scripts/make_span_viz.py`,
 end to end, the leakage diagnosis, the scalar attribution, the paired
 contrasts over three spans, calibration strips, the boundary gains, the
 phrase dose-response. All in the thesis section (81 pp); five as deck
-backup frames 45–49 (main line unchanged).
+backup frames (pages 47–51 after the 2026-10-21 split of the setup
+slides; main line unchanged).
 
 ## What is open, for Ray
 
