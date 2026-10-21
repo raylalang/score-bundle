@@ -57,9 +57,19 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   reading equals the sum of the harmonic waves at that instant, each
   scaled by its knob, plus noise. "Every audio sample votes" on slide 34
   means every one of the `m` entries contributes to a candidate's score.
-- `K`: the number of harmonics, 8 in the studies; `p = 2K` columns for
-  cosine and sine, more when the amplitudes are allowed to change in
-  chunks over the note.
+- `K`: the number of harmonics, 8 in the studies.
+- `m` and `p`, the two sizes of the matrix. `m` is the number of audio
+  samples in the note, the length of `x` and the number of rows of
+  `Φ(z)`: a 0.5-second note has `m = 8,000`, a 1.2-second note
+  `m = 19,200`. `p` is the number of columns of `Φ(z)`, which is the
+  number of knobs in `a`: cosine and sine per harmonic gives `2K = 16`,
+  and the note is split into 2 time chunks so loudness can change
+  within it, so `p = 2 × 8 × 2 = 32`. Scoring one candidate curve costs
+  about `m · p²` operations (slide 34), here `19,200 × 32² ≈ 20 million`,
+  milliseconds; the naive `m × m` form would cost `m³ ≈ 7 × 10¹²`. The
+  intuition: `m` is huge and `p` is small, so thousands of samples pin
+  down a few dozen loudnesses very precisely, and the pitch curve is
+  what remains to be found.
 
 ## Slide 34. Setup: scoring a curve, finding the curve
 
