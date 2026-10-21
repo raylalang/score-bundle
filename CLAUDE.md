@@ -243,7 +243,9 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   representation with uncertainty; method = Bayesian score-conditioned inverse
   synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
   ladder; three-question RQ hierarchy. `docs/slides/deck.tex` is the one full
-  thesis deck (44 frames). `docs/meeting_qa_prep.md` = the 2026-10-14
+  thesis deck (49 pages incl. 5 backup frames; **every deck.tex change must be
+  followed by a change to `docs/slides/speaker_notes.md`, same commit — Ray's
+  standing rule 2026-10-21**). `docs/meeting_qa_prep.md` = the 2026-10-14
   direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT. Held
   for after the meeting (Ray's call): the decomposition framing (score +
   expression + timbre + noise) in the intro/abstract.

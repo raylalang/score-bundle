@@ -17,3 +17,8 @@ Figures live in
 vermilion = reference, green = pYIN), dpi 200. Audio demo clips for the
 opening frame: `expressive.wav`, `flat.wav`. `deck_kernels.tex` is the
 September kernel-week deck, historical.
+
+**Speaker's notes: `speaker_notes.md`.** Standing rule (Ray, 2026-10-21):
+every change to `deck.tex` is followed by a change to `speaker_notes.md`
+(same commit). The notes define every symbol on each slide and give an
+example; frame numbers are PDF page numbers.
