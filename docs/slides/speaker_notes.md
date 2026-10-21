@@ -44,7 +44,23 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   `z`. The curve fixes the shape of every column.
 - `a`: the amplitudes, one per column, how loud each harmonic is: the
   timbre. They multiply the columns, like volume knobs.
-- `ε`: whatever the harmonic stack does not explain, treated as noise.
+- `ε`: the noise term, a vector with `m` entries, one per sample: the
+  part of the recording the harmonic stack does not reproduce,
+  `ε = x − Φ(z) a`. The model assumes each entry is an independent
+  Gaussian with mean zero and common variance, `ε ~ N(0, σ² I)`; that
+  is what makes slide 34's likelihood a Gaussian with covariance
+  `Φ Σ_a Φ^T + σ² I` (spread from the unknown amplitudes, plus the noise
+  floor on every sample). `σ²` is not chosen by hand: per note, the
+  code solves the best amplitudes by least squares on the flat-curve
+  design and takes the residual's variance as `σ²`, refitting it once
+  halfway through the curve fit. In a real recording `ε` contains bow
+  and breath noise, room reverberation, harmonics above the eighth,
+  slight inharmonicity, and the mismatch between piecewise-constant
+  amplitudes and the true envelope. Caveat, said on slide 36: it is not
+  white; the residual at the harmonics is strongly correlated across
+  samples (0.944 measured), so the likelihood counts correlated samples
+  as independent votes and is overconfident, which is why the
+  calibrated floor exists.
 - `x`: the whole waveform of the note as a vector, one entry per audio
   sample, NOT a single number. A recording is a sequence of pressure
   readings at a fixed rate; at 16,000 per second a 1.2-second note gives
