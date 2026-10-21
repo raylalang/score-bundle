@@ -113,6 +113,33 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   concatenated side by side: `p` becomes the sum over notes and `m` the
   whole segment. That concatenation is where the leak of slide 48 lived.
 
+**Sizes of everything on slides 33 and 34, symbolically.**
+
+| object | size | what it is |
+|---|---|---|
+| `m` | scalar | number of samples in the segment |
+| `K` (`n_harm`) | scalar | number of harmonics |
+| `C` (`n_chunk`) | scalar | time chunks per note |
+| `p = 2KC` | scalar | basis columns for one note |
+| `t`, `x`, `ε`, `f_0(t)`, `φ_k(t)` | `m × 1` | sample instants, samples, noise, frequency, phase of harmonic `k` |
+| `z` | `J × 1` as a parameter (`J` knots per note), `m × 1` on the grid | the pitch curve |
+| `a` | `p × 1` | amplitude weights |
+| `Φ(z)` | `m × p` | design matrix: row = instant, column = basis waveform |
+| `Σ_a` | `p × p` (`σ_a² I_p` in the studies) | amplitude prior covariance |
+| `σ² I` | `m × m` | noise covariance |
+| `Φ Σ_a Φ^T + σ² I` | `m × m` | covariance of `x` under a candidate curve; never formed |
+| `G = Φ^T Φ + (σ²/σ_a²) I_p`, its Cholesky `L` | `p × p` | what the code forms instead |
+| `Φ^T x` | `p × 1` | the data projected on the basis |
+
+For a chain of `N` notes (slide 37): each note has its own `Φ_i`,
+`m × p_i` with `p_i = 2KC`, on its own slice plus margin times its fade
+windows; the chain design is `Φ = [Φ_1 … Φ_N]`, `m × P` with
+`P = N · 2KC`; `a` is `P × 1`, `G` is `P × P`; the boundary offsets `db`
+are `(N−1) × 1` with an `(N−1) × (N−1)` prior covariance (slide 45);
+the per-note constants `c` are `N × 1` with an `N × N` prior covariance.
+Cost `O(m p²)`: forming `Φ^T Φ` is `m` rows times `p × p` entries; the
+Cholesky of `G` is `p³`, negligible since `p ≪ m`.
+
 ## Slide 34. Setup: scoring a curve, finding the curve
 
 **The problem.** We want `z` but do not know `a`. **The trick.** `a`
