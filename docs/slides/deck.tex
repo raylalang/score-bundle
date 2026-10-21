@@ -704,11 +704,35 @@
 
 
 % ---------------------------------------------------------------------
-\begin{frame}{Note boundaries from the waveform}
-  Joint fit over chains of 3 to 5 notes: per-note curves plus
-  boundaries, by the same gradients (each boundary: a fade-out edge and
-  a fade-in edge).
+\begin{frame}{Note boundaries: the chain model}
+  \small
+  A chain of $N$ consecutive notes, boundaries $b_1, \ldots, b_{N-1}$,
+  one pitch curve $z_k$ per note. Each note is switched on and off by a
+  soft window:
   \vspace{-1mm}
+  \begin{alignat*}{2}
+    &\text{window of note } k \qquad & w_k(t) &= \sigma\!\Bigl(\tfrac{t - b_{k-1}}{s}\Bigr)\,
+       \sigma\!\Bigl(\tfrac{b_k - t}{s}\Bigr),
+       \qquad \sigma(u) = \tfrac{1}{1 + e^{-u}},\quad s = 10\,\text{ms}\\[1mm]
+    &\text{chain design} & \Phi(z, b) &= \bigl[\,w_1 \odot \Phi_1(z_1)\ \big|\ \cdots\ \big|\ w_N \odot \Phi_N(z_N)\,\bigr]
+       \ \in \mathbb R^{m \times Np}\\[1mm]
+    &\text{likelihood, as before} & p(x \mid z, b) &= \mathcal N\!\bigl(x;\ 0,\ \sigma_a^2\,\Phi\Phi^{\!\top} + \sigma^2 I_m\bigr)\\[1mm]
+    &\text{start} & b^{(0)} &= \text{the score through the local tempo line (no annotation)}\\[1mm]
+    &\text{joint fit} \qquad & (\hat z, \hat b) &= \arg\max_{z,\,b}\ \bigl[\log p(x \mid z, b) + \log p(z)\bigr],
+       \qquad \text{bands: Laplace over } (z, b)
+  \end{alignat*}
+  \vspace{-2mm}
+  \begin{itemize}
+    \item $w_k$ fades note $k$ in after $b_{k-1}$, out at $b_k$ ($\odot$:
+          columns scaled sample by sample). Differentiable in $b$: the
+          boundaries move by the same gradient descent as the curves.
+    \item The audio decides: a boundary settles where note $k$'s
+          harmonics stop explaining the samples and note $k{+}1$'s start.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Note boundaries from the waveform: one chain, and the numbers}
   \figslotw{chain_boundary_deck.png}{0.68}{chain fit}
   \vspace{-3mm}
   {\small From score-only starting points (the local tempo line), the

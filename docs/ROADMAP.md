@@ -48,7 +48,7 @@ pickles and shard logs are gitignored and still live only in
 ## NOW — Direction and scope (meeting brief dated 2026-10-14)
 
 `docs/meeting_qa_prep.md` is the direction-and-scope brief (sections
-A–H); `docs/slides/deck.pdf` (51 pages, the one consolidated thesis
+A–H); `docs/slides/deck.pdf` (52 pages, the one consolidated thesis
 deck) is its visual spine. The decisions it asks the professor for, in
 priority order:
 

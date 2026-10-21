@@ -1,7 +1,7 @@
 # Meeting prep (2026-10-14) — research direction and scope
 
 > Purpose of this meeting: resolve direction and scope, not report
-> progress. The deck (`docs/slides/deck.pdf`, 51 pages) is the visual
+> progress. The deck (`docs/slides/deck.pdf`, 52 pages) is the visual
 > spine; this brief is the discussion skeleton. Standing language rules:
 > say "the GP estimator" (never a coined name), "correlated timing noise
 > across notes" (never bare "AR(1)"). Before the meeting: **sync
