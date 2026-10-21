@@ -45,9 +45,21 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
 - `a`: the amplitudes, one per column, how loud each harmonic is: the
   timbre. They multiply the columns, like volume knobs.
 - `ε`: whatever the harmonic stack does not explain, treated as noise.
-- `x = Φ(z) a + ε`: the recorded samples equal the harmonic waves,
-  scaled by the knobs, plus noise.
-- `K`: the number of harmonics, 8 in the studies.
+- `x`: the whole waveform of the note as a vector, one entry per audio
+  sample, NOT a single number. A recording is a sequence of pressure
+  readings at a fixed rate; at 16,000 per second a 1.2-second note gives
+  `m = 19,200` entries, each a value like 0.012 or −0.028. The vermilion
+  line on slide 35 is `x` plotted against time; each point on it is one
+  entry.
+- `x = Φ(z) a + ε`: a matrix equation. `x` has `m` rows; `Φ(z)` has `m`
+  rows and `p` columns, each column a waveform of length `m`; `a` has
+  `p` entries; `ε` has `m` entries. Sample by sample: the recorded
+  reading equals the sum of the harmonic waves at that instant, each
+  scaled by its knob, plus noise. "Every audio sample votes" on slide 34
+  means every one of the `m` entries contributes to a candidate's score.
+- `K`: the number of harmonics, 8 in the studies; `p = 2K` columns for
+  cosine and sine, more when the amplitudes are allowed to change in
+  chunks over the note.
 
 ## Slide 34. Setup: scoring a curve, finding the curve
 
