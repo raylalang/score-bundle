@@ -21,7 +21,34 @@ Stages: extract | loudness | tau | delta | run [k/n] | report | eval
 (run+report in-process) and the -tonal variants (dev-only exploratory).
 Anything longer than a smoke test goes through the sharded driver:
 
-    bash scripts/run_phase2_eval.sh [N_SHARDS=8] [tonal]
+    bash scripts/run_phase2_eval.sh [N_SHARDS=8] [tonal|chain]
+
+THE CHAIN VARIANT (2026-10-22, dev-only, exploratory; verbs run-chain /
+report-chain; own cells dir results/phase2_cells/chain and own results
+file results/phase2_chain_prior_dev.md; the plain results are never
+touched).  Track-scale version of the three-prior comparison of the
+waveform studies (results/prior_value_v2_tuning_dev.md,
+boundary_prior_dev.md, prior_value_phrase_dev.md), where at chain and
+phrase scale the score graph added nothing beyond the common offset.
+Here the observation is the tracked six-channel bundle on whole
+development tracks (~100-300 notes each), the common offset is the
+per-piece Bayesian bias column that BOTH the graph and the no-graph arm
+already carry, and a third arm is added: the same GP with the score
+graph replaced by a time-only chain (consecutive notes linked, weight
+1), everything else identical.
+Committed hypotheses, stated before the run:
+  H-T1 (strong form): the score graph beats the time-only chain on
+      held-out notes, paired per (track, seed), on recovery (dRMSE) and/or
+      calibration (dNLL), in at least the intonation channel (where the
+      graph's value over no-graph was confirmed, -0.877 cents).
+  H-T2 (weak form): the time-only chain beats no-graph (any structure
+      helps beyond the common offset at track scale).
+  Falsification of H-T1: the score-graph-vs-chain CI covers zero on every
+      channel => at track scale too, score structure beyond time adjacency
+      adds nothing measurable, and the strings-and-winds gain is a
+      "structure vs none" gain.  Reported verbatim either way.
+  Primary read: gp_asgiven - gp_chain_asgiven (the registered noise
+      variant), per channel, vs estimator targets.
 """
 from __future__ import annotations
 
@@ -65,6 +92,8 @@ CELLS_PKL = ("results/phase2_confirmation_cells.pkl" if CONF_MODE
              else "results/phase2_real_cells.pkl")
 TONAL_OUT_MD = "results/phase2_tonal_dev.md"
 TONAL_CELLS = "results/phase2_tonal_cells.pkl"
+CHAIN_OUT_MD = "results/phase2_chain_prior_dev.md"
+CHAIN_CELLS = "results/phase2_chain_prior_cells.pkl"
 # Circle-of-fifths study (dev, EXPLORATORY per the registration; hypothesis
 # stated before the run): if temperament/tuning-reference structure is real,
 # notes close on the circle of fifths share a mistuning that semitone
@@ -283,6 +312,7 @@ def stage_delta() -> None:
 
 
 def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless,
+                 chain_eig=None,
                  tonal_eig=None):
     from score_bundle.gp import MultiOutputGraphGP
 
@@ -299,6 +329,9 @@ def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless,
     if tonal_eig is not None:
         systems += [("gp_tonal", "additive", None, tonal_eig),
                     ("gp_tonal_asgiven", "additive", med_var, tonal_eig)]
+    if chain_eig is not None:
+        systems += [("gp_chain", "additive", None, chain_eig),
+                    ("gp_chain_asgiven", "additive", med_var, chain_eig)]
     fits = {}
     for name, kern, fixed, (nu, U) in systems:
         g = MultiOutputGraphGP(nu, U, kernel=kern, features=feats,
@@ -317,14 +350,20 @@ def _sys_labels(tonal: bool):
     labels = [("gp", "graph GP (learned scale)"),
               ("gp_asgiven", "graph GP (as-given)"),
               ("nograph", "no-graph ablation")]
-    if tonal:
+    if tonal is True:
         labels += [("gp_tonal", "tonal graph GP (learned scale)"),
                    ("gp_tonal_asgiven", "tonal graph GP (as-given)")]
+    if tonal == "chain":
+        labels = [("gp", "score-graph GP (learned scale)"),
+                  ("gp_asgiven", "score-graph GP (as-given)"),
+                  ("nograph", "no-graph ablation"),
+                  ("gp_chain", "time-only chain GP (learned scale)"),
+                  ("gp_chain_asgiven", "time-only chain GP (as-given)")]
     return labels
 
 
 def _cells_dir(tonal: bool) -> str:
-    tag = "tonal" if tonal else "plain"
+    tag = "chain" if tonal == "chain" else ("tonal" if tonal else "plain")
     if CONF_MODE:
         tag = "conf"
     return os.path.join("results", "phase2_cells", tag)
@@ -382,7 +421,14 @@ def stage_run(shard: str = "0/1", tonal: bool = False) -> None:
                                   np.zeros(n, dtype=int))
         eig = np.linalg.eigh(laplacian(build_adjacency(score)))
         eig_t = (np.linalg.eigh(laplacian(build_adjacency_tonal(score)))
-                 if tonal else None)
+                 if tonal is True else None)
+        eig_c = None
+        if tonal == "chain":
+            order = np.argsort(np.asarray(d["onset"], float), kind="stable")
+            A_c = np.zeros((n, n))
+            for a_, b_ in zip(order[:-1], order[1:]):
+                A_c[a_, b_] = A_c[b_, a_] = 1.0
+            eig_c = np.linalg.eigh(laplacian(A_c))
         X = rich_score_features(score, rff_dim=0)
         X = (X - X.mean(0)) / np.maximum(X.std(0), 1e-9)
         feats = [np.concatenate([X, np.ones((n, 1))], axis=1)]
@@ -408,7 +454,7 @@ def stage_run(shard: str = "0/1", tonal: bool = False) -> None:
             Yobs = np.where(mask, np.nan_to_num(est), 0.0)
             t0 = _time.time()
             fits = _fit_systems(eig, feats, Yobs, mask, scale, var, None,
-                                tonal_eig=eig_t)
+                                tonal_eig=eig_t, chain_eig=eig_c)
             cell_rows = {}
             pt = []
             for sname, (m, sd, sd_pred) in fits.items():
@@ -517,7 +563,19 @@ def stage_eval(tonal: bool = False) -> None:
 def _render(rows, per_track, used, tonal: bool) -> None:
     n_ch = len(CH)
     sys_labels = _sys_labels(tonal)
-    if tonal:
+    if tonal == "chain":
+        lines = [f"# Score graph vs time-only chain on the strings-and-winds "
+                 f"bundle at track scale — DEV, exploratory, no claims "
+                 f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
+                 f"of notes hidden)", "",
+                 "> Hypotheses H-T1/H-T2 and the falsification rule in the "
+                 "docstring of scripts/eval_phase2_real.py (committed before "
+                 "the run). Both the graph arms and the no-graph arm carry the "
+                 "per-piece bias column, so every contrast is beyond the "
+                 "common offset. Primary read: gp_asgiven - gp_chain_asgiven, "
+                 "per channel, vs estimator targets. The registered results "
+                 "file is untouched.", ""]
+    elif tonal:
         lines = [f"# Circle-of-fifths metric on the Phase-2 bundle — "
                  f"EXPLORATORY dev study "
                  f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
@@ -585,7 +643,16 @@ def _render(rows, per_track, used, tonal: bool) -> None:
     contrasts = [("gp", "nograph", "graph value (learned scale; gp - nograph)"),
                  ("gp_asgiven", "nograph",
                   "graph value (as-given, the default; gp_asgiven - nograph)")]
-    if tonal:
+    if tonal == "chain":
+        contrasts += [
+            ("gp_asgiven", "gp_chain_asgiven",
+             "SCORE GRAPH vs TIME-ONLY CHAIN (PRIMARY read; as-given, "
+             "gp_asgiven - gp_chain_asgiven)"),
+            ("gp", "gp_chain",
+             "score graph vs time-only chain (learned scale; gp - gp_chain)"),
+            ("gp_chain_asgiven", "nograph",
+             "chain value (as-given; gp_chain_asgiven - nograph)")]
+    if tonal is True:
         contrasts += [
             ("gp_tonal_asgiven", "gp_asgiven",
              "TONAL vs PLAIN metric (PRIMARY read; as-given, "
@@ -634,8 +701,10 @@ def _render(rows, per_track, used, tonal: bool) -> None:
             cells.append(f"{mu:+.3f}{sig} (n={len(d)})")
         lines.append(f"| {fam} | " + " | ".join(cells) + " |")
     table = "\n".join(lines)
-    out_md = TONAL_OUT_MD if tonal else OUT_MD
-    cells_pkl = TONAL_CELLS if tonal else CELLS_PKL
+    out_md = (CHAIN_OUT_MD if tonal == "chain"
+              else (TONAL_OUT_MD if tonal else OUT_MD))
+    cells_pkl = (CHAIN_CELLS if tonal == "chain"
+                 else (TONAL_CELLS if tonal else CELLS_PKL))
     os.makedirs("results", exist_ok=True)
     with open(out_md, "w") as fh:
         fh.write(table + "\n")
@@ -656,5 +725,7 @@ if __name__ == "__main__":
      "eval-tonal": lambda: stage_eval(tonal=True),
      "run": lambda: stage_run(shard_arg, tonal=False),
      "run-tonal": lambda: stage_run(shard_arg, tonal=True),
+     "run-chain": lambda: stage_run(shard_arg, tonal="chain"),
      "report": stage_report,
-     "report-tonal": lambda: stage_report(tonal=True)}[verb]()
+     "report-tonal": lambda: stage_report(tonal=True),
+     "report-chain": lambda: stage_report(tonal="chain")}[verb]()

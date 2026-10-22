@@ -23,6 +23,8 @@ case "$N" in (*[!0-9]*|"")
 esac
 if [ "$TAG" = "tonal" ]; then
   RUN=run-tonal; REPORT=report-tonal; DIR=results/phase2_cells/tonal
+elif [ "$TAG" = "chain" ]; then
+  RUN=run-chain; REPORT=report-chain; DIR=results/phase2_cells/chain
 else
   RUN=run; REPORT=report; DIR=results/phase2_cells/plain
 fi

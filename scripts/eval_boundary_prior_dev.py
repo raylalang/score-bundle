@@ -59,6 +59,20 @@ errors stored for the record.
 
     OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_boundary_prior_dev.py smoke
     bash scripts/run_boundary_prior_eval.sh 8          # sharded + report
+
+THE CHAIN-SCALE PRIOR WIDTH (2026-10-22; env BOUNDPRIOR_SIGMA=chain; prefix
+boundprior_chainsig; results/boundary_prior_chainsig_dev.md).  The first
+run's masked bands covered at 1.00 with sd 73-95 ms against ~30 ms errors:
+sigma_b^2 = the track's full tau variance is a population scale that
+overstates within-chain variation.  This rerun sets sigma_b^2 = the median
+over the track's chains of the within-chain variance of tau (the scale at
+which the prior actually operates), everything else identical.
+Committed hypotheses, stated before the run:
+  H-B4 (calibration): masked coverage@90 of the hidden joint moves from
+       1.00 toward 0.90 for all three arms.
+  H-B5 (verdict unchanged): the paired contrasts between arms stay ties;
+       the arms-vs-tempo-line gains stay.  Calibration-only rerun; if the
+       point verdict changed that would itself be the finding, reported.
 """
 from __future__ import annotations
 
@@ -78,8 +92,10 @@ from eval_phase3_chain_dev import SR, chain_segment, select_chains
 from eval_phase3_curve_dev import load_hypers
 
 CELLS_DIR = "results/phase3_cells"
-PREFIX = "boundprior"
-OUT_MD = "results/boundary_prior_dev.md"
+SIGMA_MODE = os.environ.get("BOUNDPRIOR_SIGMA", "track")
+PREFIX = "boundprior" if SIGMA_MODE == "track" else "boundprior_chainsig"
+OUT_MD = ("results/boundary_prior_dev.md" if SIGMA_MODE == "track"
+          else "results/boundary_prior_chainsig_dev.md")
 ARMS = ("indep", "temporal", "graph")
 N_STEPS = 300
 S_SCALE = 1.0
@@ -223,6 +239,16 @@ def iter_cells():
         audio = resample_poly(np.asarray(audio48, float), SR, int(sr48))
         tau = np.asarray(d["tau"], float)
         var_b = float(np.nanvar(tau[np.isfinite(tau)])) * 1e6   # ms^2
+        if SIGMA_MODE == "chain":
+            within = []
+            for idx_ in chains:
+                tt = tau[idx_]
+                tt = tt[np.isfinite(tt)]
+                if tt.size >= 2:
+                    within.append(float(np.var(tt)))
+            if within:
+                var_b = float(np.median(within)) * 1e6
+            var_b = max(var_b, 4.0 ** 2)      # floor at (4 ms)^2
         for idx in chains:
             k_j = len(idx) - 1
             j = (k_j - 1) // 2                      # hidden = middle joint
@@ -341,7 +367,9 @@ def stage_report():
 
     lines = [
         "# The boundary-prior experiment: score structure in note-boundary "
-        "inference from the waveform (DEV, exploratory, no claims)\n",
+        "inference from the waveform ("
+        + ("chain-scale prior width; " if SIGMA_MODE == "chain" else "")
+        + "DEV, exploratory, no claims)\n",
         "\nThree cross-joint priors over boundary offsets from the tempo-line "
         "boundaries, matched marginal\nvariance, free per-chain offset scalar "
         "in every arm, identical likelihood/data/optimizer, sharp\nedges. "
