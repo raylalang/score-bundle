@@ -249,6 +249,41 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT. Held
   for after the meeting (Ray's call): the decomposition framing (score +
   expression + timbre + noise) in the intro/abstract.
+- **STATE DUMP for context compaction (2026-10-22, main=6f9f52b+; written at
+  Ray's request before a `/compact`).** Meeting of 10-21 was cancelled; Ray's
+  instruction: "do all experiments you have in mind in parallel; include the
+  results in our docs, but only the ones worth considering; you can decline".
+  Facts that decide the plan: the strings-and-winds model's feature kernel
+  carries a per-piece bias column (`eval_phase2_real.py`: `np.ones((n,1))`
+  appended to `rich_score_features`), in BOTH the graph and the no-graph arm,
+  so the confirmed intonation gain (−0.877 cents*, graph vs no-graph, 13
+  pieces) is already a gain BEYOND the common offset at whole-track scale with
+  tracked targets — the opposite of the chain-scale waveform verdict (three
+  spans: nothing beyond the common offset). Running (both dev-only, hypotheses
+  in the script docstrings before the run, separate artifacts, nothing
+  registered touched): **E1 track-scale three priors** = the strings-and-winds
+  masked-imputation evaluation with a third arm, a time-only chain graph
+  (`gp_chain`, `gp_chain_asgiven`), beside `gp`/`gp_asgiven` and `nograph`, on
+  the 78 dev tracks × 6 channels (variant plumbed like the tonal study: own
+  cells dir `results/phase2_cells/chain`, own results file
+  `results/phase2_chain_prior_dev.md`; runner `run_phase2_eval.sh N chain`).
+  Question: at track scale, beyond the common offset, does the score graph
+  beat a temporal prior (strong form) or only tie it (weak form)? **E3
+  boundary band fix** = experiment B rerun with a chain-scale prior width
+  (σ_b² = median over the track's chains of the within-chain τ variance;
+  env `BOUNDPRIOR_SIGMA=chain`, prefix `boundprior_chainsig`, results
+  `results/boundary_prior_chainsig_dev.md`); calibration-only, expected to
+  move masked coverage from 1.00 toward 0.90 without changing the tie.
+  DECLINED with reasons: the curve-level waveform test (the chain model has no
+  per-note vibrato parameters to couple; the buildable version is a
+  chain-scale regression on read-outs, already answered by the three spans)
+  and the MIDI-DDSP attribute comparison (TensorFlow setup risk + attribute
+  mismatch; poor use of a day during writing). After the runs: readings
+  appended to the two records; docs (thesis Ch. 8 / brief / ROADMAP / this
+  file / speaker notes if a slide changes) updated ONLY for results worth
+  considering; the standing rules (speaker notes follow deck changes; deck =
+  minimal narrative + full math; no Phase-N wording in thesis/deck) apply.
+  Speaker notes now cover every slide 2–52 (`docs/slides/speaker_notes.md`).
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,
