@@ -374,10 +374,11 @@ same verdict.
 
 **Symbols.** The filter is the function `g(ν; s)` of slide 9; the
 graph Matérn with `α` is `g = (1 + s ν)^{−α}`; the heat kernel is
-`g = exp(−t ν)`. Note the sign convention on this slide: log score here
-is reported so that a more negative number is better (it is the
-negative of the per-note NLL); the slide's "worse" labels tell you the
-direction.
+`g = exp(−t ν)`. The log score column is the per-note negative log
+predictive density, as everywhere in the deck: lower is better, and the
+values happen to be negative because the standardized channels have
+small predictive variances. So −0.322 (base) beats −0.292 (chain) beats
+−0.190 (no edges), which is what the "worse" and "worst" labels say.
 
 ## Slide 22. Divider: Strings and winds
 
