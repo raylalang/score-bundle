@@ -49,6 +49,27 @@ Committed hypotheses, stated before the run:
       "structure vs none" gain.  Reported verbatim either way.
   Primary read: gp_asgiven - gp_chain_asgiven (the registered noise
       variant), per channel, vs estimator targets.
+  MEASURED 2026-10-22 (results/phase2_chain_prior_dev.md): H-T1 holds
+      (intonation -0.50*, extent -0.22*, rate -0.21*, loudness -0.007*);
+      H-T2 mixed.  Caveat: the chain links immediate neighbours with unit
+      weight while the score graph has a 2-beat Gaussian time window, so
+      the follow-up below isolates the pitch term.
+
+THE TIME-GAUSSIAN FOLLOW-UP (2026-10-22; verbs run-timegauss /
+report-timegauss; cells results/phase2_cells/timegauss; results
+results/phase2_timegauss_prior_dev.md).  Same cells, seven arms: the
+score-graph arms, no-graph, the time-only chain arms, and a TIME-ONLY
+GAUSSIAN graph: build_adjacency with the same ell_b = 2 beats and the
+pitch term removed (ell_p -> infinity), i.e. the score graph minus pitch
+proximity, everything else identical.
+Committed hypothesis, stated before the run:
+  H-T3 (pitch proximity): the score graph beats the time-only Gaussian
+      graph on intonation (paired, as-given), i.e. the track-scale
+      advantage over time structure is carried at least in part by pitch
+      proximity.  Falsification: the score-graph-vs-time-Gaussian CI
+      covers zero on intonation => the advantage over the chain was the
+      wider temporal window, not pitch; reported verbatim.
+  Primary read: gp_asgiven - gp_tg_asgiven on channel c.
 """
 from __future__ import annotations
 
@@ -94,6 +115,8 @@ TONAL_OUT_MD = "results/phase2_tonal_dev.md"
 TONAL_CELLS = "results/phase2_tonal_cells.pkl"
 CHAIN_OUT_MD = "results/phase2_chain_prior_dev.md"
 CHAIN_CELLS = "results/phase2_chain_prior_cells.pkl"
+TG_OUT_MD = "results/phase2_timegauss_prior_dev.md"
+TG_CELLS = "results/phase2_timegauss_prior_cells.pkl"
 # Circle-of-fifths study (dev, EXPLORATORY per the registration; hypothesis
 # stated before the run): if temperament/tuning-reference structure is real,
 # notes close on the circle of fifths share a mistuning that semitone
@@ -312,7 +335,7 @@ def stage_delta() -> None:
 
 
 def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless,
-                 chain_eig=None,
+                 chain_eig=None, tg_eig=None,
                  tonal_eig=None):
     from score_bundle.gp import MultiOutputGraphGP
 
@@ -332,6 +355,9 @@ def _fit_systems(score_eig, feats, Yobs, mask, scale, var, rng_seedless,
     if chain_eig is not None:
         systems += [("gp_chain", "additive", None, chain_eig),
                     ("gp_chain_asgiven", "additive", med_var, chain_eig)]
+    if tg_eig is not None:
+        systems += [("gp_tg", "additive", None, tg_eig),
+                    ("gp_tg_asgiven", "additive", med_var, tg_eig)]
     fits = {}
     for name, kern, fixed, (nu, U) in systems:
         g = MultiOutputGraphGP(nu, U, kernel=kern, features=feats,
@@ -353,17 +379,21 @@ def _sys_labels(tonal: bool):
     if tonal is True:
         labels += [("gp_tonal", "tonal graph GP (learned scale)"),
                    ("gp_tonal_asgiven", "tonal graph GP (as-given)")]
-    if tonal == "chain":
+    if tonal in ("chain", "timegauss"):
         labels = [("gp", "score-graph GP (learned scale)"),
                   ("gp_asgiven", "score-graph GP (as-given)"),
                   ("nograph", "no-graph ablation"),
                   ("gp_chain", "time-only chain GP (learned scale)"),
                   ("gp_chain_asgiven", "time-only chain GP (as-given)")]
+    if tonal == "timegauss":
+        labels += [("gp_tg", "time-only Gaussian graph GP (learned scale)"),
+                   ("gp_tg_asgiven", "time-only Gaussian graph GP (as-given)")]
     return labels
 
 
 def _cells_dir(tonal: bool) -> str:
-    tag = "chain" if tonal == "chain" else ("tonal" if tonal else "plain")
+    tag = (tonal if tonal in ("chain", "timegauss")
+           else ("tonal" if tonal else "plain"))
     if CONF_MODE:
         tag = "conf"
     return os.path.join("results", "phase2_cells", tag)
@@ -423,12 +453,16 @@ def stage_run(shard: str = "0/1", tonal: bool = False) -> None:
         eig_t = (np.linalg.eigh(laplacian(build_adjacency_tonal(score)))
                  if tonal is True else None)
         eig_c = None
-        if tonal == "chain":
+        eig_tg = None
+        if tonal in ("chain", "timegauss"):
             order = np.argsort(np.asarray(d["onset"], float), kind="stable")
             A_c = np.zeros((n, n))
             for a_, b_ in zip(order[:-1], order[1:]):
                 A_c[a_, b_] = A_c[b_, a_] = 1.0
             eig_c = np.linalg.eigh(laplacian(A_c))
+        if tonal == "timegauss":
+            eig_tg = np.linalg.eigh(laplacian(
+                build_adjacency(score, ell_p=1e6)))
         X = rich_score_features(score, rff_dim=0)
         X = (X - X.mean(0)) / np.maximum(X.std(0), 1e-9)
         feats = [np.concatenate([X, np.ones((n, 1))], axis=1)]
@@ -454,7 +488,8 @@ def stage_run(shard: str = "0/1", tonal: bool = False) -> None:
             Yobs = np.where(mask, np.nan_to_num(est), 0.0)
             t0 = _time.time()
             fits = _fit_systems(eig, feats, Yobs, mask, scale, var, None,
-                                tonal_eig=eig_t, chain_eig=eig_c)
+                                tonal_eig=eig_t, chain_eig=eig_c,
+                                tg_eig=eig_tg)
             cell_rows = {}
             pt = []
             for sname, (m, sd, sd_pred) in fits.items():
@@ -563,7 +598,17 @@ def stage_eval(tonal: bool = False) -> None:
 def _render(rows, per_track, used, tonal: bool) -> None:
     n_ch = len(CH)
     sys_labels = _sys_labels(tonal)
-    if tonal == "chain":
+    if tonal == "timegauss":
+        lines = [f"# Score graph vs time-only Gaussian graph vs time-only "
+                 f"chain on the strings-and-winds bundle at track scale — "
+                 f"DEV, exploratory, no claims ({used} unique tracks, "
+                 f"{len(SEEDS)} seeds, {HOLD_FRAC:.0%} of notes hidden)", "",
+                 "> Hypothesis H-T3 and the falsification rule in the "
+                 "docstring of scripts/eval_phase2_real.py (committed before "
+                 "the run). The time-only Gaussian graph is the score graph "
+                 "with the pitch term removed (same 2-beat time window). "
+                 "Primary read: gp_asgiven - gp_tg_asgiven on channel c.", ""]
+    elif tonal == "chain":
         lines = [f"# Score graph vs time-only chain on the strings-and-winds "
                  f"bundle at track scale — DEV, exploratory, no claims "
                  f"({used} unique tracks, {len(SEEDS)} seeds, {HOLD_FRAC:.0%} "
@@ -643,7 +688,18 @@ def _render(rows, per_track, used, tonal: bool) -> None:
     contrasts = [("gp", "nograph", "graph value (learned scale; gp - nograph)"),
                  ("gp_asgiven", "nograph",
                   "graph value (as-given, the default; gp_asgiven - nograph)")]
-    if tonal == "chain":
+    if tonal == "timegauss":
+        contrasts += [
+            ("gp_asgiven", "gp_tg_asgiven",
+             "SCORE GRAPH vs TIME-ONLY GAUSSIAN GRAPH (PRIMARY read, the "
+             "pitch term; as-given, gp_asgiven - gp_tg_asgiven)"),
+            ("gp", "gp_tg",
+             "score graph vs time-only Gaussian graph (learned scale; gp - gp_tg)"),
+            ("gp_tg_asgiven", "gp_chain_asgiven",
+             "time-Gaussian vs time-only chain (the window; as-given)"),
+            ("gp_tg_asgiven", "nograph",
+             "time-Gaussian value (as-given; gp_tg_asgiven - nograph)")]
+    if tonal in ("chain", "timegauss"):
         contrasts += [
             ("gp_asgiven", "gp_chain_asgiven",
              "SCORE GRAPH vs TIME-ONLY CHAIN (PRIMARY read; as-given, "
@@ -701,9 +757,11 @@ def _render(rows, per_track, used, tonal: bool) -> None:
             cells.append(f"{mu:+.3f}{sig} (n={len(d)})")
         lines.append(f"| {fam} | " + " | ".join(cells) + " |")
     table = "\n".join(lines)
-    out_md = (CHAIN_OUT_MD if tonal == "chain"
+    out_md = (TG_OUT_MD if tonal == "timegauss" else
+              CHAIN_OUT_MD if tonal == "chain"
               else (TONAL_OUT_MD if tonal else OUT_MD))
-    cells_pkl = (CHAIN_CELLS if tonal == "chain"
+    cells_pkl = (TG_CELLS if tonal == "timegauss" else
+                 CHAIN_CELLS if tonal == "chain"
                  else (TONAL_CELLS if tonal else CELLS_PKL))
     os.makedirs("results", exist_ok=True)
     with open(out_md, "w") as fh:
@@ -726,6 +784,8 @@ if __name__ == "__main__":
      "run": lambda: stage_run(shard_arg, tonal=False),
      "run-tonal": lambda: stage_run(shard_arg, tonal=True),
      "run-chain": lambda: stage_run(shard_arg, tonal="chain"),
+     "run-timegauss": lambda: stage_run(shard_arg, tonal="timegauss"),
      "report": stage_report,
      "report-tonal": lambda: stage_report(tonal=True),
-     "report-chain": lambda: stage_report(tonal="chain")}[verb]()
+     "report-chain": lambda: stage_report(tonal="chain"),
+     "report-timegauss": lambda: stage_report(tonal="timegauss")}[verb]()

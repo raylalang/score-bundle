@@ -25,6 +25,8 @@ if [ "$TAG" = "tonal" ]; then
   RUN=run-tonal; REPORT=report-tonal; DIR=results/phase2_cells/tonal
 elif [ "$TAG" = "chain" ]; then
   RUN=run-chain; REPORT=report-chain; DIR=results/phase2_cells/chain
+elif [ "$TAG" = "timegauss" ]; then
+  RUN=run-timegauss; REPORT=report-timegauss; DIR=results/phase2_cells/timegauss
 else
   RUN=run; REPORT=report; DIR=results/phase2_cells/plain
 fi
