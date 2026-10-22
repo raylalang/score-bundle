@@ -439,7 +439,7 @@ change-windows gating GPs with harmonic (exponentiated-cosine)
 covariances support pitch estimation and gap imputation directly on the
 waveform \cite{alvarado2016}. These families are the natural priors for
 the \emph{within-note} structure this thesis measures but does not
-model --- a quasi-periodic vibrato whose rate and extent drift. Both
+model --- a vibrato whose period and extent drift. Both
 slots where they could enter --- a curve-level estimator and the waveform-setting
 pitch-curve prior --- were measured on development data with negative
 verdicts (\S\ref{ch:future}); their imprint on this thesis is
@@ -969,10 +969,10 @@ must be said plainly, because it changes what a result means: the targets
 \emph{are} estimator outputs, so held-out recovery measures the model's
 ability to recover \emph{the estimator's} targets at masked notes, not
 agreement with a gold standard (the provided pitch curves supply an
-independent \emph{quasi-truth} --- a pseudo-ground-truth in the usual sense:
-the same estimator run on the provided ground-truth pitch curves, hence
-independent of the tracker though not of the estimator --- used as
-a cross-check in Chapter~\ref{ch:phase2}). The claim available in
+independent \emph{reference}: the same estimator run on the provided
+ground-truth pitch curves, hence independent of the tracker though not
+of the estimator, called the reference targets or the reference centre
+below and used as a cross-check in Chapter~\ref{ch:phase2}). The claim available in
 the strings-and-winds setting is therefore weaker in kind than the piano
 claim, and should not
 be reported as though it were the same.
@@ -1894,10 +1894,10 @@ per-family breakdown (computed under the learned-scale contrast) the
 brass intonation contrast is not significant on its own, while the vibrato win
 holds within every family and the intonation win within strings and
 woodwind.\footnote{The learned-scale fallback variant stars all six
-recovery contrasts but is the worse-calibrated variant against quasi-truth
+recovery contrasts but is the worse-calibrated variant against the reference
 (coverage $0.72$--$0.86$ vs $0.82$--$0.86$); its full rows are in the
 results record.} The ordering of systems is unchanged when scored against
-the quasi-truth targets derived from the provided pitch
+the reference targets derived from the provided pitch
 curves. A fresh-mask-seed check (seeds 2, 3, same protocol) reproduces
 every direction, every recovery star to two decimals, and the adverse
 loudness cell; the stars on the heavy-tailed calibration contrasts move
@@ -1960,7 +1960,7 @@ a 65-millisecond RMSE): the graph's value on the adopted timing channel did
 not confirm on this pool, and is reported as such. The development set's
 adverse loudness cell did \emph{not} replicate ($+0.015$, not
 significant); the delay channel stayed graph-neutral as registered; and the
-quasi-truth ordering is unchanged --- as-given remains the better-calibrated
+reference-target ordering is unchanged --- as-given remains the better-calibrated
 variant (vibrato coverage $0.80/0.85$ vs the learned scale's $0.72/0.73$).
 By the registered decision rule (C1, C2, C3 all pass), \textbf{the
 strings-and-winds headline is confirmed: the unchanged graph prior extends to real audio with
@@ -2120,7 +2120,7 @@ the \S\ref{sec:phase2} drift study (slope profiled on a grid); and $c$
 plus a marginalized pitch-curve deviation prior (eight zero-mean Hann
 bumps along the curve Jacobian, prior standard deviation $5$ cents per
 coefficient, treated exactly like the amplitudes).
-Each posterior is scored against the quasi-truth centre (the per-note
+Each posterior is scored against the reference centre (the per-note
 NLLS estimator applied to URMP's ground-truth curve): absolute error and
 coverage at nominal $90\%$. A fifth condition calibrates the machinery
 itself: synthetic notes built from real notes' fitted structure, where
@@ -2129,7 +2129,7 @@ the model is true by construction.
 \begin{table}[t]\centering
 \caption{Waveform development study: inference of the
 intonation centre on $376$ real notes (seven tracks, three families), no
-tracker in the loop. Score: distance to the quasi-truth centre; coverage
+tracker in the loop. Score: distance to the reference centre; coverage
 at nominal $90\%$. The estimator row is the full pyin-plus-NLLS chain.
 Development, exploratory; no claims registered.}
 \label{tab:phase3-study}
@@ -2153,11 +2153,11 @@ model-true synthetics (self-check) & --- & --- & \textbf{0.90} \\
   \centering
   \includegraphics[width=\linewidth]{figures/phase3_study_dev.png}
   \caption{The waveform study at a glance (development, exploratory).
-  \textbf{A}: median distance to the quasi-truth intonation centre falls
+  \textbf{A}: median distance to the reference intonation centre falls
   with every position-model refinement, approaching the dedicated
   estimator chain (dashed) --- with no tracker in the loop, and beating
   the estimator on the wind family ($2.67$ vs $3.27$ cents). \textbf{B}:
-  coverage against quasi-truth is invariantly near zero for every
+  coverage against the reference is invariantly near zero for every
   variant, while the same machinery covers at exactly nominal on
   model-true synthetics (green) --- locating the failure in the estimand
   gap, not the inference.}
@@ -2167,14 +2167,14 @@ model-true synthetics (self-check) & --- & --- & \textbf{0.90} \\
 \paragraph{Findings.} Three facts, visible in
 Table~\ref{tab:phase3-study} and Figure~\ref{fig:phase3-study}. First,
 \textbf{the waveform carries the information}: median $2.29$ cents from
-quasi-truth in the best variant, approaching the estimator chain's
+the reference in the best variant, approaching the estimator chain's
 $2.01$ overall and beating it on winds ($2.67$ vs $3.27$), where the
 tracker's failure modes live. The two-note pilot that seeded the study
 showed the same at $0.7$--$1.6$ cents on long clean notes. Second,
 \textbf{every model refinement improves accuracy} --- the drift term of
 the \S\ref{sec:phase2} study transfers to the waveform domain (paired
 median $-0.18$ cents), and the deviation prior improves it further ---
-\textbf{yet coverage against quasi-truth is invariant at $0.01$--$0.03$}:
+\textbf{yet coverage against the reference is invariant at $0.01$--$0.03$}:
 a better mean model shrinks the posterior width as fast as the error,
 and the AR(1) floor fails diagnostically because the structured misfit
 is concentrated \emph{in band}, at the harmonics, where a stationary
@@ -2201,7 +2201,7 @@ from visible notes only (median $3.1$ cents: the estimand-gap scale,
 found automatically) --- held-out intonation recovery improves on
 \emph{every} track-seed pair ($-1.21$ cents$^{*}$, NLL $-0.24^{*}$,
 coverage held), and removing the floor degrades calibration against
-quasi-truth significantly ($+0.22^{*}$) while helping nothing --- the
+the reference significantly ($+0.22^{*}$) while helping nothing --- the
 floor doing precisely its designed job. Waveform-native calibration ---
 a bridge model for the estimand gap --- is the frontier beyond that.
 This measured constraint, not the synthesis sketch, is what the phase's
@@ -2375,7 +2375,7 @@ independent, $c \sim \N(0,\sigma^2 I)$; temporal, $c \sim
 score graph, $c \sim \N(0,\sigma^2 K_{G})$ with the score graph of
 \S\ref{sec:scoregraph} (time \emph{and} pitch proximity). Both structured
 kernels are $(I+L)^{-1}$, diagonal-normalised; $\sigma^2$ is the track's
-own quasi-truth variance of $c$ (a population scale, not tuned). Two
+own reference variance of $c$ (a population scale, not tuned). Two
 conditions per chain: \emph{masked}, in which the middle eligible note
 is removed from the likelihood --- the waveform-level analogue of the
 held-out imputation task of Chapter~\ref{ch:results}, so that the
@@ -2393,7 +2393,7 @@ arms tie on clean audio; no significant structured-vs-independent gap
 under the tuning scalar means that score structure carries no
 note-level intonation information on short chains beyond tuning
 bookkeeping. Scoring: the hidden note's $|\hat c - c_{\mathrm{qt}}|$
-against the quasi-truth centre, and coverage at $90\%$ from a joint
+against the reference centre, and coverage at $90\%$ from a joint
 Laplace at the MAP. The chain-eligible notes of four development tracks
 give $47$ chains, $25$ of which contain a recurring pitch.
 
@@ -2411,7 +2411,7 @@ posterior mean and standard deviation.\label{fig:span-schematic}}
 corrected protocol with the tuning scalar). Top: the segment's waveform
 with the five note regions; the middle note's samples are masked
 (hatched) and its columns dropped. Bottom: per-note posteriors of $c$
-under the three priors against the quasi-truth centres. The observed
+under the three priors against the reference centres. The observed
 notes are pinned by the audio to the same value under every prior; the
 hidden note receives each prior's conditional, with its $90\%$ band ---
 here all three land near the chain's mean, short of the truth, which
@@ -2446,7 +2446,7 @@ cross-note priors over per-note intonation constants inside the
 waveform inference, $47$ chains on four development tracks, without
 and with the free per-chain tuning scalar in every arm. Score: the
 hidden (masked) or corresponding (clean) note's distance to the
-quasi-truth centre; coverage at nominal $90\%$. Predicting zero scores
+reference centre; coverage at nominal $90\%$. Predicting zero scores
 $14.42$ cents. Development, exploratory; no claims registered.}
 \label{tab:phase3-priorvalue}
 \footnotesize
@@ -3532,7 +3532,7 @@ graph demonstrably helps --- carries $+0.59$
 resolution defensible rather than refuted. The mismatch is priced in:
 the cell variances of \eqref{eq:phase2-noise} are residual-based, so a
 drifting note reports itself as more uncertain --- which is why
-calibration survived at confirmation. The quasi-truth targets pass
+calibration survived at confirmation. The reference targets pass
 through the same parameterization, so the graph-vs-no-graph contrasts
 compare like with like. And a within-note slope channel is precisely the
 kind the graph prior could not help --- so the per-note resolution is

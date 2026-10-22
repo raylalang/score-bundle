@@ -21,7 +21,7 @@ variant adds a coarse slope grid (+/-40 cents/s) and refines c at the
 best slope (the reported posterior is conditional on the profiled slope).
 Noise variance is refit at the coarse optimum before the fine pass.
 
-Scored per note against the quasi-truth centre (same NLLS estimator on
+Scored per note against the reference centre (same NLLS estimator on
 URMP's ground-truth curve): absolute error, z-score, coverage@90; the
 Phase-2 estimator's error is reported alongside where it exists.
 

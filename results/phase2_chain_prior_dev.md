@@ -12,7 +12,7 @@
 | time-only chain GP (learned scale) | 14.597 / +3.93 / 0.88 (n=9629) | 1.636 / +6.05 / 0.90 (n=3275) | 0.493 / +0.34 / 0.87 (n=3275) | 0.421 / +0.51 / 0.89 (n=9629) | 0.106 / -1.55 / 0.92 (n=9091) | 0.135 / -0.80 / 0.89 (n=3833) |
 | time-only chain GP (as-given) | 14.665 / +3.96 / 0.88 (n=9629) | 1.565 / +2.17 / 0.89 (n=3275) | 0.497 / +0.40 / 0.87 (n=3275) | 0.426 / +0.55 / 0.89 (n=9629) | 0.110 / -1.52 / 0.92 (n=9091) | 0.136 / -0.78 / 0.89 (n=3833) |
 
-## vs ground-truth-derived targets (quasi-truth; latent sd)
+## vs ground-truth-derived targets (reference targets; latent sd)
 
 | system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
 |---|---|---|---|---|

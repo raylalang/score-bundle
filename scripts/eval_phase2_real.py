@@ -9,7 +9,7 @@ note:
 
   vs ESTIMATOR targets (primary; the prereg design's honest claim — recovery
      = agreement with the estimator; predictive sd includes the cell noise);
-  vs GT-DERIVED targets (quasi-truth: the same NLLS run on URMP's
+  vs GT-DERIVED targets (the reference: the same NLLS run on URMP's
      ground-truth F0 curve; scored with the latent sd, pilot-style).
 
 Shared recordings across arrangements are deduplicated by the MD5 of the
@@ -307,7 +307,7 @@ def stage_delta() -> None:
     scripts/eval_delta_vib.py (the eq:vibrato-exact estimator); the bundle's
     [c, log gamma, log f] keep the validated ungated estimator — the two
     fits coexist per note, documented in the prereg design.  GT-derived
-    deltas are stored for the quasi-truth scoring.  Extends the cache.
+    deltas are stored for the reference scoring.  Extends the cache.
     """
     sfx = "_conf" if CONF_MODE else ""
     with open(f".cache/delta_vib_pyin{sfx}.pkl", "rb") as fh:
@@ -646,7 +646,7 @@ def _render(rows, per_track, used, tonal: bool) -> None:
     for tgt_name, title, cols in (("est", "vs estimator targets (primary; "
                                           "predictive sd)", tuple(range(n_ch))),
                                   ("gt", "vs ground-truth-derived targets "
-                                         "(quasi-truth; latent sd)", GT_COLS)):
+                                         "(reference targets; latent sd)", GT_COLS)):
         lines += [f"## {title}", "",
                   "| system | " + " | ".join(
                       f"{CH[c]} RMSE / NLL / cov@90" for c in cols) + " |",

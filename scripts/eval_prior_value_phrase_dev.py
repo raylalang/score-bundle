@@ -246,7 +246,7 @@ def stage_report():
         "otherwise the machinery of\n`scripts/eval_prior_value_dev.py` unchanged "
         "(hidden note dropped from the design, free per-chain\ntuning scalar in every "
         "arm). Committed hypotheses and falsification rule in the script\ndocstring "
-        "(`scripts/eval_prior_value_phrase_dev.py`). Scored against the quasi-truth "
+        "(`scripts/eval_prior_value_phrase_dev.py`). Scored against the reference "
         "centre.\n",
         f"\n{len(rows)} cells, notes/cell median {np.median([len(r['idx']) for r in rows]):.0f}, "
         f"span median {np.median([r['span'] for r in rows]):.1f} s, recurrence distance "

@@ -32,7 +32,7 @@ estimator's curve.
 |---|---|---|
 | waveform posterior c | +5.95 ± 0.17 cents | +16.46 ± 0.04 cents |
 | Phase-2 estimator c (tracked frames) | +8.64 ± 1.44 | +16.30 ± 0.39 |
-| quasi-truth c (GT curve) | +7.53 | +15.73 |
+| reference c (GT curve) | +7.53 | +15.73 |
 | \|waveform − GT\| | 1.58 cents | 0.73 cents |
 | \|estimator − GT\| | 1.12 cents | 0.58 cents |
 | waveform posterior f_vib | — | 4.82 ± <0.005 Hz (est 4.92, GT 4.93) |

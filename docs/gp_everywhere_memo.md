@@ -63,10 +63,10 @@ is marginalized rather than scaffold-pinned.] Original design, for the record:
 
 One development study, no new claims: SM-prior GP regression on cents
 curves for the ~5,000 identifiable dev notes; compare against the NLLS
-estimator on (i) agreement with quasi-truth, (ii) calibration of its
+estimator on (i) agreement with the reference, (ii) calibration of its
 own posterior, (iii) behavior on the estimator-missing notes (where the
 GP degrades gracefully instead of refusing). If it does not beat the
-sine fit against quasi-truth, the idea dies cheaply.
+sine fit against the reference, the idea dies cheaply.
 
 ## Recommendation
 

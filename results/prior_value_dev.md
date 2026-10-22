@@ -4,7 +4,7 @@ Three cross-note priors over per-note intonation constants at matched marginal
 variance, identical likelihood/data/optimizer, boundaries fixed at annotations.
 Conditions: the middle eligible note's audio MASKED from the likelihood (maximal
 ambiguity) vs clean. Committed hypotheses and falsification rule in the script
-docstring (`scripts/eval_prior_value_dev.py`). Scored against the quasi-truth centre.
+docstring (`scripts/eval_prior_value_dev.py`). Scored against the reference centre.
 
 47 cells (chains), tracks: (1, 1)(vn), (1, 2)(vc), (3, 2)(cl), (7, 2)(tbn); 25 cells have a recurring pitch.
 
@@ -55,7 +55,7 @@ wall per fit incl. Laplace: median 155 s
    prior's value is specific to ambiguity, which is the methodological
    hypothesis of the thesis in one line.
 4. **Honest decomposition caveat: much of the structured win is
-   common-mode.** The deadpan reference (median |quasi-truth c| = 14.4
+   common-mode.** The deadpan reference (median |reference c| = 14.4
    cents) says the hidden notes sit far from zero largely because tracks
    carry a shared tuning offset; neighbors transfer that offset to the
    hidden note under either structured prior. That transfer is real,

@@ -17,7 +17,7 @@ delta_vib joins the Phase-2 channel set only if ALL of:
   C-B  agreement: on jointly delta-identifiable notes, median
        |delta_pyin - delta_GT| <= 40 ms (about a quarter vibrato period);
   C-C  non-degradation: the gated fit's intonation error vs the GT-derived
-       quasi-truth is not worse than the ungated fit's by more than 10%
+       reference is not worse than the ungated fit's by more than 10%
        (median absolute error, pyin curves);
   C-D  signal: the across-note spread of identifiable deltas within a track
        exceeds their median reported standard error (else the channel is
@@ -171,7 +171,7 @@ def stage_report() -> None:
                 diffs.append(abs(rp["delta"] - rg["delta"]))
     diffs = np.array(diffs)
 
-    # C-C non-degradation of intonation vs GT quasi-truth
+    # C-C non-degradation of intonation vs GT reference
     eg, eu = [], []
     for key in py:
         if key not in gt:
@@ -215,7 +215,7 @@ def stage_report() -> None:
         f"on {diffs.size} jointly identifiable notes — "
         f"{'PASS' if cb else 'FAIL'} (<= 40 ms)",
         f"- C-C non-degradation: gated intonation median |err| {eg:.2f} c "
-        f"vs ungated {eu:.2f} c vs GT quasi-truth — "
+        f"vs ungated {eu:.2f} c vs GT reference — "
         f"{'PASS' if cc else 'FAIL'} (<= 1.10x)",
         f"- C-D signal: median per-track spread(delta)/median-SE = "
         f"{np.median(spreads / np.maximum(ses, 1e-9)) if spreads.size else float('nan'):.2f} — "

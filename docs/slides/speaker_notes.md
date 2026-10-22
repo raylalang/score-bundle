@@ -649,7 +649,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   chain fit each note's `Φ` is built on its own slice plus a 0.2 s
   margin, multiplied by its fade windows, and the notes' blocks are
   concatenated side by side: `p` becomes the sum over notes and `m` the
-  whole segment. That concatenation is where the leak of slide 51 lived.
+  whole segment. That concatenation is where the leak of slide 53 lived.
 
 **From `z` to `Φ(z)`, step by step** (`chunked_design_torch`).
 1. `z` is the pitch deviation at every sample instant, `cents(t_i)` for
@@ -699,7 +699,7 @@ For a chain of `N` notes (slide 39): each note has its own `Φ_i`,
 `m × p_i` with `p_i = 2KC`, on its own slice plus margin times its fade
 windows; the chain design is `Φ = [Φ_1 … Φ_N]`, `m × P` with
 `P = N · 2KC`; `a` is `P × 1`, `G` is `P × P`; the boundary offsets `db`
-are `(N−1) × 1` with an `(N−1) × (N−1)` prior covariance (slide 48);
+are `(N−1) × 1` with an `(N−1) × (N−1)` prior covariance (slide 50);
 the per-note constants `c` are `N × 1` with an `N × N` prior covariance.
 Cost `O(m p²)`: forming `Φ^T Φ` is `m` rows times `p × p` entries; the
 Cholesky of `G` is `p³`, negligible since `p ≪ m`.
@@ -860,7 +860,7 @@ fixed 10 ms width, so the transition is effectively sharp and the
 studies use a fixed sharp edge. And when two consecutive notes have the
 same pitch the harmonic stacks are identical on both sides, so the
 likelihood carries no boundary information; those joints are reported
-separately (slide 47).
+separately (slide 49).
 
 ## Slide 40. Note boundaries from the waveform: one chain, and the numbers
 
@@ -909,29 +909,145 @@ chain-eligibility rule, honestly left unfitted. Caveat: chains fitted
 independently, envelopes read out after the fit rather than inferred
 under the prior. That is the open work.
 
-## Slide 43. Summary
+## Slide 43. The score prior inside the waveform inference: three spans
 
-Three sentences, say them exactly. Piano: beats the two-stage baseline
+**What is on the slide.** The week of 2026-10-15 to 20 on one slide: the
+score graph of slide 7 brought inside the waveform inference of slides
+33 to 40, and tested at three spans. The maths is the design, the table
+is the verdict.
+
+**Symbols.** `θ`, an `n × 1` vector, one latent per element of a chain:
+for the first and third span the per-note intonation constants `c`
+(cents above the written pitch), for the second span the per-joint
+boundary offsets `b` (milliseconds from the tempo line). `t`, a scalar,
+the common-mode term: the whole chain's shared offset (a tuning offset
+in cents, or a shared timing offset in ms), with prior variance
+`σ_t²` (50 cents or 50 ms squared). `θ̃`, the per-element part on top of
+the shared offset. `σ²`, the track's own variance of the reference
+centres, a population scale, not tuned. `K_arm`, the `n × n` correlation
+matrix of one arm: the identity for the independent prior; for the two
+structured priors, the inverse of `I + L` scaled so its diagonal is all
+ones, which is what "matched marginal variance" means (every element
+has the same prior variance under every arm; only the correlations
+differ). `L_arm`, the Laplacian of the arm's graph: for the temporal
+chain, consecutive notes linked with unit weight; for the score graph,
+the time-and-pitch edge weights of slide 7. `K`, the full prior
+covariance of `θ`, the arm's part plus the rank-one common-mode term.
+`h`, the index of the hidden element; `−h`, all the others.
+
+**How one cell runs.** Take a chain. Remove the hidden element from the
+audio and from the design matrix (its window columns go, not just its
+samples; slide 53 explains why that matters). Fit the chain under the
+likelihood of slide 35 with the prior above. The observed elements are
+pinned by the audio, nearly identically under every arm. The hidden
+element has no data, so its posterior is exactly the prior conditional
+given its neighbours, the Gaussian conditioning formula on the slide:
+mean `K_{h,−h} K_{−h,−h}^{−1} θ_{−h}`, a weighted average of the
+neighbours where the weights come from the graph, and variance
+`K_hh − K_{h,−h} K_{−h,−h}^{−1} K_{−h,h}`, reduced from the prior by
+however much the neighbours tell. Score: the distance from that
+posterior mean to the reference centre (the same estimator run on the
+corpus's annotated pitch curve). Pair the three arms on the same cell,
+bootstrap the mean difference, 95 percent interval.
+
+**Example.** A four-note violin chain, hidden third note, reference
+centre +9 cents, chain mean +4 cents. Independent prior: the hidden
+note gets the chain mean through `t`, +4. Temporal chain: its two
+neighbours, say +3 and +5, so about +4 again. Score graph: the same two
+neighbours and, if the first note has the same pitch, that one at
+higher weight, say +8, so +5. All three are short of +9 by a similar
+amount, which is what the first row says.
+
+**The table.** First row, 47 chains of three to five notes from four
+development tracks: graph minus independent −0.02 cents, graph minus
+temporal −0.19, both intervals across zero. Second row, 40 joints: the
+same two contrasts in milliseconds, both ties. Third row, 48 phrases of
+six to ten notes from all 78 development tracks, hidden pitch recurring
+at least two notes away: graph minus temporal −1.63 cents, interval
+excludes zero, the pre-stated primary; graph minus independent −0.07, a
+tie. Not on the slide but in the bottom line: temporal minus independent
++1.56, interval excludes zero, so the temporal chain hurts at phrase
+scale and the graph repairs that harm.
+
+**The sentence.** "Every prior gives a missing element its context's
+offset, worth about 7 cents and 10 to 14 ms. The score graph is never
+worse than a time-only chain and better at phrase scale. Beyond the
+offset, nothing we can measure yet." If asked why the first run is not
+here: it was withdrawn, slide 53.
+
+## Slide 44. What in the graph does the work: the time window
+
+**What is on the slide.** The same question at whole-track scale with
+the power that chains lacked, on both corpora, and its answer: which
+part of the score graph carries its value.
+
+**Symbols.** `W_ij`, the edge weight between notes `i` and `j` of slide
+7: `b_i`, `b_j` their beat onsets; `p_i`, `p_j` their MIDI pitches;
+`ℓ_b = 2` beats and `ℓ_p = 4` semitones the two length-scales. Time
+Gaussian: the same weight with `ℓ_p → ∞`, so the pitch factor is 1 for
+every pair and only the two-beat time window remains. Time chain:
+weight 1 between consecutive notes, 0 elsewhere. Everything else in the
+GP is identical across the three arms, including the per-piece
+intercept column in the feature kernel, so every contrast is beyond the
+common offset that dominated slide 43.
+
+**The table.** Strings and winds, the development evaluation of slide
+29 with 30 percent of the notes hidden per track, 78 tracks, 153
+track-and-seed cells, paired per cell. Score graph minus time chain on
+intonation −0.50 cents, interval excludes zero: the graph beats the
+naive time prior. Score graph minus time Gaussian −0.02, interval across
+zero: removing the pitch term changes nothing on intonation; on the two
+vibrato channels removing it even helps a little (+0.04, +0.03). Piano,
+the headline model of slide 18 with the pitch term removed from its
+graph, paired per piece on the 30 development pieces, 4 seeds: the
+score graph is worse than the pitch-less graph by 0.008 in pooled RMSE
+and 0.019 in log score, both intervals excluding zero. Note the sign
+convention: negative favours the first-named arm, so a positive number
+in the last column means the pitch-less graph is better.
+
+**Example.** Two notes a beat apart, one a C and one a G (7 semitones).
+Score graph: time factor exp(−1/8) ≈ 0.88, pitch factor exp(−49/32) ≈
+0.22, weight 0.19. Time Gaussian: weight 0.88. The pitch-less graph ties
+these two notes more strongly, and the data say that is at least as
+good.
+
+**The sentence.** "On both corpora and at every scale we tested, what
+helps is smoothness in score time over about two beats. Linking notes by
+pitch adds nothing we can measure and costs a little." Then the
+qualifier, always: "The confirmed results stand, because they compare
+the full model with its alternatives. What narrows is the attribution
+of the graph term." If asked whether the thesis should switch to the
+pitch-less graph: that is a change to a reported protocol and would need
+its own registration; it is the decision on the plan slide.
+
+## Slide 45. Summary
+
+Four sentences, say them exactly. Piano: beats the two-stage baseline
 on accuracy and calibration, confirmed once on untouched pieces.
 Strings and winds: the graph improves recovery and calibration on the
 estimated channels, confirmed once. Audio: the method is in place and
-running at development level, no claims.
+running at development level, the score prior measured inside it at
+three spans, no claims. What the graph does: its value is smoothing in
+score time over about two beats, on both corpora; pitch proximity adds
+nothing measurable, a development finding.
 
-## Slide 44. Plan
+## Slide 46. Plan
 
 October, done: curve studies at scale, the curve as a bundle channel,
-joint boundaries. November: the registration-pool decision, the
-one-shot timing confirmation, the scalars-or-curve-level channel
-decision, a transient model at the boundary. December: whole-phrase
-joint inference, chapters consolidated as results land. This row does
-not mention the three spans of 2026-10-15..20; if asked, go to the
-backup frames.
+joint boundaries, the three spans of slide 43, the attribution of slide
+44. November, first item: decide whether the attribution becomes a
+stated claim of the thesis; a pitch-less default graph is a change to a
+reported protocol and needs its own registration. Then the
+registration-pool decision, the one-shot timing confirmation, the
+scalars-or-curve-level channel decision, a transient model at the
+boundary. December: whole-phrase joint inference, chapters consolidated
+as results land.
 
-## Slide 45. Divider: Backup
+## Slide 47. Divider: Backup
 
 Shown only if asked.
 
-## Slide 46. Backup: the curve against the tracker, at scale
+## Slide 48. Backup: the curve against the tracker, at scale
 
 376 notes, 7 tracks. Dumbbell plot: per instrument family, blue is the
 waveform curve's median error against the annotation frames, green the
@@ -944,7 +1060,7 @@ observation channel improves held-out intonation on 14 of 14
 track-and-seed pairs, by 1.36 cents, significant, and the calibration
 floor halves, 3.1 to 1.8 cents.
 
-## Slide 47. Backup: boundary accuracy from score-only starting points
+## Slide 49. Backup: boundary accuracy from score-only starting points
 
 One dot per boundary, 128. Horizontal: the error of the score-only
 tempo-line guess. Vertical: the error after the joint fit. Below the
@@ -953,7 +1069,7 @@ boundaries excluded: identical harmonic stacks on both sides carry no
 boundary information. Dots far above the diagonal: the systematic
 acoustic-versus-written remainder.
 
-## Slide 48. Backup: the score prior inside the waveform inference, the design
+## Slide 50. Backup: the score prior inside the waveform inference, the design
 
 The week of 2026-10-15..20. Question: when a note's audio is missing,
 does the score prior help guess it from its neighbours? Three priors
@@ -971,19 +1087,19 @@ shared by all notes, absorbing the player's overall tuning offset.
 Example: a run 12 cents sharp; `s` learns 12, the independent prior can
 use it too, so the comparison measures what structure adds beyond that.
 
-## Slide 49. Backup: one chain end to end
+## Slide 51. Backup: one chain end to end
 
 Panel A: a five-note violin chain, the middle note's samples hatched
 (masked) and its columns dropped. Panel B: for each note the posterior
 of `c` under the three priors with 90 percent bands, against the
-quasi-truth (black bar). The observed notes are pinned by the audio to
+reference centre (black bar). The observed notes are pinned by the audio to
 the same value under every prior. The hidden note gets the prior's
 conditional, what the prior expects given the neighbours. On this chain
 all three land near the chain's mean, 16 to 19 cents, while the truth is
 29.5: this note is sharper than its context. That is what "prior
 conditional" looks like.
 
-## Slide 50. Backup: the three spans, paired
+## Slide 52. Backup: the three spans, paired
 
 Three panels, one per test. Each row: the mean paired difference in the
 hidden element's error between two priors, with a 95 percent bootstrap
@@ -1000,7 +1116,7 @@ Third bullet, the positive content: the common offset alone, which
 every prior gets through `s`, is worth about 7 cents on intonation and
 10 to 14 ms on boundaries against the no-transfer references.
 
-## Slide 51. Backup: why the first intonation run was withdrawn
+## Slide 53. Backup: why the first intonation run was withdrawn
 
 Panel A: the objective as the hidden note's `c` sweeps −100 to +100
 cents on one chain, first protocol. Vermilion: the likelihood term;
@@ -1016,7 +1132,7 @@ with the note dropped from the model, the independent prior returns
 exactly the prior mean (zero) and the structured priors track the truth
 through the common offset.
 
-## Slide 52. Backup: calibration of the hidden element's band
+## Slide 54. Backup: calibration of the hidden element's band
 
 A z-score is the error divided by the claimed uncertainty. Honest bands
 put 90 percent of z-scores inside ±1.645 (the shaded band); "cov" above
@@ -1032,13 +1148,15 @@ onset about 20 ms away. The estimand gap of slide 38, at the boundary.
 
 ## If stopped on one slide
 
-The two most likely probes are 35 (how the timbre is removed) and 50
-(what the three spans say). One-line answers: "the amplitudes are
-linear, so we integrate them out exactly," and "the score prior gives a
-missing note its context's offset with an honest band, beats a
-time-only prior at phrase scale, and so far nothing more."
+The three most likely probes are 35 (how the timbre is removed), 43
+(what the three spans say) and 44 (what the graph is for). One-line
+answers: "the amplitudes are linear, so we integrate them out exactly,"
+"the score prior gives a missing note its context's offset with an
+honest band, beats a time-only prior at phrase scale, and so far nothing
+more," and "the graph's value is its two-beat time window; the pitch
+term adds nothing we can measure."
 
-## Slide 53. Backup: the three priors at track scale (strings and winds)
+## Slide 55. Backup: the three priors at track scale (strings and winds)
 
 **What is on the slide.** The track-scale version of the three-prior
 question, on the tracked six-channel bundle of the strings-and-winds

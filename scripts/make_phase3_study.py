@@ -2,9 +2,9 @@
 """Figure for the Phase-3 waveform study (fig:phase3-study).
 
 Two panels from the study cells (no refits):
-  A. accuracy ladder --- median |waveform c - quasi-truth c| per position
+  A. accuracy ladder --- median |waveform c - reference c| per position
      model, against the pyin+NLLS estimator chain's median;
-  B. the calibration diagnosis --- coverage@90 vs quasi-truth for every
+  B. the calibration diagnosis --- coverage@90 vs the reference for every
      variant (flat near zero) next to the model-true self-consistency
      coverage (exactly nominal), which locates the failure in the
      estimand gap rather than the inference.
@@ -74,7 +74,7 @@ def main() -> None:
         axa.text(x, e + 0.05, f"{e:.2f}", ha="center", fontsize=8.5,
                  color=INK)
     axa.set_xticks(xs, labels, fontsize=8.5)
-    axa.set_ylabel("median $|c - c^{\\mathrm{quasi\\text{-}truth}}|$ (cents)",
+    axa.set_ylabel("median $|c - c^{\\mathrm{ref}}|$ (cents)",
                    fontsize=9, color=INK)
     axa.set_title("A. accuracy: no tracker in the loop "
                   "(376 development notes)", fontsize=10, color=INK,
@@ -94,7 +94,7 @@ def main() -> None:
                  color=INK)
     axb.set_xticks(xs_b, labels + ["model-true\n(self-check)"],
                    fontsize=8)
-    axb.set_ylabel("coverage@90 vs quasi-truth", fontsize=9, color=INK)
+    axb.set_ylabel("coverage@90 vs the reference", fontsize=9, color=INK)
     axb.set_title("B. calibration: the gap is the estimand, "
                   "not the inference", fontsize=10, color=INK,
                   loc="left", pad=24)

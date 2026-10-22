@@ -14,7 +14,7 @@
 | time-only Gaussian graph GP (learned scale) | 14.122 / +3.90 / 0.89 (n=9629) | 1.504 / +5.68 / 0.91 (n=3275) | 0.371 / +0.16 / 0.89 (n=3275) | 0.423 / +0.52 / 0.89 (n=9629) | 0.105 / -1.61 / 0.91 (n=9091) | 0.129 / -0.85 / 0.89 (n=3833) |
 | time-only Gaussian graph GP (as-given) | 14.179 / +3.92 / 0.89 (n=9629) | 1.501 / +2.14 / 0.89 (n=3275) | 0.350 / +0.21 / 0.88 (n=3275) | 0.426 / +0.54 / 0.90 (n=9629) | 0.109 / -1.62 / 0.91 (n=9091) | 0.130 / -0.87 / 0.88 (n=3833) |
 
-## vs ground-truth-derived targets (quasi-truth; latent sd)
+## vs ground-truth-derived targets (reference targets; latent sd)
 
 | system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
 |---|---|---|---|---|

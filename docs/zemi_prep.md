@@ -60,7 +60,7 @@ does not get cut.
 - **14 Cents curve.** Frame rule: voiced, confidence above the lowest
   quintile, >= 4 frames. If asked about GT: the corpus's own annotation
   of the same isolated stem (corrected pYIN, 46 ms / 10 ms) — cleaner,
-  still a measurement, hence "quasi-truth" and own-reference scoring.
+  still a measurement, hence "reference" and own-reference scoring.
 - **15 Channels.** gamma = oscillation amplitude; logs because positive
   with multiplicative errors. No oscillation -> missing cells, the GP
   conditions on fewer cells.

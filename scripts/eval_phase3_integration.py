@@ -24,7 +24,7 @@ Design (dev, exploratory; the 7 study tracks of the Phase-3 study):
   (posterior variance only — the honesty control: the Phase-3 study says
   this must be overconfident).
 - Scoring: channel c only, held & estimator-finite cells, vs estimator
-  targets (predictive sd; primary) and vs quasi-truth (latent sd). Paired
+  targets (predictive sd; primary) and vs the reference (latent sd). Paired
   per (track, seed), n = 14 pairs; medians, sign counts, and bootstrap CIs
   (B = 2000, wide at this n — exploratory throughout).
 
@@ -219,7 +219,7 @@ def stage_report() -> None:
         "median "
         f"{np.median([r['floor'] for r in rows]):.2f} cents.\n",
         "\n## Intonation channel c at held-out notes\n",
-        "\n| system | vs estimator: RMSE / NLL / cov@90 | vs quasi-truth: "
+        "\n| system | vs estimator: RMSE / NLL / cov@90 | vs the reference: "
         "RMSE / NLL / cov@90 |\n|---|---|---|\n"]
     for name in ("base6", "wave_floor", "wave_nofloor"):
         cells = []
@@ -285,7 +285,7 @@ def stage_report_curve() -> None:
         f"median {np.median([r['floor'] for r, _ in pairs]):.2f} cents "
         f"(scalar-source {np.median([o['floor'] for _, o in pairs]):.2f})."
         "\n",
-        "\n| system | vs estimator: RMSE / NLL / cov@90 | vs quasi-truth: "
+        "\n| system | vs estimator: RMSE / NLL / cov@90 | vs the reference: "
         "RMSE / NLL / cov@90 |\n|---|---|---|\n"]
     named = [("base6", lambda r, o: r), ("scalar wave_floor",
              lambda r, o: o), ("curve_floor", lambda r, o: r),

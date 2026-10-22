@@ -20,7 +20,7 @@ overconfidence under the constant-parameter curve.
   boundaries with 20 ms guards, capped at 2 s. m ranges ~2,000–31,000.
 - **Corpus slice:** 376 notes from 7 dev URMP tracks, one per instrument
   — vn, vc (strings); fl, cl, sax (winds); tpt, tbn (brass) — up to 60
-  eligible notes per track (eligibility: quasi-truth centre exists,
+  eligible notes per track (eligibility: reference centre exists,
   |c_gt| ≤ 150 cents, duration ≥ 0.25 s; rng(0) subsample).
 - **Design matrix per note:** harmonic quadrature basis (K = 8 harmonics
   → cos/sin columns) × 4 equal time chunks (the eq:loudness
@@ -30,7 +30,7 @@ overconfidence under the constant-parameter curve.
   (`waveform_model.collapsed_loglik_lowrank`, dense-equality
   unit-pinned in `tests/test_phase3.py`).
 - **Per-note record:** for each variant, (posterior mean, posterior sd,
-  profiled slope, fitted rho) + gt_c (quasi-truth centre), est_c/est_sd
+  profiled slope, fitted rho) + gt_c (reference centre), est_c/est_sd
   (Phase-2 estimator, comparison only), instrument, duration, n_frames.
 
 ## Method
@@ -59,7 +59,7 @@ coarse optimum. Variants:
    identified as c). Coarse location by the drift search; reported
    posterior conditional on the profiled slope.
 
-**Scoring:** vs the quasi-truth centre (Phase-2 NLLS estimator on URMP's
+**Scoring:** vs the reference centre (Phase-2 NLLS estimator on URMP's
 ground-truth curve): absolute error, z = (mean − gt)/sd, coverage@90
 (|z| ≤ 1.645). **Self-check:** 40 synthetic notes built from real notes'
 fitted structure (curve at gt_c, LS amplitudes, fitted noise) — the model
@@ -90,7 +90,7 @@ Per family, median |err| (flat / drift / dev-prior / estimator):
 ## Synthesis
 
 1. **The waveform carries the information.** Median 2.29 cents from
-   quasi-truth with no tracker, approaching the estimator chain (2.01)
+   the reference with no tracker, approaching the estimator chain (2.01)
    and beating it on winds — where pyin's failure modes live.
 2. **Accuracy climbs with every model refinement; coverage does not
    move.** A better mean model shrinks the posterior width as fast as

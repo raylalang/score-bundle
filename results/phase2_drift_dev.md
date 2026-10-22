@@ -65,7 +65,7 @@ extent exceeds the first on 53% (median difference +0.27 cents; medians
 2. **The registered claims are not threatened:** the mismatch is priced
    into the cell variances (they are residual-based, so drifting notes
    report themselves as more uncertain — this is why calibration held),
-   and the quasi-truth passes through the same parameterization, so the
+   and the reference passes through the same parameterization, so the
    graph-vs-no-graph contrasts compare like with like.
 3. **No new GP channel:** a drift/decay-slope channel would be graph-white
    (C above) — the graph prior could add nothing, so per-note resolution

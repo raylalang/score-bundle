@@ -9,7 +9,7 @@ representation of a two-component SM GP prior (vibrato band at the
 scaffold rate with the coherence bound, drift band; top-8 eigenvectors,
 matched pointwise scale and rank; everything else identical to the
 published `infer_c_devprior`). Paired note for note on the published
-376-note rig, scored against the quasi-truth centre. **Development,
+376-note rig, scored against the reference centre. **Development,
 exploratory, no claims.**
 
 ## Verdict: no gain — the pragmatic basis was already enough

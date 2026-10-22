@@ -231,7 +231,7 @@ slide("Phase 2: from audio to the cents curve",
                "truth: the corpus's own annotation of the same stem. "
                "Cleaner, but still a measurement."],
       note="GT = corrected pYIN on isolated stems (46 ms / 10 ms), gross "
-           "errors hand-fixed; hence 'quasi-truth'.")
+           "errors hand-fixed; hence a reference, not a truth.")
 
 # 12 channels
 slide("Phase 2: the pitch-curve channels",

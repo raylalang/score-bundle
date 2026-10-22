@@ -5,7 +5,7 @@ studies (2026-10-15..20), drawn from the stored cells only:
   span_schematic.png     the experiment as a system: inputs, the three priors,
                          the hidden element, the common-mode scalar, outputs
   span_protocol.png      one chain, end to end: waveform + mask, the three
-                         arms' per-note posteriors against the quasi-truth
+                         arms' per-note posteriors against the reference
   span_leakage.png       why the first run was withdrawn: the leaked
                          likelihood well along the hidden c, and masked
                          estimates vs truth before/after the fix
@@ -177,7 +177,7 @@ def fig_protocol():
         b.errorbar(xs + off[arm], c_all, yerr=Z90 * sd_all, fmt="o", ms=5,
                    color=ARM_COL[arm], ecolor=ARM_COL[arm], elinewidth=1.2,
                    capsize=2.5, label=f"{ARM_NAME[arm]} (masked fit, 90% band)")
-    b.plot(xs, gt_all, "k_", ms=18, mew=1.6, label="quasi-truth centre", zorder=6)
+    b.plot(xs, gt_all, "k_", ms=18, mew=1.6, label="reference centre", zorder=6)
     b.axvspan(j - 0.5, j + 0.5, color=VERM, alpha=0.06)
     b.set_xticks(xs)
     b.set_xticklabels([f"note {k + 1}\nMIDI {int(m)}" for k, m in enumerate(ch["midis"])])
@@ -225,7 +225,7 @@ def fig_leakage(profile=True):
         ax.plot([-lim, lim], [-lim, lim], color="k", lw=0.7, ls=":")
         ax.set_xlim(-55, 55)
         ax.set_ylim(-lim, lim)
-        ax.set_xlabel("quasi-truth c of the hidden note (cents)")
+        ax.set_xlabel("reference c of the hidden note (cents)")
         ax.set_ylabel("masked estimate (cents)")
         ax.set_title(name, loc="left")
         ax.legend(fontsize=7, loc="upper left")

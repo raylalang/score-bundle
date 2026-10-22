@@ -155,8 +155,8 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   (the realized-average read-out that feeds the bundle). Measured record,
   August: `results/phase3_waveform_feasibility.md` (2-note pilot),
   `results/phase3_waveform_dev.md` (376 notes / 7 tracks: waveform median
-  2.29 cents from quasi-truth with NO tracker, beats the estimator chain on
-  winds; coverage vs quasi-truth invariant ~0.02 under mean/noise/deviation-prior
+  2.29 cents from the reference centre with NO tracker, beats the estimator chain on
+  winds; coverage vs the reference invariant ~0.02 under mean/noise/deviation-prior
   fixes; self-check on model-true synthetics covers at 0.90 exactly ⇒ the gap
   is an ESTIMAND gap), `results/phase3_integration_dev.md` (scalar waveform c
   as 7th bundle channel + visible-notes discrepancy floor: −1.21*; no-floor
@@ -243,7 +243,8 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   representation with uncertainty; method = Bayesian score-conditioned inverse
   synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
   ladder; three-question RQ hierarchy. `docs/slides/deck.tex` is the one full
-  thesis deck (52 pages incl. 5 backup frames, pages 48-52; **every deck.tex change must be
+  thesis deck (55 pages; main line to 46, backup 48-55; the week's three spans and the
+  time-window attribution are main-line slides 43-44 since 2026-10-23; **every deck.tex change must be
   followed by a change to `docs/slides/speaker_notes.md`, same commit — Ray's
   standing rule 2026-10-21**). `docs/meeting_qa_prep.md` = the 2026-10-14
   direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT. Held
@@ -293,7 +294,8 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   over ~2 beats, not pitch proximity**, at every scale tested; E3 — chain-scale
   σ_b: independent band 1.00→0.88, structured 0.75, verdict unchanged. Thesis:
   Appendix `app:trackscale` (tab:trackscale) + Ch. 8 closing paragraph + one
-  band sentence; brief §G; ROADMAP; ledger; deck backup frame 53 + its note.
+  band sentence; brief §G; ROADMAP; ledger; deck main-line slides 43-44 (2026-10-23,
+  after Ray asked why the deck barely changed) + backup frame 55 + notes.
   Piano counterpart `b_featlm_timegauss` MEASURED (`results/piano_timegauss_dev.md`):
   pitch term removed ⇒ RMSE −0.008* / NLL −0.019* BETTER than the headline
   (articulation), 120 dev cells ⇒ same answer on both corpora. Confirmed
@@ -305,6 +307,14 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   `load_asap`, `asap_performance_variables`, `asap_clean_performances`). Aria-MIDI / ATEPP /
   GiantMIDI loaders remain open. Datasets live under `../data/`
   (`/home/ray/Research/data/{maestro-v3.0.0,asap-dataset}`); pass the root explicitly.
+
+## Wording rules (Ray)
+
+- No "Phase N" in the thesis or the deck (see above).
+- Never "quasi" (Ray, 2026-10-23: it sounds pretentious). The targets derived from
+  the corpus's annotated pitch curves are the **reference** (reference targets,
+  reference centre); in code the identifiers `gt_c`, `c_qt`, `GT_COLS` stay.
+- Deck: minimal narrative, full mathematics; every deck change updates the speaker notes.
 
 ## Canonical notation (keep consistent everywhere — code, docs, thesis)
 

@@ -12,7 +12,7 @@
 | tonal graph GP (learned scale) | 13.925 / +3.86 / 0.89 (n=9629) | 1.533 / +5.25 / 0.91 (n=3275) | 0.390 / +0.22 / 0.89 (n=3275) | 0.410 / +0.48 / 0.90 (n=9629) | 0.106 / -1.60 / 0.91 (n=9091) | 0.129 / -0.83 / 0.89 (n=3833) |
 | tonal graph GP (as-given) | 13.944 / +3.88 / 0.89 (n=9629) | 1.492 / +2.13 / 0.90 (n=3275) | 0.352 / +0.23 / 0.87 (n=3275) | 0.415 / +0.51 / 0.90 (n=9629) | 0.109 / -1.62 / 0.91 (n=9091) | 0.131 / -0.84 / 0.88 (n=3833) |
 
-## vs ground-truth-derived targets (quasi-truth; latent sd)
+## vs ground-truth-derived targets (reference targets; latent sd)
 
 | system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
 |---|---|---|---|---|

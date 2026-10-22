@@ -11,7 +11,7 @@ likelihood, data, optimizer, steps, boundaries fixed at annotations):
   graph     c ~ N(0, sigma^2 K_score)            (score graph: time AND
                                                   pitch proximity)
 
-sigma^2 is the track's own quasi-truth c variance (population scale, no
+sigma^2 is the track's own reference c variance (population scale, no
 tuning); K = (I + L)^{-1} diagonal-normalized for both structured arms.
 
 Two conditions per chain:
@@ -33,7 +33,7 @@ Committed hypotheses, stated before the run:
       independent arm on the masked cells (paired). A rigorous negative
       is a reportable answer to the thesis's central question.
 
-Scoring: hidden-note |c_hat - c_qt| (c_qt = the quasi-truth NLLS centre
+Scoring: hidden-note |c_hat - c_qt| (c_qt = the reference NLLS centre
 on the corpus ground-truth curve), z and coverage at 90% from a joint
 Laplace over (c, u) at the MAP, deadpan |c_qt| as the no-information
 reference. Sharded run k/n + report; cells in results/phase3_cells/.
@@ -456,7 +456,7 @@ def stage_report() -> None:
         "ambiguity) vs clean. Committed hypotheses and falsification "
         "rule in the script\ndocstring "
         "(`scripts/eval_prior_value_dev.py`). Scored against the "
-        "quasi-truth centre.\n",
+        "reference centre.\n",
         f"\n{len(rows)} cells (chains), tracks: "
         + ", ".join(sorted({f"{r['key']}({r['instr']})" for r in rows}))
         + f"; {sum(r['recur'] for r in rows)} cells have a recurring "

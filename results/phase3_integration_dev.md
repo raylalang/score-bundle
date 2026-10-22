@@ -4,7 +4,7 @@
 
 ## Intonation channel c at held-out notes
 
-| system | vs estimator: RMSE / NLL / cov@90 | vs quasi-truth: RMSE / NLL / cov@90 |
+| system | vs estimator: RMSE / NLL / cov@90 | vs the reference: RMSE / NLL / cov@90 |
 |---|---|---|
 | base6 | 10.874 / +3.752 / 0.87 | 11.740 / +3.983 / 0.81 |
 | wave_floor | 9.667 / +3.516 / 0.87 | 10.703 / +3.975 / 0.80 |
@@ -26,10 +26,10 @@
 1. **The integration works.** The waveform channel improves held-out
    intonation recovery on 14 of 14 (track, seed) pairs: dRMSE −1.21
    cents* (10.87 → 9.67, ~11%), dNLL −0.24* vs estimator targets,
-   coverage held at 0.87; the gain persists against quasi-truth
+   coverage held at 0.87; the gain persists against the reference
    (dRMSE −1.04*). The evidence learns the wave↔c coupling per piece
    (B is 7×7); nothing else changed.
-2. **The floor is what keeps it honest.** Against quasi-truth the
+2. **The floor is what keeps it honest.** Against the reference the
    no-floor control is significantly worse-calibrated (dNLL −0.22* in
    the floor's favour; coverage 0.80 vs 0.77): with only its tiny
    posterior variance, the GP over-trusts the waveform measurement —

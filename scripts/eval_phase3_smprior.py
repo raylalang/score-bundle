@@ -19,7 +19,7 @@ basis), each column de-meaned so a constant shift stays identified as c
 marginalization, coarse+fine grids) identical to the published
 `infer_c_devprior`.  The bump variant is recomputed on the same segments,
 so the comparison is paired note for note.  Scored against the
-quasi-truth centre like the published study.  Development, exploratory,
+reference centre like the published study.  Development, exploratory,
 no claims.
 
     OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_phase3_smprior.py run K/N

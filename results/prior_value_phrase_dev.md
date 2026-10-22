@@ -4,7 +4,7 @@
 recurs at index distance >= 2 and not at distance 1; otherwise the machinery of
 `scripts/eval_prior_value_dev.py` unchanged (hidden note dropped from the design, free per-chain
 tuning scalar in every arm). Committed hypotheses and falsification rule in the script
-docstring (`scripts/eval_prior_value_phrase_dev.py`). Scored against the quasi-truth centre.
+docstring (`scripts/eval_prior_value_phrase_dev.py`). Scored against the reference centre.
 
 48 cells, notes/cell median 8, span median 4.5 s, recurrence distance median 3 notes / 1.2 s, hidden-to-recurrence edge weight median 0.83; instruments: cl, db, hn, sax, tbn, tpt, va, vc, vn
 

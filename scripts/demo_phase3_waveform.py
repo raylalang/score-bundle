@@ -17,7 +17,7 @@ attack/decay envelope at chunk resolution; the noise floor is fit from the
 residual of an initial amplitude regression at the estimator's curve.
 
 Validation targets per note: the Phase-2 estimator's c (tracked frames)
-and the quasi-truth c (same estimator on URMP's ground-truth curve).
+and the reference c (same estimator on URMP's ground-truth curve).
 
     OMP_NUM_THREADS=4 PYTHONPATH=src:scripts python scripts/demo_phase3_waveform.py
 """
@@ -159,7 +159,7 @@ def main() -> None:
               f"mean {mean_c:+.2f} +/- {sd_c:.2f} cents")
         print(f"  Phase-2 estimator c:  {est_c:+.2f} +/- {est_sd:.2f} "
               f"(tracked frames)")
-        print(f"  quasi-truth c (GT):   {gt_c:+.2f}")
+        print(f"  reference c (GT):   {gt_c:+.2f}")
         print(f"  |waveform - GT| = {abs(mean_c - gt_c):.2f} cents; "
               f"|estimator - GT| = {abs(est_c - gt_c):.2f} cents\n")
 
@@ -185,7 +185,7 @@ def main() -> None:
                     if np.isfinite(d["est_gt"][i, 2]) else np.nan)
             print(f"  waveform posterior f_vib: MAP {map_f:.2f}, mean "
                   f"{mean_f:.2f} +/- {sd_f:.2f} Hz | estimator "
-                  f"{f_est:.2f} | quasi-truth {gt_f:.2f}\n")
+                  f"{f_est:.2f} | reference {gt_f:.2f}\n")
 
 
 if __name__ == "__main__":

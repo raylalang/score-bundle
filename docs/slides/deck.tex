@@ -775,6 +775,90 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{The score prior inside the waveform inference: three spans}
+  \small
+  One latent per chain element, $\theta \in \R^{n}$ (intonation constants
+  $c$ in cents, or joint offsets $b$ in ms); three priors at matched
+  marginal variance, every arm with the common-mode scalar $t$:
+  \vspace{-2mm}
+  \begin{align*}
+    \theta &= t\mathbf{1} + \tilde\theta,\qquad t \sim \N(0,\sigma_t^2),\qquad
+    \tilde\theta \sim \N(0,\sigma^2 K_{\mathrm{arm}}),\qquad
+    K = \sigma^2 K_{\mathrm{arm}} + \sigma_t^2 \mathbf{1}\mathbf{1}^{\!\top}\\
+    K_{\mathrm{ind}} &= I,\qquad
+    K_{\mathrm{arm}} = \diag(M)^{-\frac12} M \diag(M)^{-\frac12},\qquad
+    M = (I + L_{\mathrm{arm}})^{-1}
+  \end{align*}
+  \vspace{-5mm}
+
+  $L_{\mathrm{arm}}$: Laplacian of the note-order chain (temporal)
+  or of the score graph (time and pitch). The hidden element $h$ is
+  dropped from the design, so its posterior is the prior conditional,
+  scored against the reference centre:
+  \vspace{-2mm}
+  \begin{equation*}
+    \theta_h \mid \theta_{-h} \sim \N\big(K_{h,-h} K_{-h,-h}^{-1}
+    \theta_{-h},\; K_{hh} - K_{h,-h} K_{-h,-h}^{-1} K_{-h,h}\big).
+  \end{equation*}
+  \vspace{-5mm}
+  \begin{center}
+  \footnotesize
+  \begin{tabular}{@{}llcc@{}}
+    \toprule
+    span (development) & hidden element & graph $-$ independent & graph $-$ temporal \\
+    \midrule
+    47 chains, 3 to 5 notes & one note's $c$ (cents) & $-0.02$ $[-0.33,+0.32]$ & $-0.19$ $[-0.89,+0.46]$ \\
+    40 joints & one joint's $b$ (ms) & $-2.45$ $[-8.38,+3.32]$ & $+1.20$ $[-2.12,+4.45]$ \\
+    48 phrases, 6 to 10 notes & a recurring pitch's $c$ (cents) & $-0.07$ $[-0.42,+0.27]$ & $-1.63$ $[-2.93,-0.46]^{*}$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{-2mm}
+  Every prior transfers the common offset (about 7 cents, 10 to
+  14 ms against the no-transfer references). The score graph is never
+  worse than the temporal chain and repairs its harm at phrase scale
+  (temporal $-$ independent $+1.56^{*}$); beyond the offset, nothing
+  measurable so far.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{What in the graph does the work: the time window}
+  The score graph's edge weight, and the two graphs it is set against
+  in the same GP (same features, same per-piece intercept, only $W$
+  changes):
+  \vspace{-1mm}
+  \begin{align*}
+    \text{score graph: }& W_{ij} = \exp\!\Bigl( -\tfrac{(b_i - b_j)^2}{2\,\ell_b^2}
+                          -\tfrac{(p_i - p_j)^2}{2\,\ell_p^2} \Bigr),\qquad
+    \ell_b = 2 \text{ beats},\ \ell_p = 4 \text{ semitones}\\
+    \text{time Gaussian: }& \text{the same with } \ell_p \to \infty;\qquad
+    \text{time chain: } W_{ij} = \mathbb{1}[\,|i-j| = 1\,].
+  \end{align*}
+  \vspace{-4mm}
+  \begin{center}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}llcc@{}}
+    \toprule
+    setting (development) & channel & graph $-$ chain & graph $-$ time Gaussian \\
+    \midrule
+    strings and winds, 78 tracks & intonation RMSE (cents) & $-0.50$ $[-0.67,-0.34]^{*}$ & $-0.02$ $[-0.10,+0.06]$ \\
+    153 track-and-seed cells & vibrato extent / rate RMSE & $-0.22^{*}$ / $-0.21^{*}$ & $+0.04^{*}$ / $+0.03^{*}$ \\
+    piano, 30 pieces, 4 seeds & pooled RMSE / log score & & $+0.008^{*}$ / $+0.019^{*}$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{-1mm}
+  {\small Negative favours the first arm; $*$: the 95 percent interval
+  excludes zero. On both corpora the score graph beats the chain and
+  equals, or slightly trails, the same graph with the pitch term removed.
+  The structure that does the work is smoothness in score time over
+  about two beats; pitch proximity adds nothing measurable. The
+  confirmed results stand (full model against its alternatives); what
+  narrows is the attribution of the graph term.\par}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Summary}
   One Gaussian process on the score graph, three observation types:
   \begin{itemize}
@@ -785,8 +869,12 @@
           held-out pieces.
     \item \textbf{Audio}: methodology in place and running at
           development level --- curves, boundaries, the timbre
-          read-out --- no claims yet; the joint loop over a whole
+          read-out, the score prior inside the inference at three
+          spans --- no claims yet; the joint loop over a whole
           performance is the direction ahead.
+    \item \textbf{What the graph does}: at every scale tested, on both
+          corpora, its value is smoothing in score time over about two
+          beats; pitch proximity adds nothing measurable (development).
   \end{itemize}
 \end{frame}
 
@@ -797,12 +885,15 @@
   \begin{tabular}{@{}lp{96mm}@{}}
     \toprule
     done (October) & first curve-from-waveform studies: single notes at
-          scale, the bundle channel, joint note boundaries. \\
-    November & decide the registration pool with the professor
-          (correlated timing noise, tonal metric), then run the
-          registered timing confirmation, one shot. Decide the channel
-          design (scalars or curve level). A transient model at the note
-          boundary. \\
+          scale, the bundle channel, joint note boundaries; the score
+          prior inside the waveform inference at three spans; the
+          graph's value attributed to its time window, both corpora. \\
+    November & decide whether that attribution becomes a stated claim
+          (a pitch-less default graph needs its own registration).
+          Decide the registration pool with the professor (correlated
+          timing noise, tonal metric), then run the registered timing
+          confirmation, one shot. Decide the channel design (scalars or
+          curve level). A transient model at the note boundary. \\
     December & whole-phrase joint inference from the waveform.
           Consolidate thesis chapters as results land. \\
     \bottomrule
@@ -873,7 +964,7 @@
   \vspace{-2mm}
   Observed notes: pinned by the audio to the same value under every
   prior. Hidden note: each prior's conditional with its 90 percent band.
-  Comparator: the quasi-truth centre.
+  Comparator: the reference centre.
 \end{frame}
 
 % ---------------------------------------------------------------------

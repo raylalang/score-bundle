@@ -8,7 +8,7 @@
 | graph GP (as-given) | 14.891 / +3.95 / 0.88 (n=9804) | 1.483 / +1.96 / 0.89 (n=3281) | 0.371 / +0.25 / 0.87 (n=3281) | 0.419 / +0.52 / 0.90 (n=9804) | 0.101 / -1.66 / 0.92 (n=9279) | 0.142 / -0.84 / 0.88 (n=3938) |
 | no-graph ablation | 15.045 / +3.91 / 0.90 (n=9804) | 1.507 / +2.20 / 0.93 (n=3281) | 0.572 / +0.39 / 0.89 (n=3281) | 0.425 / +0.51 / 0.91 (n=9804) | 0.114 / -1.58 / 0.92 (n=9279) | 0.141 / -0.85 / 0.90 (n=3938) |
 
-## vs ground-truth-derived targets (quasi-truth; latent sd)
+## vs ground-truth-derived targets (reference targets; latent sd)
 
 | system | c (cents) RMSE / NLL / cov@90 | log gamma RMSE / NLL / cov@90 | log f RMSE / NLL / cov@90 | delta_vib (s) RMSE / NLL / cov@90 |
 |---|---|---|---|---|

@@ -7,7 +7,7 @@ pair exactly across runs (base6 cross-run max |RMSE diff| = 0.00e+00, must be ~0
 
 n = 14 (track, seed) pairs; curve-source floor median 1.80 cents (scalar-source 3.09).
 
-| system | vs estimator: RMSE / NLL / cov@90 | vs quasi-truth: RMSE / NLL / cov@90 |
+| system | vs estimator: RMSE / NLL / cov@90 | vs the reference: RMSE / NLL / cov@90 |
 |---|---|---|
 | base6 | 10.874 / +3.752 / 0.87 | 11.740 / +3.983 / 0.81 |
 | scalar wave_floor | 9.667 / +3.516 / 0.87 | 10.703 / +3.975 / 0.80 |
@@ -46,7 +46,7 @@ n = 14 (track, seed) pairs; curve-source floor median 1.80 cents (scalar-source 
    average of the inferred curve is the estimator's own functional, so
    it closes about half the estimand gap by construction — which also
    explains why the floor matters less here than in the scalar study
-   (floor-vs-nofloor contrasts ns). Caution kept: vs quasi-truth NLL the
+   (floor-vs-nofloor contrasts ns). Caution kept: vs reference NLL the
    tighter channel is non-significantly worse (+0.32), i.e. the smaller
    floor buys RMSE but gives back a little latent-band honesty.
 5. **Dev default**: the curve read-out stands wherever the scalar stood

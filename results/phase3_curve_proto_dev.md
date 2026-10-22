@@ -35,4 +35,4 @@ only; Nelder-Mead in up to 33 dims (the cello's remaining gap may be
 optimization, low fundamental, or amplitude overshoot — not diagnosed);
 knot interpolation is linear. Next steps if pursued: evidence-fit
 hyperparameters, joint Laplace, batch evaluation on the dev tracks
-against the quasi-truth protocol of `results/phase3_waveform_dev.md`.
+against the reference protocol of `results/phase3_waveform_dev.md`.

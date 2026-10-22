@@ -176,7 +176,7 @@ The channel set is unchanged — this is an estimator swap behind the three
 pitch-derived channels. Wrinkle one: the estimands shift slightly ($\gamma$
 as gated-sinusoid amplitude and $\gamma$ as component power are different
 functionals of the same curve — the same estimand-gap phenomenon Phase 3
-measured for $c$), which is why the kill test scores against quasi-truth
+measured for $c$), which is why the kill test scores against the reference
 rather than against the old estimator's targets, and why v2 numbers are
 not comparable to the confirmed Phase-2 numbers. Wrinkle two: the onset
 delay $d_i^{\mathrm{vib}}$ cannot come from this estimator — a stationary
@@ -330,7 +330,7 @@ trigger:
 Defined in `docs/gp_everywhere_memo.md` (minimal honest test): SM-prior
 GP regression on the cents curves of the ~5,000 vibrato-identifiable
 development notes, against the NLLS sine estimator, on (i) agreement
-with quasi-truth, (ii) calibration of its own posterior, (iii) behavior
+with the reference, (ii) calibration of its own posterior, (iii) behavior
 on estimator-missing notes. Development only, no claims; if it loses on
 (i), the idea dies cheaply. Adoption of anything downstream needs its
 own registration (the Phase-2 pool is spent).

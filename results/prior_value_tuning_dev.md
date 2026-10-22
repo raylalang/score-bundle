@@ -4,7 +4,7 @@ Three cross-note priors over per-note intonation constants at matched marginal
 variance, identical likelihood/data/optimizer, boundaries fixed at annotations.
 Conditions: the middle eligible note's audio MASKED from the likelihood (maximal
 ambiguity) vs clean. Committed hypotheses and falsification rule in the script
-docstring (`scripts/eval_prior_value_dev.py`). Scored against the quasi-truth centre.
+docstring (`scripts/eval_prior_value_dev.py`). Scored against the reference centre.
 
 47 cells (chains), tracks: (1, 1)(vn), (1, 2)(vc), (3, 2)(cl), (7, 2)(tbn); 25 cells have a recurring pitch.
 
