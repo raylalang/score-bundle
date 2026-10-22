@@ -232,6 +232,24 @@ term in every arm by design, which this experiment shows is mandatory.
   independent (+1.56): the graph's win is the temporal prior's harm
   repaired, with no dose-response on the edge weight.
 
+**Track scale, 2026-10-22/23 (`results/phase2_chain_prior_dev.md`,
+`results/phase2_timegauss_prior_dev.md`; the meeting of 10-21 was
+cancelled and these were run in the gap).** The same three-prior
+question on the tracked six-channel bundle, 78 development tracks, 153
+cells, both arms carrying the per-piece bias column, so beyond the
+common offset: the score graph beats a nearest-neighbour time chain
+significantly (intonation −0.50 cents, vibrato extent −0.22, rate −0.21,
+loudness −0.007), but equals the same graph with its pitch term removed
+(intonation −0.02 [−0.10, +0.06]; vibrato slightly worse). The
+confirmed strings-and-winds graph value (−0.88 cents) is reproduced by
+the time-only Gaussian graph exactly. **The graph's value is temporal
+smoothing over about two beats; the score-specific pitch coupling adds
+nothing measurable at any scale tested.** Also: the boundary bands'
+width fix (chain-scale prior) brings the independent arm to coverage
+0.88, the structured arms to 0.75; verdict unchanged
+(`results/boundary_prior_chainsig_dev.md`). Piano counterpart running
+(headline config with the pitch term removed).
+
 **The three-span verdict, for the room:** against the thesis's own
 baselines (independent, purely temporal) the score-graph prior is never
 worse and beats the temporal prior at phrase scale; against the

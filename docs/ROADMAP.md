@@ -122,6 +122,59 @@ offset scalar is its core control).
   (nothing beyond the common offset). Thesis `sec:phase3-priorvalue`,
   brief §D.4/F.1/G, CLAUDE.md updated.
 
+## DONE — Track scale and the band fix (2026-10-22/23, Ray: "all experiments in parallel")
+
+- **E1** (`eval_phase2_real.py run-chain`, `results/phase2_chain_prior_dev.md`):
+  the strings-and-winds masked evaluation with a time-only chain arm,
+  all arms with the per-piece bias column. Score graph beats the chain
+  beyond the common offset: intonation −0.50*, extent −0.22*, rate
+  −0.21*, loudness −0.007*; chain vs no-graph mixed.
+- **E1b** (`run-timegauss`, `results/phase2_timegauss_prior_dev.md`):
+  the score graph with its pitch term removed EQUALS the score graph
+  on intonation (−0.02 ns) and is slightly better on vibrato; the
+  time-Gaussian graph reproduces the confirmed graph value (−0.878 vs
+  −0.896). **The graph's value is the 2-beat time window, not pitch
+  proximity**, consistent with the three waveform spans.
+- **E3** (`BOUNDPRIOR_SIGMA=chain`, `results/boundary_prior_chainsig_dev.md`):
+  chain-scale prior width: independent band 1.00 → 0.88, structured
+  0.75; verdict unchanged. One sentence in the thesis.
+- **Declined** (reasons in the CLAUDE.md state dump): the curve-level
+  waveform test; the MIDI-DDSP attribute comparison.
+- **Running:** the piano counterpart `b_featlm_timegauss`
+  (`eval_graphgp.py`, H-P1): does the pitch term matter on polyphonic
+  piano, where the time window links chord notes?
+
+## NEXT (needs Ray's go)
+
+After the piano counterpart: decide whether "the graph's value is
+temporal smoothing" becomes the thesis's stated attribution for the
+graph (it reframes, not retracts, the confirmed results: the graph
+term is still the calibration carrier and the recovery gain stands;
+what changes is WHICH structure in it does the work). Candidates then:
+a time-window sweep (ℓ_b) as the one remaining knob; nothing else
+queued. Writing freeze stays the plan for January.
+
+## DONE — The second and third spans (2026-10-20, Ray's go 2026-10-18: "B and C")
+
+- **B, boundaries** (`scripts/eval_boundary_prior_dev.py`,
+  `results/boundary_prior_dev.md`; `fit_chain(b_prior_cov=, drop_joints=)`
+  test-pinned): 47 chains, hidden middle joint removed from the design,
+  offset scalar in every arm. Arms tie (graph vs indep −2.45 ms
+  [−8.38, +3.32]); all beat the tempo line by 10–14 ms* (the common
+  offset); clean deployment identical at 19.6 ms. Calibration: masked
+  bands too wide (σ_b = population scale), observed-joint bands too
+  narrow (0.7 ms, the estimand gap at the boundary).
+- **C, phrase scale** (`scripts/eval_prior_value_phrase_dev.py`,
+  `results/prior_value_phrase_dev.md`): 48 cells from all 78 dev
+  tracks, hidden pitch recurring ≥2 notes away. Primary contrast
+  passes (graph vs temporal −1.63* cents, 65%), but graph = indep
+  (−0.07) and temporal < indep (+1.56*): the win is the temporal
+  prior's harm repaired; no dose-response on the edge weight.
+- **Three-span verdict**: weak form of the hypothesis survives (score
+  structure ≥ naive temporal structure), strong form fails so far
+  (nothing beyond the common offset). Thesis `sec:phase3-priorvalue`,
+  brief §D.4/F.1/G, CLAUDE.md updated.
+
 ## NEXT (needs Ray's go) — after three spans
 
 Ray decides between: (a) stop here and present the three-span verdict

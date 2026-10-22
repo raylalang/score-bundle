@@ -6,7 +6,7 @@ is the title page). The note for each slide states what the slide says,
 defines every symbol on it, and gives an example. Written at the
 simplest level that is still complete.
 
-Coverage: every slide, 2 to 52. (`docs/zemi_prep.md` holds the older
+Coverage: every slide, 2 to 53. (`docs/zemi_prep.md` holds the older
 notes for the 28-slide zemi deck; its frame numbers do not match this
 deck.)
 
@@ -1037,3 +1037,42 @@ The two most likely probes are 35 (how the timbre is removed) and 50
 linear, so we integrate them out exactly," and "the score prior gives a
 missing note its context's offset with an honest band, beats a
 time-only prior at phrase scale, and so far nothing more."
+
+## Slide 53. Backup: the three priors at track scale (strings and winds)
+
+**What is on the slide.** The track-scale version of the three-prior
+question, on the tracked six-channel bundle of the strings-and-winds
+chapter: 78 development tracks, 153 track-and-seed cells, 30 percent of
+notes hidden per track, the standard development evaluation. Every arm,
+including the no-graph ablation, carries the per-piece intercept (a
+column of ones in the feature kernel), so every contrast here is
+already beyond the common offset that dominated the chain-scale
+waveform tests. Three columns of paired differences with 95 percent
+bootstrap intervals, negative favouring the first-named arm.
+
+**The three arms.** Score graph: the thesis model's graph, notes linked
+by closeness in time (2-beat window) and pitch (4-semitone window).
+Time chain: consecutive notes linked with unit weight, nothing else.
+Time Gaussian: the score graph with the pitch term removed, the same
+2-beat window; it is the score graph minus exactly the thing that makes
+it a score graph.
+
+**How to read the table.** First column: the score graph beats the
+time chain, significantly, on intonation, vibrato extent, vibrato rate
+and loudness. Second column: the score graph equals the pitch-less
+graph on intonation (−0.02 cents, interval across zero) and is slightly
+worse on the two vibrato channels. Third column: the pitch-less graph
+against the chain reproduces the first column. So the whole advantage
+over the chain is the time window, not pitch proximity.
+
+**The sentence.** "At every scale we tested, the structure that helps
+is smoothness in score time over about two beats. Linking notes by
+pitch adds nothing we can measure." This reframes the confirmed
+strings-and-winds result without retracting it: the graph term still
+carries the recovery gain and the calibration; what we now know is which
+structure inside it does the work.
+
+**If asked about piano.** The piano counterpart, the headline
+configuration with the pitch term removed, was run after this slide was
+made; its answer is in the notes of whichever slide carries it, or in
+`results/graphgp/` if not yet written up.

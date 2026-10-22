@@ -914,4 +914,38 @@
   musical onset.
 \end{frame}
 
+
+% ---------------------------------------------------------------------
+\begin{frame}{Backup: the three priors at track scale (strings and winds)}
+  \small
+  The same question on the tracked six-channel bundle, 78 development
+  tracks, 153 track-and-seed cells, 30 percent of notes hidden; every
+  arm carries the per-piece intercept, so every contrast is beyond the
+  common offset. Paired differences, 95 percent intervals, negative
+  favours the first arm.
+  \vspace{1mm}
+  \begin{center}
+  \footnotesize
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    channel & score graph $-$ time chain & score graph $-$ time Gaussian & time Gaussian $-$ time chain \\
+    \midrule
+    intonation (cents) & $-0.50$ $[-0.67, -0.34]$ & $-0.02$ $[-0.10, +0.06]$ & $-0.48$ $[-0.65, -0.32]$ \\
+    vibrato extent & $-0.22$ & $+0.04$ & $-0.27$ \\
+    vibrato rate & $-0.21$ & $+0.03$ & $-0.24$ \\
+    loudness & $-0.007$ & $-0.007$ & $-0.000$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{1mm}
+  \begin{itemize}
+    \item Time chain: consecutive notes linked, unit weight. Time
+          Gaussian: the score graph with the pitch term removed, the
+          same 2-beat window.
+    \item The graph beats the chain; the graph equals the pitch-less
+          graph. The graph's value is the time window, at every scale
+          tested.
+  \end{itemize}
+\end{frame}
+
 \end{document}

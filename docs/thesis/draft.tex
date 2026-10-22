@@ -2540,7 +2540,12 @@ track's full timing variance), and the observed joints' bands are far
 too narrow (coverage $0.05$ at $0.7$\,ms): the likelihood pins the
 \emph{acoustic} transition to under a millisecond while the annotation
 marks the musical onset some $20$\,ms away, the estimand gap of
-\S\ref{sec:phase3-study} restated at the boundary.
+\S\ref{sec:phase3-study} restated at the boundary. Setting the prior
+width at chain scale instead (the median within-chain timing variance)
+brings the independent arm's band to coverage $0.88$ and the structured
+arms' to $0.75$, with the point verdict unchanged: no single
+population-scale width calibrates all three, and a per-chain width by
+evidence is the principled fix, not done here.
 
 \figph{span_boundary.png}{1.0}{Boundaries at chain scale, per hidden
 joint ($40$ non-unison), sorted by the tempo line's error. Every prior
@@ -2594,7 +2599,14 @@ and fails, so far, in its strong form. What the waveform does get from
 the score prior is honest: a note or a joint with no acoustic evidence
 inherits its context's common offset with a calibrated band. Each
 study is development evidence on four to nine instruments; none is
-registered.
+registered. The same comparison at whole-track scale on the tracked
+bundle (Appendix~\ref{app:trackscale}) adds the missing power and the
+same answer from the other side: the score graph beats a
+nearest-neighbour time chain significantly on intonation and vibrato,
+but equals the same graph with its pitch term removed. At every scale
+and observation type tested, the structure that helps is smoothness in
+score time over about two beats; the score-specific pitch coupling does
+not show.
 
 % =====================================================================
 \chapter{Discussion}\label{ch:discussion}
@@ -3541,6 +3553,61 @@ deltas, tonal minus plain graph, under the as-given variant --- mean
 $-0.21$ cents $[-0.34, -0.09]$, with $61\%$ of pairs improving and the
 full spread shown. Exploratory by the registered design; adoption would
 need its own preregistered confirmation.\label{fig:tonal-intonation}}
+
+\section{Three priors at track scale: the graph's value is the time window}
+\label{app:trackscale}
+The waveform studies of Chapter~\ref{ch:phase3} found, on chains of
+three to ten notes, that the score prior transfers only the context's
+common offset. The same question can be asked at whole-track scale on
+the tracked six-channel bundle of this chapter, where the development
+evaluation already holds out $30\%$ of the notes per track and where
+both the graph arm and the no-graph ablation carry a per-piece bias
+column, so that every contrast is a contrast beyond the common offset.
+Two arms were added to that evaluation, hypotheses committed before
+each run (development split, $78$ tracks, $153$ track-and-seed cells,
+as-given noise, paired per cell): a \emph{time-only chain}, the same GP
+with the score graph replaced by unit-weight edges between consecutive
+notes; and a \emph{time-only Gaussian graph}, the score graph with its
+pitch term removed and its two-beat time window kept.
+
+\begin{table}[t]\centering
+\caption{Three priors at track scale on the strings-and-winds bundle
+(development, no claims). Paired differences per track-and-seed cell
+against estimator targets, $95\%$ bootstrap intervals; negative favours
+the first-named arm; $*$ marks an interval excluding zero. Intonation in
+cents, vibrato extent and rate on the log scale.}
+\label{tab:trackscale}
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+channel & score graph $-$ chain & score graph $-$ time-Gaussian & time-Gaussian $-$ chain \\
+\midrule
+intonation $c$, RMSE & $-0.50$ $[-0.67,-0.34]*$ & $-0.02$ $[-0.10,+0.06]$ & $-0.48$ $[-0.65,-0.32]*$ \\
+intonation $c$, NLL & $-0.037*$ & $+0.006$ & $-0.043*$ \\
+vibrato extent, RMSE & $-0.22*$ & $+0.04*$ & $-0.27*$ \\
+vibrato rate, RMSE & $-0.21*$ & $+0.03*$ & $-0.24*$ \\
+loudness, RMSE & $-0.007*$ & $-0.007*$ & $-0.000$ \\
+timing, RMSE & $-0.001$ & $+0.000$ & $-0.002$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The result is two-sided in the same way as the waveform spans, but
+with the power that chains lacked. The score graph beats the time-only
+chain, significantly, on intonation, vibrato extent, vibrato rate and
+loudness (Table~\ref{tab:trackscale}, first column), and the chain
+itself is not reliably better than no structure (its NLL is worse on
+loudness and vibrato onset). But the score graph \emph{equals} the
+time-only Gaussian graph on intonation ($-0.02$ cents, interval
+covering zero) and is slightly worse on the two vibrato channels; the
+time-only Gaussian graph against the chain reproduces the score graph's
+margins, and against no structure it reproduces the confirmed graph
+value on intonation ($-0.88$ against $-0.90$). The value of the graph at
+track scale is therefore temporal smoothing over a window of about two
+beats; the pitch-proximity coupling that makes it a \emph{score} graph
+adds nothing measurable here, as it added nothing at chain and phrase
+scale from the waveform. Records: \texttt{results/phase2\_chain\_prior\_dev.md},
+\texttt{results/phase2\_timegauss\_prior\_dev.md}.
 
 \chapter{Additional results}\label{app:extra}
 

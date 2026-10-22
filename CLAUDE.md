@@ -283,7 +283,19 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   file / speaker notes if a slide changes) updated ONLY for results worth
   considering; the standing rules (speaker notes follow deck changes; deck =
   minimal narrative + full math; no Phase-N wording in thesis/deck) apply.
-  Speaker notes now cover every slide 2–52 (`docs/slides/speaker_notes.md`).
+  Speaker notes now cover every slide 2–53 (`docs/slides/speaker_notes.md`).
+  **MEASURED 2026-10-22/23:** E1 — score graph beats the time-only chain at
+  track scale beyond the common offset (c −0.50*, extent −0.22*, rate −0.21*,
+  loudness −0.007*); E1b — the score graph EQUALS the time-only Gaussian graph
+  (pitch term removed, same 2-beat window) on intonation (−0.02 ns) and is
+  slightly worse on vibrato; the time-Gaussian graph reproduces the confirmed
+  graph value (−0.878 vs −0.896) ⇒ **the graph's value is temporal smoothing
+  over ~2 beats, not pitch proximity**, at every scale tested; E3 — chain-scale
+  σ_b: independent band 1.00→0.88, structured 0.75, verdict unchanged. Thesis:
+  Appendix `app:trackscale` (tab:trackscale) + Ch. 8 closing paragraph + one
+  band sentence; brief §G; ROADMAP; ledger; deck backup frame 53 + its note.
+  Piano counterpart `b_featlm_timegauss` (eval_graphgp.py, H-P1 in its
+  docstring) running.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,

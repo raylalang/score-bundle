@@ -127,6 +127,29 @@ phrase dose-response. All in the thesis section (81 pp); five as deck
 backup frames (pages 48–52 after the 2026-10-21 restructuring of the
 waveform setup slides; main line unchanged).
 
+## Wednesday and Thursday, 2026-10-22/23 (the meeting was cancelled)
+
+Ray: "do all experiments you have in mind in parallel; include only the
+results worth considering; you can decline." Declined: the curve-level
+waveform test (nothing in the chain model to couple at curve level) and
+the MIDI-DDSP comparison (setup risk, attribute mismatch). Run:
+- **The three priors at track scale** on the tracked bundle, 78
+  development tracks, all arms with the per-piece intercept
+  (`results/phase2_chain_prior_dev.md`,
+  `results/phase2_timegauss_prior_dev.md`). The score graph beats a
+  nearest-neighbour time chain, significantly, on intonation (−0.50
+  cents), vibrato extent and rate, and loudness. But it equals the same
+  graph with the pitch term removed (intonation −0.02, a tie), and that
+  pitch-less graph reproduces the confirmed graph value exactly. The
+  graph's value is smoothing over a two-beat window; pitch proximity
+  adds nothing at any scale tested.
+- **The boundary band width** at chain scale
+  (`results/boundary_prior_chainsig_dev.md`): the independent arm's band
+  reaches 0.88 coverage, the structured arms 0.75; the verdict is
+  unchanged.
+- The piano counterpart (headline configuration with the pitch term
+  removed) was launched; its sentence goes in when it lands.
+
 ## What is open, for Ray
 
 1. Stop here and present the three-span verdict as the waveform
