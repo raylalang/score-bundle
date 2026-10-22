@@ -6,11 +6,540 @@ is the title page). The note for each slide states what the slide says,
 defines every symbol on it, and gives an example. Written at the
 simplest level that is still complete.
 
-Coverage: slides 33 to 52 (the waveform chapter, summary, plan, and the
-backup frames). Slides 2 to 32 are not yet written; `docs/zemi_prep.md`
-holds the older notes for the piano and strings-and-winds chapters.
+Coverage: every slide, 2 to 52. (`docs/zemi_prep.md` holds the older
+notes for the 28-slide zemi deck; its frame numbers do not match this
+deck.)
 
 ---
+
+## Slide 2. Expressive performance
+
+**What is on the slide.** Three sentences and one figure. The score
+fixes which pitches and which note values; the performer adds when
+exactly, how long, how loud, and on strings and winds how the pitch
+moves inside the note. Those deviations are the expression. The figure:
+the opening of Schumann's Kreisleriana No. 2, the printed score on top,
+then a piano roll (pitch against score time in beats; grey outlines are
+the written notes, blue bars the played ones), then three strips, one
+per variable, with the written value at zero and the played value as a
+dot: timing `τ_i` in seconds, articulation `log r_i`, velocity `v_i`.
+
+**How to say it.** "Everything in the three strips is zero on paper.
+The dots are what the pianist did. That is what we model."
+
+**Example.** Around beat 5 and beat 13 the timing dots drop to −0.5 s:
+the pianist held back before a chord. Articulation sits mostly below
+zero: notes played shorter than written, detached. Velocity drifts
+below zero in the middle: a quieter passage.
+
+## Slide 3. The thesis, and the three problems
+
+**What is on the slide.** The thesis sentence, to be said verbatim:
+one Gaussian process on the score graph turns a known score and a
+performance into per-note expressive variables, each with an error bar
+you can trust. Then the three observation problems: piano (variables
+read directly from aligned MIDI; are the error bars calibrated note by
+note?), strings and winds (six variables, now intonation and vibrato
+too, estimated from audio, noisily; does the same prior still work?),
+audio directly (no pitch tracker at all; can the waveform be the
+observation?).
+
+**Symbols implied.** A Gaussian process (GP) here means: the vector of
+all the unknown per-note variables is given a joint Gaussian
+distribution whose covariance is built from the score. "On the score
+graph" means the covariance comes from a graph whose nodes are the
+written notes. "Calibrated" means a 90 percent error bar contains the
+truth 90 percent of the time, checked on held-out notes.
+
+## Slide 4. One model of expression, three depths of measurement
+
+**What is on the slide.** The chain figure: the performer's choices
+(expression) produce the per-note variables (pitch curve, timing,
+loudness), which produce the sound. The three settings read that chain
+at three depths: piano reads the variables directly from MIDI; strings
+and winds measure them through a pitch tracker; audio asks the
+waveform itself. All three feed one GP on the score graph.
+
+**How to say it.** "Same model, same prior. What changes is how far
+from the performer's hands we are allowed to look."
+
+## Slide 5. Related work
+
+**What is on the slide.** Two columns. Left, expressive performance
+modelling: the KTH rule system (Friberg 2006), linear basis-function
+models (Grachten and Widmer 2012), deep rendering models such as
+VirtuosoNet (Jeong 2019). All of them output one rendering or corpus
+statistics, none a calibrated per-note posterior. Right, the tools:
+Gaussian processes over graphs (Venkitaraman 2018), graph Matérn
+kernels (Borovitskiy 2021), multi-output coupling by the intrinsic
+coregionalization model (Bonilla 2008), differentiable synthesis
+(Engel 2020). The closing line: this work combines them into a graph GP
+over score positions with per-note side information, for calibrated
+inference, down to the waveform.
+
+**If asked about MIDI-DDSP** (Wu 2022, the closest cousin, on slide
+32): it generates audio from notes, takes pitch from a tracker and
+boundaries from annotations, and reads expression off with fixed
+formulas, with no uncertainty; this thesis runs the other way, from
+recording to expression, with calibrated bands.
+
+## Slide 6. Divider: The model
+
+One sentence: "The model is one multi-output Gaussian process on the
+score graph. Four slides build it, then one picture."
+
+## Slide 7. Approach: one prior, three kinds of observation
+
+**What is on the slide.** The programme figure. Left: the shared prior,
+written as `B ⊗ K_G(s) + Σ_f diag(c_f) ⊗ X_f X_fᵀ` (defined on slides 9
+to 11), unchanged across all settings. Right: three likelihood blocks.
+Piano, `ỹ = y + e` on observed notes, confirmed. Strings and winds,
+noisy per-note estimates of six channels with per-cell masks,
+confirmed. Audio, `x = Φ(z) a + ε` with no per-note data, scoped
+(development). The outputs: per-note posteriors of `τ, log r, v`; then
+also intonation and vibrato; then a posterior over all expression
+jointly.
+
+**Symbols.** `ỹ` is an observed value, `y` the latent true value, `e`
+observation noise. A pretrained music model supplies per-note input
+features to every setting (slide 10).
+
+## Slide 8. The model (1): the score graph
+
+**What is on the slide.** The nodes are the `N` written notes, each
+with pitch `p_i` (MIDI number), beat onset `b_i` (score time in beats)
+and beat duration `d_i`. The edge weight between notes `i` and `j`:
+
+`W_ij = exp(−(b_i − b_j)² / (2 ℓ_b²) − (p_i − p_j)² / (2 ℓ_p²))`,
+
+and the graph Laplacian `L_G = D − W` with `D_ii = Σ_j W_ij`. `W`,
+`D`, `L_G` are all `N × N`.
+
+**Symbols.** `ℓ_b` is the time length-scale, 2 beats; `ℓ_p` the pitch
+length-scale, 4 semitones. Both fixed, global. An edge weight is near
+1 for two notes at the same time and pitch and decays as they separate
+in either. `D` is diagonal, each entry the total weight at that node;
+the Laplacian measures how much a function on the nodes differs from
+its neighbours.
+
+**Example.** Two notes one beat apart at the same pitch:
+`exp(−1/8) ≈ 0.88`. Two notes at the same time an octave apart (12
+semitones): `exp(−144/32) ≈ 0.01`, almost no edge. So "neighbours" are
+close in time and in pitch at once.
+
+**The figure.** Four beats of real score as nodes (pitch against score
+time). Blue edges: the time and pitch proximity weights, darker is
+stronger. Green: same-chord edges; vermilion: voice-leading steps.
+Those two extra edge families are the chord-graph variant tested on
+slide 21; the base graph uses the blue edges only.
+
+## Slide 9. The model (2): a GP on the graph, channels coupled
+
+**What is on the slide.** Two equations. First, eigendecompose the
+Laplacian, `L_G = U diag(ν) Uᵀ`, with `U` the `N × N` eigenvectors and
+`ν` the `N` eigenvalues, and shape the spectrum with one parameter `s`:
+`K_G(s) = U g(ν; s) Uᵀ`, `g(ν; s) = 1 / (1 + s ν)`. This is the graph
+Matérn kernel with `α = 1`. Second, the channels (timing, articulation,
+velocity) are correlated, so they share the graph through a learned
+`C × C` coupling matrix `B`: `Cov[y_{i,c}, y_{j,c'}] = B_{cc'} [K_G(s)]_{ij}`,
+in one line `Cov[y] = B ⊗ K_G(s)`.
+
+**How to read the first equation.** Each eigenvector of the Laplacian
+is a pattern over the notes; small eigenvalue means smooth over the
+graph (neighbours alike), large means rough. `g` keeps the variance of
+smooth patterns near 1 and shrinks rough ones by `1/(1 + s ν)`. Larger
+`s` means a smoother prior. Example: with `s = 1`, a pattern with
+`ν = 0.1` keeps 91 percent of its variance, one with `ν = 10` keeps
+9 percent.
+
+**How to read the second.** `⊗` is the Kronecker product: the full
+covariance over all channels of all notes is a `CN × CN` matrix built
+by multiplying each entry of `B` with the whole of `K_G`. Example: if
+`B` says timing and articulation are positively correlated, then
+observing a late onset at note 5 raises the posterior of a long
+articulation at note 6. That is the sentence on the slide: an observed
+channel at one note informs the other channels at neighbouring notes.
+
+## Slide 10. The model (3): side information as kernels
+
+**What is on the slide.** Two feature sets, each one row per note:
+score descriptors `X_feat` (`N × 26`: register, duration, metre,
+position in bar, chord context, density) and `H` (`N × 512`), per-note
+features from a small music model trained on MAESTRO. A linear mean
+with unknown weights, integrated out, becomes a kernel term:
+`y = X β + f_G`, `β ~ N(0, c_X I)` implies
+`Cov[y] = c_X X Xᵀ + Cov[f_G]`.
+
+**Symbols.** `X` is either feature matrix; `f_G` is the graph GP of
+slide 9; `β` the regression weights, `d` per feature set; `c_X` the
+prior variance of those weights, one number per channel, learned per
+piece. The two bullets: the weights are not fitted once on the corpus,
+they are re-inferred for every piece together with everything else,
+and their uncertainty enters the posterior. This per-piece adaptation
+is the main source of the accuracy gain (slide 18).
+
+**How to say it.** "Instead of fitting a regression and plugging in its
+prediction, we leave the regression weights unknown and let each piece
+decide them. Mathematically that is just one more kernel term."
+
+## Slide 11. The model (4): the covariance of one performance
+
+**What is on the slide.** Stack all channels of all notes into one
+vector `y ∈ R^{CN}`. Its covariance `K` is three coloured terms:
+blue `B ⊗ K_G(s)` (the coupled graph GP), amber
+`Σ_f diag(c_f) ⊗ X_f X_fᵀ` (side information, `f` over the two feature
+sets, `c_f ∈ R^C` the per-channel scales), vermilion `diag(ς²) ⊗ I`
+(noise, `ς² ∈ R^C` the per-channel noise variances). All parameters
+`θ = (s, B, {c_f}, ς²)`, 16 numbers on piano, are fitted by one exact
+evidence per piece. Prediction is the conjugate Gaussian formula:
+`m = C_{·o} K_oo⁻¹ ỹ_o`, `Σ_y = C − C_{·o} K_oo⁻¹ C_{o·}`.
+
+**Why 16.** `s` (1) + `B` symmetric `3 × 3` (6) + `c_f` for two feature
+sets times three channels (6) + `ς²` (3) = 16.
+
+**Symbols in the prediction.** `o` indexes the observed entries of
+`y`; `ỹ_o` their observed values; `K_oo` the observed block of `K`,
+including noise; `C` is `K` without the noise term, the covariance of
+the noise-free field; `C_{·o}` its columns at the observed entries.
+`m` is the posterior mean for every entry, `Σ_y` the posterior
+covariance. "Evidence" is the marginal likelihood of the observed
+values under `K`, maximized over `θ`. "Conjugate" means Gaussian prior
+plus Gaussian noise gives a Gaussian posterior in closed form, no
+approximation.
+
+**The last sentence.** The baselines are exact special cases: diagonal
+`B` switches the coupling off; `c_f = 0` removes the features; a fixed
+cross-piece mean instead of per-piece `β` is the two-stage pipeline.
+
+## Slide 12. Architecture
+
+**What is on the slide.** The same model as a diagram. Blue path: score
+graph to `L_G` (`N × N`) to spectral shaping to `K_G`, then `⊗ B`.
+Amber path: score features `X_feat` (`N × 26`) and music-model
+embeddings `H` (`N × 512`) to linear kernels `X_f X_fᵀ`, then
+`⊗ diag(c_f)`. The per-channel noise joins; the sum is the joint kernel
+`K` (`3N × 3N` on piano); `θ` learned by one exact per-piece marginal
+likelihood; the exact conjugate GP posterior gives per-note
+`τ_i, log r_i, v_i` with band `±√((Σ_y)_ii + ς²)`. Vermilion, bottom
+right: the likelihood, performance MIDI `ỹ` (`N × 3`), observed notes
+contribute, masked notes contribute nothing. This block is the only one
+that changes across the three settings.
+
+**Note the band formula.** The predictive band for a held-out note adds
+the noise variance `ς²` to the posterior variance of the latent field,
+because a held-out observation is latent plus noise. Without that term
+coverage collapses; it was a measured bug once.
+
+## Slide 13. Notation
+
+**What is on the slide.** The table. Read it as "what, meaning, role":
+`y ∈ R^{CN}` the stacked channels (`C = 3` piano, `6` strings and
+winds), part observed, part predicted; `K ∈ R^{CN×CN}` the covariance,
+the entire model, built per piece; `K_G(s)` the score-graph kernel, `s`
+learned per piece; `ℓ_b, ℓ_p` the graph length-scales, fixed; `B` the
+channel coupling, learned per piece; `X_f` the feature matrices,
+inputs; `c_f ∈ R^C` feature trust per channel, learned per piece;
+`ς² ∈ R^C` noise variances, learned per piece; `m, Σ_y` the posterior
+mean and covariance, closed form.
+
+## Slide 14. Divider: Piano
+
+One sentence: "First setting: the variables are read exactly from
+aligned MIDI, so this isolates the prior."
+
+## Slide 15. Setup: aligned performance MIDI
+
+**What is on the slide.** Data: ASAP, score-aligned Disklavier
+performances. ASAP reuses MAESTRO recordings and the music model
+pretrains on MAESTRO, so every performance seen in pretraining is
+removed, 1036 performances down to 653. Development set 30 pieces,
+one-shot test set 20 untouched pieces, 400 notes per piece (12,000 and
+8,000 notes). The task: hide a fraction of the notes, predict them from
+the rest, score the hidden ones. Headline operating point 40 percent
+hidden; the sweep runs from 50 percent down to leave-one-out. The
+variables: `y_i = [τ_i, log r_i, v_i]`. Metrics per channel and per
+level: RMSE for accuracy, log score and coverage for the error bars,
+all comparisons paired per piece.
+
+**The variables, exactly.** `τ_i` = performed onset minus the
+tempo-implied onset, in seconds; the tempo-implied onset comes from a
+beat-grid warp fitted to the whole performance, so `τ_i` is "early or
+late relative to the local tempo". `log r_i` = log of performed
+duration over the warp-implied duration; zero means held exactly as
+written, negative means detached. `v_i` = MIDI velocity, centred.
+
+**The metrics, exactly.** RMSE: root mean squared error of the
+posterior mean against the truth on hidden notes. Log score: the
+negative log predictive density of the truth under the Gaussian
+posterior, averaged over hidden notes, lower is better; it punishes
+both a wrong mean and a wrong band. Coverage at 0.90: the fraction of
+hidden truths inside the 90 percent band; honest bands give 0.90.
+
+**Example.** `τ_i = −0.05`: the note came 50 ms early. `log r_i = −0.7`:
+held for half its written length. `v_i = 0.1`: slightly louder than the
+piece's average.
+
+## Slide 16. Example piece: posterior and held-out notes
+
+**What is on the slide.** One development piece (Schumann), 40 percent
+of notes hidden, first 140 notes, three panels for the three channels.
+Blue line: posterior mean. Shaded: 90 percent predictive band. Grey
+dots: observed notes. Orange circles: the hidden truths. Bottom-right
+counts: hidden notes inside the band, 49 of 50, 49 of 50, 46 of 50.
+
+**How to say it.** "The band is not a constant width. It narrows where
+the context pins the note and widens where it does not. 46 to 49 of 50
+inside a 90 percent band is what calibrated looks like."
+
+## Slide 17. The same hidden notes, with and without the graph
+
+**What is on the slide.** The velocity channel of one piece, 40 hidden
+notes. Orange circles: truth. Green: the model without the graph term
+(RMSE 0.057). Blue: with the graph (RMSE 0.055), each with its band.
+Both see the same observed notes. The per-piece margins are small and
+consistent; the aggregate difference is the table (slide 18) and the
+sweep (slide 19).
+
+**How to say it.** "You will not see the graph's value on one piece by
+eye. It shows up as a consistent small gain across all pieces, which is
+why every comparison is paired per piece."
+
+## Slide 18. Results (piano, ASAP): confirmed once on untouched pieces
+
+**What is on the slide.** Preregistered, scored once on 20 untouched
+pieces at 40 percent hidden. Baseline: the two-stage pipeline built
+from the same ingredients, a regression mean first and then a
+per-channel graph residual. RMSE pooled over the three channels: 0.393
+baseline, 0.376 this model; coverage at nominal 0.90: 0.925. The RMSE
+difference is paired per piece and significant; removing the graph
+term costs log score, significantly. Attribution, measured: the
+per-piece feature weighting carries the mean, the graph carries the
+calibration, and the two are near-orthogonal complements.
+
+**What "preregistered, once" means.** The claims and the test rule were
+written down before the 20 pieces were touched; the test was run once;
+whatever came out was reported. The pool is spent and is never rerun.
+
+**What "pooled RMSE" means.** The three channels are standardized so
+the numbers can be averaged; 0.376 is in those standardized units, not
+seconds.
+
+## Slide 19. Across masking levels: 50 percent to leave-one-out
+
+**What is on the slide.** Development set. Left: held-out RMSE against
+the fraction of notes hidden, for the proposed model (blue), no graph
+(amber dashed), features only (green dotted); open markers at the
+right are the leave-one-out limit, where every note is predicted from
+all the others with hyperparameters fitted on the full piece. Right:
+what each ingredient adds per level as a paired difference in RMSE
+with 95 percent intervals, blue the graph, vermilion the music-model
+features. The ordering is stable at every level.
+
+**How to read the left panel.** Everything improves as fewer notes are
+hidden because there is more context. The proposed model is lowest at
+every level. Features only flattens out below 30 percent: a cross-piece
+regression cannot use extra context; the graph can.
+
+## Slide 20. Component contributions, by masking level
+
+**What is on the slide.** The ablation table. For each piece, the full
+model and the model with one component removed are run on the same
+masks, and `Δ = metric(full) − metric(removed)` is averaged over 30
+pieces; negative means the component helps. Rows: graph in RMSE,
+music model in RMSE, graph in log score; columns 50 percent down to
+leave-one-out. Everything shown is significant except the graph at 10
+percent (both metrics) and at 30 percent (log score only), and the
+music model at 50 percent and in timing. The graph carries calibration;
+the music model's value grows with observed context. Fixing a
+cross-piece mean loses almost nothing: the accuracy gain is per-piece
+re-weighting of the features.
+
+**Example row.** Graph, log score, 40 percent: −0.067. Removing the
+graph makes the predictive density of the truth worse by 0.067 nats per
+note on average.
+
+## Slide 21. Kernel and graph variants
+
+**What is on the slide.** Two experiments in the two-step development
+setting, pooled, 40 percent hidden. First, vary the spectral filter
+with the graph fixed: the base graph Matérn `α = 1` (RMSE 0.393, log
+score −0.322, coverage 0.921) against Matérn `α ∈ {2, 3}` and the heat
+kernel: all tie. Second, vary the graph itself: no edges, RMSE 0.446,
+worst; a time-only chain, RMSE 0.392 but calibration worse (log score
+−0.292). Bullets: the filter shape is irrelevant, the edges are not;
+chord and voice-leading edges gain significantly in the two-step
+setting; in the full model with the music model present those extra
+edge families become redundant. Measured again for learned filters,
+same verdict.
+
+**Symbols.** The filter is the function `g(ν; s)` of slide 9; the
+graph Matérn with `α` is `g = (1 + s ν)^{−α}`; the heat kernel is
+`g = exp(−t ν)`. Note the sign convention on this slide: log score here
+is reported so that a more negative number is better (it is the
+negative of the per-note NLL); the slide's "worse" labels tell you the
+direction.
+
+## Slide 22. Divider: Strings and winds
+
+One sentence: "Second setting: same prior, but the variables now come
+from audio through a pitch tracker, noisily, with a variance per note,
+and six channels instead of three."
+
+## Slide 23. Setup: audio instead of MIDI
+
+**What is on the slide.** Data: URMP, 44 chamber pieces, duets to
+quintets, 13 instrument types, each instrument recorded on its own
+monophonic track with note annotations and the score. Split by
+composition because arrangements share recordings: development 31
+pieces (78 tracks, about 17,000 notes), one-shot test 13 pieces. Pitch
+now carries expression: intonation and vibrato within every note. A
+pitch tracker, pYIN, turns each track into frames: time, `f_0`, voicing
+confidence. The variables must be estimated from these frames,
+noisily, with a variance per note. Two measurements of every note
+exist: our tracked curve, and the corpus's own annotation of the same
+track, cleaner but still a measurement; evaluation uses the second.
+
+**Why "split by composition".** URMP records each composition once and
+offers it in several arrangements; the same audio appears under
+different piece names. Splitting by piece name would leak the test
+audio into development.
+
+## Slide 24. Example frames: tracked vs ground truth
+
+**What is on the slide.** Real development notes, no fits drawn. A:
+one note measured twice, ground-truth frames in orange (158), tracked
+frames in blue (150); the tracker quantizes to a few pitch levels and
+drops frames, the ground truth shows the oscillation underneath. B: a
+note with enough frames and cycles, the vibrato channels are observed.
+C: a short flat note, 11 frames, no cycle to fit, refused; its vibrato
+cells are marked missing.
+
+**How to say it.** "This is why the strings-and-winds model needs a
+variance per note and a mask per cell: some notes give us a clean
+vibrato, some give us nothing, and the model must know which."
+
+## Slide 25. From audio to the cents curve
+
+**What is on the slide.** Frames `(t_j, f_{0,j}, π_j)`: time,
+fundamental frequency, voicing confidence. Frame rule: note `i` keeps
+`J_i = { j : voiced, π_j ≥ q_0.2, t_j ∈ [o_i, o_i + u_i) }`, at least
+4 frames, where `o_i, u_i` are the note's annotated onset and duration
+and `q_0.2` is the track's lowest confidence quintile. Cents curve:
+each kept frame becomes `x_j = 1200 log₂(f_{0,j} / 440) − 100 (p_i − 69)`,
+the deviation in cents from equal temperament at A4 = 440 Hz, `p_i` the
+MIDI pitch.
+
+**Example.** A4 is MIDI 69. A frame at 442.5 Hz on an A4:
+`1200 log₂(442.5/440) ≈ 9.8` cents, minus `100 × 0` = 9.8 cents sharp.
+On an A3 (MIDI 57) at 221 Hz: `1200 log₂(221/440) ≈ −1193`, minus
+`100 × (57 − 69) = −1200`, giving +7 cents.
+
+## Slide 26. The pitch-curve channels, defined
+
+**What is on the slide.** The annotated note: within one note, a
+sustained level plus one oscillation. The level is the intonation
+`c` (10.1 cents in the figure), the oscillation's half-height is the
+vibrato extent `γ` (15.0 cents), its period is `1/f` with `f` the
+vibrato rate (6.1 Hz). The model receives `c`, `log γ`, `log f`; `γ`
+and `f` are positive, so they are modelled on the log scale.
+
+**How to say it.** "Three numbers describe how the pitch behaved inside
+the note: where it sat, how wide it wobbled, how fast."
+
+## Slide 27. Estimating the channels with a Gaussian process
+
+**What is on the slide.** The note's cents curve is given a Gaussian
+process prior with a two-component kernel, a special case of the
+spectral mixture kernel (Wilson and Adams 2013):
+`k(Δt) = w_1 exp(−2π² v_1 Δt²) cos(2π μ_1 Δt) + w_2 exp(−2π² v_2 Δt²)`,
+vibrato component plus drift component.
+
+**Symbols.** `Δt` is the time lag between two frames in seconds (so
+`τ` stays the timing channel); `μ_1` the vibrato rate in Hz; `w_1, w_2`
+the powers in cents²; `v_1, v_2` the bandwidths in Hz². The prior says
+only: the curve's energy sits in a band of width about `√v_1` around
+the rate `μ_1`, plus a low-frequency drift band around zero. Fitted per
+note by exact marginal likelihood, with variances from the curvature
+of the evidence. Channels from the posterior: `c` is the realized
+average of the curve, `γ` comes from the vibrato component's amplitude,
+`f = μ_1`.
+
+**Example.** `w_1 = 100` cents² and `μ_1 = 6` Hz means the prior expects
+a vibrato of about 10 cents standard deviation at 6 Hz. `v_1 = 0.5`
+Hz² lets the rate wander by roughly 0.7 Hz.
+
+## Slide 28. The kernel: covariance and spectrum
+
+**What is on the slide.** A: the two components of `k(Δt)` against
+lag, blue the damped cosine (vibrato), amber the slow bump (drift),
+dotted their sum. B: the same kernel in frequency, the two are a
+Fourier pair; the height at frequency `ξ` is the variance the prior
+assigns to oscillations at that frequency: a band centred at the
+vibrato rate `μ_1`, and the drift as a bump at zero.
+
+**How to say it.** "The kernel is nothing more than this statement:
+pitch inside a note wobbles at around 5 to 6 Hz and drifts slowly, and
+nothing else."
+
+## Slide 29. Example note: posterior mean and components
+
+**What is on the slide.** One cello note, fitted on the pYIN-tracked
+frames (grey), ground truth shown for reference (orange). A: the
+posterior mean (blue) with its 90 percent band. B: the same posterior
+split into its components: the centre `c = 13.0` cents (dotted), plus
+the drift component (amber), plus the vibrato component at 5.9 Hz
+(blue). The channel read-outs come from this split.
+
+**Why the split matters.** `c` is the level after the drift and
+wobble are accounted for; `γ` is the size of the blue oscillation; `f`
+its rate. Reading them from the raw frames would confuse a slow drift
+with intonation.
+
+## Slide 30. Results (strings and winds, URMP): confirmed once
+
+**What is on the slide.** The same prior, unchanged. Six per-note
+channels estimated from audio, each with its own variance, used as
+given: `y_i = [c_i, log γ_i, log f_i, ℓ_i, τ_i, d_i^vib]`, intonation,
+extent, rate, loudness, timing, vibrato onset delay. Preregistered,
+scored once on 13 held-out pieces; `Δ` = full model minus the same
+model without the graph term, paired per piece, negative favours the
+graph. Intonation recovery −0.877 cents, significant. Vibrato extent
+calibration −2.990 in log score, significant. Vibrato rate calibration
+−0.564, significant. Timing calibration −0.030, not significant, the
+one failed claim, reported as such. Coverage 0.88 to 0.91 on all six
+channels at nominal 0.90.
+
+**The three new channels.** `ℓ_i` is loudness, a per-note level from
+the audio; `τ_i` is timing, the onset relative to a tempo line fitted
+through the annotated onsets with that note left out; `d_i^vib` is the
+vibrato onset delay, how long after the note starts the vibrato begins.
+
+**Honest line, if asked.** "The timing claim failed. We report it. The
+follow-up measured that correlated timing noise across notes repairs
+it on development data, but that is not a registered claim."
+
+## Slide 31. Divider: The waveform as the observation
+
+One sentence: "Third setting: no tracker. The waveform itself is the
+observation. Methodology and first development studies; no claims."
+
+## Slide 32. The method, and where it comes from
+
+**What is on the slide.** Left, reference works: DDSP (Engel 2020),
+gradients through a differentiable synthesizer, with MIDI-DDSP (Wu
+2022) the closest cousin for performance control; GPs for music audio
+(Alvarado and Stowell 2016), per-note windows over a shared time axis;
+spectral mixture kernels (Wilson and Adams 2013), of which the curve
+prior's kernel is a special case. Right, what this thesis does with
+them: takes the implementation idea, gradient descent through the
+synthesizer; keeps the exact amplitude-marginalized likelihood and the
+GP priors, no neural encoder and no spectral surrogate loss as the
+objective; measured that a learned many-component spectrum adds
+nothing over the hand-structured two-component kernel on these curves.
+
+**How to say it.** "We borrowed one engineering idea, gradients through
+synthesis, and kept our own probabilistic model. The next four slides
+are that model."
 
 ## Slide 33. Setup: the data and the signal model
 
