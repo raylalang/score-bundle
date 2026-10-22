@@ -2603,10 +2603,11 @@ registered. The same comparison at whole-track scale on the tracked
 bundle (Appendix~\ref{app:trackscale}) adds the missing power and the
 same answer from the other side: the score graph beats a
 nearest-neighbour time chain significantly on intonation and vibrato,
-but equals the same graph with its pitch term removed. At every scale
-and observation type tested, the structure that helps is smoothness in
-score time over about two beats; the score-specific pitch coupling does
-not show.
+but equals the same graph with its pitch term removed, and on piano the
+pitch-less graph is slightly better than the headline. At every scale,
+corpus and observation type tested, the structure that helps is
+smoothness in score time over about two beats; the score-specific pitch
+coupling does not show.
 
 % =====================================================================
 \chapter{Discussion}\label{ch:discussion}
@@ -2644,6 +2645,14 @@ and its one test of the thesis's methodological hypothesis so far
 (\S\ref{sec:phase3-priorvalue}) supports only the weak form: the score
 prior beats a purely temporal prior at phrase scale, and beyond the
 context's common offset it adds nothing measurable at the spans tested.
+A further development finding qualifies the graph itself: on both
+corpora the graph's value is reproduced, and on piano slightly
+exceeded, by the same graph with its pitch term removed
+(Appendix~\ref{app:trackscale}), so the structure that does the work is
+smoothness in score time over about two beats rather than the pitch
+coupling that makes the graph a score graph. The confirmed results
+stand as comparisons of the full model with its alternatives; their
+attribution is narrower than the model's name suggests.
 Targets depend on the quality of a single corpus's
 score$\leftrightarrow$performance alignment (ASAP), and the evaluation sets, while
 held-out and contamination-filtered, are modest in size (30 development + 20
@@ -3608,6 +3617,24 @@ beats; the pitch-proximity coupling that makes it a \emph{score} graph
 adds nothing measurable here, as it added nothing at chain and phrase
 scale from the waveform. Records: \texttt{results/phase2\_chain\_prior\_dev.md},
 \texttt{results/phase2\_timegauss\_prior\_dev.md}.
+
+The piano counterpart gives the same answer. The headline piano model
+of Chapter~\ref{ch:results} with the pitch term removed from its graph
+(the two-beat window kept, which on polyphonic piano links the notes of
+a chord at full weight) is paired per piece against the headline on the
+development set ($30$ pieces, $4$ seeds): pooled RMSE $-0.008$
+($[-0.016, -0.001]$) and NLL $-0.019$ ($[-0.030, -0.008]$), a small
+significant \emph{improvement}, carried by articulation. The graph's
+total value on that set is $+0.017$ RMSE, so the pitch-less graph is
+worth about half again as much as the score graph. On both corpora,
+then, the structure that does the work is smoothness in score time over
+about two beats, including the vertical coupling of simultaneous notes;
+pitch proximity adds nothing and costs a little. This attributes the
+confirmed graph value; it does not retract it, since the confirmed
+comparisons are of the full model against its alternatives, and a
+pitch-less graph as the default would be a change to a reported
+protocol requiring its own registration
+(\texttt{results/piano\_timegauss\_dev.md}).
 
 \chapter{Additional results}\label{app:extra}
 

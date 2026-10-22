@@ -1072,7 +1072,19 @@ strings-and-winds result without retracting it: the graph term still
 carries the recovery gain and the calibration; what we now know is which
 structure inside it does the work.
 
-**If asked about piano.** The piano counterpart, the headline
-configuration with the pitch term removed, was run after this slide was
-made; its answer is in the notes of whichever slide carries it, or in
-`results/graphgp/` if not yet written up.
+**The piano bullet.** The same test on piano: the headline model of
+slide 18 with the pitch term removed from its graph (the 2-beat window
+kept, which on piano links the notes of a chord at full weight), paired
+per piece against the headline on the 30 development pieces, 4 seeds.
+Pooled RMSE −0.008 [−0.016, −0.001], log score −0.019 [−0.030, −0.008]:
+removing the pitch term helps slightly, mostly in articulation. The
+graph's whole value on that set is +0.017 RMSE, so the pitch-less graph
+is worth about half again as much as the score graph.
+
+**What it does not change, and say this if asked.** The confirmed piano
+headline (slide 18) and the confirmed strings-and-winds results (slide
+30) compare the full model with its alternatives; they stand. What is
+narrower now is the attribution: the graph term works through temporal
+smoothing, not through the pitch coupling. Changing the default graph
+would be a change to a reported protocol and would need its own
+registration. Record: `results/piano_timegauss_dev.md`.

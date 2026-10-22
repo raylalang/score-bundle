@@ -294,8 +294,11 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   σ_b: independent band 1.00→0.88, structured 0.75, verdict unchanged. Thesis:
   Appendix `app:trackscale` (tab:trackscale) + Ch. 8 closing paragraph + one
   band sentence; brief §G; ROADMAP; ledger; deck backup frame 53 + its note.
-  Piano counterpart `b_featlm_timegauss` (eval_graphgp.py, H-P1 in its
-  docstring) running.
+  Piano counterpart `b_featlm_timegauss` MEASURED (`results/piano_timegauss_dev.md`):
+  pitch term removed ⇒ RMSE −0.008* / NLL −0.019* BETTER than the headline
+  (articulation), 120 dev cells ⇒ same answer on both corpora. Confirmed
+  results stand (full model vs alternatives); attribution narrows; a
+  pitch-less default would need its own registration.
 - Real dataset loaders: **MAESTRO** (Phase-0 LM) and **ASAP** (Phase-1 aligned task) are
   **implemented** — `lm/data.py` (`load_maestro_meta`, `maestro_note_events`,
   `iter_maestro_note_streams`, `maestro_split`) and `features.py` (`load_asap_meta`,

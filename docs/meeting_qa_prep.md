@@ -247,8 +247,15 @@ smoothing over about two beats; the score-specific pitch coupling adds
 nothing measurable at any scale tested.** Also: the boundary bands'
 width fix (chain-scale prior) brings the independent arm to coverage
 0.88, the structured arms to 0.75; verdict unchanged
-(`results/boundary_prior_chainsig_dev.md`). Piano counterpart running
-(headline config with the pitch term removed).
+(`results/boundary_prior_chainsig_dev.md`). Piano counterpart measured
+(`results/piano_timegauss_dev.md`): the headline piano model with the
+pitch term removed is slightly BETTER (RMSE −0.008*, NLL −0.019*,
+paired on 30 development pieces), the gain in articulation. Same answer
+on both corpora: the graph's value is smoothness in score time over
+about two beats, including chord notes on piano; pitch proximity adds
+nothing. The confirmed results stand (full model vs alternatives); the
+attribution narrows. Adopting a pitch-less graph as the default would
+be a reported-protocol change needing its own registration.
 
 **The three-span verdict, for the room:** against the thesis's own
 baselines (independent, purely temporal) the score-graph prior is never

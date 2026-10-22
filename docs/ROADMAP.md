@@ -140,15 +140,16 @@ offset scalar is its core control).
   0.75; verdict unchanged. One sentence in the thesis.
 - **Declined** (reasons in the CLAUDE.md state dump): the curve-level
   waveform test; the MIDI-DDSP attribute comparison.
-- **Running:** the piano counterpart `b_featlm_timegauss`
-  (`eval_graphgp.py`, H-P1): does the pitch term matter on polyphonic
-  piano, where the time window links chord notes?
+- **Piano counterpart** (`eval_graphgp.py --configs b_featlm_timegauss`,
+  `results/piano_timegauss_dev.md`): the headline model with the pitch
+  term removed is slightly better (RMSE −0.008*, NLL −0.019*, 120
+  cells; articulation carries it). Same answer on both corpora.
 
 ## NEXT (needs Ray's go)
 
-After the piano counterpart: decide whether "the graph's value is
-temporal smoothing" becomes the thesis's stated attribution for the
-graph (it reframes, not retracts, the confirmed results: the graph
+Decide whether "the graph's value is temporal smoothing" becomes the
+thesis's stated attribution for the graph (it is now written as a
+development finding in Appendix app:trackscale and the Discussion) (it reframes, not retracts, the confirmed results: the graph
 term is still the calibration carrier and the recovery gain stands;
 what changes is WHICH structure in it does the work). Candidates then:
 a time-window sweep (ℓ_b) as the one remaining knob; nothing else

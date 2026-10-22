@@ -147,8 +147,11 @@ the MIDI-DDSP comparison (setup risk, attribute mismatch). Run:
   (`results/boundary_prior_chainsig_dev.md`): the independent arm's band
   reaches 0.88 coverage, the structured arms 0.75; the verdict is
   unchanged.
-- The piano counterpart (headline configuration with the pitch term
-  removed) was launched; its sentence goes in when it lands.
+- **The piano counterpart** (`results/piano_timegauss_dev.md`): the
+  headline piano model with the pitch term removed from its graph is
+  slightly better, not worse (pooled RMSE −0.008, log score −0.019,
+  both significant, paired on 30 development pieces). Same answer on
+  both corpora.
 
 ## What is open, for Ray
 
