@@ -17,6 +17,18 @@ comparisons against the current pipeline's cells are valid:
     c_graph   b_feat with the graph's own (ell_b, ell_p) learned by evidence
     c_harm    b_feat on the harmonic graph with (ell_b, ell_p, chord, vl) learned
     c_overlap b_feat with sustain-overlap edges, (ell_b, ell_p, overlap_w) learned
+    b_featlm_timegauss  b_featlm with the PITCH TERM REMOVED from the graph
+              (build_adjacency ell_p -> infinity; same 2-beat time window).
+              Added 2026-10-23 as the piano counterpart of the strings-and-
+              winds finding (results/phase2_timegauss_prior_dev.md: at track
+              scale the score graph equals the time-only Gaussian graph).
+              Hypothesis H-P1, stated before the run: on polyphonic piano the
+              time window links chord notes (same beat) strongly, so the pitch
+              term may matter here; falsification: b_featlm - b_featlm_timegauss
+              paired per piece covers zero on RMSE and NLL => the pitch term
+              adds nothing on piano either, and the graph's value is temporal
+              smoothing on both corpora. Reported verbatim; dev-only; pairs
+              exactly with the existing b_featlm cells in results/graphgp.
               (the motif-discovery note graph's overlap relation)
     d_corpus  b_feat with ONE corpus-level hyperparameter set fit on head pieces
               (frozen for eval — canonical train/test, no per-piece fitting)
@@ -43,6 +55,7 @@ CHANNELS = ["tau", "log r", "v"]
 
 CONFIGS = ["a_diag", "a_icm", "a_icm_m2", "b_feat", "b_featlm",
            "b_feat_nograph", "b_featlm_nograph", "b_fixedmean",
+           "b_featlm_timegauss",
            "b_theoryfeat", "b_theoryfeatlm",
            "c_graph", "c_harm", "c_harm_lm", "c_overlap", "d_corpus", "d_hybrid"]
 
@@ -86,7 +99,8 @@ def piece_setup(p, config: str, emb=None):
         X = zscore_cols(rich_score_features(score, rff_dim=0,
                                             theory=config.startswith("b_theory")))
         feats.append(np.concatenate([X, np.ones((len(X), 1))], axis=1))
-    if config in ("b_featlm", "b_featlm_nograph", "b_theoryfeatlm", "c_harm_lm"):
+    if config in ("b_featlm", "b_featlm_nograph", "b_theoryfeatlm", "c_harm_lm",
+                  "b_featlm_timegauss"):
         assert emb is not None, "this config needs the mask-aware embedding dump"
         feats.append(zscore_cols(emb))
 
@@ -114,7 +128,10 @@ def piece_setup(p, config: str, emb=None):
         n_graph = 3
         g0 = np.log([2.0, 4.0, 1.0])
     else:
-        eig = np.linalg.eigh(laplacian(build_adjacency(score)))
+        if config.endswith("_timegauss"):
+            eig = np.linalg.eigh(laplacian(build_adjacency(score, ell_p=1e6)))
+        else:
+            eig = np.linalg.eigh(laplacian(build_adjacency(score)))
 
         def graph_eig(gp_params):
             return eig
@@ -272,7 +289,7 @@ def stage_run(args) -> None:
                 mask = masks[(pi, s)]
                 emb = emb_dump[(pi, s)] if config in (
                     "b_featlm", "b_featlm_nograph", "b_theoryfeatlm",
-                    "c_harm_lm") else None
+                    "c_harm_lm", "b_featlm_timegauss") else None
                 base_cfg = ("b_feat" if config in ("d_corpus", "d_hybrid")
                             else "a_icm" if config == "b_fixedmean" else config)
                 mu_fixed = None
