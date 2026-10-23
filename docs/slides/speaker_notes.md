@@ -1046,13 +1046,23 @@ nothing measurable, a development finding.
 
 October, done: curve studies at scale, the curve as a bundle channel,
 joint boundaries, the three spans of slide 43, the attribution of slide
-44. November, first item: decide whether the attribution becomes a
-stated claim of the thesis; a pitch-less default graph is a change to a
-reported protocol and needs its own registration. Then the
-registration-pool decision, the one-shot timing confirmation, the
-scalars-or-curve-level channel decision, a transient model at the
-boundary. December: whole-phrase joint inference, chapters consolidated
-as results land.
+44. Decided on 23 October, with the professor hands-off: the
+attribution is stated in the thesis as a development finding; the
+headline models keep their score graph, because a pitch-less default
+would be a change to a reported protocol needing its own registration;
+the four-layer framing of slide 3 is adopted; the writing freeze starts
+now rather than in January. This week: two registered one-shots on the
+13-piece strings-and-winds confirmation pool, re-used with full
+disclosure (it was spent on the four original claims; the two new
+claims were developed on the development split only). First, correlated
+timing noise: an AR(1) block in the timing channel's noise, which
+answers the one registered claim that failed. Second, the tonal pitch
+metric for the intonation channel's graph. Primary claims are the
+paired log-score differences, falsification rules frozen before the
+run. Then the audit of every number against its record and the review
+pass. After: the transient model at the joints and the
+whole-performance joint loop are Future Work; the progress talk in
+January uses this deck; submission on 2 February.
 
 ## Slide 47. Divider: Backup
 
