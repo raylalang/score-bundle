@@ -48,7 +48,7 @@ Phase 1); non-synthetic error detection (no labeled real errors in any available
 | **Anomaly detection** | AUROC 0.94→0.98 (3σ), 0.85→0.94 (2σ), every channel | (ranking task; uses the calibrated per-note std) | **Yes** — clear win, grows as errors get subtler |
 | **Denoising (known noise)** | RMSE lower than independent shrinkage, all 8 contrasts significant | NLL lower, all 8 significant, at matched ~0.90 coverage | **Yes** — win on both axes |
 | **Denoising (blind noise)** | — | intervals collapse (coverage 0.54–0.64) | **No** (honest negative) — per-piece noise estimation unreliable |
-| **Completion — interpolation** | RMSE 0.450→0.393 (obs 0.5) | NLL 0.21→0.01, coverage 0.894→0.925 | **Yes** — the Phase-1 result |
+| **Completion — interpolation** | RMSE 0.450→0.393 (obs 0.5) | NLL 0.21→0.10, coverage 0.894→0.925 | **Yes** — the Phase-1 result |
 | **Completion — sparse extrapolation** | LM mean essential; graph ≈ neutral or slightly hurts | — | **Partial** — graph needs nearby observed notes |
 | **Selective prediction** | abstaining by graph std cuts log r RMSE@50% 0.83→0.54; flags the LM+graph τ blowup (full 0.61 → confident-half 0.07) | graph gives per-note std → triages within a piece; no-graph only piece-level | **Yes** (qualified) — per-note uncertainty is informative on log r + catches instabilities |
 | **Style/era classification** | 0.37–0.38 vs 0.489 majority; graph ≈ raw | — | **No** (honest negative) — expression-only style features don't beat majority; graph doesn't help feature quality |
@@ -161,7 +161,7 @@ random LM   on     0.410 -0.04 0.911     0.404 -0.10 0.922      0.393  0.10 0.92
   learned prior mean generalizes across the piece where the hand-built means cannot.
 - **The graph helps interpolation, not sparse extrapolation.** On the random masks the
   graph improves `LM` on both axes at every fraction (e.g. observed 0.5: RMSE
-  0.450 → 0.393, NLL 0.21 → 0.01, coverage 0.894 → 0.925) — the Phase-1 result. But on
+  0.450 → 0.393, NLL 0.21 → 0.10, coverage 0.894 → 0.925) — the Phase-1 result. But on
   prefix/block with very little observed (0.1–0.25) the graph gives essentially nothing
   or slightly hurts (prefix 0.25 `LM+graph` RMSE spikes to 1.04): with no observed
   neighbours near the target, the GMRF propagates the mean's own error across the gap and
@@ -351,3 +351,5 @@ The consistent story: **structure + calibration on the note field is where the p
 its keep** — every task that scores per-note recovery or uncertainty improves; every task
 that collapses expression to a piece-level summary does not. That is the thesis's own scope,
 now bounded by evidence on both sides.
+
+> Correction (2026-10-23 number audit): the completion-interpolation NLL after the LM is 0.10 (logs/completion.log, 0.2076 → 0.0962), not 0.01 as the prose and verdict table said; the table above was right.

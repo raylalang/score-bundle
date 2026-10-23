@@ -1251,7 +1251,10 @@ labour, not a causal claim.
 
 A third control needs no refitting at all: the exact component decomposition
 of the posterior, \eqref{eq:decomp}--\eqref{eq:decomp-total}, read off the
-fitted model itself (development pieces, $\nPieces \times 4$ anchor masks).
+fitted model itself (development pieces; the covariance shares over
+$\nPieces \times 4$ anchor masks, the component correlations and the
+per-piece dominance and disagreement figures below over the first anchor
+mask only).
 Two diagnostics are derived from it, per channel. The \emph{covariance
 share} allocates the posterior mean's variation over the held-out notes
 $\mathcal{H}$ of a piece to the components,
@@ -1514,7 +1517,7 @@ intervals collapse --- so transcription noise must be treated as known per syste
 \section{Completion / rendering from an excerpt --- partial, and a boundary}
 Predict the expression of the rest of a piece from its opening. Interpolation
 (scattered hidden notes) is the clear win --- RMSE $0.450 \to 0.393$, NLL
-$0.21 \to 0.01$ at half the notes observed. Extrapolating far past the excerpt, the
+$0.21 \to 0.10$ at half the notes observed. Extrapolating far past the excerpt, the
 music-model guess carries the prediction and the graph is neutral or slightly harmful.
 \textbf{The proposed model makes this boundary sharp}: its per-piece feature
 weights, fit on the opening excerpt alone, can extrapolate wildly (one prefix-25\%
@@ -2251,10 +2254,12 @@ design now starts from.
 spectral-kernel families (\cite{wilson2013,remes2017,alvarado2016}) were
 measured at exactly this slot (development, exploratory): swapping the
 study's deviation prior for a matched-rank spectral-mixture prior changes
-nothing at the median ($2.25$ vs $2.29$ cents) and is significantly worse
-on the paired mean ($+0.11$), the harm concentrated where the scaffold
-rate is unreliable --- a vibrato band pinned at a wrong rate is worse
-than frequency-neutral bumps. The bump basis stays; the families'
+nothing at the median ($2.25$ vs $2.29$ cents) and is worse on the
+paired mean ($+0.11$ cents, starred at note level but not surviving
+piece-level clustering, so read as no gain rather than measured harm),
+the difference concentrated where the scaffold rate is unreliable --- a
+vibrato band pinned at a wrong rate is worse than frequency-neutral
+bumps. The bump basis stays; the families'
 measured contribution is conceptual (curve-level scoring, the coherence
 bound, the realized-quantity read-out rule), and a revival would
 marginalize the band location rather than pin it.
