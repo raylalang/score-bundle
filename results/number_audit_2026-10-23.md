@@ -35,7 +35,7 @@ hand.
   (MIN_NOTES = 30 in `scripts/eval_phase2_real.py`). Confirmed.
 - Tonal figure caption, "61% of pairs improving": computed by
   `scripts/make_tonal_intonation.py` from `results/phase2_tonal_cells.pkl`
-  at figure time. cells pickle absent (gitignored, not on this checkout); the 61% stays as the figure script computed it
+  at figure time. The pickle was recovered from the old worktree (gitignored) and the fraction recomputed: 153 track-and-seed pairs, 61.4% with the tonal arm better, mean −0.213 cents. Confirmed.
 
 ## Figure-caption numbers computed inside figure scripts (no separate record)
 
