@@ -1,7 +1,8 @@
 # Roadmap
 
-Updated 2026-10-21. Submission tentatively **2027-02-02**; progress
-presentation expected around **2027-01-07**. One ongoing task at a time. Order stays deliberate:
+Updated 2026-10-23. Submission tentatively **2027-02-02**; progress
+presentation expected around **2027-01-07**. **From 2026-10-23 the professor is
+hands-off; every gate below is Ray's. Writing freeze in force.** One ongoing task at a time. Order stays deliberate:
 understanding, then legibility, then modelling. New studies run only on
 Ray's explicit mandate (the 2026-09-03 rule stands); the September
 exploration week and the October waveform studies were both mandated.
@@ -145,15 +146,26 @@ offset scalar is its core control).
   term removed is slightly better (RMSE −0.008*, NLL −0.019*, 120
   cells; articulation carries it). Same answer on both corpora.
 
-## NEXT (needs Ray's go)
+## DECIDED 2026-10-23 (Ray; the professor is hands-off from here)
 
-Decide whether "the graph's value is temporal smoothing" becomes the
-thesis's stated attribution for the graph (it is now written as a
-development finding in Appendix app:trackscale and the Discussion) (it reframes, not retracts, the confirmed results: the graph
-term is still the calibration carrier and the recovery gain stands;
-what changes is WHICH structure in it does the work). Candidates then:
-a time-window sweep (ℓ_b) as the one remaining knob; nothing else
-queued. Writing freeze stays the plan for January.
+- "The graph's value is smoothness in score time over about two beats"
+  is the thesis's STATED attribution (abstract, contributions,
+  Discussion, Conclusion); the confirmed headline models keep their
+  score graph (no protocol change, no new registration). The ℓ_b sweep
+  is not run.
+- The decomposition framing (score + expression + timbre + noise) is
+  ADOPTED in the abstract, the introduction, the conclusion and deck
+  slide 3.
+- Two more registered one-shots THIS WEEK on the disclosed re-used
+  13-piece URMP confirmation pool: correlated timing noise
+  (`docs/corrnoise_prereg_DRAFT.md` → frozen) and the tonal metric
+  (`docs/phase2_tonal_prereg_DRAFT.md` → frozen). Bach10 is NOT
+  available: the archive on disk is the Sibelius-resynthesised
+  version (synthetic audio), unusable for intonation or timing claims.
+- Writing freeze NOW (2026-10-23), not January: every number audited
+  against its record, every forward-looking sentence resolved, Codex
+  review, Overleaf sync. The transient model at the joints and the
+  whole-performance joint loop stay Future Work.
 
 ## DONE — The second and third spans (2026-10-20, Ray's go 2026-10-18: "B and C")
 
@@ -176,15 +188,11 @@ queued. Writing freeze stays the plan for January.
   (nothing beyond the common offset). Thesis `sec:phase3-priorvalue`,
   brief §D.4/F.1/G, CLAUDE.md updated.
 
-## NEXT (needs Ray's go) — after three spans
+## CLOSED 2026-10-23 — after three spans
 
-Ray decides between: (a) stop here and present the three-span verdict
-as the waveform chapter's measured answer (my recommendation before
-the meeting); (b) the curve level (the within-note curve under a
-cross-note prior, the one untested place) — a proposal before a run;
-(c) the other channels (vibrato, dynamics) at chain scale — proposal
-first; (d) a chain-scale σ_b for the boundary prior's band (small,
-calibration-only). Nothing runs unprompted.
+(a) taken: the three-span verdict plus the track-scale attribution is
+the waveform chapter's measured answer; (d) was run (band fix,
+partial); (b) and (c) are not run (writing freeze).
 
 ## DONE — The waveform setting goes active (2026-10-07..14, Ray's go)
 
@@ -236,9 +244,9 @@ the progressively-rawer observation ladder, a three-question RQ
 hierarchy replaces the single central question, related work gains the
 inverse-analysis-vs-DDSP positioning (three verified citations).
 `deck.tex` consolidated as the one full thesis deck (44 frames; the
-zemi deck frozen as `deck_zemi_v1`). Held for after the meeting (Ray's
-call): adopting the decomposition framing (score + expression + timbre
-+ noise) in the intro/abstract.
+zemi deck frozen as `deck_zemi_v1`). The decomposition framing (score +
+expression + timbre + noise) was held for the meeting and ADOPTED on
+2026-10-23.
 
 ## DONE — Package, adopt, prep (2026-09-16..18)
 
@@ -316,12 +324,11 @@ coherence bound, the realized-vs-process estimand rule).
 - Piano and strings-and-winds: confirmed, one-shots spent, records in
   `results/`. The URMP confirmation pool is gone; never rerun.
 - Correlated-τ registration: registration-grade dev evidence
-  (`results/corrnoise_tau_dev.md`); waits for the corpus/pool decision —
-  meeting ask 6.
+  (`results/corrnoise_tau_dev.md`); pool DECIDED 2026-10-23 (disclosed
+  URMP re-use), freeze and one-shot this week.
 - Tonal-metric registration: drafted with power check
-  (`docs/phase2_tonal_prereg_DRAFT.md`); waits for the same decision.
-- Decomposition framing in the intro/abstract: held for after the
-  meeting (Ray's call).
+  (`docs/phase2_tonal_prereg_DRAFT.md`); same pool, same week.
+- Decomposition framing in the intro/abstract: ADOPTED 2026-10-23.
 - Joint loop over all notes under the graph prior, transient columns at
   the joints, amplitudes under the prior: thesis Future Work
   (`sec:future-phase3`); the first span is measured, the NEXT item above

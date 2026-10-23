@@ -96,15 +96,21 @@
 \maketitle
 
 \begin{abstract}
-\noindent Given a printed score and a recording of a performance (as piano
-MIDI in this work), we recover \emph{how} each written note was played ---
-its micro-timing, articulation, and dynamics --- together with a calibrated
-statement of confidence. The aim, in one line, is an \emph{interpretable,
-score-aligned representation of expressive performance}, inferable from a
-recording with explicit uncertainty; the method is Bayesian
-\emph{score-conditioned inverse synthesis} --- a score-structured prior
-met by progressively rawer observation models, ending at the waveform
-itself. The model is \textbf{one multi-output Gaussian
+\noindent This thesis reads a recording of a performance as four layers:
+the \emph{score} (what was written), the \emph{expression} (how each
+written note was played --- its micro-timing, articulation and dynamics;
+on continuously pitched instruments also its intonation, vibrato and
+loudness), the \emph{timbre} (what the instrument adds), and
+\emph{noise}. Given the score and the recording --- aligned piano MIDI
+in the first setting, tracked audio in the second, the waveform itself
+in the third --- we recover the expression layer note by note, together
+with a calibrated statement of confidence. The aim, in one line, is an
+\emph{interpretable, score-aligned representation of expressive
+performance}, inferable from a recording with explicit uncertainty; the
+method is Bayesian \emph{score-conditioned inverse synthesis} --- a
+score-structured prior met by progressively rawer observation models,
+ending at the waveform, where the timbre layer is integrated out
+exactly. The model is \textbf{one multi-output Gaussian
 process on the score graph}: notes related in the score are related in
 performance (a graph GP in the sense of Borovitskiy et al.), the expressive
 channels are coupled by a coregionalization matrix, and all side
@@ -146,7 +152,13 @@ beyond it score structure adds nothing measurable at chain or phrase
 scale, though it beats a purely temporal prior at phrase scale, three
 negatives-with-a-caveat reported as such; its central design constraint is measured
 --- calibration must bridge the estimand gap between the harmonic model
-and the annotation chain.
+and the annotation chain. A development finding on both corpora
+attributes the graph's value: the same graph with its pitch term removed
+reproduces, and on piano slightly exceeds, the headline model, so the
+structure that does the work is smoothness in score time over about two
+beats. The confirmed results stand as comparisons of the full model with
+its alternatives; their attribution is narrower than the model's name
+suggests.
 \end{abstract}
 
 \tableofcontents
@@ -164,6 +176,20 @@ score is treated as \emph{known}: we solve the inverse of expressive synthesis, 
 full transcription. Second, \emph{uncertainty is a primary output}: a per-note
 estimate is only actionable with a calibrated error bar, and calibration is
 evaluated as rigorously as accuracy.
+
+The vocabulary of the thesis is a decomposition. A recording is read as
+four layers: the \emph{score} is what was written; the
+\emph{expression} is how each written note was played, a small vector of
+interpretable variables per note; the \emph{timbre} is what the
+instrument adds to a note once its expression is fixed; and
+\emph{noise} is the rest. The score is given, the expression is the
+object of inference, the timbre is a nuisance that the waveform setting
+integrates out exactly rather than estimates, and the noise is modelled
+per note and per channel. Every chapter can be placed in this picture:
+the piano and strings-and-winds settings observe the expression layer
+through an intermediate measurement (aligned MIDI, a pitch tracker), the
+waveform setting observes the recording itself and must separate all
+four layers at once.
 
 Two claims of different kinds run through the thesis and are kept
 distinct. The \emph{scientific objective} is the representation itself:
@@ -201,7 +227,10 @@ the performance, and $z$ the latent expressive variables,
 \begin{equation*}
   p(z \mid x, S) \;\propto\; p(x \mid z, S)\, p(z \mid S),
 \end{equation*}
-where $p(z \mid S)$ is the score-structured prior
+where $S$ is the score layer, $z$ the expression layer, and the
+timbre and noise layers live inside the observation model (in the
+waveform setting as the harmonic amplitudes $a$, marginalised exactly,
+and the residual $\varepsilon$); $p(z \mid S)$ is the score-structured prior
 (Chapter~\ref{ch:model}) and $p(x \mid z, S)$ is an observation model
 that the thesis makes progressively rawer: per-note values read from
 aligned MIDI (Chapter~\ref{ch:results}), tracker-derived per-note
@@ -238,7 +267,13 @@ score prior over per-note constants inside the waveform inference,
 \S\ref{sec:phase3-priorvalue}) is measured at development level over
 three spans: the structure's value is the context's common offset, with
 nothing measurable beyond it against that baseline, and a significant
-edge over a purely temporal prior at phrase scale.
+edge over a purely temporal prior at phrase scale. RQ2's ``purely
+temporal'' baseline is also answered at whole-track scale on both
+corpora, at development level: a naive note-order chain loses to the
+score graph, but the same graph with its pitch term removed and its
+two-beat time window kept matches it (Appendix~\ref{app:trackscale}),
+so the structure the confirmed results reward is smoothness in score
+time, not pitch proximity.
 
 \section{Terminology: the proposed model and the two-stage pipeline}\label{sec:twostage}
 Two names recur throughout. \textbf{The proposed model} is the thesis model:
@@ -268,7 +303,11 @@ graph GP on the residual.
         confidence honest (its calibration contribution independently confirmed);
         the from-scratch music model earns its place as a feature provider inside the
         kernel --- each claim isolated by nested ablations, including the entire
-        two-stage development pipeline as a provable special case.
+        two-stage development pipeline as a provable special case. The graph
+        term is attributed one step further at development level, on both
+        corpora: the same graph without its pitch term reproduces its value
+        (Appendix~\ref{app:trackscale}), so what the graph contributes is
+        smoothness in score time over about two beats.
   \item \textbf{A map of where the structure helps}, via six downstream tasks with
         objective metrics, re-validated under the final model, yielding two crisp
         boundaries (\S\ref{sec:boundary}): structure helps note-level judgments,
@@ -2641,8 +2680,9 @@ six-channel result --- the latter on a single corpus (URMP, 13
 confirmation pieces), with the secondary timing-calibration claim failed
 and a small starred adverse timing-recovery cell, both reported verbatim.
 The waveform evidence is development-level and exploratory throughout,
-and its one test of the thesis's methodological hypothesis so far
-(\S\ref{sec:phase3-priorvalue}) supports only the weak form: the score
+and its tests of the thesis's methodological hypothesis, three spans on
+short chains, joints and phrases (\S\ref{sec:phase3-priorvalue}),
+support only the weak form: the score
 prior beats a purely temporal prior at phrase scale, and beyond the
 context's common offset it adds nothing measurable at the spans tested.
 A further development finding qualifies the graph itself: on both
@@ -2823,6 +2863,8 @@ performance model is solid.
 
 % =====================================================================
 \chapter{Conclusion}\label{ch:conclusion}
+A recording was read as score, expression, timbre and noise, and the
+expression layer was recovered note by note with its uncertainty.
 A single multi-output Gaussian process on the score graph --- channels coupled,
 side information marginalized into the kernel, every hyperparameter learned by the
 per-piece evidence --- recovers hidden expressive detail better than the strongest
@@ -2833,7 +2875,10 @@ on pieces no modelling decision ever touched. Each ingredient's marginal value i
 isolated: per-piece Bayesian weighting of score features and music-model
 embeddings does the recovering; the graph makes the confidence honest (its
 calibration contribution also confirmed); the music model earns its place as a
-feature provider inside the kernel. Six downstream tasks draw two clean boundaries
+feature provider inside the kernel; and, one step further at development
+level on both corpora, the graph's value is reproduced by the same graph
+without its pitch term, so the structure rewarded is smoothness in score
+time over about two beats. Six downstream tasks draw two clean boundaries
 --- structure helps note-by-note, not for whole-performance summaries; per-piece
 adaptation helps interpolation, not excerpt extrapolation --- and the evaluation is
 hardened against leakage, contamination, fit collapse, and selection inflation.

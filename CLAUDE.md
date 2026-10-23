@@ -247,9 +247,14 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   time-window attribution are main-line slides 43-44 since 2026-10-23; **every deck.tex change must be
   followed by a change to `docs/slides/speaker_notes.md`, same commit — Ray's
   standing rule 2026-10-21**). `docs/meeting_qa_prep.md` = the 2026-10-14
-  direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT. Held
-  for after the meeting (Ray's call): the decomposition framing (score +
-  expression + timbre + noise) in the intro/abstract.
+  direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT.
+  **2026-10-23, Ray: the professor is hands-off; all gates are Ray's.** Decided
+  that day: the decomposition framing (score + expression + timbre + noise) is
+  ADOPTED (abstract, intro, conclusion, deck slide 3); the time-window
+  attribution is STATED (abstract, contributions, Discussion, Conclusion), the
+  headline models keep their score graph; two more registered one-shots this
+  week on the disclosed re-used URMP confirmation pool (correlated timing
+  noise; tonal metric); writing freeze now, not January.
 - **STATE DUMP for context compaction (2026-10-22, main=6f9f52b+; written at
   Ray's request before a `/compact`).** Meeting of 10-21 was cancelled; Ray's
   instruction: "do all experiments you have in mind in parallel; include the

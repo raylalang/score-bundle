@@ -44,6 +44,17 @@ too, estimated from audio, noisily; does the same prior still work?),
 audio directly (no pitch tracker at all; can the waveform be the
 observation?).
 
+**The four layers.** Between the thesis sentence and the three problems
+sits the vocabulary of the whole thesis, one line: a recording is read
+as score, expression, timbre and noise. The score is what was written
+and is given. The expression is how each written note was played, a
+small vector of numbers per note (timing, articulation, dynamics; later
+intonation, vibrato, loudness); it is the thing we infer. The timbre is
+what the instrument adds to a note once its expression is fixed (the
+harmonic amplitudes); in the waveform setting it is integrated out
+exactly rather than estimated. The noise is the rest. Say it once here;
+every later slide is one of these layers being observed or removed.
+
 **Symbols implied.** A Gaussian process (GP) here means: the vector of
 all the unknown per-note variables is given a joint Gaussian
 distribution whose covariance is built from the score. "On the score
