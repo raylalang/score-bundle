@@ -1,12 +1,32 @@
-# Meeting prep (2026-10-14) — research direction and scope
+# Meeting brief (written 2026-10-14, brought to 2026-10-27 for the meeting of 2026-10-28)
 
-> Purpose of this meeting: resolve direction and scope, not report
-> progress. The deck (`docs/slides/deck.pdf`, 52 pages) is the visual
-> spine; this brief is the discussion skeleton. Standing language rules:
-> say "the GP estimator" (never a coined name), "correlated timing noise
-> across notes" (never bare "AR(1)"). Before the meeting: **sync
-> Overleaf** (draft.tex changed substantially: restructure, Chapter 8,
-> vocabulary, and today the introduction/RQ reframe).
+> Purpose: report the state and the decisions taken, and hear objections.
+> The deck (`docs/slides/deck.pdf`, 55 pages, speaker notes for every
+> slide in `docs/slides/speaker_notes.md`) is the visual spine; this
+> brief is the discussion skeleton. Standing language rules: say "the GP
+> estimator" (never a coined name), "correlated timing noise across
+> notes" (never bare "AR(1)"). Before the meeting: **sync Overleaf**
+> (draft.tex changed on 10-21, 10-23: three spans, track-scale
+> attribution, decomposition framing, number audit).
+
+## Since 2026-10-14, in one breath
+
+- The score prior was measured inside the waveform inference at three
+  spans (chains, joints, phrases): every prior transfers the context's
+  common offset; the score graph beats a naive time prior at phrase
+  scale; beyond the offset nothing measurable (§G, deck slide 43).
+- At whole-track scale on both corpora, the score graph beats a time
+  chain but EQUALS the same graph with its pitch term removed; on piano
+  the pitch-less graph is slightly better. The graph's measured value is
+  smoothness in score time over about two beats (§G, deck slide 44,
+  thesis Appendix "Three priors at track scale").
+- Decisions taken 2026-10-23 (Ray): that attribution is stated in the
+  thesis, headline models keep their score graph; the four-layer framing
+  (score, expression, timbre, noise) adopted; writing freeze in force;
+  two more registered one-shots on the disclosed re-used URMP pool
+  (correlated timing noise; tonal metric), frozen on paper, not yet run.
+- Thesis 82 pp, every number audited against its record on 10-23
+  (three sentences corrected, `results/number_audit_2026-10-23.md`).
 
 ## A. Research objective (the one-breath version)
 
@@ -266,30 +286,31 @@ form fails so far. The positive content is honest and small: a note or
 joint with no acoustic evidence inherits its context's common offset
 with a calibrated band.
 
-## H. Questions for the professor (prioritized)
+## H. The decisions, taken (2026-10-23) — for information, objections welcome
 
-1. **Objective:** Is "an interpretable, score-aligned representation of
-   expressive performance, with uncertainty" the right overarching
-   scientific objective for the thesis?
-2. **Positioning:** Should the thesis primarily evaluate the
-   inverse-inference methodology, with representation usefulness as
-   motivation rather than a validated claim? (The draft now states
-   exactly this split.)
-3. **Scope of integration:** How much graph-prior × waveform integration
-   is realistically necessary for a master's thesis — the full joint
-   loop, or the three-prior comparison on short sequences plus the
-   measured component studies?
-4. **Variables:** Which expressive variables should be prioritized for
-   direct waveform inference — pitch/vibrato (strong evidence), timing
-   via boundaries (works, estimand gap), loudness/articulation (requires
-   bringing amplitudes under the prior)?
-5. **Evidence bar:** What constitutes sufficient evidence for the final
-   contribution — a preregistered confirmation of one waveform claim, or
-   development-level studies with the confirmed stage-1/2 results
-   carrying the claims?
-6. *(Standing, if time)* The registration-pool decision for the
-   correlated-timing-noise and tonal-metric follow-ups (Bach10 /
-   disclosed URMP re-use / both).
+These were written on 10-14 as questions. The professor is hands-off
+from here, so they were decided; state each as a decision and listen.
+
+1. **Objective:** an interpretable, score-aligned representation of
+   expressive performance, with uncertainty. Kept.
+2. **Positioning:** the thesis evaluates the inverse-inference
+   methodology; the representation's usefulness is motivation, not a
+   validated claim. Kept, stated in the draft.
+3. **Scope of integration:** the three spans plus the track-scale
+   attribution ARE the waveform chapter's measured answer; the full
+   joint loop over a whole performance is Future Work. Decided.
+4. **Variables:** pitch and vibrato (strong evidence) and timing through
+   boundaries (works, estimand gap) are the waveform variables;
+   amplitudes under the prior are Future Work. Decided.
+5. **Evidence bar:** the confirmed piano and strings-and-winds results
+   carry the claims; the waveform is development level; two more
+   registered one-shots (correlated timing noise, answering the failed
+   timing claim; the tonal metric) on the disclosed re-used URMP pool,
+   run once, reported whatever the outcome. Decided; frozen on paper.
+6. **Pool:** disclosed URMP re-use. Bach10 as available on disk is the
+   Sibelius-resynthesised version (synthetic audio), unusable for
+   intonation or timing; the real Bach10 needs a request form and is not
+   pursued this cycle.
 
 ## If asked (quick answers)
 

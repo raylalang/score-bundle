@@ -1051,16 +1051,17 @@ attribution is stated in the thesis as a development finding; the
 headline models keep their score graph, because a pitch-less default
 would be a change to a reported protocol needing its own registration;
 the four-layer framing of slide 3 is adopted; the writing freeze starts
-now rather than in January. This week: two registered one-shots on the
-13-piece strings-and-winds confirmation pool, re-used with full
-disclosure (it was spent on the four original claims; the two new
+now rather than in January. Registered, frozen on 23 October and run
+once: two one-shots on the 13-piece strings-and-winds confirmation
+pool, re-used with full disclosure (it was spent on the four original claims; the two new
 claims were developed on the development split only). First, correlated
 timing noise: an AR(1) block in the timing channel's noise, which
 answers the one registered claim that failed. Second, the tonal pitch
 metric for the intonation channel's graph. Primary claims are the
 paired log-score differences, falsification rules frozen before the
-run. Then the audit of every number against its record and the review
-pass. After: the transient model at the joints and the
+run; if the results are in by the meeting, state them here verbatim,
+pass or fail. The audit of every number against its record is done
+(three sentences corrected); the review pass remains. After: the transient model at the joints and the
 whole-performance joint loop are Future Work; the progress talk in
 January uses this deck; submission on 2 February.
 
