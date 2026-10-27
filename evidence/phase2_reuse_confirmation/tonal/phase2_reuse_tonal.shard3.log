@@ -1,0 +1,24 @@
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:71: RuntimeWarning: overflow encountered in exp
+  Lc[np.diag_indices(k)] = np.exp(theta[:k])
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:73: RuntimeWarning: invalid value encountered in matmul
+  return Lc @ Lc.T
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:141: RuntimeWarning: invalid value encountered in multiply
+  blk = p["B"][a, b] * Kg
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/numpy/linalg/_linalg.py:2350: RuntimeWarning: invalid value encountered in slogdet
+  sign, logdet = _umath_linalg.slogdet(a, signature=signature)
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:73: RuntimeWarning: overflow encountered in matmul
+  return Lc @ Lc.T
+  (9, 2) seed 1: 5 systems in 3169s
+  (14, 3) seed 1: 5 systems in 594s
+  (15, 3) seed 1: 5 systems in 53s
+  (24, 2) seed 1: 5 systems in 101s
+  (25, 4) seed 1: 5 systems in 243s
+  (28, 3) seed 1: 5 systems in 494s
+  (29, 2) seed 1: 5 systems in 917s
+  (30, 4) seed 1: 5 systems in 319s
+  (32, 3) seed 1: 5 systems in 412s
+  (33, 2) seed 1: 5 systems in 60s
+  (34, 1) seed 1: 5 systems in 571s
+  (34, 4) seed 1: 5 systems in 363s
+  (43, 3) seed 1: 5 systems in 95s
+wrote results/phase2_cells/conf_tonal/cells.shard3of6.pkl (13 cells)

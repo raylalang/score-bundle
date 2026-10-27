@@ -1,0 +1,15 @@
+  (9, 1) seed 1: 5 systems in 589s
+  (14, 2) seed 1: 5 systems in 453s
+  (15, 2) seed 1: 5 systems in 91s
+  (24, 1) seed 1: 5 systems in 152s
+  (24, 4) seed 1: 5 systems in 321s
+  (28, 2) seed 1: 5 systems in 847s
+  (29, 1) seed 1: 5 systems in 737s
+  (29, 4) seed 1: 5 systems in 386s
+  (32, 2) seed 1: 5 systems in 859s
+  (33, 1) seed 1: 5 systems in 58s
+  (33, 4) seed 1: 5 systems in 48s
+  (34, 3) seed 1: 5 systems in 490s
+  (43, 2) seed 1: 5 systems in 127s
+  (43, 5) seed 1: 5 systems in 65s
+wrote results/phase2_cells/conf_tonal/cells.shard1of6.pkl (14 cells)
