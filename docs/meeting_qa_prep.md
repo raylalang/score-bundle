@@ -1,7 +1,7 @@
 # Meeting brief (written 2026-10-14, brought to 2026-10-27 for the meeting of 2026-10-28)
 
 > Purpose: report the state and the decisions taken, and hear objections.
-> The deck (`docs/slides/deck.pdf`, 56 pages, speaker notes for every
+> The deck (`docs/slides/deck.pdf`, 37 pages, speaker notes for every
 > slide in `docs/slides/speaker_notes.md`) is the visual spine; this
 > brief is the discussion skeleton. Standing language rules: say "the GP
 > estimator" (never a coined name), "correlated timing noise across
@@ -15,18 +15,18 @@
 - The score prior was measured inside the waveform inference at three
   spans (chains, joints, phrases): every prior transfers the context's
   common offset; the score graph beats a naive time prior at phrase
-  scale; beyond the offset nothing measurable (§G, deck slide 44).
+  scale; beyond the offset nothing measurable (§G, deck slide 30).
 - At whole-track scale on both corpora, the score graph beats a time
   chain but EQUALS the same graph with its pitch term removed; on piano
   the pitch-less graph is slightly better. The graph's measured value is
-  smoothness in score time over about two beats (§G, deck slide 45,
+  smoothness in score time over about two beats (§G, deck slide 31,
   thesis Appendix "Three priors at track scale").
 - Decisions taken 2026-10-23 (Ray): that attribution is stated in the
   thesis, headline models keep their score graph; the four-layer framing
   (score, expression, timbre, noise) adopted; writing freeze in force;
   two more registered one-shots on the disclosed re-used URMP pool
   (correlated timing noise; tonal metric), frozen and RUN on 10-27.
-- Results of 10-27 (deck slide 31, thesis `sec:phase2-reuse`): the
+- Results of 10-27 (deck slide 20, thesis `sec:phase2-reuse`): the
   correlated-timing-noise claim PASSED (timing log score −0.121
   [−0.156, −0.089], RMSE −0.011 s, coverage 0.908, ρ > 0 on 79 of 80
   cells): the failed August timing claim is repaired, confirmed once on

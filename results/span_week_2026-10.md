@@ -124,9 +124,9 @@ Eight figures from the stored cells (`scripts/make_span_viz.py`,
 end to end, the leakage diagnosis, the scalar attribution, the paired
 contrasts over three spans, calibration strips, the boundary gains, the
 phrase dose-response. All in the thesis section (81 pp); five as deck
-backup frames (pages 51–56 after the 2026-10-21 restructuring of the
+backup frames (pages 36–37 after the 2026-10-28 cut, pages 51–56 after the 2026-10-21 restructuring of the
 waveform setup slides). Since 2026-10-23 the verdict is also on the
-main line, slides 44 and 45 (since 2026-10-27, after the re-used-pool slide 31 was inserted).
+main line, slides 30 and 31 (since the 2026-10-28 cut of the deck to 37 pages).
 
 ## Wednesday and Thursday, 2026-10-22/23 (the meeting was cancelled)
 

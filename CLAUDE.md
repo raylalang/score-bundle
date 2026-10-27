@@ -150,7 +150,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   verbatim; the metric stays exploratory), T1 PASS (ΔRMSE −0.312*), T3
   penalty absent as-given; identity check vs 08-27 passed on all 24 plain
   rows. The pool is spent twice over; never rerun either claim. Thesis:
-  `sec:phase2-reuse` (two paragraphs), deck slide 31.
+  `sec:phase2-reuse` (two paragraphs), deck slide 20.
   Dev record: `results/phase2_real_results.md` (registration-grade,
   diff-clean vs tag). Post-adoption dev studies, all results-doc'd:
   drift study (`results/phase2_drift_dev.md` — committee's "sine too
@@ -257,16 +257,21 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   the study machinery), `downstream.completion_guard`. Tests:
   `tests/test_adoption_optin.py` (incl. ρ=0 bit-equality and brute-force
   conditioning pins).
-- **Thesis state (2026-10-27, main=ca3e587+): 83 pp, compile clean.** Main line =
+- **Thesis state (2026-10-28, main=c709c5d+): 74 pp, compile clean** (cut from 83 on
+  2026-10-28, Ray: "subtract the irrelevant and obsolete": two-stage-era kernel table,
+  per-channel ablation table and fitted filters, lineage B.2-B.5, synthetic pilot,
+  leakage appendix folded into §5.4, era/performer-ID downstream tasks and the Vienna
+  corpus, §8.3 compressed to one three-span table + a page per span, connection-Laplacian
+  future-work item; pre-cut text in git history).** Main line =
   Intro / Background / Model / Data / piano results / Downstream / strings-and-winds
   results / **the waveform as the observation (Ch. 8)** / Discussion / Future Work /
   Conclusion; appendices A–G. Refocus: objective = an interpretable, score-aligned
   representation with uncertainty; method = Bayesian score-conditioned inverse
   synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
   ladder; three-question RQ hierarchy. `docs/slides/deck.tex` is the one full
-  thesis deck (56 pages; main line to 47, backup 49-56; the week's three spans and the
-  time-window attribution are main-line slides 44-45 since 2026-10-23; the two re-used-pool
-  one-shots are main-line slide 31 since 2026-10-27; **every deck.tex change must be
+  thesis deck (37 pages since the 2026-10-28 cut, Ray: findings only; main line to 33,
+  backup 35-37; the week's three spans and the time-window attribution are main-line
+  slides 30-31; the two re-used-pool one-shots are main-line slide 20; **every deck.tex change must be
   followed by a change to `docs/slides/speaker_notes.md`, same commit — Ray's
   standing rule 2026-10-21**). `docs/meeting_qa_prep.md` = the 2026-10-14
   direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT.
@@ -321,7 +326,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   over ~2 beats, not pitch proximity**, at every scale tested; E3 — chain-scale
   σ_b: independent band 1.00→0.88, structured 0.75, verdict unchanged. Thesis:
   Appendix `app:trackscale` (tab:trackscale) + Ch. 8 closing paragraph + one
-  band sentence; brief §G; ROADMAP; ledger; deck main-line slides 44-45 (2026-10-23,
+  band sentence; brief §G; ROADMAP; ledger; deck main-line slides 30-31 (2026-10-23,
   after Ray asked why the deck barely changed) + backup frame 55 + notes.
   Piano counterpart `b_featlm_timegauss` MEASURED (`results/piano_timegauss_dev.md`):
   pitch term removed ⇒ RMSE −0.008* / NLL −0.019* BETTER than the headline
