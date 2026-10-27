@@ -141,7 +141,9 @@ one-shot} on the frozen 13-piece pool --- intonation recovery, vibrato
 calibration on both channels, coverage on target on all six channels; the
 secondary timing-calibration claim failed and is reported verbatim; its
 named remedy, a correlated timing-noise row, was then registered and
-confirmed once on the same pool, re-used with disclosure.
+confirmed once on the same pool, re-used with disclosure; a registered
+tonal-metric claim on that pool missed its calibration primary and is
+reported as a miss.
 The waveform setting (audio via a differentiable synthesizer) has its
 development studies measured, no claims yet: from the raw waveform alone --- no pitch
 tracker --- the model infers whole within-note pitch curves (beating the
@@ -1864,10 +1866,11 @@ intonation significantly on both axes while re-imposing the familiar
 replacement penalty on timing --- the tonal geometry helps exactly where
 the target is pitch and hurts where it is not, the first evidence in this
 thesis that a music-theoretic \emph{geometry}, rather than merely
-music-theoretic \emph{edges}, earns its place. Adoption into the bundle
-would be a channel-dependent metric choice and needs its own
-preregistered confirmation; nothing in the registered claim set depends
-on it.
+music-theoretic \emph{edges}, earns its place. That confirmation was
+registered and run once on the re-used pool (\S\ref{sec:phase2-reuse}):
+the recovery gain held, the calibration gain --- the registered primary
+--- did not, its interval reaching zero. The metric stays exploratory;
+nothing in the registered claim set depends on it.
 
 
 \section{Data and protocol}\label{sec:phase2-protocol}
@@ -2121,6 +2124,35 @@ timing-noise row repairs the failed timing-calibration claim, confirmed
 once on the re-used pool (disclosed). Record:
 \texttt{results/corrnoise\_confirmation\_results.md}; evidence under
 \texttt{evidence/phase2\_reuse\_confirmation/}.
+
+\paragraph{The tonal metric, tested.} The exploratory finding of
+\S\ref{sec:phase2-delta} and Appendix~\ref{app:tonal} --- replacing the
+semitone metric of \eqref{eq:adjacency} by the circle-of-fifths metric
+\eqref{eq:tonaladj} improves held-out intonation --- was registered with
+calibration as the primary claim (T2: paired intonation NLL, tonal minus
+plain graph, as-given variant, per (track, seed), 95\% bootstrap interval
+excluding zero), recovery as the secondary, non-gating claim (T1: paired
+intonation RMSE, stated underpowered at $0.52$--$0.63$ on this pool), and
+the development timing penalty as a report-only prediction (T3). All five
+arms ran together, so the three plain arms are the pre-stated identity
+check. \textbf{T2 failed:} $-0.023$ $[-0.049, +0.001]$, the mean on the
+predicted side but the interval reaching zero (development basis
+$-0.050$ $[-0.072, -0.029]$). \textbf{T1 passed:} $-0.312$ cents
+$[-0.599, -0.081]$ (development $-0.213$). The predicted timing penalty
+did not appear in the registered variant ($-0.002$ $[-0.011, +0.007]$).
+By the registered rule the thesis does not state that the tonal metric
+improves intonation calibration; the metric stays exploratory and
+Appendix~\ref{app:tonal} keeps its status. The identity check passed:
+the plain arms reproduced Table~\ref{tab:phase2-conf} digit for digit,
+so this run touched nothing confirmed earlier. Two report-only cells
+are recorded next to the claims: a small starred adverse loudness
+calibration cell ($+0.020$), and the tonal graph beating the no-graph
+ablation on intonation calibration ($-0.053$ $[-0.099, -0.010]$) where
+the plain graph had not (\S\ref{sec:phase2-conf}: $-0.029$, not
+significant) --- suggestive, unregistered, and left as such. Record:
+\texttt{results/phase2\_tonal\_confirmation\_results.md}; evidence
+under the same directory. Of the two re-used-pool claims, then, one
+confirmed and one missed, and the pool is now spent twice over.
 
 % =====================================================================
 \chapter{The Waveform as the Observation}\label{ch:phase3}\label{app:phase3}\label{sec:phase3-math}
@@ -2730,10 +2762,11 @@ one-shot: the symbolic piano result and the real-audio
 six-channel result --- the latter on a single corpus (URMP, 13
 confirmation pieces), with the secondary timing-calibration claim failed
 and a small starred adverse timing-recovery cell, both reported verbatim.
-Two follow-up claims were confirmed once more on that same pool, re-used
-with full disclosure (\S\ref{sec:phase2-reuse}): replication-grade
-evidence, weaker in kind than the untouched-pool confirmations, and
-labelled so wherever it is cited.
+Two follow-up claims were registered and run once on that same pool,
+re-used with full disclosure (\S\ref{sec:phase2-reuse}): the timing
+remedy confirmed, the tonal metric's calibration primary missed.
+That evidence is replication-grade, weaker in kind than the
+untouched-pool confirmations, and labelled so wherever it is cited.
 The waveform evidence is development-level and exploratory throughout,
 and its tests of the thesis's methodological hypothesis, three spans on
 short chains, joints and phrases (\S\ref{sec:phase3-priorvalue}),
@@ -2824,10 +2857,13 @@ of the timing channel would re-run the published tables and needs its
 own registration; on a fresh corpus the claim is untested. \textbf{The tonal
 metric:} the circle-of-fifths \emph{replacement} geometry
 \eqref{eq:tonaladj} that hurt piano expression helps intonation on both
-axes (\S\ref{sec:phase2-delta}; development, exploratory); adopting it
-channel-scoped requires its own preregistered confirmation, and the power
-analysis for that design is drafted (calibration as the primary claim ---
-the recovery contrast is underpowered below ${\sim}20$ pieces).
+axes in development (\S\ref{sec:phase2-delta}); registered with
+calibration as the primary claim and run once on the re-used pool
+(\S\ref{sec:phase2-reuse}), the recovery gain held ($-0.312$ cents,
+starred) and the calibration gain did not ($-0.023$, interval reaching
+zero). The metric stays exploratory. What remains is a fresh corpus and
+a design powered for recovery, which the registration's power table
+puts above ${\sim}20$ pieces; nothing is adopted.
 \textbf{New channels:} the within-note drift and decay slopes measured in
 \S\ref{sec:phase2-delta} remain candidates under the
 $d^{\mathrm{vib}}$ template (adopt as output, claim nothing) if a
@@ -2946,7 +2982,9 @@ timing, and vibrato onset delay on real recordings --- and confirmed at
 one-shot level on the frozen pool (intonation recovery, vibrato
 calibration, coverage; the secondary timing claim failed and is reported
 verbatim, and its named remedy, correlated timing noise across notes,
-was then confirmed once on the same pool, re-used with disclosure). The step to audio through a differentiable synthesizer is where the
+was then confirmed once on the same pool, re-used with disclosure; a
+registered tonal-metric calibration claim on that pool missed and is
+reported as a miss). The step to audio through a differentiable synthesizer is where the
 most novel work lies; its development studies now reach whole pitch
 curves that beat the tracker's frames at the median and note boundaries
 inferred jointly from score-nominal starting points, and they fix the
@@ -3658,14 +3696,19 @@ $-0.05$ $[-0.07, -0.03]$, both significant --- while re-imposing the
 familiar replacement penalty on timing ($\Delta$NLL $+0.03$ against,
 significant); the vibrato-rate channel picks up a small significant
 recovery gain ($-0.027$) and the remaining channels are indifferent
-(Fig.~\ref{fig:tonal-intonation}).
+(Fig.~\ref{fig:tonal-intonation}). Registered and run once on the
+re-used pool (\S\ref{sec:phase2-reuse}): recovery $-0.312$ cents
+$[-0.599, -0.081]$ confirmed, calibration $-0.023$ $[-0.049, +0.001]$
+not; the appendix keeps its exploratory status.
 
 \figph{tonal_intonation_dev.png}{1.0}{The exploratory circle-of-fifths
 contrast on intonation (development): per-(track, seed) paired RMSE
 deltas, tonal minus plain graph, under the as-given variant --- mean
 $-0.21$ cents $[-0.34, -0.09]$, with $61\%$ of pairs improving and the
-full spread shown. Exploratory by the registered design; adoption would
-need its own preregistered confirmation.\label{fig:tonal-intonation}}
+full spread shown. Exploratory by the registered design; the registered
+one-shot on the re-used pool (\S\ref{sec:phase2-reuse}) confirmed this
+recovery gain ($-0.31$ cents, starred) and missed the calibration primary
+($-0.023$, interval reaching zero).\label{fig:tonal-intonation}}
 
 \section{Three priors at track scale: the graph's value is the time window}
 \label{app:trackscale}
