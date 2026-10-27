@@ -559,6 +559,45 @@
   Coverage 0.88 to 0.91 at nominal 0.90 on all six channels.
 \end{frame}
 
+% ---------------------------------------------------------------------
+\begin{frame}{Two registered follow-ups on the same pool, run once (27 October)}
+  The 13 confirmed pieces again, re-used with disclosure: both claims
+  developed on development tracks only, decision rules frozen before
+  the run, each run once. Two changes to the model, one at a time:
+  \vspace{-1mm}
+  {\footnotesize
+  \begin{align*}
+    \text{timing noise: }& \Sigma_{\tau}(\rho)_{ij} = \sqrt{d_i d_j}\;\rho^{|i-j|}
+      \ \text{(note order)},\quad d_i \text{ the given per-note variances};\\
+      & \rho \in \{0, 0.15, \dots, 0.9\} \text{ by the observed notes' evidence};
+      \ \rho = 0 \text{ is the published model}\\
+    \text{tonal metric: }& W^{\mathrm{tonal}}_{ij} = \exp\!\Bigl( -\tfrac{(b_i-b_j)^2}{2\ell_b^2}
+      - \tfrac{d_5(i,j)^2}{2\ell_5^2} - \tfrac{((p_i-p_j)/12)^2}{2\ell_{\mathrm{oct}}^2}\Bigr),
+      \quad d_5 = \text{circle-of-fifths distance}
+  \end{align*}}
+  \vspace{-4mm}
+  \begin{center}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}llccl@{}}
+    \toprule
+    claim (paired per track and seed, 80 cells) & tier & $\Delta$ & 95 percent interval & verdict \\
+    \midrule
+    timing calibration (log score), correlated $-$ diagonal & primary & $-0.121$ & $[-0.156, -0.089]$ & pass \\
+    timing recovery (RMSE, s) & secondary & $-0.011$ & $[-0.016, -0.007]$ & pass \\
+    intonation calibration (log score), tonal $-$ plain & primary & $-0.023$ & $[-0.049, +0.001]$ & miss \\
+    intonation recovery (RMSE, cents) & secondary & $-0.312$ & $[-0.599, -0.081]$ & pass \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{-1mm}
+  {\small Negative favours the new arm. One of two: the timing claim that
+  failed in August is repaired, coverage at nominal ($0.908$), $\rho > 0$
+  on 79 of 80 cells; the tonal metric keeps its recovery gain, misses
+  calibration by the frozen rule, and stays exploratory. The unchanged
+  arms reproduced August's table digit for digit.\par}
+\end{frame}
+
 \divider{The waveform as the observation}{Methodology and first development studies, no claims}
 
 % ---------------------------------------------------------------------
@@ -898,11 +937,12 @@
           headline models keep their score graph; the decomposition
           framing (score, expression, timbre, noise) adopted; writing
           freeze from now. \\
-    registered & two one-shots on the disclosed re-used
-          strings-and-winds confirmation pool, frozen 23 October, run
-          once: correlated timing noise (answers the failed timing
-          claim), the tonal pitch metric. Every number audited against
-          its record (done); review pass. \\
+    run once (27 October) & two one-shots on the disclosed re-used
+          strings-and-winds confirmation pool, frozen that morning:
+          correlated timing noise passed (the failed timing claim
+          repaired); the tonal pitch metric missed its calibration
+          primary and kept its recovery gain. Every number audited
+          against its record (done); review pass. \\
     after & the transient model at the joints and whole-performance
           joint inference stay Future Work; progress talk in January
           from this deck; submission 2 February. \\

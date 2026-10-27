@@ -6,7 +6,7 @@ is the title page). The note for each slide states what the slide says,
 defines every symbol on it, and gives an example. Written at the
 simplest level that is still complete.
 
-Coverage: every slide, 2 to 53. (`docs/zemi_prep.md` holds the older
+Coverage: every slide, 2 to 56. (`docs/zemi_prep.md` holds the older
 notes for the 28-slide zemi deck; its frame numbers do not match this
 deck.)
 
@@ -526,16 +526,103 @@ the audio; `τ_i` is timing, the onset relative to a tempo line fitted
 through the annotated onsets with that note left out; `d_i^vib` is the
 vibrato onset delay, how long after the note starts the vibrato begins.
 
-**Honest line, if asked.** "The timing claim failed. We report it. The
-follow-up measured that correlated timing noise across notes repairs
-it on development data, but that is not a registered claim."
+**Honest line, if asked.** "The timing claim failed. We report it. Its
+named remedy, correlated timing noise across notes, was then registered
+and run once on the same pool, re-used with disclosure, and passed:
+the next slide."
 
-## Slide 31. Divider: The waveform as the observation
+## Slide 31. Two registered follow-ups on the same pool, run once (27 October)
+
+**What is on the slide.** Two claims developed on the development
+tracks after the August confirmation, each registered with its decision
+rule frozen on the morning of 27 October and run once that afternoon on
+the same 13 confirmed pieces, re-used with full disclosure: the pool had
+been spent on the four August claims, its plain-model fits were known
+when these claims were chosen, and the claim-specific quantities had
+never been computed on it. The inputs are the archived August targets,
+checksum-verified; the masks and seeds are August's. Two changes to the
+model, one at a time, each against the published model on the same
+cells. Verdicts: timing calibration passed (the primary), timing
+recovery passed; intonation calibration missed (the primary), intonation
+recovery passed. One of two claims confirmed.
+
+**The timing-noise line.** `Σ_τ(ρ)` is the noise covariance of the
+timing channel, `τ`, across the notes of one track in score order.
+`d_i` is the variance the timing estimator gives note `i` (the tempo-line
+fit with that note left out), used as given, as everywhere in this
+setting. `ρ` is the correlation between the alignment errors of
+neighbouring notes: entry `(i, j)` is the geometric mean of the two
+variances times `ρ` to the power of the note distance, so the
+correlation decays by a factor `ρ` per note. `ρ` is picked per track
+and seed from the grid 0, 0.15, up to 0.9 by the marginal likelihood of
+the observed notes alone; the hidden notes are then predicted through
+the full covariance, prior plus noise, so an observed neighbour's error
+informs the hidden note's. `ρ = 0` is exactly the published diagonal
+model, which is the paired baseline. Example: a 100-note track where
+the annotated onsets drift late over a bar: with `ρ = 0.45` (the
+median found), a hidden note between two late-aligned neighbours is
+predicted late too, and its band narrows; with the diagonal model the
+same note is predicted from the prior alone with a band too wide where
+the neighbours agree, which is what the August timing-calibration miss
+measured.
+
+**The tonal-metric line.** `W^tonal_ij` is the edge weight between
+notes `i` and `j` with the semitone term of the score graph replaced:
+`b_i` the beat onset, `ℓ_b` two beats as before; `d_5(i, j)` the
+circle-of-fifths distance between the two pitch classes (C to G is one
+step, C to C sharp is seven), with its own length scale `ℓ_5`; and an
+octave term, the pitch difference in octaves with length scale
+`ℓ_oct`, which keeps register locality because `d_5` is blind to it.
+The hypothesis, committed in development: mistuning travels with
+harmonic relatedness (a fifth shares its tuning error) more than with
+semitone proximity. Example: a cellist's slightly flat G and the D a
+fifth above it, in the same bar, are neighbours under this metric and
+share a posterior offset; the A flat a semitone up is far.
+
+**The table.** Each row is one claim: the paired difference, new arm
+minus published arm, per track and seed across the 80 cells (40 unique
+tracks, two mask seeds), with the 95 percent bootstrap interval
+(cluster bootstrap over unique tracks for the timing rows; the plain
+percentile bootstrap of the August tables for the intonation rows, as
+registered). Negative favours the new arm; "pass" means the interval
+excludes zero on the predicted side, "miss" means it does not. The
+timing calibration row is the log score (negative log predictive
+density) on held-out timing: `−0.121` with interval `[−0.156, −0.089]`,
+the development basis was `−0.111`. Timing recovery, RMSE in seconds,
+`−0.011`, which is 0.058 to 0.047 seconds, a 19 percent cut. Intonation
+calibration under the tonal metric: `−0.023` with interval
+`[−0.049, +0.001]`, the mean on the predicted side but the interval
+reaching zero, so a miss by the frozen rule; the development basis was
+`−0.050` with interval `[−0.072, −0.029]`. Intonation recovery,
+`−0.312` cents with interval `[−0.599, −0.081]`, registered as
+underpowered and starred anyway.
+
+**The last line.** Coverage of the 90 percent bands stayed at nominal
+under the correlated noise (0.908 against the diagonal's 0.911);
+`ρ > 0` was selected on 79 of 80 cells. The three arms that did not
+change (plain graph, learned-scale graph, no graph) reproduced the
+August table digit for digit, which is the pre-stated identity check:
+this run altered nothing confirmed earlier. The predicted timing
+penalty under the tonal metric did not appear in the registered
+variant (`−0.002`, not significant).
+
+**Honest lines, if asked.** "Why re-use a spent pool?" Because the
+only other audio corpus on disk is synthetic; the re-use is disclosed
+in the registration and in the thesis, and the evidence is labelled
+replication-grade, weaker than the August kind. "Did the tonal metric
+fail?" Its calibration claim missed by the frozen rule and its recovery
+claim held; the metric stays exploratory, nothing is adopted, and the
+thesis reports both numbers. "Is the timing model now the default?"
+No: adopting it would re-run the published tables and needs its own
+registration; the claim is confirmed once, as a repair of the August
+miss.
+
+## Slide 32. Divider: The waveform as the observation
 
 One sentence: "Third setting: no tracker. The waveform itself is the
 observation. Methodology and first development studies; no claims."
 
-## Slide 32. The method, and where it comes from
+## Slide 33. The method, and where it comes from
 
 **What is on the slide.** Left, reference works: DDSP (Engel 2020),
 gradients through a differentiable synthesizer, with MIDI-DDSP (Wu
@@ -553,7 +640,7 @@ nothing over the hand-structured two-component kernel on these curves.
 synthesis, and kept our own probabilistic model. The next four slides
 are that model."
 
-## Slide 33. Setup: the data and the signal model
+## Slide 34. Setup: the data and the signal model
 
 **What is on the slide.** The data line; the one equation
 `x = Φ(z) a + ε` with its sizes (`x ∈ R^m`, `Φ(z) ∈ R^{m×p}`, `a ∈ R^p`,
@@ -597,7 +684,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   part of the recording the harmonic stack does not reproduce,
   `ε = x − Φ(z) a`. The model assumes each entry is an independent
   Gaussian with mean zero and common variance, `ε ~ N(0, σ² I)`; that
-  is what makes slide 34's likelihood a Gaussian with covariance
+  is what makes slide 35's likelihood a Gaussian with covariance
   `Φ Σ_a Φ^T + σ² I` (spread from the unknown amplitudes, plus the noise
   floor on every sample). `σ²` is not chosen by hand: per note, the
   code solves the best amplitudes by least squares on the flat-curve
@@ -605,7 +692,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   halfway through the curve fit. In a real recording `ε` contains bow
   and breath noise, room reverberation, harmonics above the eighth,
   slight inharmonicity, and the mismatch between piecewise-constant
-  amplitudes and the true envelope. Caveat, said on slide 38: it is not
+  amplitudes and the true envelope. Caveat, said on slide 39: it is not
   white; the residual at the harmonics is strongly correlated across
   samples (0.944 measured), so the likelihood counts correlated samples
   as independent votes and is overconfident, which is why the
@@ -614,13 +701,13 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   sample, NOT a single number. A recording is a sequence of pressure
   readings at a fixed rate; at 16,000 per second a 1.2-second note gives
   `m = 19,200` entries, each a value like 0.012 or −0.028. The vermilion
-  line on slide 37 is `x` plotted against time; each point on it is one
+  line on slide 38 is `x` plotted against time; each point on it is one
   entry.
 - `x = Φ(z) a + ε`: a matrix equation. `x` has `m` rows; `Φ(z)` has `m`
   rows and `p` columns, each column a waveform of length `m`; `a` has
   `p` entries; `ε` has `m` entries. Sample by sample: the recorded
   reading equals the sum of the harmonic waves at that instant, each
-  scaled by its knob, plus noise. "Every audio sample votes" on slide 34
+  scaled by its knob, plus noise. "Every audio sample votes" on slide 35
   means every one of the `m` entries contributes to a candidate's score.
 - `K`: the number of harmonics, 8 in the studies.
 - `m` and `p`, the two sizes of the matrix. `m` is the number of audio
@@ -630,7 +717,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   number of knobs in `a`: cosine and sine per harmonic gives `2K = 16`,
   and the note is split into 2 time chunks so loudness can change
   within it, so `p = 2 × 8 × 2 = 32`. Scoring one candidate curve costs
-  about `m · p²` operations (slide 34), here `19,200 × 32² ≈ 20 million`,
+  about `m · p²` operations (slide 35), here `19,200 × 32² ≈ 20 million`,
   milliseconds; the naive `m × m` form would cost `m³ ≈ 7 × 10¹²`. The
   intuition: `m` is huge and `p` is small, so thousands of samples pin
   down a few dozen loudnesses very precisely, and the pitch curve is
@@ -649,7 +736,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   weight plus a sine column times another, so the two weights
   `a_cos = A cos θ`, `a_sin = A sin θ` absorb the unknown starting phase
   (example: `a_cos = 0.3, a_sin = 0.4` is `A = 0.5`, `θ = 53°`) and the
-  timbre stays linear in `a`, which is what lets slide 35 integrate it
+  timbre stays linear in `a`, which is what lets slide 36 integrate it
   out exactly; the
   time axis is then split into `n_chunk` equal blocks and the column set
   is repeated once per block, zeroed outside it, so each harmonic's
@@ -660,7 +747,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   chain fit each note's `Φ` is built on its own slice plus a 0.2 s
   margin, multiplied by its fade windows, and the notes' blocks are
   concatenated side by side: `p` becomes the sum over notes and `m` the
-  whole segment. That concatenation is where the leak of slide 53 lived.
+  whole segment. That concatenation is where the leak of slide 54 lived.
 
 **From `z` to `Φ(z)`, step by step** (`chunked_design_torch`).
 1. `z` is the pitch deviation at every sample instant, `cents(t_i)` for
@@ -688,7 +775,7 @@ cents wobble (vibrato): the step varies sample to sample, and the
 columns become chirped sinusoids. That is the whole bridge from a pitch
 curve to a matrix.
 
-**Sizes of everything on slides 33 to 36, symbolically.**
+**Sizes of everything on slides 34 to 37, symbolically.**
 
 | object | size | what it is |
 |---|---|---|
@@ -706,16 +793,16 @@ curve to a matrix.
 | `G = Φ^T Φ + (σ²/σ_a²) I_p`, its Cholesky `L` | `p × p` | what the code forms instead |
 | `Φ^T x` | `p × 1` | the data projected on the basis |
 
-For a chain of `N` notes (slide 39): each note has its own `Φ_i`,
+For a chain of `N` notes (slide 40): each note has its own `Φ_i`,
 `m × p_i` with `p_i = 2KC`, on its own slice plus margin times its fade
 windows; the chain design is `Φ = [Φ_1 … Φ_N]`, `m × P` with
 `P = N · 2KC`; `a` is `P × 1`, `G` is `P × P`; the boundary offsets `db`
-are `(N−1) × 1` with an `(N−1) × (N−1)` prior covariance (slide 50);
+are `(N−1) × 1` with an `(N−1) × (N−1)` prior covariance (slide 51);
 the per-note constants `c` are `N × 1` with an `N × N` prior covariance.
 Cost `O(m p²)`: forming `Φ^T Φ` is `m` rows times `p × p` entries; the
 Cholesky of `G` is `p³`, negligible since `p ≪ m`.
 
-## Slide 34. From the pitch curve to the design matrix
+## Slide 35. From the pitch curve to the design matrix
 
 **What is on the slide.** The chain, four labelled lines: pitch curve
 `z = cents(t)`; frequency `f_0(t) = f_pitch · 2^(cents(t)/1200)`; phase
@@ -725,7 +812,7 @@ intuition (frequency is the speed, phase the distance travelled) and a
 small-print line on the two implementation details: the curve is held
 at `J` knot values and interpolated; the columns are repeated per time
 chunk, `p = 2KC`. The step-by-step reading with the toy example is in
-the slide 33 notes above ("From `z` to `Φ(z)`").
+the slide 34 notes above ("From `z` to `Φ(z)`").
 
 **If asked why the cosine and sine pair:** the two columns with two
 weights produce a sinusoid of any amplitude and any starting phase
@@ -733,7 +820,7 @@ weights produce a sinusoid of any amplitude and any starting phase
 starting phase of each harmonic is absorbed into `a` and the timbre
 stays linear. That linearity is what the next slide needs.
 
-## Slide 35. Scoring a curve: the timbre integrated out
+## Slide 36. Scoring a curve: the timbre integrated out
 
 **What is on the slide.** One implication: `a ~ N(0, σ_a² I_p)` implies
 `p(x | z) = N(x; 0, σ_a² Φ(z) Φ(z)^T + σ² I_m)`. Then three bullets:
@@ -755,11 +842,11 @@ over every knob setting exactly. The result is a score for a candidate
 curve that no longer mentions the timbre:
 
 - `p(x | z) = N(x; 0, Φ(z) Σ_a Φ(z)^T + σ² I)` (the slide wrote "curve"
-  in words until 2026-10-21; `z` IS the curve, slide 33). Under this
+  in words until 2026-10-21; `z` IS the curve, slide 34). Under this
   curve the audio should look like Gaussian noise with a covariance
   built from the harmonic waves. In the thesis `z` names every
   nonlinear position the synthesizer needs, so in a chain fit it also
-  holds the boundary offsets; on slides 33 to 36, one note with fixed
+  holds the boundary offsets; on slides 34 to 37, one note with fixed
   boundaries, `z` is just the pitch curve. `Σ_a` is the prior covariance of the knobs, `σ²`
   the noise variance, `I` the identity. `m` is the number of samples,
   `p` the number of columns; the cost grows as `m · p²`, which is cheap.
@@ -778,7 +865,7 @@ curve that no longer mentions the timbre:
   when the curve is moved gives the band. Sharp peak, narrow band. This
   is the Laplace approximation ("curvature at the optimum").
 
-## Slide 36. Finding the curve, with its uncertainty
+## Slide 37. Finding the curve, with its uncertainty
 
 **What is on the slide.** Three labelled lines: the prior on the curve
 `u ~ N(0, K_knots)`; the best curve `ẑ = argmax_z [log p(x|z) + log
@@ -797,7 +884,7 @@ curvature; its inverse is the posterior covariance of the curve
 parameters under the Laplace approximation, and the 90 percent band on
 later slides is 1.645 times the square root of its diagonal.
 
-## Slide 37. One note: the model against the raw audio
+## Slide 38. One note: the model against the raw audio
 
 40 ms of a violin note with strong vibrato. Vermilion: the recorded
 audio `x`. Grey dashed: the best single constant pitch. Blue: the
@@ -806,7 +893,7 @@ because vibrato changes the odometer's speed; the curve stays locked.
 This is phase accumulation made visible, and why the method is
 sensitive to small pitch deviations.
 
-## Slide 38. The curve from the waveform: three notes
+## Slide 39. The curve from the waveform: three notes
 
 Three development notes: violin, cello, clarinet. Blue: the curve from
 the waveform. Orange dots: the corpus's ground-truth pitch frames, never
@@ -822,7 +909,7 @@ measurement chain, off by 2 to 4 cents, so the band does not and should
 not cover them. That gap is carried separately as a calibrated floor
 wherever the curve is used downstream.
 
-## Slide 39. Note boundaries: the chain model
+## Slide 40. Note boundaries: the chain model
 
 **What is on the slide.** A chain of `N` consecutive notes with
 boundaries `b_1 … b_{N−1}` and one pitch curve `z_k` per note. Five
@@ -833,12 +920,12 @@ labelled lines plus the bands:
    boundary before it and falls at the boundary after it. The first
    note has no fade-in, the last no fade-out.
 2. `Φ(z, b) = [w_1 ⊙ Φ_1(z_1) | … | w_N ⊙ Φ_N(z_N)] ∈ R^{m × Np}`: each
-   note's own design matrix (slide 34), every column scaled sample by
+   note's own design matrix (slide 35), every column scaled sample by
    sample by that note's window (`⊙`), then all notes' blocks placed
    side by side. Each note's block is built on its own time slice plus
    a 0.2 s margin, so its columns are zero far from the note.
 3. `p(x | z, b) = N(x; 0, σ_a² Φ Φᵀ + σ² I_m)`: the same collapsed
-   likelihood as slide 35, now a function of the boundaries too,
+   likelihood as slide 36, now a function of the boundaries too,
    because they shape the windows.
 4. `b^(0)`: the starting boundaries come from the score through the
    local tempo line, with no annotation access. The tempo line is a
@@ -847,9 +934,9 @@ labelled lines plus the bands:
 5. `(ẑ, b̂) = argmax [log p(x | z, b) + log p(z)]`: curves and
    boundaries found together by gradient descent, because the window
    is differentiable in `b`. The curve prior `p(z)` is the knot prior
-   of slide 36, per note.
+   of slide 37, per note.
 6. `Σ_{z,b}` from the Laplace over `(z, b)`: the bands come from the
-   curvature at the optimum, as on slide 36, now including the
+   curvature at the optimum, as on slide 37, now including the
    boundaries.
 
 **How to say it.** Each note is switched on and off by a soft window.
@@ -871,9 +958,9 @@ fixed 10 ms width, so the transition is effectively sharp and the
 studies use a fixed sharp edge. And when two consecutive notes have the
 same pitch the harmonic stacks are identical on both sides, so the
 likelihood carries no boundary information; those joints are reported
-separately (slide 49).
+separately (slide 50).
 
-## Slide 40. Note boundaries from the waveform: one chain, and the numbers
+## Slide 41. Note boundaries from the waveform: one chain, and the numbers
 
 Panel A: a five-note violin passage with three kinds of vertical line.
 Black: where the annotation says a note starts. Grey dashed: where the
@@ -888,7 +975,7 @@ systematic: the audio shows where the sound changes, the annotation
 marks where the musician intended the note. A model of the attack
 transient at the joint is the named next step.
 
-## Slide 41. Where this chapter ends: the joint loop
+## Slide 42. Where this chapter ends: the joint loop
 
 The architecture of the complete intended system. Top path, blue: the
 score graph from the model chapter with its spectral shaping, giving
@@ -896,7 +983,7 @@ the graph covariance `K_G`, and the coupling matrix `B` across
 channels. Bottom path, amber: score features and the music model's
 embeddings as linear kernels. These sum into the prior over every
 note's expression `z`, the same prior as in the earlier chapters.
-Right, orange: the audio likelihood of slides 33 to 35 replaces the
+Right, orange: the audio likelihood of slides 34 to 36 replaces the
 per-note observations; it is not Gaussian in `z`, so the posterior is
 found by Laplace or variational inference, with the amplitudes `a`
 recovered in closed form afterwards.
@@ -907,7 +994,7 @@ posterior; solid blocks are measured (curves, boundaries), dashed ones
 (transient model; loudness and articulation under the prior) are not
 built.
 
-## Slide 42. The end goal on one passage (development)
+## Slide 43. The end goal on one passage (development)
 
 A real 13-note, 8-second violin passage from the score and the waveform
 alone. Panel A: the recording segmented into notes by the inferred
@@ -920,7 +1007,7 @@ chain-eligibility rule, honestly left unfitted. Caveat: chains fitted
 independently, envelopes read out after the fit rather than inferred
 under the prior. That is the open work.
 
-## Slide 43. The score prior inside the waveform inference: three spans
+## Slide 44. The score prior inside the waveform inference: three spans
 
 **What is on the slide.** The week of 2026-10-15 to 20 on one slide: the
 score graph of slide 7 brought inside the waveform inference of slides
@@ -948,8 +1035,8 @@ covariance of `θ`, the arm's part plus the rank-one common-mode term.
 
 **How one cell runs.** Take a chain. Remove the hidden element from the
 audio and from the design matrix (its window columns go, not just its
-samples; slide 53 explains why that matters). Fit the chain under the
-likelihood of slide 35 with the prior above. The observed elements are
+samples; slide 54 explains why that matters). Fit the chain under the
+likelihood of slide 36 with the prior above. The observed elements are
 pinned by the audio, nearly identically under every arm. The hidden
 element has no data, so its posterior is exactly the prior conditional
 given its neighbours, the Gaussian conditioning formula on the slide:
@@ -984,9 +1071,9 @@ scale and the graph repairs that harm.
 offset, worth about 7 cents and 10 to 14 ms. The score graph is never
 worse than a time-only chain and better at phrase scale. Beyond the
 offset, nothing we can measure yet." If asked why the first run is not
-here: it was withdrawn, slide 53.
+here: it was withdrawn, slide 54.
 
-## Slide 44. What in the graph does the work: the time window
+## Slide 45. What in the graph does the work: the time window
 
 **What is on the slide.** The same question at whole-track scale with
 the power that chains lacked, on both corpora, and its answer: which
@@ -1000,7 +1087,7 @@ every pair and only the two-beat time window remains. Time chain:
 weight 1 between consecutive notes, 0 elsewhere. Everything else in the
 GP is identical across the three arms, including the per-piece
 intercept column in the feature kernel, so every contrast is beyond the
-common offset that dominated slide 43.
+common offset that dominated slide 44.
 
 **The table.** Strings and winds, the development evaluation of slide
 29 with 30 percent of the notes hidden per track, 78 tracks, 153
@@ -1031,7 +1118,7 @@ of the graph term." If asked whether the thesis should switch to the
 pitch-less graph: that is a change to a reported protocol and would need
 its own registration; it is the decision on the plan slide.
 
-## Slide 45. Summary
+## Slide 46. Summary
 
 Four sentences, say them exactly. Piano: beats the two-stage baseline
 on accuracy and calibration, confirmed once on untouched pieces.
@@ -1042,34 +1129,36 @@ three spans, no claims. What the graph does: its value is smoothing in
 score time over about two beats, on both corpora; pitch proximity adds
 nothing measurable, a development finding.
 
-## Slide 46. Plan
+## Slide 47. Plan
 
 October, done: curve studies at scale, the curve as a bundle channel,
-joint boundaries, the three spans of slide 43, the attribution of slide
-44. Decided on 23 October, with the professor hands-off: the
+joint boundaries, the three spans of slide 44, the attribution of slide
+45. Decided on 23 October, with the professor hands-off: the
 attribution is stated in the thesis as a development finding; the
 headline models keep their score graph, because a pitch-less default
 would be a change to a reported protocol needing its own registration;
 the four-layer framing of slide 3 is adopted; the writing freeze starts
-now rather than in January. Registered, frozen on 23 October and run
-once: two one-shots on the 13-piece strings-and-winds confirmation
-pool, re-used with full disclosure (it was spent on the four original claims; the two new
-claims were developed on the development split only). First, correlated
-timing noise: an AR(1) block in the timing channel's noise, which
-answers the one registered claim that failed. Second, the tonal pitch
-metric for the intonation channel's graph. Primary claims are the
-paired log-score differences, falsification rules frozen before the
-run; if the results are in by the meeting, state them here verbatim,
-pass or fail. The audit of every number against its record is done
-(three sentences corrected); the review pass remains. After: the transient model at the joints and the
-whole-performance joint loop are Future Work; the progress talk in
-January uses this deck; submission on 2 February.
+now rather than in January. Run once on 27 October, rules frozen that
+morning: two one-shots on the 13-piece strings-and-winds confirmation
+pool, re-used with full disclosure (it was spent on the four original
+claims; the two new claims were developed on the development split
+only). First, correlated timing noise: an AR(1) block in the timing
+channel's noise, which answers the one registered claim that failed.
+It passed, calibration `−0.121` and recovery `−0.011` seconds, both
+intervals excluding zero. Second, the tonal pitch metric for the
+intonation channel's graph: its calibration primary missed, `−0.023`
+with the interval reaching zero; its recovery claim held, `−0.312`
+cents. Both are in the thesis verbatim; slide 31 has the table. The
+audit of every number against its record is done (three sentences
+corrected); the review pass remains. After: the transient model at the
+joints and the whole-performance joint loop are Future Work; the
+progress talk in January uses this deck; submission on 2 February.
 
-## Slide 47. Divider: Backup
+## Slide 48. Divider: Backup
 
 Shown only if asked.
 
-## Slide 48. Backup: the curve against the tracker, at scale
+## Slide 49. Backup: the curve against the tracker, at scale
 
 376 notes, 7 tracks. Dumbbell plot: per instrument family, blue is the
 waveform curve's median error against the annotation frames, green the
@@ -1082,7 +1171,7 @@ observation channel improves held-out intonation on 14 of 14
 track-and-seed pairs, by 1.36 cents, significant, and the calibration
 floor halves, 3.1 to 1.8 cents.
 
-## Slide 49. Backup: boundary accuracy from score-only starting points
+## Slide 50. Backup: boundary accuracy from score-only starting points
 
 One dot per boundary, 128. Horizontal: the error of the score-only
 tempo-line guess. Vertical: the error after the joint fit. Below the
@@ -1091,7 +1180,7 @@ boundaries excluded: identical harmonic stacks on both sides carry no
 boundary information. Dots far above the diagonal: the systematic
 acoustic-versus-written remainder.
 
-## Slide 50. Backup: the score prior inside the waveform inference, the design
+## Slide 51. Backup: the score prior inside the waveform inference, the design
 
 The week of 2026-10-15..20. Question: when a note's audio is missing,
 does the score prior help guess it from its neighbours? Three priors
@@ -1109,7 +1198,7 @@ shared by all notes, absorbing the player's overall tuning offset.
 Example: a run 12 cents sharp; `s` learns 12, the independent prior can
 use it too, so the comparison measures what structure adds beyond that.
 
-## Slide 51. Backup: one chain end to end
+## Slide 52. Backup: one chain end to end
 
 Panel A: a five-note violin chain, the middle note's samples hatched
 (masked) and its columns dropped. Panel B: for each note the posterior
@@ -1121,7 +1210,7 @@ all three land near the chain's mean, 16 to 19 cents, while the truth is
 29.5: this note is sharper than its context. That is what "prior
 conditional" looks like.
 
-## Slide 52. Backup: the three spans, paired
+## Slide 53. Backup: the three spans, paired
 
 Three panels, one per test. Each row: the mean paired difference in the
 hidden element's error between two priors, with a 95 percent bootstrap
@@ -1138,7 +1227,7 @@ Third bullet, the positive content: the common offset alone, which
 every prior gets through `s`, is worth about 7 cents on intonation and
 10 to 14 ms on boundaries against the no-transfer references.
 
-## Slide 53. Backup: why the first intonation run was withdrawn
+## Slide 54. Backup: why the first intonation run was withdrawn
 
 Panel A: the objective as the hidden note's `c` sweeps −100 to +100
 cents on one chain, first protocol. Vermilion: the likelihood term;
@@ -1154,7 +1243,7 @@ with the note dropped from the model, the independent prior returns
 exactly the prior mean (zero) and the structured priors track the truth
 through the common offset.
 
-## Slide 54. Backup: calibration of the hidden element's band
+## Slide 55. Backup: calibration of the hidden element's band
 
 A z-score is the error divided by the claimed uncertainty. Honest bands
 put 90 percent of z-scores inside ±1.645 (the shaded band); "cov" above
@@ -1164,21 +1253,23 @@ bands too wide, because the prior's spread was set from the track's
 whole timing variability. Observed joints on clean audio: 0.05, 27 of
 40 beyond ±8; the model claims 0.7 ms precision because it pins the
 acoustic transition exactly, while the annotation marks the musical
-onset about 20 ms away. The estimand gap of slide 38, at the boundary.
+onset about 20 ms away. The estimand gap of slide 39, at the boundary.
 
 ---
 
 ## If stopped on one slide
 
-The three most likely probes are 35 (how the timbre is removed), 43
-(what the three spans say) and 44 (what the graph is for). One-line
-answers: "the amplitudes are linear, so we integrate them out exactly,"
+The four most likely probes are 31 (why a spent pool again), 36 (how
+the timbre is removed), 44 (what the three spans say) and 45 (what the
+graph is for). One-line
+answers: "disclosed, replication-grade, one pass and one miss, both
+verbatim," "the amplitudes are linear, so we integrate them out exactly,"
 "the score prior gives a missing note its context's offset with an
 honest band, beats a time-only prior at phrase scale, and so far nothing
 more," and "the graph's value is its two-beat time window; the pitch
 term adds nothing we can measure."
 
-## Slide 55. Backup: the three priors at track scale (strings and winds)
+## Slide 56. Backup: the three priors at track scale (strings and winds)
 
 **What is on the slide.** The track-scale version of the three-prior
 question, on the tracked six-channel bundle of the strings-and-winds

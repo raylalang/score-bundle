@@ -3,18 +3,22 @@
 `deck.tex` — beamer 16:9, compiles with `tectonic deck.tex` (0 errors/overfull).
 
 `deck.tex` is the one living thesis deck (consolidated 2026-10-14 from
-`deck_week.tex` and `deck_zemi_v1.tex`, which are frozen copies): 55
-pages (main line to page 46, backup divider 47, backup pages 48 to 55),
+`deck_week.tex` and `deck_zemi_v1.tex`, which are frozen copies): 56
+pages (main line to page 47, backup divider 48, backup pages 49 to 56),
 content-named chapters (piano / strings-and-winds / waveform),
 no "Phase N" wording, datasets with pieces and notes on every setup
 frame, every delta naming its comparator. The waveform chapter presents
 methodology and first development studies, no claims. The week of
 2026-10-15 to 23 is on the main line as two slides (2026-10-23): page
-43, the score prior inside the waveform inference at three spans
-(design maths plus the paired table); page 44, what in the graph does
+44, the score prior inside the waveform inference at three spans
+(design maths plus the paired table); page 45, what in the graph does
 the work (the edge weight with and without the pitch term, the
-track-scale contrasts on both corpora). The backup frames carry the
-detail: pages 50 to 55 (design, one chain, paired contrasts, the
+track-scale contrasts on both corpora). The two registered one-shots on
+the re-used strings-and-winds pool (2026-10-27: correlated timing noise
+passed, the tonal metric missed its calibration primary) are page 31,
+right after the strings-and-winds results, with the Plan on page 47
+stating the outcomes. The backup frames carry the
+detail: pages 51 to 56 (design, one chain, paired contrasts, the
 withdrawn first run, calibration, the track-scale table; figures
 `span_*.png` from `scripts/make_span_viz.py`).
 Figures live in
