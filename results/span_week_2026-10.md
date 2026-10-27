@@ -124,9 +124,9 @@ Eight figures from the stored cells (`scripts/make_span_viz.py`,
 end to end, the leakage diagnosis, the scalar attribution, the paired
 contrasts over three spans, calibration strips, the boundary gains, the
 phrase dose-response. All in the thesis section (81 pp); five as deck
-backup frames (pages 50–55 after the 2026-10-21 restructuring of the
+backup frames (pages 51–56 after the 2026-10-21 restructuring of the
 waveform setup slides). Since 2026-10-23 the verdict is also on the
-main line, slides 43 and 44.
+main line, slides 44 and 45 (since 2026-10-27, after the re-used-pool slide 31 was inserted).
 
 ## Wednesday and Thursday, 2026-10-22/23 (the meeting was cancelled)
 
@@ -162,7 +162,10 @@ the MIDI-DDSP comparison (setup risk, attribute mismatch). Run:
 2. Whether anything here is worth registering (only the weak form and
    the common-offset gain are positive).
 3. The registration pool for the correlated-timing-noise and tonal
-   follow-ups.
+   follow-ups. RESOLVED: disclosed URMP re-use (Ray, 10-23); both run
+   once on 10-27, timing noise passed, tonal metric missed its
+   calibration primary (`results/corrnoise_confirmation_results.md`,
+   `results/phase2_tonal_confirmation_results.md`).
 4. Sync Overleaf from main; retire the old worktree (fully merged).
 
 ## Lessons that now apply to every prior-value design

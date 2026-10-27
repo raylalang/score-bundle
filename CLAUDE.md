@@ -140,7 +140,17 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   `PHASE2_CONFIRMATION_I_AM_SURE=yes`, `PHASE2_REUSE_I_AM_SURE=yes`), locks
   every plain confirmation verb (`REUSE_MODE` in `eval_phase2_real.py`), uses
   the archived inputs (md5-checked), refuses once its results file exists;
-  guard test `tests/test_phase2_reuse_guard.py`. Each claim runs ONCE.
+  guard test `tests/test_phase2_reuse_guard.py`. **BOTH SPENT 2026-10-27**
+  (`results/corrnoise_confirmation_results.md`,
+  `results/phase2_tonal_confirmation_results.md`, evidence under
+  `evidence/phase2_reuse_confirmation/{corrnoise,tonal}/`): corrnoise N1
+  PASS (τ ΔNLL −0.121 [−0.156,−0.089]*), N2 PASS (ΔRMSE −0.011*), coverage
+  0.908, ρ>0 on 79/80 — the failed C4 claim repaired, confirmed once on the
+  re-used pool; tonal T2 FAIL (c ΔNLL −0.023 [−0.049,+0.001] ns, reported
+  verbatim; the metric stays exploratory), T1 PASS (ΔRMSE −0.312*), T3
+  penalty absent as-given; identity check vs 08-27 passed on all 24 plain
+  rows. The pool is spent twice over; never rerun either claim. Thesis:
+  `sec:phase2-reuse` (two paragraphs), deck slide 31.
   Dev record: `results/phase2_real_results.md` (registration-grade,
   diff-clean vs tag). Post-adoption dev studies, all results-doc'd:
   drift study (`results/phase2_drift_dev.md` — committee's "sine too
@@ -247,15 +257,16 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   the study machinery), `downstream.completion_guard`. Tests:
   `tests/test_adoption_optin.py` (incl. ρ=0 bit-equality and brute-force
   conditioning pins).
-- **Thesis state (2026-10-21, main=acd3076+): 76 pp, compile clean.** Main line =
+- **Thesis state (2026-10-27, main=ca3e587+): 83 pp, compile clean.** Main line =
   Intro / Background / Model / Data / piano results / Downstream / strings-and-winds
   results / **the waveform as the observation (Ch. 8)** / Discussion / Future Work /
   Conclusion; appendices A–G. Refocus: objective = an interpretable, score-aligned
   representation with uncertainty; method = Bayesian score-conditioned inverse
   synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
   ladder; three-question RQ hierarchy. `docs/slides/deck.tex` is the one full
-  thesis deck (55 pages; main line to 46, backup 48-55; the week's three spans and the
-  time-window attribution are main-line slides 43-44 since 2026-10-23; **every deck.tex change must be
+  thesis deck (56 pages; main line to 47, backup 49-56; the week's three spans and the
+  time-window attribution are main-line slides 44-45 since 2026-10-23; the two re-used-pool
+  one-shots are main-line slide 31 since 2026-10-27; **every deck.tex change must be
   followed by a change to `docs/slides/speaker_notes.md`, same commit — Ray's
   standing rule 2026-10-21**). `docs/meeting_qa_prep.md` = the 2026-10-14
   direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT.
@@ -310,7 +321,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   over ~2 beats, not pitch proximity**, at every scale tested; E3 — chain-scale
   σ_b: independent band 1.00→0.88, structured 0.75, verdict unchanged. Thesis:
   Appendix `app:trackscale` (tab:trackscale) + Ch. 8 closing paragraph + one
-  band sentence; brief §G; ROADMAP; ledger; deck main-line slides 43-44 (2026-10-23,
+  band sentence; brief §G; ROADMAP; ledger; deck main-line slides 44-45 (2026-10-23,
   after Ray asked why the deck barely changed) + backup frame 55 + notes.
   Piano counterpart `b_featlm_timegauss` MEASURED (`results/piano_timegauss_dev.md`):
   pitch term removed ⇒ RMSE −0.008* / NLL −0.019* BETTER than the headline

@@ -25,7 +25,7 @@ the deck or the brief. New runs happen only on Ray's go.
 | October (done) | first curve-from-waveform studies at scale; the curve as a bundle channel; joint note boundaries; **three spans of the bridge** (intonation at chain scale, boundaries at chain scale, intonation at phrase scale): the score prior transfers the context's common offset and nothing measurable beyond it; at phrase scale it beats a purely temporal prior | — |
 | October (now) | the direction-and-scope meeting: objective, positioning, integration scope, variables, evidence bar, registration pool (brief §H) | Ray + professor |
 | October (done) | tuning-scalar follow-up of the prior-value experiment: run under the corrected protocol; verdict = tuning bookkeeping, coverage repaired | — |
-| November | decide the registration pool (correlated timing noise, tonal metric: Bach10 / disclosed URMP re-use / both), then run the registered timing confirmation, one shot | professor |
+| October (done, 10-27) | registration pool decided (disclosed URMP re-use, Ray 10-23); both one-shots frozen and run once on 10-27: correlated timing noise PASSED (τ log score −0.121*, RMSE −0.011*), the tonal metric MISSED its calibration primary (−0.023 ns) and kept recovery (−0.312*) | — |
 | November | decide the channel design for the waveform strand: scalars or curve level | Ray |
 | November | a transient model at the note boundary (the pre-named next lever for the ~18 ms acoustic-vs-musical gap) | Ray's go |
 | November *(proposed)* | the registered waveform claim: after three spans the only positive is the weak form (score graph beats a purely temporal prior at phrase scale, −1.63*) and the common-offset gain; decide whether that is worth registering (power check first) or whether the three-span verdict is the chapter's measured answer | Ray |
@@ -64,7 +64,7 @@ priority order:
 5. the evidence bar for the final contribution (one preregistered
    waveform claim vs development studies plus the confirmed stages);
 6. the registration pool for the correlated-τ and tonal-metric follow-ups
-   (Bach10 / disclosed URMP re-use / both).
+   (Bach10 / disclosed URMP re-use / both) — DECIDED 10-23, RUN 10-27.
 
 Until those are decided: no new modelling runs. Open housekeeping:
 record the meeting outcome here and in the brief once it exists; sync
@@ -156,10 +156,13 @@ offset scalar is its core control).
 - The decomposition framing (score + expression + timbre + noise) is
   ADOPTED in the abstract, the introduction, the conclusion and deck
   slide 3.
-- Two more registered one-shots THIS WEEK on the disclosed re-used
-  13-piece URMP confirmation pool: correlated timing noise
-  (`docs/corrnoise_prereg_design.md` → frozen) and the tonal metric
-  (`docs/phase2_tonal_prereg_design.md` → frozen). Bach10 is NOT
+- Two more registered one-shots, DONE 2026-10-27, on the disclosed
+  re-used 13-piece URMP confirmation pool: correlated timing noise
+  (`docs/corrnoise_prereg_design.md`, frozen; PASSED, the failed timing
+  claim repaired) and the tonal metric (`docs/phase2_tonal_prereg_design.md`,
+  frozen; calibration primary MISSED, recovery held, stays exploratory).
+  Records `results/corrnoise_confirmation_results.md`,
+  `results/phase2_tonal_confirmation_results.md`. Bach10 is NOT
   available: the archive on disk is the Sibelius-resynthesised
   version (synthetic audio), unusable for intonation or timing claims.
 - Writing freeze NOW (2026-10-23), not January: every number audited
@@ -323,11 +326,13 @@ coherence bound, the realized-vs-process estimand rule).
 
 - Piano and strings-and-winds: confirmed, one-shots spent, records in
   `results/`. The URMP confirmation pool is gone; never rerun.
-- Correlated-τ registration: registration-grade dev evidence
-  (`results/corrnoise_tau_dev.md`); pool DECIDED 2026-10-23 (disclosed
-  URMP re-use), freeze and one-shot this week.
-- Tonal-metric registration: drafted with power check
-  (`docs/phase2_tonal_prereg_design.md`); same pool, same week.
+- Correlated-τ registration: SPENT 2026-10-27 on the disclosed re-used
+  pool, N1/N2 PASS (`results/corrnoise_confirmation_results.md`); adoption
+  as the timing channel's default noise model would need its own
+  registration. Never rerun.
+- Tonal-metric registration: SPENT 2026-10-27, T2 FAIL / T1 PASS
+  (`results/phase2_tonal_confirmation_results.md`); exploratory status
+  kept. Never rerun.
 - Decomposition framing in the intro/abstract: ADOPTED 2026-10-23.
 - Joint loop over all notes under the graph prior, transient columns at
   the joints, amplitudes under the prior: thesis Future Work

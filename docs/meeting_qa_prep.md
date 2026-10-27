@@ -1,30 +1,39 @@
 # Meeting brief (written 2026-10-14, brought to 2026-10-27 for the meeting of 2026-10-28)
 
 > Purpose: report the state and the decisions taken, and hear objections.
-> The deck (`docs/slides/deck.pdf`, 55 pages, speaker notes for every
+> The deck (`docs/slides/deck.pdf`, 56 pages, speaker notes for every
 > slide in `docs/slides/speaker_notes.md`) is the visual spine; this
 > brief is the discussion skeleton. Standing language rules: say "the GP
 > estimator" (never a coined name), "correlated timing noise across
 > notes" (never bare "AR(1)"). Before the meeting: **sync Overleaf**
-> (draft.tex changed on 10-21, 10-23: three spans, track-scale
-> attribution, decomposition framing, number audit).
+> (draft.tex changed on 10-21, 10-23, 10-27: three spans, track-scale
+> attribution, decomposition framing, number audit, the two re-used-pool
+> one-shots in `sec:phase2-reuse`).
 
 ## Since 2026-10-14, in one breath
 
 - The score prior was measured inside the waveform inference at three
   spans (chains, joints, phrases): every prior transfers the context's
   common offset; the score graph beats a naive time prior at phrase
-  scale; beyond the offset nothing measurable (§G, deck slide 43).
+  scale; beyond the offset nothing measurable (§G, deck slide 44).
 - At whole-track scale on both corpora, the score graph beats a time
   chain but EQUALS the same graph with its pitch term removed; on piano
   the pitch-less graph is slightly better. The graph's measured value is
-  smoothness in score time over about two beats (§G, deck slide 44,
+  smoothness in score time over about two beats (§G, deck slide 45,
   thesis Appendix "Three priors at track scale").
 - Decisions taken 2026-10-23 (Ray): that attribution is stated in the
   thesis, headline models keep their score graph; the four-layer framing
   (score, expression, timbre, noise) adopted; writing freeze in force;
   two more registered one-shots on the disclosed re-used URMP pool
-  (correlated timing noise; tonal metric), frozen on paper, not yet run.
+  (correlated timing noise; tonal metric), frozen and RUN on 10-27.
+- Results of 10-27 (deck slide 31, thesis `sec:phase2-reuse`): the
+  correlated-timing-noise claim PASSED (timing log score −0.121
+  [−0.156, −0.089], RMSE −0.011 s, coverage 0.908, ρ > 0 on 79 of 80
+  cells): the failed August timing claim is repaired, confirmed once on
+  the re-used pool. The tonal-metric calibration primary MISSED (−0.023
+  [−0.049, +0.001]); its recovery claim held (−0.312 cents, starred);
+  the metric stays exploratory. The unchanged arms reproduced the
+  August table digit for digit.
 - Thesis 82 pp, every number audited against its record on 10-23
   (three sentences corrected, `results/number_audit_2026-10-23.md`).
 
@@ -136,8 +145,12 @@ decide.
   harmonic likelihood (stratified out).
 - Correlated timing noise across notes (the failed claim's follow-up):
   improves timing calibration significantly on development data across
-  three independent runs; awaiting the registration-pool decision.
-- Tonal (circle-of-fifths) metric helps intonation (development only).
+  three independent runs; registered and CONFIRMED once on the re-used
+  pool, disclosed (2026-10-27: −0.121*, RMSE −0.011*).
+- Tonal (circle-of-fifths) metric helps intonation: development win on
+  both axes; registered one-shot on the re-used pool (2026-10-27) kept
+  the recovery gain (−0.312*) and MISSED the calibration primary
+  (−0.023 ns). Stays exploratory.
 
 **Negative results and limitations (kept, not hidden):**
 - Waveform parameter bands are internally calibrated (model-true
@@ -306,7 +319,8 @@ from here, so they were decided; state each as a decision and listen.
    carry the claims; the waveform is development level; two more
    registered one-shots (correlated timing noise, answering the failed
    timing claim; the tonal metric) on the disclosed re-used URMP pool,
-   run once, reported whatever the outcome. Decided; frozen on paper.
+   run once, reported whatever the outcome. Decided; RUN 10-27: timing
+   noise passed, tonal metric missed its primary (see the top block).
 6. **Pool:** disclosed URMP re-use. Bach10 as available on disk is the
    Sibelius-resynthesised version (synthetic audio), unusable for
    intonation or timing; the real Bach10 needs a request form and is not
