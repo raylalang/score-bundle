@@ -139,7 +139,9 @@ six-channel bundle with heteroscedastic per-(note, channel) observation
 noise, and the registered claim set was \emph{confirmed in a single
 one-shot} on the frozen 13-piece pool --- intonation recovery, vibrato
 calibration on both channels, coverage on target on all six channels; the
-secondary timing-calibration claim failed and is reported verbatim.
+secondary timing-calibration claim failed and is reported verbatim; its
+named remedy, a correlated timing-noise row, was then registered and
+confirmed once on the same pool, re-used with disclosure.
 The waveform setting (audio via a differentiable synthesizer) has its
 development studies measured, no claims yet: from the raw waveform alone --- no pitch
 tracker --- the model infers whole within-note pitch curves (beating the
@@ -2076,6 +2078,50 @@ the demonstration that the same prior, unchanged, extends to channels it was nev
 designed for --- now shown on real recordings and \emph{confirmed} once on the frozen pool
 (C1--C3; the secondary timing claim failed and is reported verbatim).
 
+\section{Two follow-up confirmations on the re-used pool}
+\label{sec:phase2-reuse}
+Two claims developed after the confirmation of \S\ref{sec:phase2-conf}
+were themselves registered and run once, on 2026-10-27, on the same
+13-piece pool, \emph{re-used with full disclosure}: the pool had been
+spent on C1--C4, its targets and plain-graph fits were in this chapter
+and known when the claims were selected, and the claim-specific
+quantities had never been computed on it (structurally so: neither
+script had a confirmation-mode path before the registration commit).
+The inputs are the archived 2026-08-27 targets, checksum-verified; the
+masks, cells and seeds are those of Table~\ref{tab:phase2-conf}. Both
+registrations (\texttt{docs/corrnoise\_prereg\_design.md},
+\texttt{docs/phase2\_tonal\_prereg\_design.md}, tags of 2026-10-27)
+fixed the primary claim, the decision rule, the systems and the exact
+commands before the run; the claims were developed on the development
+split only. This is replication-grade confirmation, not the pristine
+kind of \S\ref{sec:hygiene}, and the thesis labels it so.
+
+\paragraph{The timing claim, repaired.} The one registered claim that
+failed (C4, timing calibration) named its remedy: alignment error is
+correlated along score time, and the diagonal noise row cannot
+represent it. The registered follow-up puts an AR(1) block in the timing
+channel's noise, $\Sigma_{\tau}(\rho)_{ij} = \sqrt{d_i d_j}\,\rho^{|i-j|}$
+in note order, with $d_i$ the as-given cell variances and $\rho$ chosen
+per (track, seed) by the observed block's marginal likelihood on a fixed
+grid, held-out timing predicted through the full covariance including
+the noise cross-terms; $\rho = 0$ is the published diagonal path and the
+paired baseline (the opt-in core path \texttt{gp.noise\_corr} of
+Chapter~\ref{ch:future} is bit-equal to this machinery). Primary N1 was
+the paired timing NLL, cluster-bootstrapped over the 40 unique tracks;
+N2 the paired RMSE, secondary and non-gating; coverage and the share of
+cells with $\rho > 0$ report-only.
+\textbf{N1 passed} ($-0.121$ $[-0.156, -0.089]$, interval excluding
+zero; development basis $-0.111$), \textbf{N2 passed} ($-0.011$
+$[-0.016, -0.007]$ s, $0.058 \to 0.047$ s), coverage stayed at nominal
+($0.908$ against the diagonal's $0.911$), and $\rho > 0$ on 79 of 80
+cells (median $0.45$). The pre-stated risk --- this pool's timing
+channel is cleaner than development's --- showed as a smaller absolute
+recovery gain, not a lost star. By the registered rule: the correlated
+timing-noise row repairs the failed timing-calibration claim, confirmed
+once on the re-used pool (disclosed). Record:
+\texttt{results/corrnoise\_confirmation\_results.md}; evidence under
+\texttt{evidence/phase2\_reuse\_confirmation/}.
+
 % =====================================================================
 \chapter{The Waveform as the Observation}\label{ch:phase3}\label{app:phase3}\label{sec:phase3-math}
 \emph{Stage 3 of the progression: the observation becomes the waveform
@@ -2684,6 +2730,10 @@ one-shot: the symbolic piano result and the real-audio
 six-channel result --- the latter on a single corpus (URMP, 13
 confirmation pieces), with the secondary timing-calibration claim failed
 and a small starred adverse timing-recovery cell, both reported verbatim.
+Two follow-up claims were confirmed once more on that same pool, re-used
+with full disclosure (\S\ref{sec:phase2-reuse}): replication-grade
+evidence, weaker in kind than the untouched-pool confirmations, and
+labelled so wherever it is cited.
 The waveform evidence is development-level and exploratory throughout,
 and its tests of the thesis's methodological hypothesis, three spans on
 short chains, joints and phrases (\S\ref{sec:phase3-priorvalue}),
@@ -2766,9 +2816,12 @@ note order, its one parameter chosen by the evidence, improves timing NLL
 significantly ($-0.111$), moves coverage toward nominal, and cuts timing
 RMSE by ${\sim}20\%$ ($\approx 99 \to 80$\,ms), with the correlation
 detected on 97--100\% of cells across three independent runs (fresh mask
-seeds; joint refit). Turning this into a claim requires its own
-preregistered confirmation on a fresh pool --- the pending corpus
-decision. \textbf{The tonal
+seeds; joint refit) --- and, on 2026-10-27, \emph{confirmed once} on the
+re-used pool with disclosure (\S\ref{sec:phase2-reuse}: timing NLL
+$-0.121$, RMSE $-0.011$ s, both starred, coverage at nominal). What
+remains is adoption: making the correlated row the default noise model
+of the timing channel would re-run the published tables and needs its
+own registration; on a fresh corpus the claim is untested. \textbf{The tonal
 metric:} the circle-of-fifths \emph{replacement} geometry
 \eqref{eq:tonaladj} that hurt piano expression helps intonation on both
 axes (\S\ref{sec:phase2-delta}; development, exploratory); adopting it
@@ -2892,7 +2945,8 @@ now been carried, unchanged in form, to intonation, vibrato, loudness,
 timing, and vibrato onset delay on real recordings --- and confirmed at
 one-shot level on the frozen pool (intonation recovery, vibrato
 calibration, coverage; the secondary timing claim failed and is reported
-verbatim). The step to audio through a differentiable synthesizer is where the
+verbatim, and its named remedy, correlated timing noise across notes,
+was then confirmed once on the same pool, re-used with disclosure). The step to audio through a differentiable synthesizer is where the
 most novel work lies; its development studies now reach whole pitch
 curves that beat the tracker's frames at the median and note boundaries
 inferred jointly from score-nominal starting points, and they fix the
