@@ -215,8 +215,7 @@ articulation, dynamics; later intonation, vibrato, loudness --- so a
 performance is a per-note field over the score support, and transcription
 is posterior inference over that field. ``Bundle'' is used in this
 everyday sense throughout; the geometric reading (per-note fibres with a
-connection over the score graph) is a deliberate outlook reserved for
-future work (\S\ref{sec:future-geom}).
+connection over the score graph) is not developed here.
 
 \section{Problem statement}
 Let a symbolic score fix, for each note, its pitch, score onset, and notated
@@ -401,10 +400,10 @@ methodological findings. Chapter~\ref{ch:downstream} maps the downstream reach.
 Chapter~\ref{ch:phase2} carries the same prior, unchanged, to real recordings and
 reports the strings-and-winds confirmation.
 Chapters~\ref{ch:discussion}--\ref{ch:conclusion} discuss, situate, and conclude;
-appendices hold the notation summary (\ref{app:notation}), the two-stage
-development lineage (\ref{app:lineage}), the methodology record
-(\ref{app:methods}), the relocated piano and strings-and-winds development studies
-(\ref{app:phase1dev}, \ref{app:phase2dev}), and additional tables (\ref{app:extra}).
+appendices hold the notation summary (\ref{app:notation}), the per-channel
+form of the two-stage lineage (\ref{app:lineage}), the relocated piano and
+strings-and-winds development studies (\ref{app:phase1dev},
+\ref{app:phase2dev}), and the calibration profile (\ref{app:extra}).
 
 % =====================================================================
 \chapter{Background and Related Work}\label{ch:related}
@@ -947,9 +946,10 @@ rendering from a short excerpt, where per-piece adaptation has too little to ada
 to --- it remains the better tool (\S\ref{sec:boundary}).
 
 Its per-channel precision-side form ($\Qg = \lambda I + \eta \Lg$ per
-channel, the sparse-GMRF computational route), the plug-in-mean choices,
-and the constrained systems' posterior formulas are recorded in
-Appendix~\ref{app:lineage}.
+channel, the sparse-GMRF computational route) and the plug-in-mean
+choices are recorded in Appendix~\ref{app:lineage}; the constrained
+systems' posterior formulas are in the development record
+(\texttt{docs/graphgp\_first\_design.md}).
 
 \paragraph{Exact nesting.}
 Constraining $B$ diagonal, dropping the feature kernels, and fixing the graph
@@ -961,8 +961,8 @@ the equality is pinned by a unit test. The per-channel pipeline, fit
 independently, may select three different shapes; the nesting statement is
 about the model \emph{family}, not about coinciding optima. The constrained systems are therefore not
 merely \emph{analogous} baselines but points in the proposed model's own parameter
-space, which is what makes the lineage tables of Appendix~\ref{app:lineage} an
-ablation of one model rather than a comparison of two. Re-inserting the two-stage
+space, which is what makes the development lineage tables
+(\texttt{docs/graphgp\_first\_design.md}) an ablation of one model rather than a comparison of two. Re-inserting the two-stage
 baseline's own cross-piece mean as a fixed mean inside \eqref{eq:gpfirst}
 reproduces its results almost unchanged --- which is how we know the proposed
 model's gain comes from the per-piece Bayesian feature weighting, not from coupling
@@ -1114,10 +1114,6 @@ interval excludes zero. Pairing matters here: piece difficulty varies far more t
 the gap between systems, so an unpaired test would drown every effect reported in this
 thesis.
 
-\section{Performer-identification corpus (Vienna 4x22)}
-For the one task ASAP cannot support (performer identity), the small Vienna~4x22
-corpus (22 pianists $\times$ 4 shared excerpts) is used \cite{vienna4x22}.
-
 % =====================================================================
 \chapter{Results: Piano from Aligned MIDI}\label{ch:results}
 This chapter is stage 1 of the progression: aligned MIDI supplies the
@@ -1167,7 +1163,7 @@ The full development lineage --- the nested ablation sequence from
 zero-mean graph-off up to the proposed model (development RMSE \rmseGPdev,
 NLL \nllGPdev), with the two-stage pipeline rows as its special cases, and
 the three-step account of how the final model was selected --- is recorded
-in Appendix~\ref{app:lineage}; development numbers flatter every system,
+in the development record (\texttt{docs/graphgp\_first\_design.md}); development numbers flatter every system,
 which is why the confirmation table above is the headline. The attribution
 controls of \S\ref{sec:attribution} trace the differences to their
 mechanism.
@@ -1365,7 +1361,7 @@ the hand-built features lack.
 \begin{table}[h]\centering
 \caption{Per-channel recovery (RMSE) and 90\%-interval coverage, development set
 ($\nPieces \times 4$ masks), the proposed model's own ablation sequence;
-the two-stage lineage rows are in Appendix~\ref{app:lineage}.}
+the two-stage lineage rows are in \texttt{docs/graphgp\_first\_design.md}.}
 \label{tab:perchannel}
 \footnotesize
 \begin{tabular}{@{}lcccccc@{}}
@@ -1407,15 +1403,26 @@ little of $\tau$ is predictable.\label{fig:posterior-example}}
 
 \section{Leakage control}\label{sec:leak}
 An earlier read-out let the music model see a note's own velocity --- the
-very target it was asked to predict --- inflating its apparent advantage;
-the read-out was moved one position earlier, everything re-measured, and
-the strict protocol adopted. The corrected velocity edge is smaller but
-honest (mean-only error $0.090$ against the retracted $0.057$), a
-structural test makes the leak impossible to reintroduce silently, and
-the proposed model's pipeline is additionally audited bitwise end to end.
-The full episode --- including the scaling illusion the leak manufactured
-and the one documented $O(1/N)$ centring dependence that sits upstream of
-the audit's scope --- is recorded in Appendix~\ref{app:methods}.
+very target it was asked to predict --- inflating its apparent advantage.
+The summary is now read one position earlier (provably blind to the
+note's own velocity, pinned by an automated structural test that makes
+the leak impossible to reintroduce silently), everything was
+re-measured, and the strict protocol adopted. The corrected velocity
+edge is smaller but honest and statistically significant: the music
+model's mean-only error on the velocity channel was $0.057$ \emph{with}
+the leak (the retracted claim) and $0.090$ with the final read-out. The
+leak had also manufactured an apparent scaling gain: a $1.3\times$
+larger, lower-perplexity music model is identical downstream once the
+leak is removed (RMSE $0.394$ vs.\ $0.394$), so the music model is
+judged downstream, not by perplexity. The same mask-aware read-out
+feeds the proposed model's feature kernel, whose full pipeline was
+additionally audited bitwise (corrupting held-out targets or velocities
+changes no prediction by one bit). One dependence sits upstream of that
+audit's scope, in the target \emph{definition}: the velocity centring
+constant is the piece mean over \emph{all} matched notes, held-out ones
+included, an $O(1/N)$ coupling of observed targets to hidden
+velocities, invisible to the bitwise audit, identical for every system
+compared, and recorded as a documented limitation.
 
 \section{Hyperparameter fragility and the safeguard}
 Two distinct failure modes were found and fixed. First, on a minority of mask
@@ -1475,16 +1482,23 @@ no second confirmation set spent.
 
 % =====================================================================
 \chapter{Downstream Tasks}\label{ch:downstream}
-Six tasks with objective metrics and honest baselines; all outcomes reported
-(summary in Table~\ref{tab:downstream}; both verdict columns in
-Appendix~\ref{app:lineage}). Every task was run under the
-two-stage pipeline during development and \emph{re-validated under the proposed model} --- with identical corruptions and masks where the task permits pairing;
-performer-ID uses the features-only variant, since Vienna provides no music-model embeddings
-(the accompanying evidence archive). Both verdicts are given.
+Four tasks with objective metrics and honest baselines; all outcomes
+reported (summary in Table~\ref{tab:downstream}; the two-stage
+development verdicts beside them in
+\texttt{docs/downstream\_tasks\_results.md}). Every task was run under
+the two-stage pipeline during development and \emph{re-validated under
+the proposed model} with identical corruptions and masks where the task
+permits pairing. Two whole-performance summary tasks run during
+development --- musical-era classification, an honest negative under
+both models, and performer identification on the Vienna 4x22 corpus,
+mixed under both, since smoothing removes the idiosyncrasy that
+identifies a pianist --- are recorded there and not reported here; they
+are the evidence for the second half of the structure boundary of
+\S\ref{sec:boundary}.
 
 \begin{table}[h]\centering
 \caption{Downstream tasks: verdicts under the proposed model. The
-two-stage development verdicts are recorded in Appendix~\ref{app:lineage}.}
+two-stage development verdicts are recorded in \texttt{docs/downstream\_tasks\_results.md}.}
 \label{tab:downstream}
 \footnotesize
 \begin{tabular}{@{}p{4.6cm}p{8.2cm}@{}}
@@ -1496,8 +1510,6 @@ Denoising, known noise & win (0.182/0.276, cov 0.90) \\
 Denoising, blind noise & failure in both parameterizations \\
 Completion from excerpt & partial $+$ \textbf{extrapolation boundary} (\S\ref{sec:boundary}) \\
 Selective prediction & qualified win, transfers (confident-half RMSE 0.076) \\
-Era classification & honest negative (0.20 vs 0.60 majority, n=30) \\
-Performer-ID (Vienna) & mixed (raw 0.136 $>$ GP-denoised 0.114) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1538,25 +1550,8 @@ $0.07$ on the confident half). Only the graph provides the per-note confidence t
 triage needs; the no-graph baselines rank at piece level only. Under the proposed model the triage is slightly better still (confident-half RMSE $0.076$ vs.\
 $0.080$, matched abstention).
 
-\section{Musical-era classification --- honest negative, both models}
-Style statistics alone do not beat the majority-class baseline under either model:
-$0.37$--$0.38$ vs.\ $0.489$ majority in the two-stage study ($n{=}90$), and
-$0.10$ raw / $0.20$ GP-denoised vs.\ $0.60$ majority in the proposed-model re-run
-(the 30-piece development subset; majorities differ because the subsets do). A note-level tool does not help whole-piece
-summaries, whichever model extracts the notes.
-
-\section{Performer identification (Vienna 4x22) --- mixed, both models}
-The extracted expression \emph{does} carry a pianist's identity --- accuracy
-$0.136$--$0.179$ against a 1-of-22 chance rate of $0.045$ ($3$--$4\times$ chance),
-validating the extraction. Smoothing \emph{hurts} this whole-performance summary in
-both models: denoising toward an ensemble mean removes exactly the idiosyncrasy
-that identifies a performer. The proposed-model re-run (its features-only variant; the corpus
-provides no music-model embeddings) reproduces the pattern with a milder penalty --- raw
-$0.136$, GP-denoised $0.114$, two-stage-denoised $0.080$ --- consistent with the
-GP's evidence-fitted noise removing less of the per-note signal.
-
 \section{The boundary}\label{sec:boundary}
-Across all six, two boundaries emerge. \textbf{(1) The structure boundary} (both
+Across the tasks, two boundaries emerge. \textbf{(1) The structure boundary} (both
 models): the graph prior helps whenever notes are judged one by one for accuracy
 or confidence, and does not help when a performance is collapsed into a summary.
 \textbf{(2) The adaptation boundary} (proposed model): per-piece Bayesian feature
@@ -1898,7 +1893,7 @@ confirmation set, fixed before the data are seen --- exactly what the frozen
 \label{sec:phase2-pilot}
 Before any real audio, the full specified pipeline was validated end to
 end on synthetic pieces whose per-note truth is known
-(Appendix~\ref{app:pilot}): the graph GP beats the no-graph ablation on
+(record: \texttt{docs/phase2\_synthetic\_pilot.md}): the graph GP beats the no-graph ablation on
 every channel; missing vibrato cells --- which no per-note method can
 even express --- are recovered at roughly $4\times$ better than prior
 scale with honest coverage; and the as-given noise default is settled
@@ -2476,48 +2471,47 @@ outside the chain-eligibility rule are honestly unfitted (the gap);
 the envelope strand is a post-hoc read-out, not yet under the
 prior.\label{fig:endgoal}}
 
-\section{The prior inside the waveform inference: the first span}
+\section{The prior inside the waveform inference: three spans}
 \label{sec:phase3-priorvalue}
 Everything above this point fits each note's curve under its own prior;
 the score graph of Chapter~\ref{ch:model} has not yet entered the
-waveform inference. This development study builds the first span of
-that bridge and asks the thesis's methodological question at the
-waveform: does score-informed structure add value where the acoustic
-evidence is absent, and does it cost anything where the evidence is
-strong? The answer, measured in three runs on the same chains, is
-two-sided and is reported in full, including the protocol error the
-first run contained.
+waveform inference. This development study builds that bridge at three
+spans and asks the thesis's methodological question at the waveform:
+does score-informed structure add value where the acoustic evidence is
+absent, and does it cost anything where the evidence is strong? The
+answer is two-sided and is reported in full, including the protocol
+error the first run contained.
 
-\paragraph{Design.} Three cross-note priors over the per-note intonation
-constants $c$ of a chain, at matched marginal variance and with
-everything else identical (the amplitude-marginalised likelihood, the
-data, the optimiser and its budget, boundaries fixed at the annotation):
-independent, $c \sim \N(0,\sigma^2 I)$; temporal, $c \sim
-\N(0,\sigma^2 K_{\mathrm{chain}})$ with the note-order chain graph; and
-score graph, $c \sim \N(0,\sigma^2 K_{G})$ with the score graph of
-\S\ref{sec:scoregraph} (time \emph{and} pitch proximity). Both structured
-kernels are $(I+L)^{-1}$, diagonal-normalised; $\sigma^2$ is the track's
-own reference variance of $c$ (a population scale, not tuned). Two
-conditions per chain: \emph{masked}, in which the middle eligible note
-is removed from the likelihood --- the waveform-level analogue of the
-held-out imputation task of Chapter~\ref{ch:results}, so that the
-note's posterior is exactly the prior conditional given its observed
-neighbours --- and \emph{clean}, the full audio. A second configuration
-adds to every arm a free per-chain tuning scalar $t \sim \N(0, 50^2)$,
-$c = t\mathbf{1} + \tilde c$, marginalised as a rank-one term: it hands
-the independent prior the chain's observed mean, so that whatever
-structured gain survives it is note-level transfer rather than the
-bookkeeping of a shared tuning offset. Hypotheses and a falsification
-rule were committed before each run: structure beats independence on
-masked cells (paired), the score graph's edge over the temporal chain,
-if any, appears where the chain contains a recurring pitch, and the
-arms tie on clean audio; no significant structured-vs-independent gap
-under the tuning scalar means that score structure carries no
-note-level intonation information on short chains beyond tuning
-bookkeeping. Scoring: the hidden note's $|\hat c - c_{\mathrm{qt}}|$
-against the reference centre, and coverage at $90\%$ from a joint
-Laplace at the MAP. The chain-eligible notes of four development tracks
-give $47$ chains, $25$ of which contain a recurring pitch.
+\paragraph{Design.} Three cross-note priors over one latent per element
+of a chain --- the per-note intonation constant $c$, or for the boundary
+span the per-joint offset from the tempo line --- at matched marginal
+variance and with everything else identical (the amplitude-marginalised
+likelihood, the data, the optimiser and its budget): independent,
+$\N(0,\sigma^2 I)$; temporal, $\N(0,\sigma^2 K_{\mathrm{chain}})$ with
+the note-order chain graph; and score graph, $\N(0,\sigma^2 K_{G})$ with
+the score graph of \S\ref{sec:scoregraph} (time \emph{and} pitch
+proximity). Both structured kernels are $(I+L)^{-1}$,
+diagonal-normalised; $\sigma^2$ is the track's own reference variance (a
+population scale, not tuned). Every arm carries a free per-chain
+common-mode scalar $t \sim \N(0, 50^2)$, $c = t\mathbf{1} + \tilde c$,
+marginalised as a rank-one term: it hands the independent prior the
+chain's observed mean, so that whatever structured gain survives it is
+element-level transfer rather than the bookkeeping of a shared offset.
+Two conditions per chain: \emph{masked}, in which the middle eligible
+element is removed from the likelihood and from the design, so that its
+posterior is exactly the prior conditional given its observed
+neighbours (the waveform-level analogue of the held-out imputation task
+of Chapter~\ref{ch:results}); and \emph{clean}, the full audio.
+Hypotheses and a falsification rule were committed before each run:
+structure beats independence on masked elements (paired); the score
+graph's edge over the temporal chain, if any, appears where a pitch
+recurs; the arms tie on clean audio; and no significant
+structured-versus-independent gap under the common-mode scalar means
+that score structure carries no element-level information beyond the
+shared offset. Scoring: the hidden element's distance to the reference
+(the reference centre for $c$, the annotation for a joint) and coverage
+at $90\%$ from a joint Laplace at the MAP. Development evidence on four
+to nine instruments; nothing registered.
 
 \figph{span_schematic.png}{1.0}{The prior-value design as a system. One
 latent per note (the intonation constant $c$; for the boundary span, one
@@ -2529,15 +2523,51 @@ removed and its design columns dropped, so its posterior is the prior
 conditional given the observed notes. Output: the hidden element's
 posterior mean and standard deviation.\label{fig:span-schematic}}
 
-\figph{span_protocol.png}{1.0}{One chain end to end (track~1, violin;
-corrected protocol with the tuning scalar). Top: the segment's waveform
-with the five note regions; the middle note's samples are masked
-(hatched) and its columns dropped. Bottom: per-note posteriors of $c$
-under the three priors against the reference centres. The observed
-notes are pinned by the audio to the same value under every prior; the
-hidden note receives each prior's conditional, with its $90\%$ band ---
-here all three land near the chain's mean, short of the truth, which
-is sharper than its context.\label{fig:span-protocol}}
+\begin{table}[t]\centering
+\caption{The three spans, paired: mean paired difference in the hidden
+element's error with $95\%$ bootstrap intervals, every arm carrying the
+common-mode scalar; negative favours the first arm, $*$ marks an
+interval excluding zero. Chains and joints on four development tracks,
+phrases on all $78$. Development, exploratory; no claims registered.}
+\label{tab:phase3-priorvalue}
+\footnotesize
+\begin{tabular}{@{}llcc@{}}
+\toprule
+span & hidden element & graph $-$ independent & graph $-$ temporal \\
+\midrule
+$47$ chains, $3$--$5$ notes & one note's $c$ (cents) & $-0.02$ $[-0.33,+0.32]$ & $-0.19$ $[-0.89,+0.46]$ \\
+$40$ joints & one joint's $b$ (ms) & $-2.45$ $[-8.38,+3.32]$ & $+1.20$ $[-2.12,+4.45]$ \\
+$48$ phrases, $6$--$10$ notes & a recurring pitch's $c$ (cents) & $-0.07$ $[-0.42,+0.27]$ & $-1.63$ $[-2.93,-0.46]^{*}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The first span: intonation on chains.} The chain-eligible
+notes of four development tracks give $47$ chains of $3$--$5$ notes,
+$25$ with a recurring pitch. Without the common-mode scalar, structure
+halves the hidden note's error: $14.42 \to 6.80$ (temporal) and $7.62$
+(score graph) cents at the median, paired $-5.78$ ($[-8.16, -3.27]$)
+and $-6.24$ ($[-8.49, -3.79]$), each better on $79\%$ of the chains,
+with the two structured arms tied ($-0.46$, $[-1.48, +0.51]$) and the
+recurring-pitch stratum a trend short of significance ($-0.86$,
+$[-2.04, +0.34]$, $n=25$). With the scalar, the independent arm reaches
+$6.42$ cents (temporal $6.55$, score graph $5.90$) and all three arms
+tie (Table~\ref{tab:phase3-priorvalue}; recurring-pitch stratum
+$+0.01$, $[-0.88, +0.91]$). The scalar moves the independent arm by
+$-6.85$ (significant) and the structured arms by $-0.9$ and $-0.6$ (not
+significant): the whole structured gain was the transfer of the track's
+shared tuning offset, and the falsification rule fires. \emph{On
+$3$--$5$-note chains, score structure --- and plain temporal adjacency
+--- carries no measurable note-level intonation information beyond
+tuning bookkeeping.} On clean audio the arms tie to the second decimal
+($2.22$--$2.37$ cents in both configurations), so the structure costs
+nothing where the evidence dominates. Calibration is honest: the
+structured conditional bands cover at $0.94$ without and $0.89$ with
+the scalar; the zero-mean independent band covers at $0.77$, miscentred
+on tuning-offset tracks, and the scalar repairs it ($0.96$,
+conservative). Scope: intonation constants only, boundaries fixed at
+the annotation, kernel shape $s=1$, about $150$\,s per fit including
+the Laplace.
 
 \paragraph{A protocol error, found and fixed.} The first run masked the
 hidden note's audio samples but left its soft-window design columns in
@@ -2546,143 +2576,38 @@ few samples' worth of column mass on the neighbours' audio, and with
 the amplitudes marginalised that leak carved a well of about $38$ nats
 along the hidden constant across $\pm100$ cents, against $4$--$35$ nats
 from the prior: every arm's masked estimate was a leakage-driven
-optimum, uncorrelated with the truth and worse than predicting zero.
-That run's apparent structured win is therefore not evidence and its
-record carries an erratum. The corrected protocol removes the hidden
-note's columns altogether, and its independent arm then returns
-exactly the prior mean, as it must.
-
-\figph{span_leakage.png}{1.0}{Why the first run was withdrawn. (A) The
-objective along the hidden note's $c$ on one chain under the first
-protocol: the leaked likelihood (vermilion) carves a $38$-nat well
-across $\pm100$ cents against the prior's $4$--$35$ nats (grey). (B)
-Under that protocol the masked estimates of all three arms are
-uncorrelated with the truth and spread over $\pm85$ cents. (C) With the
-hidden note dropped from the design, the independent arm returns
-exactly the prior mean and the structured arms follow the truth through
-the common offset.\label{fig:span-leakage}}
-
-\begin{table}[t]\centering
-\caption{The prior-value experiment under the corrected protocol: three
-cross-note priors over per-note intonation constants inside the
-waveform inference, $47$ chains on four development tracks, without
-and with the free per-chain tuning scalar in every arm. Score: the
-hidden (masked) or corresponding (clean) note's distance to the
-reference centre; coverage at nominal $90\%$. Predicting zero scores
-$14.42$ cents. Development, exploratory; no claims registered.}
-\label{tab:phase3-priorvalue}
-\footnotesize
-\begin{tabular}{@{}lllcc@{}}
-\toprule
-condition & prior & tuning scalar & median $|$err$|$ (cents) & coverage@90 \\
-\midrule
-masked & independent & no & 14.42 & 0.77 \\
-masked & temporal chain & no & 6.80 & 0.94 \\
-masked & score graph & no & 7.62 & 0.94 \\
-masked & independent & yes & 6.42 & 0.96 \\
-masked & temporal chain & yes & 6.55 & 0.89 \\
-masked & score graph & yes & 5.90 & 0.89 \\
-\midrule
-clean & independent & either & 2.35--2.37 & 0.91 \\
-clean & temporal chain & either & 2.24--2.30 & 0.89--0.91 \\
-clean & score graph & either & 2.22--2.28 & 0.89 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Reading.} Without the tuning scalar, structure halves the
-hidden note's error: $14.4 \to 6.8$ (temporal) and $7.6$ (score graph)
-cents at the median, paired $-5.78$ (interval $[-8.16, -3.27]$) and
-$-6.24$ ($[-8.49, -3.79]$), each better on $79\%$ of the $47$ chains;
-the two structured arms tie ($-0.46$, $[-1.48, +0.51]$), and the
-pre-stated recurring-pitch stratum shows a trend in the predicted
-direction that does not reach significance ($-0.86$, $[-2.04, +0.34]$,
-$n=25$). With the tuning scalar, the independent arm reaches $6.42$
-cents and all three arms tie: score graph against independent $-0.02$
-($[-0.33, +0.32]$), temporal against independent $+0.17$ ($[-0.55,
-+0.91]$), the recurring-pitch stratum $+0.01$ ($[-0.88, +0.91]$). The
-scalar moves the independent arm by $-6.85$ (significant) and the
-structured arms by $-0.9$ and $-0.6$ (not significant): the whole
-structured gain was the transfer of the track's shared tuning offset.
-The falsification rule fires. \emph{On $3$--$5$-note chains, score
-structure --- and plain temporal adjacency --- carries no measurable
-note-level intonation information beyond tuning bookkeeping.} On clean
-audio the arms tie to the second decimal in both configurations, so
-the structure costs nothing where the evidence dominates. Calibration
-is honest: the structured conditional bands cover at $0.94$ without and
-$0.89$ with the scalar; the zero-mean independent band covers at $0.77$,
-miscentred on tuning-offset tracks, and the scalar repairs it ($0.96$,
-conservative).
-
-\figph{span_commonmode.png}{1.0}{The attribution step, per chain. Adding
-the free tuning scalar to the independent prior cuts the hidden note's
-error on most chains (left; paired $-6.85$ cents, significant), while
-the score-graph prior barely moves (right; $-0.62$, not significant):
-the structured gain of the no-scalar run was the common
-offset.\label{fig:span-commonmode}}
-
-\figph{span_contrasts.png}{1.0}{The three spans, paired. Mean paired
-difference in the hidden element's error with $95\%$ bootstrap
-intervals, every arm carrying the common-mode scalar: intonation on
-$47$ chains (cents), boundaries on $40$ non-unison joints (ms),
-intonation on $48$ phrases (cents). Score graph against independent is
-a tie at every span; at phrase scale the score graph beats the temporal
-chain and the temporal chain is worse than independent.\label{fig:span-contrasts}}
-
-What the first span says, then, is two-sided. A cross-note prior lets a
-note whose audio is absent inherit its chain's tuning offset, with
-calibrated uncertainty, which a zero-mean prior cannot do; beyond that
-common mode, the pitch-proximity coupling that distinguishes the score
-graph from time adjacency adds nothing on these chains, and neither
-does adjacency itself. The methodological hypothesis of the thesis is
-therefore not supported for intonation constants at chain scale, a
-negative result established with pre-stated hypotheses and reported as
-such. Where it could still hold, untested: longer spans with recurring
-pitches at a distance, the other channels (vibrato, dynamics), and the
-curve level --- each with the common-mode term in every arm by design,
-which this experiment shows to be mandatory. Scope: intonation
-constants only, boundaries fixed at the annotation, kernel shape $s=1$,
-about $150$\,s per fit including the Laplace; development evidence.
+optimum, uncorrelated with the truth and worse than predicting zero, so
+that run's apparent structured win is not evidence and its record
+carries an erratum. The corrected protocol removes the hidden note's
+columns altogether, and its independent arm then returns exactly the
+prior mean, as it must. The lesson applies to every prior-value design:
+a hidden element must be dropped from the model, not just from the
+samples, and the common-mode scalar must sit in every arm.
 
 \paragraph{The second span: boundaries.} The same design over the
 per-joint boundary offsets from the tempo line (the chain study's
-deployment inits), with the hidden middle joint removed from the design
-by hard cuts and a free per-chain offset scalar in every arm, on the
-same $47$ chains ($40$ non-unison). The verdict repeats: on masked
-joints the arms tie (score graph against independent $-2.45$\,ms,
-interval $[-8.38, +3.32]$; temporal against independent $-3.65$,
-$[-10.90, +3.03]$; medians $28$--$31$\,ms), while every arm beats the
-tempo line by $10$--$14$\,ms (all significant): a hidden joint inherits
-its chain's common offset, and nothing beyond it. On clean audio the
-three arms land on identical boundaries ($19.6$\,ms median, the chain
-study's $19.5$), so the prior costs deployment nothing. Two calibration
-facts come with it: the masked conditional bands are far too wide
-(coverage $1.00$ at $73$--$95$\,ms, because the prior scale is the
-track's full timing variance), and the observed joints' bands are far
-too narrow (coverage $0.05$ at $0.7$\,ms): the likelihood pins the
-\emph{acoustic} transition to under a millisecond while the annotation
-marks the musical onset some $20$\,ms away, the estimand gap of
-\S\ref{sec:phase3-study} restated at the boundary. Setting the prior
-width at chain scale instead (the median within-chain timing variance)
-brings the independent arm's band to coverage $0.88$ and the structured
-arms' to $0.75$, with the point verdict unchanged: no single
-population-scale width calibrates all three, and a per-chain width by
-evidence is the principled fix, not done here.
-
-\figph{span_boundary.png}{1.0}{Boundaries at chain scale, per hidden
-joint ($40$ non-unison), sorted by the tempo line's error. Every prior
-moves the hidden joint from the tempo line toward the annotation
-through the chain's common offset (medians $28$--$31$ versus $38$\,ms),
-and the three priors tie.\label{fig:span-boundary}}
-
-\figph{span_calibration.png}{1.0}{Calibration of the hidden element's
-band. Standardised errors (estimate minus truth over posterior sd) with
-the nominal $90\%$ band shaded: intonation bands at chain and phrase
-scale sit at nominal; the hidden joints' bands are too wide (coverage
-$1.00$, the prior scale being the track's full timing variance); the
-observed joints' bands on clean audio are far too narrow (coverage
-$0.05$, $27$ of $40$ beyond $\pm8$ sd): the likelihood pins the acoustic
-transition, the annotation marks the musical onset.\label{fig:span-calibration}}
+deployment inits), the hidden middle joint removed from the design by
+hard cuts, on the same $47$ chains ($40$ non-unison). The verdict
+repeats: on masked joints the arms tie
+(Table~\ref{tab:phase3-priorvalue}; temporal against independent
+$-3.65$, $[-10.90, +3.03]$; medians $28$--$31$\,ms), while every arm
+beats the tempo line by $10$--$14$\,ms (all significant): a hidden
+joint inherits its chain's common offset, and nothing beyond it. On
+clean audio the three arms land on identical boundaries ($19.6$\,ms
+median, the chain study's $19.5$), so the prior costs deployment
+nothing. Two calibration facts come with it: the masked conditional
+bands are far too wide (coverage $1.00$ at $73$--$95$\,ms, because the
+prior scale is the track's full timing variance), and the observed
+joints' bands are far too narrow (coverage $0.05$ at $0.7$\,ms): the
+likelihood pins the \emph{acoustic} transition to under a millisecond
+while the annotation marks the musical onset some $20$\,ms away, the
+estimand gap of \S\ref{sec:phase3-study} restated at the boundary.
+Setting the prior width at chain scale instead (the median
+within-chain timing variance) brings the independent arm's band to
+coverage $0.88$ and the structured arms' to $0.75$, with the point
+verdict unchanged: no single population-scale width calibrates all
+three, and a per-chain width by evidence is the principled fix, not
+done here.
 
 \paragraph{The third span: phrase scale.} If pitch-proximity coupling
 carries information anywhere, it should be where a pitch recurs at a
@@ -2690,8 +2615,7 @@ distance the temporal chain cannot reach directly. From all $78$
 development tracks, $48$ legato runs of $6$--$10$ notes were selected
 in which the hidden middle note's pitch recurs at an index distance of
 at least two (median three notes, $1.2$\,s; hidden-to-recurrence edge
-weight $0.83$), with the corrected protocol and the tuning scalar in
-every arm. The pre-stated primary contrast passes: the score graph
+weight $0.83$). The pre-stated primary contrast passes: the score graph
 beats the temporal chain, $-1.63$ cents ($[-2.93, -0.46]$, better on
 $65\%$). But the mechanism does not: the graph ties the
 scalar-augmented independent arm ($-0.07$, $[-0.42, +0.27]$), the
@@ -2703,13 +2627,13 @@ the pitch edge pulls it back to about the chain mean; the graph's win
 over the temporal prior is that prior's harm repaired. Clean rows tie;
 coverage $0.90$--$0.96$ throughout.
 
-\figph{span_phrase_dose.png}{1.0}{Phrase scale, the mechanism test. Per
-phrase, the score graph's error minus the temporal chain's (left) and
-minus the independent arm's (right) against the score-graph edge weight
-between the hidden note and its nearest pitch recurrence. A pitch edge
-that carried intonation information would make the left panel slope
-downward with the weight; it does not ($r=-0.03$), and the right panel
-centres on zero.\label{fig:span-phrase-dose}}
+\figph{span_contrasts.png}{1.0}{The three spans, paired. Mean paired
+difference in the hidden element's error with $95\%$ bootstrap
+intervals, every arm carrying the common-mode scalar: intonation on
+$47$ chains (cents), boundaries on $40$ non-unison joints (ms),
+intonation on $48$ phrases (cents). Score graph against independent is
+a tie at every span; at phrase scale the score graph beats the temporal
+chain and the temporal chain is worse than independent.\label{fig:span-contrasts}}
 
 Across the three spans, then: against the thesis's own stated
 baselines, independent or purely temporal, the score-graph prior is
@@ -2784,7 +2708,7 @@ attribution is narrower than the model's name suggests.
 Targets depend on the quality of a single corpus's
 score$\leftrightarrow$performance alignment (ASAP), and the evaluation sets, while
 held-out and contamination-filtered, are modest in size (30 development + 20
-confirmation pieces); the Vienna performer-ID corpus is small. Two model-level
+confirmation pieces). Two model-level
 limitations are measured rather than hypothetical: the Gaussian likelihood's
 quadratic tail can amplify a handful of timing outliers on a very steady piece into
 the pooled NLL (\S\ref{sec:guard-gp}), and per-piece feature weighting fails under
@@ -2884,14 +2808,14 @@ visible/hidden split, and the natural protocol is held-out pieces with
 posterior-predictive resynthesis.
 
 \section{Incorporating music theory}\label{sec:musictheory}
-Music theory can inform the model in three distinct places --- the graph/kernel, the
-prior mean (equivalently, the feature kernels), or the connection. They are not
-exclusive, and each is testable by the same held-out recovery-and-calibration
-criterion. The first two routes are now measured; the third is open.
+Music theory can inform the model in two places --- the graph/kernel, or the
+prior mean (equivalently, the feature kernels). They are not exclusive, each is
+testable by the same held-out recovery-and-calibration criterion, and both are
+now measured.
 
 \paragraph{(A) In the graph / kernel --- done, and the result is instructive.}
 Two constructions in this route are implemented (\S\ref{sec:graphvariants}) and
-measured (\S\ref{sec:kernels}, Table~\ref{tab:kernels}), and they came apart cleanly.
+measured (\S\ref{sec:kernels}), and they came apart cleanly.
 \emph{Replacing} the semitone ruler with a circle-of-fifths pitch metric
 \eqref{eq:tonaladj} makes both recovery and calibration significantly \emph{worse}:
 expressive behaviour travels with register proximity, not tonal proximity.
@@ -2927,33 +2851,15 @@ structure the columns add is already in the kernel (full study:
 Appendix~\ref{app:theoryfeat}). The columns remain in the codebase as an
 interpretable probe, off by default.
 
-\paragraph{(C) In the connection --- the geometric route.}
-Encode musical transformations (transposition, tonal gauge) as edge transforms
-$A_{ij}$ in a graph \emph{connection} Laplacian, of which the current prior is the flat
-($A_{ij} = I$) special case; see \S\ref{sec:future-geom}.
-
-\paragraph{Litmus test (the same for all three).} A music-theory ingredient is only
+\paragraph{Litmus test (the same for both).} A music-theory ingredient is only
 worth keeping if it \emph{measurably improves recovery or calibration} over the plain
 score graph on held-out data --- otherwise it is honest to report it as motivation, not
-machinery. Options (A) and (B) are directly testable now within the existing protocol;
-(C) is the longer-horizon bet.
-
-\section{Geometric direction: the score-bundle connection Laplacian}\label{sec:future-geom}
-The current graph prior is the \emph{flat} special case of a graph connection
-Laplacian (per-note fibre vectors coupled by edge transforms $A_{ij}$); it reduces
-to today's model when every $A_{ij} = I$ and stays closed-form Gaussian, so a
-non-trivial connection is a small, tractable change. Around it: make the model
-invariant to genuine gauge freedoms (global tempo, reference pitch, overall gain),
-and measure holonomy/curvature around repeats and phrase-returns as a
-performance-style descriptor. \emph{Litmus test}: a measurable nonzero
-curvature/holonomy, or a gauge symmetry/connection that improves recovery or
-calibration over the flat model --- otherwise it is honest to call the geometry
-narrative rather than machinery.
+machinery. Both are directly testable within the existing protocol.
 
 \section{Unknown score support}\label{sec:future-amt}
-Add a discrete latent layer over note identities/onsets, moving toward genuine
-automatic music transcription --- the assumption relaxed last, once the structured
-performance model is solid.
+A discrete latent layer over note identities and onsets would move the
+model toward genuine automatic music transcription. It is the
+assumption relaxed last, once the structured performance model is solid.
 
 % =====================================================================
 \chapter{Conclusion}\label{ch:conclusion}
@@ -3068,11 +2974,13 @@ The proposed model was reached through a \emph{two-stage} development
 system --- a plug-in mean plus a per-channel graph GP on the residual ---
 which the final model provably contains as the all-switches-on corner of
 its constraint space (\S\ref{sec:special-cases}). This appendix records
-that lineage: the per-channel precision-side formulation, the constrained
-systems' posteriors, the development ablation sequence, the selection
-history, and the two-stage verdicts of the downstream tasks. Everything
-here is development-level record; the main line carries the confirmation
-comparison (Table~\ref{tab:headline-conf}).
+the per-channel precision-side formulation that system used. The
+constrained systems' posteriors, the development ablation sequence, the
+selection history and the two-stage verdicts of the downstream tasks
+are development record and live in the repository beside the code
+(\texttt{docs/graphgp\_first\_design.md} and the results documents it
+names); the main line carries the confirmation comparison
+(Table~\ref{tab:headline-conf}).
 
 \section{The per-channel form, precision-side}
 With $B$ diagonal and the feature kernels off, the joint GP factorises into three
@@ -3128,150 +3036,9 @@ asymmetry: the per-channel screen tests \emph{recovery} only (error against
 the mean-only fallback); the overconfidence screen of \S\ref{sec:eb} exists
 only in the joint model's safeguard --- the two screens are related, not identical.
 
-\section{The constrained systems, by their switches}
-The constrained systems compared in Chapter~\ref{ch:results} are choices of the
-plug-in mean $\mu \in \{0,\ \muLM\}$ and of whether the graph coupling is on
-($\eta > 0$) or off ($\eta = 0$, making $\Qg = \lambda I$ diagonal, so each note
-decouples). Writing $[\,\cdot\,]_h$ for the entries at held-out notes, the
-posterior mean \eqref{eq:posterior-chan} specialises as in
-Table~\ref{tab:system-posteriors}.
-
-\begin{table}[h]\centering
-\caption{Constrained special cases of the posterior mean
-$m = \Sy(\Qg\,\mu + P\,\tilde y)$, $\Sy = (\Qg + P)^{-1}$, with
-$\Qg = \lambda I + \eta\Lg$ and $P$ the observation precision ($1/\sigma_e^2$ on
-observed notes, $0$ on held-out notes). ``Graph off'' ($\eta = 0$) decouples the
-notes, so a held-out note returns its prior mean with a single shared predictive
-std; ``graph on'' propagates the observed values $\tilde y$ through the graph,
-giving a per-note mean and per-note std $\sqrt{(\Sy)_{ii} + \sigma_e^2}$.}
-\label{tab:system-posteriors}
-\begin{tabular}{@{}llcl@{}}
-\toprule
-Constraints & $\mu$ & $\eta$ & Prediction $m_h$ at held-out notes \\
-\midrule
-Zero mean, graph off (fully constrained)     & $0$     & $0$   & $0$ \\
-Zero mean, graph on (pure graph smoother)      & $0$     & $>0$  & $\bigl[(\Qg+P)^{-1}P\,\tilde y\bigr]_h$ \\
-Plug-in mean, graph off (mean only)  & $\muLM$ & $0$   & $\mu_{\mathrm{LM},h}$ \\
-Plug-in mean, graph on (two-stage baseline)    & $\muLM$ & $>0$  & $\bigl[(\Qg+P)^{-1}(\Qg\,\muLM+P\,\tilde y)\bigr]_h$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{The development ablation sequence}\label{app:devabl}
-The development ablation sequence (Table~\ref{tab:headline-exec}) isolates every
-ingredient: the two-stage pipeline rows are the model's own special cases
-(\S\ref{sec:special-cases}), so the project's earlier headline systems appear as
-ablations rather than as a competing narrative. The attribution controls of
-\S\ref{sec:attribution} trace these differences to their mechanism.
-
-\begin{table}[h]\centering
-\caption{DEVELOPMENT set (\nPieces{} pieces $\times$ 4 seeds; used for all model
-selection, so these numbers flatter every system --- the confirmation table above
-is the headline). Nested ablation sequence of the proposed model; the two-stage pipeline rows
-are its special cases. Brackets: per-piece bootstrap 95\% CIs where computed
-(the accompanying evidence archive).}
-\label{tab:headline-exec}
-\footnotesize
-\begin{tabular}{lccc}
-\toprule
-System (development) & RMSE & NLL & cov@90\% \\
-\midrule
-Zero mean, graph off               & \rmseZero{} {\scriptsize[0.50, 0.60]}    & \nllZero{}   & \covZero \\
-Zero mean $+$ graph                & \rmseGraph{} {\scriptsize[0.36, 0.42]}   & \nllGraph{}  & \covHead \\
-Music-model mean $+$ graph (two-stage) & \rmseNetGraph{} {\scriptsize[0.35, 0.41]} & \nllNetGraph{} & \covHead \\
-Features $+$ music-model mean $+$ graph (two-stage) & \rmseStack{}    & \nllStack{}   & \covHead \\
-Features $+$ music-model $+$ chord graph (adopted headline) & \rmseHeadline{} & \nllHeadline{} & \covHead \\
-Coregionalized GP, zero mean                  & 0.403 & $-0.316$ & 92\% \\
-\ + features as kernel             & 0.368 & $-0.370$ & 92\% \\
-\textbf{\ + music-model embeddings (= the proposed model)} & \textbf{\rmseGPdev} & \nllGPdev & 92.7\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Per channel, the two-stage rows sit at the head of the same lineage
-(cf.\ Table~\ref{tab:perchannel}):
-
-\begin{table}[h]\centering
-\caption{Per-channel two-stage lineage rows (development set), the rows
-formerly beneath the line of Table~\ref{tab:perchannel}.}
-\label{tab:perchannel-lineage}
-\footnotesize
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
- & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Articulation $\log r$} & \multicolumn{2}{c}{Velocity $v$} \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-System (development) & RMSE & cov & RMSE & cov & RMSE & cov \\
-\midrule
-Zero mean $+$ graph (two-stage)    & 0.156 & 0.95 & 0.678 & 0.91 & 0.080 & 0.92 \\
-Music-model mean $+$ graph (two-stage) & 0.158 & 0.94 & 0.657 & 0.91 & 0.081 & 0.91 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{How the final model was selected}\label{app:selection}
-Three steps, in order, produced the headline system. \textbf{(1) Development
-optimum of the two-stage pipeline:} after the kernel and edge-family study
-(\S\ref{sec:kernels}), \emph{features + music-model mean + chord graph}
-(RMSE~\rmseHeadline{} development) was the adopted headline --- the only variant with every ingredient
-significant on both axes. \textbf{(2) Reformulation:} the graph-GP literature
-prescribes three things the pipeline lacked --- coupled outputs, evidence-learned
-kernel parameters, a marginalized rather than plug-in mean --- and closing them
-yields the proposed model, of which the pipeline is provably a special case.
-\textbf{(3) Preregistered confirmation} (Table~\ref{tab:headline-conf}) decided
-between them on untouched data: the proposed model wins recovery significantly, ties
-pooled calibration, and its graph contribution is confirmed --- so it is the
-thesis model.
-
-\section{Downstream verdicts under the two-stage system}
-Every downstream task of Chapter~\ref{ch:downstream} was first run under
-the two-stage pipeline during development; Table~\ref{tab:downstream-both}
-gives both verdict columns side by side.
-
-\begin{table}[h]\centering
-\caption{Downstream tasks: two-stage development verdict and proposed model re-validation.}\label{tab:downstream-both}
-\footnotesize
-\begin{tabular}{@{}p{4.1cm}p{4.3cm}p{4.6cm}@{}}
-\toprule
-Task & Two-stage (development study) & Proposed model (re-run) \\
-\midrule
-Error spotting (anomaly) & clear win (AUROC $\to$0.98) & \textbf{stronger}: best on all channels ($v$ 0.995) \\
-Denoising, known noise & win (8/8 contrasts) & slightly better (0.182/0.276, cov 0.90) \\
-Denoising, blind noise & failure & failure in both parameterizations \\
-Completion from excerpt & partial (interp.\ wins) & partial + \textbf{extrapolation boundary} (\S\ref{sec:boundary}) \\
-Selective prediction & qualified win & transfers (RMSE on the confident half 0.076) \\
-Era classification & honest negative (0.37 vs 0.49) & still negative (0.20 vs 0.60, n=30) \\
-Performer-ID (Vienna) & mixed (raw 0.14 $>$ denoised 0.08) & mixed, milder (GP-denoised 0.11) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-% =====================================================================
-\chapter{Methodology record: the leakage episode}\label{app:methods}
-Relocated from the piano results chapter; the main line carries the
-verdict (\S\ref{sec:leak}).
-
-An earlier read-out let the music model see a note's own velocity --- the very target it
-was asked to predict --- inflating the apparent velocity advantage. We read the
-summary one position earlier (provably blind to the note's own velocity, pinned by
-an automated structural test), re-measured everything, and adopted the strict
-protocol. The corrected advantage is smaller but honest and statistically
-significant: on the velocity channel, the music model's mean-only error was $0.057$
-\emph{with} the leak (the retracted claim) and $0.090$ with the final read-out.
-The leak had also manufactured an apparent scaling gain: a $1.3\times$ larger,
-lower-perplexity music model is identical downstream once the leak is removed
-(RMSE $0.394$ vs.\ $0.394$) --- judge the music model downstream, not by
-perplexity. This episode is reported as a methodological contribution, not an
-apology: the structural test now makes the leak impossible to reintroduce
-silently, and the same mask-aware read-out is what feeds the proposed model's
-feature kernel --- whose full pipeline was additionally audited bitwise
-(corrupting held-out targets or velocities changes no prediction by one bit).
-One dependence sits upstream of that audit's scope, in the target
-\emph{definition}: the velocity centring constant is the piece mean over
-\emph{all} matched notes, held-out ones included --- an $O(1/N)$ coupling of
-observed targets to hidden velocities. It is invisible to the bitwise audit
-(which corrupts targets after construction), identical for every system
-compared, and recorded here as a documented limitation rather than silently
-absorbed.
+The ablation sequence and the selection history that led from this
+form to the proposed model are recorded in
+\texttt{docs/graphgp\_first\_design.md}.
 
 % =====================================================================
 \chapter{Piano development studies}\label{app:phase1dev}
@@ -3365,153 +3132,37 @@ own velocity token \emph{contains} that velocity); it was caught by its signatur
 fixed with a leave-one-out read-out, now a documented design rule pinned by a
 structural test.
 
-\section{Kernel comparison (development study, under the two-stage plug-in baseline)}\label{sec:kernels}
-This study was run under the two-stage plug-in baseline --- a plug-in mean and one
-scalar GP per channel --- and it justifies the kernel choice \emph{inside} the proposed
-model: the additive/regularized-Laplacian shape used in
-\eqref{eq:gpfirst} survives every classical alternative. The ablation sweeps the
-kernel from the simplest to more experimental forms, holding the prior mean
-($\muLM$, strict) and the whole protocol fixed --- identical mask realizations
-across every row --- so that \emph{only the kernel changes}, and scoring recovery
-\emph{and} calibration, paired per piece. Every row of Table~\ref{tab:kernels} is defined
-in Table~\ref{tab:kernel-defs}, which also records \emph{which of the two design axes}
-(\S\ref{sec:graphvariants}) each row moves: the graph $\Lg$ --- which notes are connected,
-under what pitch metric, through which Laplacian --- or the spectral profile $g(\nu;s)$ ---
-how sharply high graph frequencies are suppressed. Reading the table by axis, rather than
-as a flat list of rivals, is what makes the result legible.
-
-\begin{table}[h]\centering
-\caption{What each row of Table~\ref{tab:kernels} is. The graph kernel is
-$K_G(s) = U \operatorname{diag}(g(\nu;s))\, U^{\!\top}$, so a row changes either the Laplacian $\Lg$ that supplies
-the spectrum $\nu$, or the profile $g$ that reshapes it. ``Chord'' and ``voice-leading''
-edges are edges of \emph{harmony}; they are unrelated to the harmonic amplitudes of
-Chapter~\ref{app:phase3}.}
-\label{tab:kernel-defs}
-\footnotesize
-\begin{tabular}{@{}llp{62mm}l@{}}
-\toprule
-Row & Axis moved & Construction & Defined \\
-\midrule
-Additive Laplacian & --- (reference) & $g(\nu;s)=1/(1+s\nu)$ on the base graph \eqref{eq:adjacency} & \eqref{eq:additive} \\
-\addlinespace
-Graph Mat\'ern ($\alpha$) & profile & $g(\nu;s)=\bigl(s/(s+\nu)\bigr)^{\alpha}$; larger $\alpha$ suppresses high graph frequencies harder & \eqref{eq:matern} \\
-Diffusion / heat & profile & $g(\nu;s)=e^{-s\nu}$; the $\alpha\to\infty$ Mat\'ern limit at $s=\alpha/t$, the smoothest of the family & \eqref{eq:diffusion} \\
-\addlinespace
-Independent & graph & no edges at all: $\Lg=0$, so $K_G=I$ and notes are a priori independent & \S\ref{sec:graphgp} \\
-Temporal chain & graph & edges only between score-time neighbours: an AR(1)-style smoother along the piece & \S\ref{sec:graphgp} \\
-Normalized Laplacian & graph & the same edges, degree-normalised: $\Lg^{\mathrm{sym}} = I - D^{-1/2}WD^{-1/2}$ & \eqref{eq:lapsym} \\
-\addlinespace
-Tonal-distance edges & graph (\emph{metric replaced}) & the semitone term of \eqref{eq:adjacency} is \emph{swapped} for a circle-of-fifths pitch-class distance plus an octave-displacement term; a fifth becomes near, a semitone far & \eqref{eq:fifths}, \eqref{eq:tonaladj} \\
-Chord edges & graph (\emph{edges added}) & the base graph \emph{plus} $w_{\mathrm{ch}}\mathbf{1}[b_i=b_j]$: notes struck at the same score onset. Onset simultaneity as a proxy for chord membership --- no harmonic analysis & \eqref{eq:harmadj} \\
-Chord $+$ voice-leading & graph (\emph{edges added}) & additionally $w_{\mathrm{vl}}$ on pairs at \emph{different} onsets within 2 beats whose pitches differ by 1--2 semitones: stepwise melodic motion & \eqref{eq:harmadj} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Every kernel is fit spectrally --- covariance eigenvalues $g(\nu)$ of the Laplacian
-spectrum, so the dense diffusion kernel costs one eigendecomposition per piece --- with
-the same empirical-Bayes machinery, noise floor, and safeguard as the headline; the
-$p$-step random walk $(I+\eta L)^p$ is the Mat\'ern family reparameterized and is
-therefore not a separate row. A $\mu = 0$ block (not shown) repeats every conclusion
-without the learned mean. Full protocol and numbers: the accompanying evidence archive.
-
-Three findings (Table~\ref{tab:kernels}). \textbf{First, the additive Laplacian
-survives every classical alternative profile}: Mat\'ern at
-$\alpha = 2$ and $3$ (at $\alpha = 1$ the profile \emph{is} the additive baseline
-under $s \mapsto 1/s$, \S\ref{sec:graphgp}), diffusion,
-and the normalized Laplacian
-are statistically indistinguishable from it on RMSE and do not improve NLL --- among
-classical graph-GP kernels the plainest one is the right default, and its extra-cost
-rivals buy nothing (the evidence-fitted filters themselves are overlaid in
-Fig.~\ref{fig:spectral-overlay}, Appendix~\ref{app:extra}). \textbf{Second, structure beyond time adjacency is what buys
-calibration}: the temporal chain ties the full graph on RMSE ($-0.000$, ns) but is
-significantly worse-calibrated ($\Delta$NLL $+0.031^{*}$). \textbf{Third, music theory
-helps as extra edges, not as a replacement metric}: tonal distance in place of semitone
-distance is significantly \emph{worse} on both axes (expressive coupling follows
-register proximity, not tonal proximity), while \emph{adding} chord + voice-leading
-edges gives the only significant both-axes win over the baseline
-($\Delta$RMSE $-0.008^{*}$, $\Delta$NLL $-0.013^{*}$; chord edges carry the recovery
-gain, concentrated in articulation and velocity --- $\tau$ stays at its
-plateau). The chord graph with the plain music-model mean (chord+VL, RMSE $0.3852$)
-even edges out
-the feature-stacked candidate on the plain graph (\rmseStack) --- and the two upgrades
-\emph{compose}: on the feat+music-model mean the chord graphs still gain, independently
-measured at $\Delta$RMSE $-0.0082^{*}$ / $\Delta$NLL $-0.0129^{*}$, giving the
-strongest two-stage cells, RMSE $0.3784$ (chord edges) and NLL $-0.3459$
-(chord + voice-leading).
-The chord + voice-leading configuration --- the variant significant on both axes ---
-was the two-stage pipeline's strongest configuration (zero-leak audited
-bitwise, \S\ref{sec:hygiene}). The edge weights are untuned defaults, and a
-six-variant sensitivity sweep ($\times 3$ / $\div 3$ on each family) shows no
-knife-edge. \textbf{Under the final model, the decision first:} the thesis model
-keeps the plain graph at its operating point; the chord edges stand as
-a measured dense-observation refinement, and any future adoption would be
-a question for a second preregistered confirmation set
-(\S\ref{sec:hygiene}), not a development decision. The evidence: once the
-music-model embeddings enter the kernel as features, the chord edge
-families are measured-redundant \emph{at the 40\% operating point} (learned-graph and
-chord variants statistically tie the plain graph, development). Two
-post-adoption development studies scope that tie by masking level. First, the
-two-stage comparison repeated at every level of \S\ref{sec:masksweep} finds
-the added-edges win present at each level and growing with observation
-density ($\Delta$RMSE $-0.009$ to $-0.014$, all significant), while the
-metric-replacement penalty persists throughout. Second, the same comparison
-\emph{under the final model} at every level reveals a clean density
-gradient. At 30/20/10\% hidden the harmonic learned-graph variant beats the
-plain graph on recovery ($\Delta$RMSE $-0.0096$/$-0.0105$/$-0.0089$, all
-paired and significant, development), with NLL better on a majority of
-pieces at each level but never significantly (at 10\% hidden the mean is
-pulled positive by the documented Gaussian-tail piece, \S\ref{sec:guard-gp};
-at 30/20\% the means are negative with intervals crossing zero). At the 40\% operating
-point it ties (the adoption record). At 50\% hidden the sweep produced its
-one fit collapse (one cell; the graph-parameter optimiser wandered to
-degenerate length scales, and the safeguard's calibration screen could not
-see it from the observed notes --- the known blind spot of
-\S\ref{sec:guard-gp}). With that piece excluded the advantage is gone
-($-0.0037$, ns); excluding only the collapsed cell instead reads as a small
-significant NLL harm ($+0.027$). The
-reading is mechanistic and consistent with the decomposition
-(\S\ref{sec:attribution}): the extra edge weights are per-piece
-hyperparameters, and like every per-piece quantity they need observed
-coverage to be determined --- dense observation determines them and they add
-recovery; sparse observation leaves them under-determined and, at the
-extreme, fragile. The deeper lesson --- theory-as-extra-structure helps,
-theory-as-replacement-metric hurts --- stands in both regimes.
-
-\begin{table}[h]\centering
-\caption{Kernel ablation (held-out ASAP, strict, $\muLM$; identical masks; safeguard on),
-grouped by the axis each row moves; every row is defined in Table~\ref{tab:kernel-defs}.
-Bold best per column; $*$ = paired per-piece bootstrap 95\% CI vs the additive baseline
-excludes 0. Read down the two blocks: the profile is inert, the graph is not.}
-\label{tab:kernels}
-\footnotesize
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Kernel & RMSE & NLL & cov@.9 & cal-err \\
-\midrule
-\multicolumn{5}{@{}l}{\itshape Reference: base graph, additive profile}\\
-Additive Laplacian (baseline)     & 0.393 & $-0.322$ & 0.921 & 0.067 \\
-\addlinespace
-\multicolumn{5}{@{}l}{\itshape Vary the spectral profile $g(\nu;s)$ --- the graph held fixed}\\
-Graph Mat\'ern ($\alpha{=}2$)     & 0.392 & $-0.321$ & 0.919 & 0.064 \\
-Graph Mat\'ern ($\alpha{=}3$)     & 0.392 & $-0.318$ & 0.918 & 0.062 \\
-Diffusion / heat                  & 0.393 & $-0.312$ & 0.917 & 0.062 \\
-\addlinespace
-\multicolumn{5}{@{}l}{\itshape Vary the graph $\Lg$ --- the spectral profile held fixed}\\
-Independent (no edges)            & 0.446$^{*}$ & $-0.190^{*}$ & 0.919 & 0.085 \\
-Temporal chain (AR(1))            & 0.392 & $-0.292^{*}$ & 0.916 & 0.063 \\
-Normalized Laplacian (same edges) & 0.392 & $-0.326$ & 0.922 & 0.068 \\
-Tonal-distance edges (metric \emph{replaced}) & 0.403$^{*}$ & $-0.300^{*}$ & 0.921 & 0.061 \\
-Chord edges (edges \emph{added}) & \textbf{0.384}$^{*}$ & $-0.331$ & 0.923 & 0.066 \\
-Chord $+$ voice-leading edges     & 0.385$^{*}$ & {\boldmath$-0.335$}$^{*}$ & 0.922 & 0.066 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\figph{digest_kernels.png}{0.95}{Paired per-piece deltas vs.\ the additive baseline
-(95\% CIs; $\muLM$ strict). Standard kernels tie; replacing the pitch metric hurts;
-added chord/voice-leading edges are the only both-axes win. The independent
-(no-coupling) row is off scale ($+0.052$ / $+0.131$).}
+\section{Kernel comparison (development study, two-stage regime)}\label{sec:kernels}
+Run under the two-stage plug-in baseline (the plug-in mean $\muLM$,
+strict, and one scalar GP per channel; identical masks in every row;
+recovery and calibration scored paired per piece), the comparison moved
+one of the two design axes of \S\ref{sec:graphvariants} at a time, the
+graph $\Lg$ or the spectral profile $g(\nu;s)$. Three findings stand,
+and they are why the proposed model keeps the plain graph with the
+additive profile. First, the profile is inert: graph Mat\'ern at
+$\alpha = 2$ and $3$, the diffusion kernel and the normalized Laplacian
+are statistically indistinguishable from the additive Laplacian on RMSE
+($0.392$--$0.393$ against $0.393$) and do not improve NLL; their
+evidence-fitted filters coincide over the low-frequency components
+where the prior mass lives and differ only where the feature kernels
+and the noise absorb the variance. Second, the graph is not inert:
+removing every edge costs RMSE $0.446^{*}$ and NLL $-0.190^{*}$, and the
+temporal chain ties the full graph on RMSE but is significantly
+worse-calibrated ($\Delta$NLL $+0.031^{*}$). Third, music theory helps
+as extra edges, not as a replacement metric: tonal distance in place of
+semitone distance is significantly worse on both axes (RMSE
+$0.403^{*}$, NLL $-0.300^{*}$), while adding chord and voice-leading
+edges gave the only significant both-axes win ($\Delta$RMSE
+$-0.008^{*}$, $\Delta$NLL $-0.013^{*}$), robust to a six-variant
+$\times 3$ / $\div 3$ sweep of the untuned edge weights. Under the final
+model the chord edges are measured-redundant at the 40\% operating
+point once the music-model embeddings enter the kernel (a density
+gradient: a recovery gain at 30/20/10\% hidden, a tie at 40\%, nothing
+at 50\%), so the thesis model keeps the plain graph and any adoption
+would be a question for a fresh preregistered confirmation
+(\S\ref{sec:hygiene}). Full tables, row definitions and the $\mu = 0$
+block: \texttt{docs/kernel\_comparison\_results.md} and
+\texttt{docs/kernel\_multirate\_results.md}.
 
 \section{Music-theoretic feature columns and embedding probes}\label{app:theoryfeat}
 The incremental route --- add music-theoretic \emph{score features} to the
@@ -3581,25 +3232,6 @@ noise of \eqref{eq:phase2-noise} becomes substantial on tracked audio. The
 corpus's human annotations supply only the note spans (onsets, durations,
 written pitches); its ground-truth pitch curves are used to calibrate the
 tracker, never as channel values.
-
-\section{The synthetic end-to-end pilot}\label{app:pilot}
-Before any real audio, the full specified pipeline was validated on synthetic
-monophonic pieces whose per-note truth is \emph{known} (sampled from the model's
-own generative process; 20 pieces $\times$ 120 notes; cents curves per
-\eqref{eq:vibrato} at $\sigma = 6$ cents; channels $[c, \log\gamma, \log f]$).
-The specified per-note NLLS estimator (implemented, with Gauss--Newton parameter
-covariances and the identifiability rule) produced 926 genuinely missing vibrato
-cells on visible notes; 30\% of notes were fully hidden. Findings, per channel
-against truth: the graph GP beats the no-graph ablation on every channel of
-imputation, missing-cell recovery, and denoising; missing vibrato parameters ---
-which no per-note method can even express --- are recovered at roughly $4\times$
-better than prior scale with $0.87$--$0.93$ coverage; and the posterior
-\emph{denoises the estimator's own observed cells} below the estimator's error
-($1.41$ vs $1.63$ cents on intonation). Residual honest gap: mild vibrato-extent
-under-coverage ($\approx 0.86$), with the delta-method log-transform and the
-unmodelled onset delay as candidate causes. This is a synthetic result --- it
-validates machinery and settles design defaults, and claims nothing about real
-audio.
 
 \section{The drift study: what the per-note compression discards}\label{app:drift}
 Eqs.~\eqref{eq:loudness}--\eqref{eq:vibrato} hold every parameter fixed
@@ -3783,9 +3415,7 @@ pitch-less graph as the default would be a change to a reported
 protocol requiring its own registration
 (\texttt{results/piano\_timegauss\_dev.md}).
 
-\chapter{Additional results}\label{app:extra}
-
-\section{Calibration profile of the proposed model}
+\chapter{Calibration profile of the proposed model}\label{app:extra}
 Figure~\ref{fig:gp-reliability} sweeps nominal coverage from 10\% to 95\%. The
 model is essentially at nominal at the 90\% operating point reported throughout
 (development 92.7\%, confirmation \covGP) and \emph{conservative} at central levels
@@ -3808,57 +3438,6 @@ Table~\ref{tab:headline-conf}, transfers to untouched pieces unchanged.
 \caption{PIT histograms, development vs.\ confirmation (dashed: uniform).}
 \label{fig:gp-pit}
 \end{figure}
-
-\section{Full development ablation sequence, per channel}
-Table~\ref{tab:perchannel-full} extends Table~\ref{tab:perchannel} to every
-configuration evaluated on the development set under a single code version.
-
-\begin{table}[h]\centering
-\caption{Per-channel RMSE / coverage@0.9, development set, all configurations.
-Bold marks the thesis model's row, not the column optimum (individual cells are
-edged by specialised variants, e.g.\ corpus-frozen $\tau$ 0.150, chord learned graph $v$ 0.071).}
-\label{tab:perchannel-full}
-\footnotesize
-\begin{tabular}{@{}lcccccc@{}}
-\toprule
- & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Artic.\ $\log r$} & \multicolumn{2}{c}{Velocity $v$} \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-Configuration & RMSE & cov & RMSE & cov & RMSE & cov \\
-\midrule
-3 scalar GPs, zero mean      & 0.156 & 0.95 & 0.677 & 0.91 & 0.081 & 0.92 \\
-Coregionalized, zero mean                & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 & 0.92 \\
-+ features, no graph                   & 0.154 & 0.95 & 0.626 & 0.91 & 0.088 & 0.90 \\
-+ features                   & 0.153 & 0.95 & 0.615 & 0.91 & 0.075 & 0.91 \\
-+ embeddings, no graph                 & 0.154 & 0.95 & 0.627 & 0.91 & 0.083 & 0.92 \\
-\textbf{+ embeddings (proposed model)}       & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
-fixed two-stage mean inside the proposed model & 0.158 & 0.94 & 0.652 & 0.91 & 0.080 & 0.91 \\
-learned graph               & 0.153 & 0.94 & 0.609 & 0.91 & 0.074 & 0.90 \\
-chord learned graph       & 0.152 & 0.94 & 0.601 & 0.90 & 0.071 & 0.90 \\
-everything               & 0.153 & 0.95 & 0.593 & 0.91 & 0.075 & 0.91 \\
-corpus-frozen hyperparameters          & 0.150 & 0.96 & 0.613 & 0.91 & 0.074 & 0.91 \\
-frozen + per-piece noise   & 0.151 & 0.97 & 0.613 & 0.91 & 0.075 & 0.94 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Why the spectral families tie: the fitted filters}
-Figure~\ref{fig:spectral-overlay} makes the kernel-comparison ties
-(\S\ref{sec:kernels}) visible. For three development pieces, the full model was
-refit once per shape family --- graph Mat\'ern $\alpha \in \{1,2,3\}$ (the
-$\alpha{=}1$ member in its additive parameterization) and the heat kernel ---
-and the evidence-fitted filters $g(\nu;\hat s)$ overlaid. The families agree
-over the low-frequency components, where the prior mass and the smooth
-expressive structure live, and disagree only in the mid-tail --- exactly where
-the feature kernels and the noise term absorb the variance, so the evidence is
-insensitive to the difference. The information is in the graph $\Lg$, not in
-the fine shape of the filter.
-
-\figph{spectral_overlay_dev.png}{1.0}{Evidence-fitted spectral filters
-$g(\nu;\hat s)$ per kernel family, three development pieces (published anchor
-mask, seed 0). Ticks along the base mark each piece's Laplacian eigenvalues.
-The families coincide at the low-frequency end and differ only where the
-evidence is insensitive, matching the measured statistical
-ties.\label{fig:spectral-overlay}}
 
 \noindent Further extended tables (the two-stage development record, the kernel
 study's $\mu=0$ block, downstream per-task detail) remain in
@@ -3942,8 +3521,6 @@ Conference (ISMIR)}, pages 239--245, 2016.
 \bibitem{maestro} C.~Hawthorne et al.
   Enabling Factorized Piano Music Modeling with the MAESTRO Dataset.
   \emph{ICLR}, 2019.
-\bibitem{vienna4x22} W.~Goebl. The Vienna 4x22 Piano Corpus.
-  \emph{Bulletin of the ATR}, 1999.
 \end{thebibliography}
 
 \end{document}
