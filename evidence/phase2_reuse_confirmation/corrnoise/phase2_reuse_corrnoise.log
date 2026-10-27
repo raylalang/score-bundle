@@ -1,0 +1,11 @@
+== corrnoise re-use one-shot start 2026-10-27T17:59:20+09:00
+code state 160378084e2d50ac2907f1bfa1868f258292076d = tag corrnoise-registration-2026-10-27 (0bc7805aa7b7b34b8fb34317b7d113c80ffb48eb)
+shards 6 x OMP_NUM_THREADS=4
+80 (track, seed) cells
+
+chosen rho: median 0.45, rho>0 on 99% of cells, histogram: 0.00:1 0.15:10 0.30:21 0.45:26 0.60:11 0.75:8 0.90:3
+tau nll : corr -1.8079 vs diag -1.6872  paired dmean -0.1208 [-0.1557,-0.0894]* (median d -0.0899)
+tau cov : corr  0.9080 vs diag  0.9105  paired dmean -0.0025 [-0.0095,+0.0049]  (median d +0.0000)
+tau rmse: corr  0.0473 vs diag  0.0583  paired dmean -0.0110 [-0.0156,-0.0073]* (median d -0.0064)
+wrote results/corrnoise_confirmation_results.md and results/corrnoise_confirmation_cells.pkl
+== corrnoise re-use one-shot done 2026-10-27T18:24:35+09:00
