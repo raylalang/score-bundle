@@ -130,13 +130,24 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   all six); C4 timing calibration FAIL (−0.030 ns; plus starred adverse
   τ recovery +0.003*) — reported verbatim. Headline CONFIRMED by the
   registered rule. Thesis §3.9 carries it (tab:phase2-conf).
+  **Re-used-pool one-shots, REGISTERED 2026-10-27** (tags
+  `corrnoise-registration-2026-10-27`, `phase2-tonal-registration-2026-10-27`;
+  docs `docs/corrnoise_prereg_design.md`, `docs/phase2_tonal_prereg_design.md`):
+  the spent 13-piece pool re-used WITH DISCLOSURE for two claims developed on
+  dev only (correlated τ noise, N1 = τ ΔNLL primary; tonal metric, T2 = c ΔNLL
+  primary). Runner `scripts/run_phase2_reuse_confirmation.sh {corrnoise|tonal}`
+  needs THREE env vars (`PHASE2_SPLIT=confirmation`,
+  `PHASE2_CONFIRMATION_I_AM_SURE=yes`, `PHASE2_REUSE_I_AM_SURE=yes`), locks
+  every plain confirmation verb (`REUSE_MODE` in `eval_phase2_real.py`), uses
+  the archived inputs (md5-checked), refuses once its results file exists;
+  guard test `tests/test_phase2_reuse_guard.py`. Each claim runs ONCE.
   Dev record: `results/phase2_real_results.md` (registration-grade,
   diff-clean vs tag). Post-adoption dev studies, all results-doc'd:
   drift study (`results/phase2_drift_dev.md` — committee's "sine too
   simple" quantified; drift real but graph-white → no new channel);
   tonal metric exploratory win on intonation
   (`results/phase2_tonal_dev.md`; adoption = own registration; power
-  check in `docs/phase2_tonal_prereg_DRAFT.md`: calibration-primary,
+  check in `docs/phase2_tonal_prereg_design.md`: calibration-primary,
   recovery underpowered <~20 pieces); fresh-seed robustness
   (`results/phase2_seeds23_dev.md`); δ_vib decision
   (`results/delta_vib_dev.md`); tracker calibration

@@ -23,7 +23,10 @@ pipeline and the spent confirmation are untouched.  Exploratory, no
 claims.
 
     OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_corrnoise_tau.py run [--shard K/N]
-    OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_corrnoise_tau.py report
+    OMP_NUM_THREADS=2 PYTHONPATH=src:scripts python scripts/eval_corrnoise_tau.py report [--md OUT.md]
+
+Confirmation on the re-used pool (registered 2026-10-27): only through
+scripts/run_phase2_reuse_confirmation.sh corrnoise (see the guard below).
 """
 from __future__ import annotations
 
@@ -39,12 +42,39 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))), "src"))
 
-from eval_phase2_real import (C_MAX, CACHE, CH, HOLD_FRAC, MIN_NOTES,  # noqa: E402
-                              SEEDS, _Z90)
+from eval_phase2_real import (C_MAX, CACHE, CH, CONF_MODE, HOLD_FRAC,  # noqa: E402
+                              MIN_NOTES, SEEDS, _Z90)
 
 TAU = 4                          # channel index of tau in the 6-channel bundle
 RHO_GRID = (0.0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9)
-OUT_DIR = "results/corrnoise_tau"
+# --- confirmation on the RE-USED pool (registered 2026-10-27, disclosed) ---
+# In PHASE2_SPLIT=confirmation this script runs the registered one-shot of
+# docs/corrnoise_prereg_design.md: profile mode, seeds (0, 1), own cells dir.
+# It refuses without the re-use consent variable and refuses the robustness
+# switches (--joint, --seeds), which are not the registered path.
+if CONF_MODE and os.environ.get("PHASE2_REUSE_I_AM_SURE") != "yes":
+    raise SystemExit(
+        "REFUSED: the correlated-timing-noise confirmation on the re-used "
+        "pool runs only through scripts/run_phase2_reuse_confirmation.sh "
+        "(PHASE2_REUSE_I_AM_SURE=yes).")
+if CONF_MODE and ("--joint" in sys.argv or "--seeds" in sys.argv):
+    raise SystemExit("REFUSED: the registered path is profile mode with "
+                     "seeds (0, 1); --joint and --seeds are development-only.")
+OUT_DIR = ("results/phase2_cells/conf_corrnoise" if CONF_MODE
+           else "results/corrnoise_tau")
+MD_HEADER = [
+    "# Correlated-timing-noise CONFIRMATION — one shot on the RE-USED "
+    "13-piece pool, disclosed",
+    "",
+    "> Registered protocol: docs/corrnoise_prereg_design.md, tag "
+    "corrnoise-registration-2026-10-27. The pool was spent 2026-08-27 for "
+    "claims C1-C4 and is re-used here with full disclosure: same archived "
+    "inputs, same masks, same (track, seed) cells. Baseline rho = 0 is the "
+    "published diagonal path. Primary N1 = paired tau NLL, correlated minus "
+    "diagonal, cluster bootstrap over unique tracks. Run ONCE; every number "
+    "reported whatever the outcome.",
+    "",
+]
 # --joint: rho chosen by the JOINT evidence -- all hyperparameters
 # re-optimized (warm-started) at each rho instead of profiled at the
 # rho=0 fit; --seeds overrides the mask seeds (fresh-seed robustness).
@@ -256,17 +286,27 @@ def run(shard_k: int, shard_n: int, joint: bool = False,
     print(f"wrote {out} ({len(recs)} cells)")
 
 
-def report(tag: str = "") -> None:
+def report(tag: str = "", md_out: str | None = None) -> None:
+    """Merge the shard fragments and print the tables; with ``md_out`` also
+    write them (under the registration header) and pickle the merged cells
+    next to the markdown.  The printed lines are byte-identical to the
+    development recipe of results/corrnoise_tau_dev.md."""
+    lines = []
+
+    def say(msg: str = "") -> None:
+        print(msg)
+        lines.append(msg)
+
     recs = []
     for f in sorted(glob.glob(os.path.join(OUT_DIR,
                                            f"cells{tag}.shard*.pkl"))):
         recs += pickle.load(open(f, "rb"))
-    print(f"{len(recs)} (track, seed) cells")
+    say(f"{len(recs)} (track, seed) cells")
     rhos = np.array([r["rho"] for r in recs])
-    print(f"\nchosen rho: median {np.median(rhos):.2f}, "
-          f"rho>0 on {np.mean(rhos > 0):.0%} of cells, "
-          f"histogram: " + " ".join(
-              f"{r:.2f}:{int((rhos == r).sum())}" for r in RHO_GRID))
+    say(f"\nchosen rho: median {np.median(rhos):.2f}, "
+        f"rho>0 on {np.mean(rhos > 0):.0%} of cells, "
+        f"histogram: " + " ".join(
+            f"{r:.2f}:{int((rhos == r).sum())}" for r in RHO_GRID))
     keys = [r["key"] for r in recs]
     rng = np.random.default_rng(0)
     for met in ("nll", "cov", "rmse"):
@@ -283,9 +323,17 @@ def report(tag: str = "") -> None:
             means.append(np.concatenate([per[uk[j]] for j in pick]).mean())
         lo, hi = np.percentile(means, [2.5, 97.5])
         star = "*" if lo > 0 or hi < 0 else " "
-        print(f"tau {met:4s}: corr {np.mean(a):7.4f} vs diag "
-              f"{np.mean(b):7.4f}  paired dmean {dlt.mean():+7.4f} "
-              f"[{lo:+.4f},{hi:+.4f}]{star} (median d {np.median(dlt):+.4f})")
+        say(f"tau {met:4s}: corr {np.mean(a):7.4f} vs diag "
+            f"{np.mean(b):7.4f}  paired dmean {dlt.mean():+7.4f} "
+            f"[{lo:+.4f},{hi:+.4f}]{star} (median d {np.median(dlt):+.4f})")
+    if md_out:
+        body = (MD_HEADER if CONF_MODE else []) + ["```"] + lines + ["```", ""]
+        with open(md_out, "w") as fh:
+            fh.write("\n".join(body))
+        cells_out = os.path.splitext(md_out)[0].replace("_results", "") \
+            + "_cells.pkl"
+        pickle.dump(recs, open(cells_out, "wb"))
+        print(f"wrote {md_out} and {cells_out}")
 
 
 def main() -> None:
@@ -295,7 +343,10 @@ def main() -> None:
     if "--tag" in sys.argv:
         tag = sys.argv[sys.argv.index("--tag") + 1]
     if sys.argv[1] == "report":
-        report(tag)
+        md_out = None
+        if "--md" in sys.argv:
+            md_out = sys.argv[sys.argv.index("--md") + 1]
+        report(tag, md_out=md_out)
         return
     shard_k, shard_n = 0, 1
     if "--shard" in sys.argv:

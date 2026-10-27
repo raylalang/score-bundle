@@ -158,8 +158,8 @@ offset scalar is its core control).
   slide 3.
 - Two more registered one-shots THIS WEEK on the disclosed re-used
   13-piece URMP confirmation pool: correlated timing noise
-  (`docs/corrnoise_prereg_DRAFT.md` → frozen) and the tonal metric
-  (`docs/phase2_tonal_prereg_DRAFT.md` → frozen). Bach10 is NOT
+  (`docs/corrnoise_prereg_design.md` → frozen) and the tonal metric
+  (`docs/phase2_tonal_prereg_design.md` → frozen). Bach10 is NOT
   available: the archive on disk is the Sibelius-resynthesised
   version (synthetic audio), unusable for intonation or timing claims.
 - Writing freeze NOW (2026-10-23), not January: every number audited
@@ -256,7 +256,7 @@ opt-in capabilities, default off, published paths bit-untouched
 with `metrics.student_t_nll`, `downstream.completion_guard`; ρ=0
 bit-equality and brute-force conditioning pinned in
 `tests/test_adoption_optin.py`). BH pass (all main stars survive),
-power table, `docs/corrnoise_prereg_DRAFT.md` freeze-ready, house-style
+power table, `docs/corrnoise_prereg_design.md` freeze-ready, house-style
 figures, the interface reframe (channels ARE sine parameters; the story
 is two-sided).
 
@@ -327,7 +327,7 @@ coherence bound, the realized-vs-process estimand rule).
   (`results/corrnoise_tau_dev.md`); pool DECIDED 2026-10-23 (disclosed
   URMP re-use), freeze and one-shot this week.
 - Tonal-metric registration: drafted with power check
-  (`docs/phase2_tonal_prereg_DRAFT.md`); same pool, same week.
+  (`docs/phase2_tonal_prereg_design.md`); same pool, same week.
 - Decomposition framing in the intro/abstract: ADOPTED 2026-10-23.
 - Joint loop over all notes under the graph prior, transient columns at
   the joints, amplitudes under the prior: thesis Future Work

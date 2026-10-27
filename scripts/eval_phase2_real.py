@@ -100,6 +100,15 @@ if CONF_MODE and os.environ.get("PHASE2_CONFIRMATION_I_AM_SURE") != "yes":
         "deliberate, agreed spend of the pool, set "
         "PHASE2_CONFIRMATION_I_AM_SURE=yes and use "
         "scripts/run_phase2_confirmation.sh.")
+# --- RE-USE of the spent pool (2026-10-27 registrations, disclosed) ---
+# The 13-piece pool was spent on C1-C4 (2026-08-27). Two later claims
+# (correlated timing noise; tonal metric), developed on the development
+# split only, are confirmed ONCE EACH on the same pool with full
+# disclosure. REUSE_MODE unlocks ONLY the tonal variant here (and
+# eval_corrnoise_tau.py); every plain confirmation verb is refused, so the
+# spent artifacts (results/phase2_confirmation_results.md,
+# results/phase2_cells/conf, evidence/phase2_confirmation) cannot be touched.
+REUSE_MODE = CONF_MODE and os.environ.get("PHASE2_REUSE_I_AM_SURE") == "yes"
 
 _TAG = "conf" if CONF_MODE else "dev"
 CACHE = f".cache/urmp_targets_{_TAG}.pkl"
@@ -111,8 +120,10 @@ CH = ["c (cents)", "log gamma", "log f", "loudness ell", "tau (s)",
 GT_COLS = (0, 1, 2, 5)            # GT curves carry no amplitude and no tau
 CELLS_PKL = ("results/phase2_confirmation_cells.pkl" if CONF_MODE
              else "results/phase2_real_cells.pkl")
-TONAL_OUT_MD = "results/phase2_tonal_dev.md"
-TONAL_CELLS = "results/phase2_tonal_cells.pkl"
+TONAL_OUT_MD = ("results/phase2_tonal_confirmation_results.md" if CONF_MODE
+                else "results/phase2_tonal_dev.md")
+TONAL_CELLS = ("results/phase2_tonal_confirmation_cells.pkl" if CONF_MODE
+               else "results/phase2_tonal_cells.pkl")
 CHAIN_OUT_MD = "results/phase2_chain_prior_dev.md"
 CHAIN_CELLS = "results/phase2_chain_prior_cells.pkl"
 TG_OUT_MD = "results/phase2_timegauss_prior_dev.md"
@@ -395,7 +406,7 @@ def _cells_dir(tonal: bool) -> str:
     tag = (tonal if tonal in ("chain", "timegauss")
            else ("tonal" if tonal else "plain"))
     if CONF_MODE:
-        tag = "conf"
+        tag = "conf_tonal" if tonal is True else "conf"
     return os.path.join("results", "phase2_cells", tag)
 
 
@@ -417,9 +428,16 @@ def stage_run(shard: str = "0/1", tonal: bool = False) -> None:
                                     laplacian)
     from score_bundle.score import Score
 
-    if CONF_MODE and tonal:
-        raise SystemExit("REFUSED: the tonal variant is exploratory and is "
-                         "not part of the registered confirmation protocol.")
+    if CONF_MODE and tonal and not (tonal is True and REUSE_MODE):
+        raise SystemExit("REFUSED: the tonal variant is not part of the "
+                         "2026-08-17 registered protocol. Its own one-shot on "
+                         "the re-used pool (registered 2026-10-27) runs only "
+                         "through scripts/run_phase2_reuse_confirmation.sh "
+                         "(PHASE2_REUSE_I_AM_SURE=yes).")
+    if REUSE_MODE and tonal is not True:
+        raise SystemExit("REFUSED: the plain confirmation (C1-C4) was spent "
+                         "2026-08-27; the re-use runner serves only the "
+                         "tonal claim.")
     shard_k, shard_n = map(int, shard.split("/"))
     with open(CACHE, "rb") as fh:
         data = pickle.load(fh)
@@ -543,6 +561,10 @@ def stage_report(tonal: bool = False) -> None:
     """
     import glob
 
+    if REUSE_MODE and tonal is not True:
+        raise SystemExit("REFUSED: the plain confirmation (C1-C4) was spent "
+                         "2026-08-27; the re-use runner serves only the "
+                         "tonal claim.")
     outdir = _cells_dir(tonal)
     files = sorted(glob.glob(os.path.join(outdir, "cells.shard*.pkl")))
     if not files:
@@ -620,6 +642,17 @@ def _render(rows, per_track, used, tonal: bool) -> None:
                  "common offset. Primary read: gp_asgiven - gp_chain_asgiven, "
                  "per channel, vs estimator targets. The registered results "
                  "file is untouched.", ""]
+    elif CONF_MODE and tonal is True:
+        lines = [f"# Tonal-metric CONFIRMATION — one shot on the RE-USED "
+                 f"13-piece pool, disclosed ({used} unique tracks, "
+                 f"{len(SEEDS)} seeds, {HOLD_FRAC:.0%} of notes hidden)", "",
+                 "> Registered protocol: docs/phase2_tonal_prereg_design.md, "
+                 "tag phase2-tonal-registration-2026-10-27. The pool was "
+                 "spent 2026-08-27 for claims C1-C4 and is re-used here with "
+                 "full disclosure: same archived inputs, same masks, same "
+                 "cells. Primary T2 = channel c NLL, as-given, paired "
+                 "gp_tonal_asgiven - gp_asgiven. Run ONCE; every number "
+                 "reported whatever the outcome.", ""]
     elif tonal:
         lines = [f"# Circle-of-fifths metric on the Phase-2 bundle — "
                  f"EXPLORATORY dev study "
@@ -776,6 +809,9 @@ def _render(rows, per_track, used, tonal: bool) -> None:
 
 if __name__ == "__main__":
     verb = sys.argv[1]
+    if REUSE_MODE and verb not in ("run-tonal", "report-tonal"):
+        raise SystemExit(f"REFUSED: verb '{verb}' is locked in re-use mode "
+                         "(the plain confirmation was spent 2026-08-27).")
     shard_arg = sys.argv[2] if len(sys.argv) > 2 else "0/1"
     {"extract": stage_extract, "loudness": stage_loudness,
      "tau": stage_tau, "delta": stage_delta,

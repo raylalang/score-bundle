@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Power check for a correlated-timing-noise registration (DEV ONLY).
 
-The tonal-draft method (docs/phase2_tonal_prereg_DRAFT.md), applied to the
+The tonal-draft method (docs/phase2_tonal_prereg_design.md), applied to the
 correlated-tau result: subsample the existing development cells
 (results/corrnoise_tau/cells.shard*of6.pkl, 149 (track, seed) cells over
 URMP pieces) at the PIECE level, and count how often the registered star
