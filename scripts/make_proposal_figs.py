@@ -105,11 +105,10 @@ def mock_results():
     fig, (axa, axb) = plt.subplots(1, 2, figsize=(11, 3.9),
                                    gridspec_kw={"width_ratios": [1.0, 1.35], "wspace": 0.3})
     banner(fig)
-    arms = ["time + pitch\n(the current model)", "time + annotated\nmotif edges",
-            "time + predicted\nmotif edges"]
-    est = np.array([0.003, -0.041, -0.032])
-    lo = np.array([-0.012, -0.068, -0.059])
-    hi = np.array([0.018, -0.014, -0.006])
+    arms = ["time + pitch\n(the current model)", "time + annotated\nmotif edges"]
+    est = np.array([0.003, -0.041])
+    lo = np.array([-0.012, -0.068])
+    hi = np.array([0.018, -0.014])
     y = np.arange(len(arms))[::-1]
     axa.axvline(0, color=MUTED, lw=0.8)
     axa.hlines(y, lo, hi, color=BLUE, lw=2.2)
