@@ -6,9 +6,39 @@
 > brief is the discussion skeleton. Standing language rules: say "the GP
 > estimator" (never a coined name), "correlated timing noise across
 > notes" (never bare "AR(1)"). Before the meeting: **sync Overleaf**
-> (draft.tex changed on 10-21, 10-23, 10-27: three spans, track-scale
+> (draft.tex changed on 10-21, 10-23, 10-27, 10-28: three spans, track-scale
 > attribution, decomposition framing, number audit, the two re-used-pool
-> one-shots in `sec:phase2-reuse`).
+> one-shots in `sec:phase2-reuse`, the 10-28 cut to 74 pages).
+
+## Run order for today (2026-10-28)
+
+Before the room: sync Overleaf; open `docs/slides/deck.pdf` (37 pages)
+and this brief; optionally have the three clips in
+`results/resynthesis_demo/` ready in a player (recording, resynthesis,
+flat), 8 seconds each.
+
+1. **Orientation, 60 s, no slide** (§A): the objective in one breath,
+   and that the professor is hearing the state and the decisions, with
+   objections welcome.
+2. **Deck, main line, about 15 min.** Slide 3 (the thesis and the three
+   problems), 4 (one model, three depths), 13 (piano result), 19
+   (strings-and-winds result), 20 (the two re-used-pool one-shots: the
+   timing claim repaired, the tonal metric missed), 30 (three spans), 31
+   (time window: the graph's value is two-beat smoothing), 32 (summary),
+   33 (plan to submission). Slides 7 to 9 (the model) and 22 to 23 (the
+   waveform likelihood) only if the mathematics is asked for.
+3. **Decisions as statements** (§H, 1 to 6), each in one sentence, then
+   listen.
+4. **The three asks of the professor**, after the decisions: (a) will he
+   read the 74-page draft before the January progress talk, and by when;
+   (b) the date and length of the progress talk slot (planned about
+   2027-01-07); (c) any objection to the writing freeze, which is now
+   in force until submission on 2027-02-02.
+5. **If time remains:** play the resynthesis demo (quick answer below),
+   then §F open problems as discussion.
+
+What is NOT on the table: new modelling runs (the confirmation pools are
+spent twice over), a longer deck, a new chapter.
 
 ## Since 2026-10-14, in one breath
 
@@ -34,8 +64,17 @@
   [−0.049, +0.001]); its recovery claim held (−0.312 cents, starred);
   the metric stays exploratory. The unchanged arms reproduced the
   August table digit for digit.
-- Thesis 82 pp, every number audited against its record on 10-23
-  (three sentences corrected, `results/number_audit_2026-10-23.md`).
+- Thesis 74 pp (cut from 83 on 10-28 with the deck, 56 to 37 pages:
+  obsolete two-stage-era material, tangential downstream tasks, the
+  three-span section compressed; no number changed), every number
+  audited against its record on 10-23 (three sentences corrected,
+  `results/number_audit_2026-10-23.md`).
+- Resynthesis demo (10-28, development, no claim,
+  `results/resynthesis_demo.md`): the end-goal passage rendered back
+  from the model's posterior-mean curves, inferred boundaries and
+  amplitude posterior; the harmonic render explains 0.89 of the
+  recording's energy over the fitted span; the remainder is timbre and
+  noise by construction.
 
 ## A. Research objective (the one-breath version)
 
@@ -348,6 +387,23 @@ from here, so they were decided; state each as a decision and listen.
   expression given a score; everything validated is the conditional
   (inference) direction. Generation quality is neither claimed nor
   measured.
+- **"Can you resynthesize the audio?"** Yes, at the level the model
+  represents: the demo of 10-28 renders the end-goal passage from the
+  inferred curves, boundaries and amplitude posterior, and the flat
+  clip (same envelopes, score-nominal pitch and timing) makes the
+  expression audible by contrast. The harmonic render explains 0.89 of
+  the recording's energy over the fitted span; the rest is timbre and
+  noise, the layers the model integrates out by design. A waveform
+  distance is therefore a diagnostic of the signal model, not an
+  evaluation of the expression estimate; Chapter 8 evaluates that
+  against the reference curves directly. Posterior-predictive
+  resynthesis over held-out pieces is the Future Work protocol for the
+  joint loop.
+- **"Why is the deck shorter than last time?"** Cut on 10-28 from 56 to
+  37 pages to findings only: notation and architecture frames,
+  per-example figures, two-stage-era tables and the withdrawn-run
+  backups removed; the model and waveform-likelihood frames merged with
+  their full mathematics kept. The pre-cut deck is in git history.
 
 ---
 
