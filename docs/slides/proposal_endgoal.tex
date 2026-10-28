@@ -1,6 +1,8 @@
-% Proposal deck: two options for the thesis's end goal (2026-10-28).
-% Separate from deck.tex. Mock figures are labelled as such in the figure
-% itself and in the frame. Build: tectonic proposal_endgoal.tex
+% Proposal deck: the thesis's end goal (2026-10-28, revised the same day).
+% One proposal (motif structure) with one deferred alternative (the
+% across-performer model). Separate from deck.tex. Mock figures are
+% labelled as such in the figure itself and in the frame.
+% Build: tectonic proposal_endgoal.tex   (about three minutes)
 \documentclass[aspectratio=169,11pt]{beamer}
 \usetheme{default}
 \usefonttheme{professionalfonts}
@@ -11,8 +13,6 @@
 \usepackage{amsmath,amssymb,bm}
 \usepackage{booktabs}
 \usepackage{graphicx}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,calc}
 \graphicspath{{../thesis/figures/}}
 \definecolor{okblue}{HTML}{0072B2}
 \definecolor{okverm}{HTML}{D55E00}
@@ -24,16 +24,12 @@
 \setbeamercolor{normal text}{fg=ink}
 \setbeamerfont{frametitle}{series=\bfseries,size=\large}
 \newcommand{\N}{\mathcal{N}}
-\tikzset{
-  box/.style={draw=muted, rounded corners=2pt, thick, align=center, inner sep=5pt, font=\small, minimum height=9mm},
-  data/.style={box, fill=okamber!15, draw=okamber},
-  model/.style={box, fill=okblue!12, draw=okblue},
-  res/.style={box, fill=okgreen!12, draw=okgreen},
-  arr/.style={-{Latex[length=2mm]}, thick, color=muted},
-}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Lg}{L_{\mathcal G}}
+\newcommand{\diag}{\operatorname{diag}}
 
-\title{\textbf{Two proposals for the end goal}}
-\subtitle{Where the thesis stops, and two ways to give it a direction}
+\title{\textbf{A proposal for the end goal}}
+\subtitle{Expression follows what the score repeats, with one deferred alternative}
 \author{Raynaldi Lalang}
 \institute{Kyoto University}
 \date{28 October 2026}
@@ -66,70 +62,61 @@
       downstream tasks of Chapter 6.
   \end{itemize}
   \vspace{2mm}
-  Both proposals close one of these gaps. The second closes both.
+  The proposal closes the first gap and gives the second a concrete form.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The two options at a glance}
+\begin{frame}{Three candidates, one proposal}
   \footnotesize
-  \begin{tabular}{@{}p{2.4cm}p{5.4cm}p{5.4cm}@{}}
+  \begin{tabular}{@{}p{2.0cm}p{3.5cm}p{3.6cm}p{3.8cm}@{}}
     \toprule
-     & \textbf{Option 1: a feedback application} & \textbf{Option 2: motif structure} \\
+     & \textbf{feedback view, as first drawn} & \textbf{across-performer model} & \textbf{motif structure (proposed)} \\
     \midrule
-    question & Where does a performance depart from a reference, by more than the model's uncertainty? & Does expression follow what the score repeats? \\[1mm]
-    what it adds & a score-aligned view of flagged notes with bands, built on the error-spotting task & one more edge family in the score graph, from the ISMIR motif work \\[1mm]
-    evidence & the strongest downstream result (error spotting) and the calibrated bands & a new development study, then one pre-specified test on untouched performances \\[1mm]
-    risk & no research question to test, and a user evaluation is out of reach by February & the motif edges may add nothing, which is still a clean finding \\[1mm]
-    cost & two to three days of engineering & three to five days, plus one registered evaluation \\[1mm]
-    connects to & the pedagogy motivation of Chapter 1 & the ISMIR 2026 paper, the open attribution question, and a musicological application \\
+    question & none: a threshold on an existing posterior & what is shared across interpretations and what is performer-specific? & does expression follow what the score repeats? \\[1mm]
+    what changes & nothing in the model & the model: a shared piece mean plus a per-performer deviation, both on the graph & the adjacency: one more edge family, weight learned by the evidence \\[1mm]
+    evidence & a plot & a new model fitted on pieces with many performances, then a held-out test & a development study, then one pre-specified test on untouched performances \\[1mm]
+    why or why not & decoration, not a proposal & the right form of the application, but one to two weeks of new modelling: deferred to Future Work & bounded, uses existing machinery and the ISMIR 2026 motif model, and can fail cleanly \\[1mm]
+    cost & a day & one to two weeks plus a test & three to five days plus a test \\
     \bottomrule
   \end{tabular}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Option 1: feedback against a reference performance}
-  \begin{columns}[T]
-    \begin{column}{0.46\textwidth}
-      \begin{center}
-      \resizebox{\linewidth}{!}{\begin{tikzpicture}[node distance=5mm]
-        \node[data] (s) {score $S$};
-        \node[data, right=8mm of s] (r) {reference\\performance};
-        \node[data, right=8mm of r] (p) {student's\\performance};
-        \node[model, below=5mm of r] (m) {the proposed model:\\posterior mean $m$ and band $\sigma$\\of every note, conditioned on $S$};
-        \node[res, below=6mm of m] (z) {per-note standardised departure\\$z_i = (y_i^{\text{student}} - m_i)/\sigma_i$};
-        \node[res, below=5mm of z] (f) {flag $|z_i| > 2$, show on the score};
-        \draw[arr] (s) -- (m); \draw[arr] (r) -- (m); \draw[arr] (p) -- (z);
-        \draw[arr] (m) -- (z); \draw[arr] (z) -- (f);
-      \end{tikzpicture}}
-      \end{center}
-    \end{column}
-    \begin{column}{0.54\textwidth}
-      \small
-      \textbf{Reuses} the error-spotting task (AUROC 0.995 on velocity under
-      the proposed model), the calibrated bands, and the per-piece
-      adaptation. \\[2mm]
-      \textbf{Narrative:} the representation is useful because its
-      uncertainty makes a judgement actionable: a departure is flagged
-      only when it exceeds what the model itself cannot predict. \\[2mm]
-      \textbf{What is missing:} no hypothesis is tested. The evaluation
-      would be a user study or a teacher's agreement rate, which needs
-      participants and ethics approval, neither possible before February.
-    \end{column}
-  \end{columns}
-\end{frame}
+\begin{frame}{The deferred alternative: an across-performer model}
+  \small
+  The feedback application needs a band that means \emph{the range of
+  reasonable interpretations}, not \emph{what this one performer would
+  have done}. That band comes from a model of performer variation. For
+  a piece with performances $r = 1, \dots, R$,
+  \[
+    y^{(r)} = \mu + \delta^{(r)}, \qquad
+    \mu \sim \N\bigl(0,\, B_\mu \otimes K_{\mathcal G}(s)\bigr), \qquad
+    \delta^{(r)} \overset{\text{iid}}{\sim} \N\bigl(0,\, B_\delta \otimes K_{\mathcal G}(s)\bigr),
+  \]
+  so that the shared mean $\mu$ and every deviation $\delta^{(r)}$ live
+  on the same score graph, and the feature kernels and noise of the
+  proposed model are kept. A new performance $y^{(\star)}$ is then scored
+  against
+  \[
+    p\bigl(y^{(\star)}_i \mid y^{(1)}, \dots, y^{(R)}\bigr),
+    \qquad
+    \operatorname{Var} = \underbrace{\operatorname{Var}[\mu_i \mid \cdot]}_{\text{uncertainty about the shared mean}}
+      + \underbrace{(B_\delta)_{cc}\,[K_{\mathcal G}]_{ii}}_{\text{performer variation}}
+      + \varsigma_c^2,
+  \]
+  which is the band a feedback view should draw. ASAP supplies the data:
+  27 performances of the 21st sonata's first movement, 21 of the 31st, 17
+  of the 23rd.
+  \vspace{2mm}
 
-\begin{frame}{Option 1: the feedback view (mock, not measured)}
-  \includegraphics[width=\textwidth]{proposal_feedback_mock.png}
-  \vspace{1mm}
-
-  \small Each note of a student's performance is placed against the
-  reference performance's posterior, so the band is the model's own
-  uncertainty about that note. Three notes fall outside it and are
-  flagged. The numbers are hand-set to show the form of the view.
+  \textbf{Why deferred.} It is a new model with its own fitting, its own
+  identifiability question ($\mu$ against $\delta$ when $R$ is small) and
+  its own evaluation. One to two weeks. It is the right Future Work item
+  for the application, and the motif study does not depend on it.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Option 2: the concept, expression follows what the score repeats}
+\begin{frame}{The proposal: expression follows what the score repeats}
   \includegraphics[width=0.86\textwidth]{proposal_motif_graph.png}
   \vspace{1mm}
 
@@ -142,26 +129,134 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Option 2: methodology, the same model with one more edge family}
+\begin{frame}{The motif side: what the ISMIR 2026 model produces}
   \footnotesize
-  \textbf{Model.} The proposed model is unchanged. Only the adjacency gains a term,
+  \textbf{Typed note graph and note states.} Notes are vertices, with edge
+  types for simultaneity, temporal proximity and overlap. A pretrained
+  encoder gives $\mathbf h_i^{(0)}$, and relational graph convolutions
+  update
   \[
-    W = W_{\text{time}} + w_{\text{m}}\, W_{\text{motif}},
+    \mathbf h_i^{(\ell+1)} = \phi\Bigl( W^{(\ell)}_{\text{self}} \mathbf h_i^{(\ell)}
+      + \sum_{r} \frac{W^{(\ell)}_r}{|\mathcal N_r(i)|} \sum_{j \in \mathcal N_r(i)} \mathbf h_j^{(\ell)} \Bigr),
+    \qquad \mathbf h_i \in \R^{d} \text{ after } L \text{ layers.}
   \]
-  where $(W_{\text{motif}})_{ij} = 1$ when notes $i$ and $j$ hold the same
-  position in two occurrences of one motif, and $0$ otherwise,
-  and $K_{\mathcal G} = U\,g(\nu; s)\,U^{\top}$ is built from the Laplacian of $W$
-  as before, with $w_{\text{m}}$ learned by the per-piece evidence.
+  \textbf{Two heads.} A motif-note probability and a pair affinity on
+  candidate pairs $\mathcal C$ taken from the graph edges,
+  \[
+    m_i = \sigma\bigl(f_{\text{MNID}}(\mathbf h_i)\bigr), \qquad
+    \hat a_{ij} = \sigma\bigl(\mathrm{MLP}(\mathbf g_{ij})\bigr), \quad
+    \mathbf g_{ij} = \bigl[\mathbf h_i, \mathbf h_j, \mathbf h_i \odot \mathbf h_j,
+      \tfrac{|t_i - t_j|}{q + \varepsilon}, \tfrac{|p_i - p_j|}{s_p}, \mathbf 1[t_i = t_j]\bigr].
+  \]
+  \textbf{Training by label propagation.} Annotated occurrences $O_k$ seed
+  $S_{ki} = 1/|O_k|$ on their notes, and memberships diffuse along the
+  learned affinities with restart,
+  \[
+    T = D^{-1}(A + s_{\text{self}} I), \qquad
+    M^{(t+1)} = \alpha S + (1 - \alpha)\, M^{(t)} T, \qquad
+    t_{\max} = 4,\; \alpha = 0.55,
+  \]
+  with losses at the note-pair, occurrence and motif-type levels on $M$.
+  \textbf{Decoding.} The gated affinity $A^{\text{dec}}_{ij} = A_{ij}(m_i m_j)^{\alpha_{\text{dec}}/2}$
+  is thresholded at $\tau_{\text{occ}}$, connected components become
+  occurrences $\hat O_1, \dots, \hat O_{\hat K}$, and a Gaussian mixture
+  on pooled states $\hat{\mathbf z}_k$ assigns each occurrence a type
+  $q(k)$.
   \vspace{1mm}
 
-  \textbf{Arms}, paired per piece and seed, with the per-piece bias column in every arm:
-  time-only graph (the attribution winner), time $+$ pitch (the current
-  model), time $+$ annotated motif edges, time $+$ predicted motif edges.
+  \textbf{What the thesis takes from it:} the occurrences $\hat O_k$, their
+  types $q(k)$, and per note the probability $m_i$. On BPS-motif these
+  reach establishment F1 $0.732$ with $105$ occurrences per piece against
+  $154.5$ annotated.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The bridge: from occurrences to an edge family}
+  \footnotesize
+  \textbf{Correspondence within a motif type.} For two occurrences $O_k$,
+  $O_l$ with $q(k) = q(l)$, let $\pi_{kl} : O_k \to O_l$ map each note to
+  its counterpart: by onset order when $|O_k| = |O_l|$, and otherwise by
+  dynamic time warping on (relative onset, pitch interval) so that
+  transposed and slightly varied returns still align.
+  \vspace{1mm}
+
+  \textbf{The motif adjacency.}
+  \[
+    \bigl(W_{\text{motif}}\bigr)_{ij} \;=\;
+    \sum_{k < l,\; q(k) = q(l)} c_{kl}\; \mathbf 1\bigl[\, j = \pi_{kl}(i) \text{ or } i = \pi_{lk}(j) \,\bigr],
+  \]
+  \[
+    c_{kl} = \begin{cases} 1 & \text{annotated occurrences,}\\[1pt]
+      \sqrt{\bar m_k\, \bar m_l}, \quad \bar m_k = \tfrac{1}{|\hat O_k|}\sum_{i \in \hat O_k} m_i & \text{predicted occurrences,} \end{cases}
+  \]
+  so a note in a motif that returns four times gains three counterparts,
+  and predicted occurrences enter with the model's own confidence.
+  \vspace{1mm}
+
+  \textbf{The score graph.} The thesis's adjacency (Chapter 3,
+  eq:adjacency) gains the family with one learned weight,
+  \[
+    W \;=\; W_{\text{time}} + w_{\text{m}}\, W_{\text{motif}}, \qquad
+    \Lg = D - W, \qquad
+    K_{\mathcal G}(s) = U\,\diag\bigl(g(\nu; s)\bigr)\,U^{\top},
+  \]
+  and everything after that is unchanged: $K = B \otimes K_{\mathcal G}(s)
+  + \sum_f \diag(c_f) \otimes X_f X_f^{\top} + \diag(\varsigma^2) \otimes I$,
+  with $w_{\text{m}}$ added to $\theta$ in the per-piece evidence
+  $\log \N(\tilde y_o;\, 0,\, K_{oo}(\theta))$. The evidence can switch the
+  family off, $w_{\text{m}} \to 0$, which is the falsification route.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The GP side: what a motif edge does to a hidden note}
+  \footnotesize
+  In the nested single-channel case with the additive kernel,
+  $g(\nu; s) = 1/(1 + s\nu)$, the prior is the Gaussian Markov random
+  field with precision $Q = I + s\Lg$, and the conditional of a hidden
+  note $h$ given the other notes is explicit:
+  \[
+    \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{s \sum_{j} W_{hj}\, y_j}{1 + s\, d_h},
+    \qquad
+    \operatorname{Var}\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{1}{1 + s\, d_h},
+    \qquad d_h = \sum_j W_{hj}.
+  \]
+  Splitting the degree into the two families, $d_h = d_h^{\text{time}} + w_{\text{m}} d_h^{\text{motif}}$,
+  \[
+    \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\;
+    \frac{s\, d_h^{\text{time}}}{1 + s d_h}\;\overline{y}^{\,\text{time}}_h
+    \;+\; \frac{s\, w_{\text{m}}\, d_h^{\text{motif}}}{1 + s d_h}\;\overline{y}^{\,\text{motif}}_h,
+  \]
+  the degree-weighted mean of the temporal neighbours and the mean of the
+  note's counterparts in the other occurrences. The posterior of the
+  full model, $m = C_{\cdot o} K_{oo}^{-1} \tilde y_o$, mixes the same two
+  sources through the coupling $B$, the feature kernels and the noise, but
+  this is the mechanism.
+  \vspace{1mm}
+
+  \textbf{Two readable predictions.} If performers shape a motif the same
+  way at each return, $\overline{y}^{\,\text{motif}}_h$ is closer to the
+  truth than $\overline{y}^{\,\text{time}}_h$ and the evidence raises
+  $w_{\text{m}}$: the recovery error on hidden motif notes falls (H1,
+  RMSE) and the band tightens by exactly the extra degree, which is the
+  calibration test (H1, NLL and coverage). If they do not, the counterpart
+  mean is noise, the evidence drives $w_{\text{m}}$ toward zero, and the
+  arms coincide with the time-only graph: the falsification outcome.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Methodology: arms, masking, data, hypotheses}
+  \small
+  \textbf{Arms}, paired per piece and seed, the per-piece bias column in
+  every arm: time-only graph (the attribution winner), time $+$ pitch
+  (the current model), time $+$ annotated motif edges, time $+$ predicted
+  motif edges.
   \vspace{1mm}
 
   \textbf{Masking.} Hide notes inside motif occurrences whose counterpart
-  in at least one other occurrence is observed. Score timing, articulation
-  and velocity by paired RMSE and NLL, and coverage of the 90 percent band.
+  in at least one other occurrence is observed, at the usual 40 percent
+  rate on the remaining notes. Score timing, articulation and velocity by
+  paired RMSE and NLL, and coverage of the 90 percent band, on the hidden
+  motif notes and on all hidden notes.
   \vspace{1mm}
 
   \textbf{Data.} BPS-motif annotates the first movements of all 32
@@ -170,16 +265,16 @@
   expositions, where the motif returns.
   \vspace{1mm}
 
-  \textbf{Hypotheses, fixed before the first run.} H1: motif edges improve
-  timing and velocity calibration on hidden motif notes against the
-  time-only graph. H2: predicted edges retain most of the annotated
-  edges' gain. Falsification: an interval that includes zero on H1 means
-  the structure performance follows is temporal smoothing, and the thesis
-  says so.
+  \textbf{Hypotheses, fixed before the first run.} H1: on hidden motif
+  notes, the annotated-motif arm improves timing and velocity NLL against
+  the time-only graph, with an interval excluding zero. H2: the
+  predicted-motif arm retains at least half of that gain. Falsification:
+  an H1 interval that includes zero means the structure performance
+  follows is temporal smoothing, and the thesis says so.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Option 2: what the result would look like (mock, not measured)}
+\begin{frame}{What the result would look like (mock, not measured)}
   \includegraphics[width=0.95\textwidth]{proposal_mock_results.png}
   \vspace{1mm}
 
@@ -196,7 +291,7 @@
   \small
   \begin{columns}[T]
     \begin{column}{0.5\textwidth}
-      \textbf{Option 2, in five working days}
+      \textbf{Five working days}
       \begin{enumerate}
         \item motif edge builder, and ASAP score MIDI aligned to the
           BPS-motif note lists;
@@ -217,8 +312,9 @@
           against the most musically plausible alternative.
       \end{itemize}
       \vspace{2mm}
-      \textbf{Recommendation.} Option 2. Option 1 can still be built as a
-      demo on top of it, since the feedback view only needs the posterior.
+      \textbf{Recommendation.} Run the motif study. State the
+      across-performer model as the Future Work item that turns the
+      representation into a feedback application.
       \vspace{2mm}
 
       \textcolor{muted}{\small The writing freeze of 23 October is reopened

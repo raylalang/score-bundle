@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 """Figures for the end-goal proposal deck (docs/slides/proposal_endgoal.tex).
 
-Three concept figures. Two of them show MOCK numbers, generated here from
+Two concept figures. One of them shows MOCK numbers, generated here from
 hand-set values, and carry an "illustrative, not measured" banner. Nothing
 in this script reads an evaluation record.
 
   proposal_motif_graph.png   the motif edge family on a score excerpt
   proposal_mock_results.png  what the motif study's result would look like
-  proposal_feedback_mock.png the feedback view of option 1
 
     PYTHONPATH=src python scripts/make_proposal_figs.py
 """
@@ -141,39 +140,7 @@ def mock_results():
     fig.savefig(OUT + "proposal_mock_results.png", bbox_inches="tight")
 
 
-def feedback_mock():
-    """Option 1: a student's performance against a reference, note by note,
-    with the model's bands; notes outside the band are flagged."""
-    rng = np.random.default_rng(11)
-    n = 28
-    t = np.arange(n)
-    ref = 0.012 * np.sin(2 * np.pi * t / 14)
-    band = 0.014 + 0.004 * rng.random(n)
-    dev = ref + rng.normal(0, 0.006, n)
-    dev[[9, 10, 21]] += np.array([0.045, 0.038, -0.042])
-    z = (dev - ref) / (band / 1.645)
-    flag = np.abs(z) > 2.0
-    fig, ax = plt.subplots(figsize=(11, 3.4))
-    banner(fig)
-    ax.fill_between(t, ref - band, ref + band, color=BLUE, alpha=0.15, lw=0,
-                    label="reference performance, 90 percent band")
-    ax.plot(t, ref, color=BLUE, lw=1.4)
-    ax.vlines(t[~flag], ref[~flag], dev[~flag], color=MUTED, lw=1.2)
-    ax.scatter(t[~flag], dev[~flag], color=INK, s=26, zorder=3, label="student, within band")
-    ax.vlines(t[flag], ref[flag], dev[flag], color=VERM, lw=1.8)
-    ax.scatter(t[flag], dev[flag], color=VERM, s=46, zorder=4, label="student, flagged")
-    for i in np.where(flag)[0]:
-        ax.text(i, dev[i] + (0.006 if dev[i] > ref[i] else -0.011),
-                f"z = {z[i]:+.1f}", ha="center", fontsize=8, color=VERM)
-    ax.set_xlabel("note index in the passage")
-    ax.set_ylabel("onset deviation (s)")
-    ax.legend(loc="upper left", fontsize=9, ncol=3)
-    ax.set_title("Feedback view: where the student departs from the reference by more than the model's uncertainty (mock)", loc="left")
-    fig.savefig(OUT + "proposal_feedback_mock.png", bbox_inches="tight")
-
-
 if __name__ == "__main__":
     motif_graph()
     mock_results()
-    feedback_mock()
-    print("wrote", OUT + "proposal_{motif_graph,mock_results,feedback_mock}.png")
+    print("wrote", OUT + "proposal_{motif_graph,mock_results}.png")
