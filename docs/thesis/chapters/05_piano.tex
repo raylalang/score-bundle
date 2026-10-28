@@ -1,0 +1,396 @@
+\chapter{Results: Piano from Aligned MIDI}\label{ch:results}
+This chapter reports stage 1 of the progression. Aligned MIDI supplies the
+per-note variables almost free of observation noise, which isolates the
+question of whether score structure provides informative priors over
+expression (RQ2) from every complication of audio analysis. The principal
+result is the held-out comparison of the proposed model with the two-stage
+pipeline and with its own ablations. The attribution analysis
+(\S\ref{sec:attribution}) then traces the differences between systems to
+their mechanism, the per-channel results show where the differences arise,
+and the remaining sections report the leakage control, the hyperparameter
+safeguards and the development studies that scope the result.
+
+\section{Recovery and calibration on the held-out test set}
+The hypotheses fixed before the held-out evaluation (\S\ref{sec:hygiene})
+were that the proposed model (\S\ref{sec:twostage}) recovers held-out notes
+with lower error than the strongest two-stage pipeline, that its intervals
+cover held-out values at close to the nominal level, and that the score graph
+improves calibration inside the model. Development used the \nPieces{}
+development pieces, which also served model selection, and the held-out test
+set comprises \nConfPieces{} further ASAP pieces untouched by any decision
+(Table~\ref{tab:headline-conf}). On the test set the proposed model has lower
+error than the two-stage pipeline, with a paired per-piece RMSE difference of
+\dRmseConf{} whose interval excludes zero. Its intervals cover approximately
+\covGP{} of held-out values at the nominal 90\%. The graph's contribution to
+calibration is supported inside the model: its paired NLL contribution is
+\dNllGraphConf{}, with an interval that excludes zero. Pooled NLL between the
+proposed model and the two-stage pipeline shows no difference on the test
+set. The median piece is better calibrated under the proposed model, but one
+piece with a few extreme timing outliers dominates the pooled figure, as
+diagnosed in \S\ref{sec:guard-gp}.
+
+\begin{table}[h]\centering
+\caption{Held-out test set: \nConfPieces{} pieces $\times$ 4 mask seeds,
+\maskRate{} hidden, strict protocol, evaluated once under the protocol of
+\S\ref{sec:hygiene}. Lower RMSE and NLL are better, and coverage closer to
+90\% is better.}
+\label{tab:headline-conf}
+\footnotesize
+\begin{tabular}{lccc}
+\toprule
+System & RMSE & NLL & cov@90\% \\
+\midrule
+\textbf{Proposed model (graph + features + music model, fitted jointly)} & \textbf{\rmseGP} & \nllGP & \covGP \\
+\quad without the graph & 0.405 & $-0.226$ & 92\% \\
+\quad without the music model & 0.385 & $-0.264$ & 92\% \\
+two-stage pipeline, strongest (feat+music-model mean, chord graph) & \rmseConfOldHead & \nllConfOldHead & 92\% \\
+two-stage pipeline, plain (music-model mean, plain graph) & 0.401 & $-0.289$ & 92\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\figph{proposed_confirmation.png}{0.8}{The proposed model against its own
+ablations and the two-stage pipeline on the held-out test set, whose pieces
+played no part in any modelling decision.}
+
+The full development lineage is recorded in the development
+record.\footnote{\texttt{docs/graphgp\_first\_design.md} in the repository.}
+It contains the nested ablation sequence from the zero-mean, graph-free model
+up to the proposed model, which reaches development RMSE \rmseGPdev{} and NLL
+\nllGPdev{}, together with the rows of the two-stage pipeline as special
+cases of that sequence and the three-step account of how the final model was
+selected. Development numbers flatter every system, which is why
+Table~\ref{tab:headline-conf} is the principal result of the piano setting.
+The attribution controls of \S\ref{sec:attribution} trace the differences
+between its rows to their mechanism.
+
+
+\section{Attribution and posterior decomposition}\label{sec:attribution}
+
+\subsection{Refitting controls}
+Two development-set controls, each a refit of the model, identify the
+mechanism behind the differences in Table~\ref{tab:headline-conf}. The first
+is a fixed-mean control. Inserting the two-stage pipeline's cross-piece mean
+as a fixed mean inside the coupled GP scores 0.390 / $-0.327$, statistically
+at the level of the matching two-stage configuration with features, music
+model and plain graph, while the two-stage pipeline with chord edges remains
+ahead of this control by a margin whose interval excludes zero.
+Coregionalization and joint fitting in themselves therefore contribute almost
+nothing. The second is component removal, paired on the development set.
+Removing the graph from the full model costs $+0.017$ RMSE and $+0.067$ NLL,
+and removing the music-model embeddings costs $+0.008$ and $+0.034$, and both
+intervals exclude zero. The mechanism is therefore that per-piece Bayesian
+weighting of informative per-note features under one joint marginal
+likelihood does the recovering, while the score graph makes the uncertainty
+well calibrated. The music model earns its place as a feature provider inside
+the kernel, not as an oracle mean.
+
+\subsection{Exact decomposition by prior component}
+The latent field is, by construction \eqref{eq:gpfirst}, a sum of
+independent Gaussian components, the coupled graph GP and one draw per
+feature kernel, and the observation adds independent noise:
+\begin{equation}
+  y \;=\; \sum_{\zeta} y^{(\zeta)}, \qquad
+  y^{(\zeta)} \sim \N\bigl(0,\, C^{(\zeta)}\bigr) \text{ independent}, \qquad
+  \tilde y \;=\; y + e,
+  \label{eq:components}
+\end{equation}
+with $C^{(G)} = B \otimes K_G(s)$, $C^{(f)} = \operatorname{diag}(c_f)
+\otimes X_f X_f^{\top}$, and $C = \sum_\zeta C^{(\zeta)}$. Here $\zeta$ indexes the
+prior components, $\zeta \in \{G\} \cup \{f\}$, which in the piano setting
+is $\zeta \in \{G, \mathrm{feat}, \mathrm{emb}\}$, and the primed $\zeta'$
+below ranges over the same set. The components do \emph{not} correspond to
+the three summands of \eqref{eq:gpfirst}: the middle summand there
+contributes one component per feature set, and the noise summand contributes
+none, for the reason given at the end of this subsection. Because the other
+components and the noise are independent of $y^{(\zeta)}$, its
+cross-covariance with the observations is just its own block,
+$\operatorname{Cov}\bigl(y^{(\zeta)},\, \tilde y_o\bigr) = C^{(\zeta)}_{\cdot o}$,
+and conditioning the jointly Gaussian pair $\bigl(y^{(\zeta)}, \tilde y_o\bigr)$
+gives each component its exact posterior:
+\begin{align}
+  m^{(\zeta)} \;&:=\; \mathbb{E}\bigl[\, y^{(\zeta)} \mid \tilde y_o \,\bigr]
+  \;=\; C^{(\zeta)}_{\cdot o}\, K_{oo}^{-1}\, \tilde y_o,
+  \label{eq:decomp}\\[2pt]
+  \operatorname{Cov}\bigl(y^{(\zeta)},\, y^{(\zeta')} \mid \tilde y_o\bigr)
+  \;&=\; \delta_{\zeta\zeta'}\, C^{(\zeta)}
+  \;-\; C^{(\zeta)}_{\cdot o}\, K_{oo}^{-1}\, C^{(\zeta')}_{o \cdot}.
+  \label{eq:decomp-cov}
+\end{align}
+Two exactness identities follow by linearity, and both are verified by unit
+tests: summing \eqref{eq:decomp} over components recovers the posterior mean,
+and summing \eqref{eq:decomp-cov} over all pairs recovers the posterior
+covariance,
+\begin{equation}
+  m \;=\; \sum_\zeta m^{(\zeta)}, \qquad
+  \Sy \;=\; \sum_{\zeta}\sum_{\zeta'}
+  \operatorname{Cov}\bigl(y^{(\zeta)},\, y^{(\zeta')} \mid \tilde y_o\bigr).
+  \label{eq:decomp-total}
+\end{equation}
+This is the functional-ANOVA decomposition of an additive GP. The prior
+components are independent. A posteriori, the cross-terms of
+\eqref{eq:decomp-cov} are negative wherever two components can explain the
+same variation, which is the explaining-away effect, so their normalised
+diagonals measure per-note redundancy between information sources. The
+diagnostics of the next subsection are built directly on
+\eqref{eq:decomp}--\eqref{eq:decomp-total}.
+
+Observation noise is not a component of \eqref{eq:decomp}, by independence
+rather than by convention. A held-out note's noise is never observed and is
+independent of every observation, so its conditional mean is identically
+zero. Noise enters only through the shared weights: $K_{oo}$ contains
+$\Sigma_e$, so the fitted noise level sets how much of the observed variation
+is explained at all, a uniform shrinkage of every component rather than a
+competing direction. At \emph{observed} notes the decomposition does gain an
+exact noise term, $\mathbb{E}[\,e_o \mid \tilde y_o\,] = \tilde y_o -
+\mathbb{E}[\,y_o \mid \tilde y_o\,]$, which is the residual the model
+declines to explain. In the predictive variance of a held-out observation the
+noise reappears additively as the floor \eqref{eq:floor}, where it is
+directly comparable to the components' posterior variances. Finally, the
+split is the evidence-fitted model's own attribution, since it depends on the
+learned $B$, $c_f$ and $\varsigma^2$. It describes how the fitted model
+divides labour and makes no causal statement.
+
+\subsection{Covariance shares, component correlations and per-piece dominance}
+A third control needs no refitting at all: the exact component decomposition
+of the posterior, \eqref{eq:decomp}--\eqref{eq:decomp-total}, is read off
+the fitted model itself on the development pieces. The covariance shares
+reported below are computed over $\nPieces \times 4$ anchor masks, and the
+component correlations and the per-piece dominance and disagreement figures
+over the first anchor mask only. Two diagnostics are derived from the
+decomposition, per channel. The first, the covariance share, allocates the
+posterior mean's variation over the held-out notes $\mathcal{H}$ of a piece
+to the components,
+\begin{equation}
+  \omega^{(\zeta)} \;=\;
+  \frac{\operatorname{Cov}_{i \in \mathcal{H}}\bigl(m^{(\zeta)}_i,\, m_i\bigr)}
+       {\operatorname{Var}_{i \in \mathcal{H}}\bigl(m_i\bigr)},
+  \qquad \sum_\zeta \omega^{(\zeta)} = 1
+  \label{eq:share}
+\end{equation}
+and the normalisation is exact by bilinearity applied to
+$m = \sum_\zeta m^{(\zeta)}$, so cross-component interactions land inside the
+shares rather than in an unexplained remainder. The second, the per-note
+component correlation, normalises the diagonal of the posterior
+cross-covariance \eqref{eq:decomp-cov} by the two component standard
+deviations,
+\begin{equation}
+  \rho^{(\zeta\zeta')}_i \;=\;
+  \frac{\operatorname{Cov}\bigl(y^{(\zeta)}_i,\, y^{(\zeta')}_i \mid \tilde y_o\bigr)}
+       {\sigma^{(\zeta)}_i\, \sigma^{(\zeta')}_i},
+  \qquad
+  \sigma^{(\zeta)}_i = \sqrt{\operatorname{Var}\bigl(y^{(\zeta)}_i \mid \tilde y_o\bigr)},
+  \label{eq:compcorr}
+\end{equation}
+which is negative where the two information sources explain the same
+variation and is reported below as its average over held-out notes.
+
+The measured shares put most of the mean on the score-feature kernel on every
+channel ($0.69/0.60/0.40$ for $\tau$ / $\log r$ / $v$), give the embeddings
+their largest share on velocity ($0.34$, the channel where they carry signal
+the hand-built features lack), and leave the graph's share of the mean modest
+($0.12/0.22/0.27$). This is consistent with the two refitting controls:
+feature weighting recovers the mean, and the graph's contribution
+concentrates in the covariance. The component correlations
+\eqref{eq:compcorr} complete the picture. Graph by embeddings is near zero
+($-0.004/-0.025/-0.059$ per channel), so the two information sources act as
+complements rather than redundantly, while the visible explaining-away sits
+between the two feature kernels (score by embeddings, $-0.18$ on velocity)
+and between graph and score features ($-0.19/-0.18$ on articulation and
+velocity). Both statements are the fitted model's own attribution under its
+learned scales, not causal statements. Figure~\ref{fig:posterior-components}
+shows one development piece's posterior mean split into its component curves.
+
+\figph{posterior_components_dev.png}{1.0}{One section of a development piece
+(notes 10--65 in score order, 40\% hidden, anchor mask): the posterior mean
+of \eqref{eq:posterior} split exactly by prior component \eqref{eq:decomp}.
+The coupled graph GP, the score-feature kernel and the music-model-embedding
+kernel sum to the grey total, and open circles are the hidden notes' true
+values. On velocity the embedding component tracks the note-to-note
+alternation while the score features carry the phrase shape. The two large
+articulation events are carried almost entirely by the graph component,
+propagated from observed extreme neighbours. Timing rests on the score
+features, with the embedding component nearly flat outside
+velocity.\label{fig:posterior-components}}
+
+The shares above are averages, and the sharper statements are conditional,
+all of them on the development set. Dominance is a property of the piece. The
+per-piece evidence turns each kernel on or off per channel according to the
+within-piece signal it finds: the embedding kernel, for instance, is switched
+off entirely (share below $1\%$) on timing and articulation for roughly 60\%
+of development pieces yet dominant on a minority, and at the extremes the
+division of labour reverses completely. One piece's velocity channel rests on
+the graph, with share $0.76$, its level and a late crescendo propagated from
+observed neighbours and the embeddings switched off. Another's rests on the
+embeddings, with share $0.69$, carrying a note-to-note dynamics convention
+that the score features do not encode. Figure~\ref{fig:component-contrast}
+shows the two side by side on the same channel. On timing the pattern is
+diagnostic in a different way: the graph-dominated timing pieces are the
+\emph{steady} ones, whose posterior mean is largely shrunk toward zero, so
+graph dominance there means the graph carries what little of $\tau$ is
+predictable at all.
+
+Disagreement between components is likewise localised to particular notes.
+Opposite-sign pulls with both components substantial, each exceeding a
+quarter of the channel's posterior-mean spread, occur at $20\%$ of held-out
+notes between graph and score features on articulation and at $15\%$ on
+velocity, which is the per-note face of the $-0.19/-0.18$ component
+correlations \eqref{eq:compcorr} above, and between graph and embeddings on
+timing at only $6\%$. Such notes are exactly where the per-piece evidence had
+to decide between overlapping explanations, and they are where the
+decomposition is most informative to inspect.
+
+\figph{posterior_components_contrast_dev.png}{1.0}{The same channel
+(velocity) on two development pieces with opposite divisions of labour, as
+assigned per piece by the evidence. Top: a graph-dominated piece (share
+$0.76$), where the level and the late crescendo are carried by the graph
+component and the embedding kernel is switched off. Bottom: an
+embedding-dominated piece (share $0.69$), where the note-to-note dynamics
+convention is carried by the embedding component and the graph is nearly
+flat.
+\label{fig:component-contrast}}
+
+\section{Per-channel results}\label{sec:perchannel}
+The pooled result averages three normalised channels, and the effect is far
+from uniform across them (Table~\ref{tab:perchannel}). Timing ($\tau$) is the
+channel where structure moves least. The graph barely changes it and it
+slightly over-covers, because most of the remaining onset variance appears
+note-local rather than shared along the graph, a plateau that richer models
+edge below but do not break. Articulation ($\log r$) is where the graph most
+improves \emph{calibration}. A bare prior mean under-covers badly, with
+coverage $0.784$ for the zero-mean, graph-free configuration of the
+development record, and the graph lifts every configuration to approximately
+$0.91$ coverage, while the full GP cuts the error furthest, from $0.96$ bare
+to $0.60$. Velocity ($v$) is where \emph{recovery} improves most, and it is
+the one channel where the music-model embeddings carry signal that the
+hand-built features lack.
+
+\begin{table}[h]\centering
+\caption{Per-channel recovery (RMSE) and 90\%-interval coverage on the
+development set ($\nPieces \times 4$ masks) for the proposed model's own
+ablation sequence. The corresponding rows of the two-stage pipeline are in
+the development record.}
+\label{tab:perchannel}
+\footnotesize
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{Timing $\tau$} & \multicolumn{2}{c}{Articulation $\log r$} & \multicolumn{2}{c}{Velocity $v$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+System (development) & RMSE & cov & RMSE & cov & RMSE & cov \\
+\midrule
+Coregionalized GP, zero mean                  & 0.156 & 0.94 & 0.676 & 0.91 & 0.080 & 0.92 \\
+\ + features (no graph)            & 0.154 & 0.95 & 0.626 & 0.91 & 0.088 & 0.90 \\
+\ + features, full                 & 0.153 & 0.95 & 0.615 & 0.91 & 0.075 & 0.91 \\
+\textbf{\ + embeddings (proposed model)} & \textbf{0.152} & 0.95 & \textbf{0.601} & 0.91 & \textbf{0.072} & 0.92 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent A single pooled number hides two things: the graph's calibration
+gain is almost entirely the articulation channel, and its recovery gain is
+almost entirely velocity, with timing contributing little either way. The
+cross-channel coupling itself is also a velocity story. Refitting the full
+model with $B$ constrained diagonal costs velocity specifically, by $+0.0075$
+RMSE and $+0.093$ NLL paired on the development set with intervals that
+exclude zero, leaves articulation statistically unchanged, and moves timing
+by $0.0005$ in the diagonal's favour, a difference whose interval excludes
+zero but whose size is negligible. The coregionalization is therefore useful
+where an observed loud neighbour is informative. The pooled RMSE improvement
+is a blend of a large velocity gain diluted by a near-static timing channel.
+Figure~\ref{fig:posterior-example} shows what the numbers summarise: the
+posterior on one development piece, with the hidden notes' true values
+plotted against the 90\% predictive band.
+
+\figph{posterior_example_dev.png}{1.0}{The proposed model's posterior on one
+development piece (40\% hidden, anchor mask): posterior mean, 90\% predictive
+band, observed notes as dots and the true values of hidden notes as open
+circles. Hidden truths fall inside the band at 49/50, 49/50 and 46/50 across
+the three channels in this window, the mild conservatism that the calibration
+profile of Appendix~\ref{app:extra} quantifies. The dynamics panel shows the
+phrase-level structure the model exploits, and the timing band reflects how
+little of $\tau$ is predictable.\label{fig:posterior-example}}
+
+\section{Leakage control}\label{sec:leak}
+An earlier read-out let the music model see a note's own velocity, the very
+target it was asked to predict, which inflated its apparent advantage. The
+summary is now read one position earlier, so that it is blind to the note's
+own velocity by construction, and an automated structural test makes the leak
+impossible to reintroduce unnoticed. Everything was re-measured after the
+correction, and the strict protocol of \S\ref{sec:contam} was adopted. The
+corrected velocity advantage is smaller but remains, with an interval that
+excludes zero: the music model's mean-only error on the velocity channel was
+$0.057$ with the leak, the retracted figure, and $0.090$ with the final
+read-out. The leak had also manufactured an apparent scaling gain. A
+$1.3\times$ larger, lower-perplexity music model is identical downstream once
+the leak is removed (RMSE $0.394$ against $0.394$), so the music model is
+judged downstream, not by perplexity. The same mask-aware read-out feeds the
+proposed model's feature kernel, whose full pipeline was additionally audited
+bitwise: corrupting held-out targets or velocities changes no prediction by
+one bit. One dependence sits upstream of that audit's scope, in the
+definition of the target. The velocity centring constant is the piece mean
+over all matched notes, held-out ones included, an $O(1/N)$ coupling of
+observed targets to hidden velocities that is invisible to the bitwise audit,
+identical for every system compared, and recorded as a limitation.
+
+\section{Hyperparameter fragility and the safeguard}
+Two distinct failure modes were found and resolved. First, on a minority of
+mask realisations the fitted noise level collapsed toward zero and produced
+overconfident intervals, and a noise-level floor inside the fit removes this
+mode. Second, a rarer knife-edge collapse of the fitted coupling itself
+occurred in one (piece, seed) fit in 120, always on the same piece, which
+produced timing errors of $4.5$ and $17$ in two independent runs and
+single-handedly dominated the pooled average (pooled timing RMSE
+$0.16 \to 1.58$, for example). The self-validating safeguard removes both
+catastrophic fits ($4.5 \to 0.24$, and $17 \to$ a healthy value) while being
+bit-for-bit identical to the unsafeguarded fit on the published protocol,
+since it never fires on a healthy fit. Pooled tables additionally report the
+median and the worst per-fit error, so that any future collapse is visible by
+construction.
+
+\subsection{The proposed model's tail}
+\label{sec:guard-gp}
+The proposed model has its own rare tail, observed once on the held-out test
+set: one evaluation (one piece, one seed, the timing channel) with predictive
+NLL $+27.5$ while its RMSE ($0.11$) and coverage ($0.90$) are unremarkable.
+The diagnosis is as follows. A very steady piece gives timing a tiny scale,
+the per-piece evidence fits correspondingly tight intervals, a handful of
+held-out outlier notes then land many standard deviations out, and the
+Gaussian likelihood's quadratic tail amplifies them into the pooled average.
+This is why the pooled-NLL comparison on the test set shows no difference
+while the \emph{median} piece is better calibrated under the proposed model.
+A safeguarded fit in the same spirit as the two-stage safeguard was built and
+validated, with a calibration-split screen that adds the overconfidence check
+the per-channel form lacks (Appendix~\ref{app:lineage}) and a fixed fallback
+sequence. It leaves healthy fits bit-for-bit unchanged, and it cannot catch
+this tail, because the failure is invisible from observed notes. The
+limitation is reported rather than patched post hoc. The principled remedy is
+a heavy-tailed (Student-$t$) timing likelihood, which has since been shown to
+remove exactly this tail at deployment and at inference level, while
+predictive floors prove ineffective (\S\ref{ch:future}), and the per-piece
+median NLL reported throughout is robust to it by construction.
+
+\section{Development studies}\label{sec:devstudies}
+Four development studies scope the result, and each is recorded in full in
+Appendix~\ref{app:phase1dev}. The first compares the music model with
+hand-built features. Against the 25-feature score baseline the music model
+shows no difference on average error, its advantage lies in calibration and
+in the velocity channel, where the interval excludes zero, and the two
+information sources stack. The second compares the proposed model with
+calibrated deep baselines. A heteroscedastic MLP head and a five-member deep
+ensemble, run under the identical protocol and information set, are worse
+than the proposed model on both axes by wide paired margins (paired
+differences of $-0.090$ in RMSE and $-0.30$ in NLL, both intervals excluding
+zero), so ranking \emph{which} notes are uncertain requires per-piece
+adaptation and the graph. The third tests task-matched pretraining. A
+bidirectional, mask-aware retraining at matched compute is a negative result,
+with pooled error $+0.011$ worse, and the same leak pattern attempted to
+re-enter through the new read-out and was detected by its signature. The
+fourth is the kernel comparison, run under the two-stage pipeline. The
+classical spectral profiles all show no difference from the additive default,
+structure beyond time adjacency is what buys calibration, and music theory
+helps as \emph{added} chord and voice-leading edges and hurts as a
+\emph{replacement} pitch metric. Under the final model the added edges are
+redundant at the operating point, with a clean density gradient across
+masking levels, and they were not taken to a second held-out evaluation.
+
+% =====================================================================

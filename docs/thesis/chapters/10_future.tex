@@ -1,0 +1,176 @@
+\chapter{Future Work}\label{ch:future}
+
+\section{Robust observation models and safe completion}
+Three refinements follow from observed limitations of the model whose
+results are supported on the held-out test sets. Each was evaluated on the
+development set, and each is implemented as an optional capability that
+leaves the reported model and its published tables unchanged. None of them
+is part of the reported protocol, and adopting any of them would require a
+further evaluation of the kind described in \S\ref{sec:hygiene}, fixed in
+advance and carried out on fresh data. The three are a heavy-tailed
+observation model for timing, a predictive floor as its cheaper alternative,
+and a safe mode for the completion task.
+
+A heavy-tailed (Student-$t$) observation model for timing works at both
+levels at which it can be placed. As a deployment-time predictive,
+variance-matched with $\nu = 5$, it removes the NLL tail demonstrated in
+\S\ref{sec:guard-gp} completely and without any change to the fit: the
+documented blow-up falls from $105.2$ to $-1.7$ with coverage intact. As an
+inference-level noise model, a Gaussian scale mixture fit by leave-one-out
+EM reweighting, it additionally brings timing coverage to nominal and
+improves articulation recovery by $-0.018$, with an interval excluding zero.
+The second effect arises because an observed timing outlier corrupts the
+coupled channels through the coregionalization, and only a robust fit undoes
+that corruption. Fits under the $t$ noise model must be scored with the
+matched $t$ predictive, since a Gaussian score of a $t$ fit is incoherent.
+
+Deployment-time predictive floors, the seemingly cheap engineering
+alternative, were found to be ineffective. The failure is a tail-shape
+problem rather than a scale problem. A floor raises the predictive scale of
+every note, but the outliers that dominate the tail already carry an
+appropriate predictive scale, so a floor cannot reach them. The negative
+result is useful in that it rules out the simplest remedy and locates the
+problem in the shape of the likelihood.
+
+The completion task of \S\ref{sec:boundary} can be made safe against
+extrapolation by a combination of two tests, each of which is only half of
+the answer on its own. A Mahalanobis coverage test, workable only in the
+observed excerpt's low-rank frame, is silent under interpolation, as
+required, but blind to catastrophic notes that lie inside the excerpt's
+feature coverage. A $3\sigma$ disagreement test against the cross-piece head
+supplies the other half. Together they tame every blow-up, the worst
+evaluation falling from $480{,}266$ to $0.7$, while keeping the per-piece
+model's advantage wherever adaptation helps. Blow-ups also occur under
+interpolation masks, so the boundary concerns the determination of the
+feature weights rather than extrapolation alone.
+
+\section{Strings and winds: open questions}
+The strings-and-winds result of Chapter~\ref{ch:phase2} leaves four open
+items: the corpus, the timing channel, the tonal metric, and additional
+channels. The first concerns corpora beyond URMP. In URMP the note onsets
+are annotated, and the timing channel's noise row is the predictive variance
+of a local tempo-line fit to those annotations. On any corpus without
+note-level onset annotations the general audio-alignment problem returns,
+and the timing channel's noise row must then carry an aligner's error.
+
+The timing hypothesis of the first strings-and-winds evaluation, the
+calibration of $\tau$, was not supported, and the diagnosis named its own
+follow-up: a correlated noise row for $\tau$ that represents the structure
+of alignment error along score time. That follow-up was first evaluated on
+the development set. An AR(1) block over note order, with its one parameter
+chosen by the evidence, improves timing NLL by $-0.111$ with an interval
+excluding zero, moves coverage toward nominal, and reduces timing RMSE by
+${\sim}20\%$ ($\approx 99 \to 80$\,ms). The correlation was detected on
+97--100\% of the piece-seed combinations across three independent runs,
+with fresh mask seeds and with a joint refit. The revised model was then
+supported on the second, disclosed evaluation of the held-out test set
+(\S\ref{sec:phase2-reuse}): the paired differences are $-0.121$ in timing
+NLL and $-0.011$ s in timing RMSE, both with intervals excluding zero, and
+coverage is at nominal. What remains is adoption. Making the correlated row
+the default noise model of the timing channel would change the published
+tables and therefore calls for its own evaluation fixed in advance, and on a
+fresh corpus the hypothesis is untested.
+
+The circle-of-fifths replacement geometry \eqref{eq:tonaladj}, which hurt
+piano expression, helps intonation on both axes in the development set
+(\S\ref{sec:phase2-delta}). It was evaluated a second time on the held-out
+test set with calibration as the pre-specified primary measure
+(\S\ref{sec:phase2-reuse}). The recovery gain held, $-0.312$ cents with an
+interval excluding zero, and the calibration gain did not, $-0.023$ with an
+interval reaching zero. The metric therefore stays exploratory. What remains
+is a fresh corpus and a design powered for recovery, which a power analysis
+made before that evaluation places above ${\sim}20$ pieces. Nothing from
+this route is adopted.
+
+The within-note drift and decay slopes measured in \S\ref{sec:phase2-delta}
+remain candidates for additional channels. They would follow the template of
+the vibrato onset delay $d^{\mathrm{vib}}$, which entered the bundle as an
+output with its own estimator variance and with no prediction attached to
+it. Neither slope is part of the reported bundle, and adding either would
+extend the output rather than change the model. Whether they are worth
+adding depends on whether a transcription use-case calls for them.
+
+\section{The waveform: the joint loop}
+\label{sec:future-phase3}Chapter~\ref{ch:phase3} stops at chains of a few
+notes. Within those chains the score prior couples the per-note constants
+(\S\ref{sec:phase3-priorvalue}), where it transfers only the context's
+common offset, and the curves themselves still carry independent priors.
+What remains is the \emph{joint} loop, in which all notes of a performance
+are inferred at once under the graph prior, by Laplace or variational
+inference over $z$. Three further components belong to that loop: a
+transient model at the note joints, which the chain study indicates as the
+next step, the estimand bridge between the harmonic model's constant and the
+annotation chain's functional, and the amplitude envelope $A_i(t)$ brought
+under the prior. The evaluation design changes with it. With no per-note
+observations there is no visible/hidden split, and the natural protocol is
+held-out pieces with posterior-predictive resynthesis.
+
+\section{Incorporating music theory}\label{sec:musictheory}
+Music theory can inform the model in two places, the graph or kernel and
+the prior mean, which is equivalently the feature kernels. The two routes
+are not exclusive, each is testable by the same held-out
+recovery-and-calibration criterion, and both have been evaluated. The graph
+route gave one positive and one negative result, both instructive, and the
+feature route gave a negative result that an embedding probe explains. A
+single criterion, stated at the end of this section, decides whether any
+ingredient from either route is kept.
+
+\subsection{In the graph and the kernel}
+Two constructions in this route are implemented (\S\ref{sec:graphvariants})
+and evaluated (\S\ref{sec:kernels}), and they gave opposite results.
+\emph{Replacing} the semitone ruler with a circle-of-fifths pitch metric
+\eqref{eq:tonaladj} makes both recovery and calibration worse, with paired
+intervals excluding zero: expressive behaviour travels with register
+proximity, not tonal proximity. \emph{Adding} same-onset (chord) and
+stepwise voice-leading edges \eqref{eq:harmadj} on top of the plain graph is
+the one intervention that improves both axes with intervals excluding zero.
+The general lesson, with the qualifier that the strings-and-winds setting
+supplies, is that music theory earns its place in the kernel as extra
+relations rather than as a substitute geometry, for channels whose target
+is not pitch. On intonation, where the target is pitch itself, the same
+substitute geometry helps (Chapter~\ref{ch:phase2}), so the rule is
+channel-relative.
+
+What remains open in this route is the part that the score alone cannot
+supply. Cadential and functional edges, such as tonic and dominant
+relations, require a harmonic analysis, since the implemented chord edges
+encode onset simultaneity and not chord identity
+(\S\ref{sec:graphvariants}). Metrical-hierarchy and phrase weights could
+form further edge families. Their feature-level counterparts were evaluated
+in the feature-kernel route below, but as graph structure they are untested.
+A Tonnetz or neo-Riemannian lattice metric and the Tymoczko voice-leading
+distance are alternatives to \eqref{eq:fifths} that have not been tried.
+
+\subsection{In the feature kernels}
+Fourteen music-theoretic score columns, covering local key, metrical weight,
+dissonance, phrase salience, motif repetition and tessitura, change nothing
+on any channel at any masking level, with no paired interval excluding zero.
+A linear and random-features probe of the embeddings rules out the obvious
+explanation, that the columns duplicate what the music model already
+encodes. The embeddings encode voicing, rhythm and register but \emph{not}
+tonality: scale degree, mode and local key sit at chance. Taken with the
+tonal-metric result of the graph route, the consistent reading is that tonal
+structure carries no measurable marginal signal for these three expressive
+channels at this scale, while the rhythmic and voicing structure that the
+columns add is already in the kernel. The full study is reported in
+Appendix~\ref{app:theoryfeat}. The columns remain available as an
+interpretable probe and are not part of the reported model.
+
+A single criterion decides whether an ingredient from either route is kept.
+A music-theory ingredient is retained only if it measurably improves
+recovery or calibration over the plain score graph on held-out data.
+Otherwise it is reported as motivation rather than as machinery. Both routes
+are directly testable within the existing protocol, so the criterion can be
+applied to every candidate listed above without a new evaluation design.
+
+\section{Unknown score support}\label{sec:future-amt}
+A discrete latent layer over note identities and onsets would move the model
+toward automatic music transcription proper. The score support $S$, assumed
+known throughout this thesis, would become a latent variable with its own
+prior, and the expressive variables would be inferred jointly with it. Every
+component of the present model is conditioned on $S$, so the model would be
+retained as the conditional inference inside a larger inference over the
+score. It is the assumption relaxed last, once the structured performance
+model is established.
+
+% =====================================================================

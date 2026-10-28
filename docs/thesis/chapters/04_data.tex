@@ -1,0 +1,190 @@
+\chapter{Data and Experimental Protocol}\label{ch:data}
+
+\section{Pretraining corpus (MAESTRO)}
+The music model is pretrained on the MAESTRO corpus alone \cite{maestro}.
+MAESTRO consists of competition piano performances captured on Disklavier
+instruments as finely aligned audio and MIDI, of which only the MIDI is used
+here. The music model is a decoder-only Transformer trained from scratch over
+note-structured MIDI tokens by next-token prediction. The reference model used
+throughout this thesis reaches a validation perplexity of $10.85$.
+
+\section{Evaluation corpus (ASAP) and target extraction}
+ASAP \cite{asap} is the only corpus that pairs written scores with
+performances, and it supplies the piano targets $y = [\tau, \log r, v]$
+through the score-to-performance beat warp $T(\cdot)$ (Eq.~\ref{eq:variables}).
+High-quality piano MIDI yields these targets almost exactly, so the
+observation noise in the piano setting is negligible ($\Sigma_e \approx 0$).
+The inference task is therefore not denoising but \emph{structured
+prediction}: the score graph prior is exercised by imputing masked notes from
+the rest of the performance.
+
+\section{Strings-and-winds corpus (URMP)}\label{sec:urmp}
+The strings-and-winds setting uses \textbf{URMP}, a corpus of 44
+multi-instrument chamber pieces assembled from separately recorded monophonic
+tracks. Each track comes with its audio, frame-level ground-truth pitch at a
+10\,ms hop, note-level onset, pitch and duration annotations, and the score,
+and the 13 instruments span strings, woodwind and brass. Three preparatory
+measurements govern how the corpus is used, and they are stated here because
+each one changes how a later result must be read.
+
+The first measurement calibrates the pitch tracker against the provided
+ground-truth pitch before any model is fit. The tracker's median error is
+2--5 cents per instrument, an order of magnitude below typical vibrato
+extents, and its voicing recall is at least $0.95$. Its per-frame confidence
+predicts its own errors: gross octave errors, called slips below, fall from
+$9.6\%$ to $0.4\%$ across confidence quintiles. These measurements fix the
+estimator chain of Chapter~\ref{ch:phase2}. The estimator's own variances are
+used as the observation-noise row, and the lowest confidence quintile is
+discarded.
+
+The second measurement concerns the split between development and held-out
+pieces, which is fixed at the level of the \emph{composition} and constructed
+deterministically without reference to the data. This granularity is forced
+rather than merely prudent, because arrangements of one composition share
+identical track recordings, so any finer split would place the same audio on
+both sides. The composition of the held-out portion and the rules under which
+it was evaluated are given in \S\ref{sec:hygiene}.
+
+The third measurement is an absence: no clean intonation ground truth exists,
+and this changes what a result means. The targets are estimator outputs, so
+held-out recovery measures the model's ability to recover \emph{the
+estimator's} targets at masked notes, not its agreement with a gold standard.
+The provided pitch curves supply an independent cross-check. The same
+estimator run on the ground-truth pitch curves gives targets that are
+independent of the tracker, though not of the estimator, and these are called
+the reference targets, or the reference centre, in Chapter~\ref{ch:phase2}.
+The result available in the strings-and-winds setting is therefore weaker in
+kind than the piano result, and it is not reported as though it were the
+same. Figure~\ref{fig:vibrato-compare} shows the three layers, truth,
+estimate and prediction, on two notes.
+
+\figph{phase2_vibrato_compare_dev.png}{1.0}{Truth, estimate and prediction
+at the note level on a development track, with the same fit and mask as
+Fig.~\ref{fig:phase2-real}. Top: a held-out note, whose estimate the model
+never saw. The estimate of eq.~\eqref{eq:cents-curve} and \eqref{eq:vibrato}
+tracks the truth-derived parameters closely (extent $12.7$ against $12.8$
+cents). The truth lies inside the model's $90\%$ bands for centre, extent and
+rate, while the delay prediction misses (truth $0$\,ms against $136 \pm 48$),
+one illustration of why no hypothesis is stated for the delay channel.
+Bottom: a visible note whose vibrato the estimator could not identify because
+few confidence-kept frames remained. The model's predictions place the truth
+within roughly one standard deviation on all three vibrato parameters. The
+centre row shows the scope of the setting: on this sparse note the estimator
+sits $8$ cents from the truth and the model recovers the estimator's value,
+since recovery is agreement with the estimator. Model curves are drawn from
+predicted parameters, and phase is not a target.\label{fig:vibrato-compare}}
+
+\section{Contamination control and the strict protocol}\label{sec:contam}
+ASAP reuses many MAESTRO recordings, so every ASAP performance whose MAESTRO
+twin was in pretraining is removed ($1036 \to 653$ aligned performances), and
+the model is tested only on performances the music model has not seen. A
+\emph{strict} protocol additionally blanks every hidden note's velocity from
+the music model's input, so that no hidden target reaches the model through
+the token stream. The cost of the strict protocol is negligible on error,
+$+0.0003$ for the music-model system and $+0.0000$ for the feature and
+music-model stack, and small on calibration, approximately $+0.014$ in NLL.
+The strict numbers are the ones quoted throughout the thesis.
+
+\section{Development and held-out evaluation}\label{sec:hygiene}
+Two disjoint sets of pieces play two different roles in every setting of this
+thesis. The development set is where every modelling choice was made: the
+noise floor, the correction of the music-model read-out, the feature stack,
+the kernel and edge families, and the proposed model itself were all selected
+on the \nPieces{} development pieces of the piano setting and on the
+development side of the composition-level split in the strings-and-winds
+setting. Each paired comparison on a development set is valid on its own
+terms, but a set that is reused for selection favours whatever survived the
+selection, so every number obtained on a development set is labelled as a
+development number wherever it appears. In the usual machine-learning
+vocabulary the two sets are the validation and test splits \cite{nosek2018}.
+They are called the development set and the held-out test set here to make
+explicit that the second was consulted only after the modelling choices had
+been settled.
+
+Each held-out test set was evaluated once, against hypotheses fixed in
+advance. Before the test pieces were examined, the systems to be compared,
+the primary and secondary measures, and the decision rule stating which
+measure decides each hypothesis and in which direction were written down and
+committed to the project's version history. The evaluation was then run a
+single time, and every result of that run is reported, including the results
+that did not support the hypotheses. The piano held-out test set comprises
+\nConfPieces{} further contamination-filtered pieces from the same corpus
+shuffle, verified untouched by any modelling decision and evaluated with mask
+seeds disjoint from the development seeds. The strings-and-winds held-out
+test set comprises 13 of the 44 URMP pieces, chosen at the composition level
+(\S\ref{sec:urmp}) and evaluated in Chapter~\ref{ch:phase2}. The inflation
+that this procedure protects against is visible in the results themselves:
+every system's calibration is worse on the held-out pieces than on the
+development set, and one development-set advantage, the pooled NLL, did not
+reappear on the piano test set.
+
+The strings-and-winds test set was used a second time, and that second use is
+disclosed wherever its results appear. The first evaluation tested the main
+hypotheses of the strings-and-winds setting. Two follow-up hypotheses, a
+correlated noise model for the timing channel and a tonal pitch metric, were
+then developed on the development set alone, with their measures and decision
+rules again fixed in advance, and were evaluated once more on the same test
+pieces (\S\ref{sec:phase2-reuse}). The consequence for interpretation is that
+the second evaluation is a weaker check than the first. The follow-up
+hypotheses were formed without access to the test pieces, so the second
+evaluation can show that a pre-specified effect appears on pieces that played
+no part in its development, but the pieces were no longer untouched, since
+their first-round results were known when the follow-up hypotheses were
+formed. The two follow-up results are read with that qualification, and any
+further use of the same pieces would have to be reported as exploratory.
+
+Every comparison between two systems in every results table follows the same
+conventions. The contrast is paired at the level of the piece: the two
+systems see identical pieces, identical masks and identical seeds, so their
+difference is computed per piece and only then aggregated. The interval
+reported with each paired difference comes from a percentile bootstrap over
+pieces, in which the per-piece differences are resampled with replacement,
+$B = 2000$ times, and the $2.5$th and $97.5$th percentiles of the resampled
+mean form the interval. A difference is called significant when that interval
+excludes zero, and significance is always stated in those words rather than
+by a mark in a table. Pairing is essential here, because piece difficulty
+varies far more than the gap between systems, so an unpaired comparison would
+obscure every effect reported in this thesis.
+
+\section{Sensitivity to the masking level}\label{sec:masksweep}
+The operating point used in the results hides \maskRate{} of the notes, a
+level inherited from earlier work rather than derived from the data. A
+development-set sweep carried out after the held-out evaluation, from 50\%
+hidden down to the leave-one-out limit (Appendix~\ref{app:masksweep}), finds
+the ordering of the models stable at every level. The score graph's paired
+contribution has an interval that excludes zero from 50\% down to 20\% and
+again at leave-one-out, and coverage is insensitive to the level throughout.
+The operating point is therefore arbitrary, but the conclusions drawn at it
+do not depend on it.
+
+\section{Metrics for recovery and calibration}\label{sec:metrics}
+Predictions on held-out notes are scored on both recovery and calibration.
+With held-out values $y_i$, predictive means $m_i$, and floored predictive
+standard deviations $\sigma_i^{\mathrm{pred}} = \sqrt{(\Sy)_{ii} + \sigma_e^2}$
+over $n$ held-out notes, the four measures are
+\begin{align}
+  \text{RMSE} &= \Bigl( \tfrac1n \textstyle\sum_i (y_i - m_i)^2 \Bigr)^{1/2},
+  &
+  \text{NLL} &= \tfrac1n \textstyle\sum_i \Bigl[ \tfrac12 \log\bigl(2\pi (\sigma_i^{\mathrm{pred}})^2\bigr)
+        + \tfrac{(y_i - m_i)^2}{2 (\sigma_i^{\mathrm{pred}})^2} \Bigr],
+  \\[3pt]
+  \text{cov}@\gamma &= \tfrac1n \textstyle\sum_i \mathbf{1}\bigl[\, |y_i - m_i| \le z_{\gamma}\, \sigma_i^{\mathrm{pred}} \bigr],
+  &
+  \text{cal-err} &= \sup_u \bigl|\, \hat F_{\mathrm{PIT}}(u) - u \,\bigr|,
+\end{align}
+where $z_\gamma$ is the two-sided standard-normal quantile for the level
+$\gamma$, which is 0.9 throughout, and $\hat F_{\mathrm{PIT}}$ is the
+empirical CDF of the probability integral transform
+$u_i = \Phi_{\N}\bigl((y_i - m_i)/\sigma_i^{\mathrm{pred}}\bigr)$, which is
+Uniform$(0,1)$ if and only if the predictive distribution is calibrated. Here
+$\Phi_{\N}$ is the standard normal CDF, distinct from the waveform synthesis
+operator $\Phi(z)$. The pre-specified criterion for a structured prior
+requires improvement on \emph{both} recovery (RMSE) and calibration (NLL,
+coverage and cal-err) against the independent, temporal-only, ridge and
+music-model-mean-only baselines, on held-out, contamination-filtered data. A
+method that lowers error but worsens calibration, or the reverse, does not
+meet the criterion. Every pooled table additionally reports the median beside
+the mean, so that a single collapsed fit cannot hide in the average, and the
+safeguard of \S\ref{sec:eb} addresses the cause of such collapses.
+
+% =====================================================================

@@ -1,0 +1,74 @@
+\chapter{Notation summary}\label{app:notation}
+This appendix collects the symbols used across the thesis and, where one
+exists, the equation in which each symbol is introduced. The symbols of the
+piano setting come first, followed by those of the strings-and-winds setting
+and of the waveform setting. Several letters are used in more than one role,
+and the conventions that keep those roles apart are stated after the table.
+\begin{center}
+\begin{longtable}{@{}p{4.3cm}p{9.2cm}@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+\endfirsthead
+\toprule
+Symbol & Meaning \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+$\score = \{s_i\}$, $s_i = (p_i, b_i, d_i)$ & score support: pitch, beat onset, beat duration \\
+$y_i = [\tau_i, \log r_i, v_i]$ & piano variables: onset residual, articulation, dynamics \\
+$T(\cdot)$ & tempo warp, score beats $\to$ performance seconds \\
+$\graph$, $W$, $\Lg$ & score graph, adjacency \eqref{eq:adjacency}, Laplacian \eqref{eq:laplacian} \\
+$\ell_b$, $\ell_p$, $w_v$ & graph length scales (beats, semitones), voice bonus \\
+$\Qg$ & graph prior precision: $\lambda I + \eta \Lg$ or $\sigma_g^{-2}(\kappa^2 I + \Lg)^\alpha$ \\
+$\lambda$, $\eta$ & additive ridge term, Laplacian weight \\
+$\sigma_g$, $\kappa$, $\alpha$ & Mat\'ern scale, inverse length, exponent \\
+$\mu$, $\muLM$, $h_i$ & prior mean; music-model mean; music-model per-note embedding \\
+$B$, $c_f$ & coregionalization matrix; per-channel feature-kernel scales \eqref{eq:gpfirst} \\
+$g(\nu; s)$, $s$ & shape-normalized spectral kernel of $\Lg$ ($g(0){=}1$); its shape parameter \\
+$\nu$, $U$, $K_G$ & Laplacian eigenvalues and eigenvectors; graph kernel $U \operatorname{diag}(g(\nu;s)) U^\top$ \eqref{eq:spectral} \\
+$d_5$, $\pi(p)$ & circle-of-fifths distance; pitch-class position map \eqref{eq:fifths}, used by \eqref{eq:tonaladj} \\
+$K_{oo}$, $C$ & observed block of $K$ (noise included); latent covariance \eqref{eq:posterior} \\
+$\beta$ & feature weights of the marginalized Bayesian linear mean (\S\ref{sec:features}) \\
+$X_f$, $\varsigma^2$ & per-note feature matrices; per-channel observation noise \eqref{eq:gpfirst} \\
+$\tilde y$, $e$, $\Sigma_e$ & observations, observation noise, its covariance \\
+$m$, $\Sy$, $\sigma_i$ & posterior mean, posterior covariance, posterior standard deviation ($\sigma$ has no other use in this thesis) \\
+$y^{(\zeta)}$, $C^{(\zeta)}$, $m^{(\zeta)}$ & prior components ($\zeta \in \{G, \mathrm{feat}, \mathrm{emb}\}$ on piano), their covariances, posterior-mean components \eqref{eq:components}--\eqref{eq:decomp} \\
+$\omega^{(\zeta)}$, $\rho^{(\zeta\zeta')}_i$ & covariance share \eqref{eq:share}; per-note component correlation \eqref{eq:compcorr} \\
+$\sigma_i^{\mathrm{pred}}$ & floored predictive std, $\sqrt{(\Sy)_{ii} + \sigma_e^2}$ \\
+$c_i$, $f_0$ & intonation (cents), fundamental frequency (strings and winds) \\
+$\ell_i$, $f_i^{\mathrm{vib}}$, $\gamma_i$, $d_i^{\mathrm{vib}}$ & strings-and-winds loudness (log RMS); vibrato rate, extent, onset delay \\
+$\sigma_{e,ij}^2$ & per-(note, channel) observation-noise variance (strings and winds) \\
+$J_i$, $\pi_j$, $q_{0.2}$ & note-$i$ frame set; tracker per-frame confidence; its lowest-quintile threshold \eqref{eq:framerule} \\
+$\hat\varphi_i$, $\hat\psi_i$ & local tempo-line slope and intercept at note $i$ \eqref{eq:localwarp} \\
+$f_{\mathrm{ref}}$ & tuning reference, $440$\,Hz $=$ A4 (MIDI $69$) \eqref{eq:cents-curve} \\
+$x$, $z$, $a$, $\Phi(z)$, $\epsilon$, $K_n$, $H$ & audio, nonlinear positions, amplitudes, synth basis, noise, noise cov, harmonic count (the waveform) \\
+$A_i(t)$ & amplitude envelope of note $i$ (the waveform) \\
+\end{longtable}
+\end{center}
+\noindent A first group of symbols is kept apart by a fixed rule. The
+support $\score$ is never a covariance. Plain $\sigma$ is never a prior
+scale, whereas $\sigma_g$ is one. The exponent $\alpha$ is never the
+additive weight, which is $\eta$. The capital $A_i(t)$ is the amplitude
+envelope, and the lowercase $a_i(t)$ is never used for it. $\Phi(z)$ is the
+synthesis operator, while $\Phi_{\N}$ is the normal cumulative distribution
+function.
+
+A second group of overloads is resolved by context. The letter $s$ is the
+spectral shape parameter, while $s_i$ is a score event. Capital $P$ is the
+per-note observation precision. The map $\pi(p)$ is the circle-of-fifths
+position, while $\pi_j$ is a tracker confidence. $B$ is the
+coregionalization matrix, and $B = 2000$ appears only as the bootstrap
+replicate count. $\delta_i$ is the performed duration and
+$\delta_{\zeta\zeta'}$ the Kronecker delta, and the vibrato onset delay is
+written $d_i^{\mathrm{vib}}$. The lengths $\ell_b, \ell_p$ are graph length
+scales, while $\ell_i$ is the loudness channel. The letter $c$ is a channel
+index, $c_f$ a feature-kernel scale, and $c_i$ the intonation channel in
+cents. An entry of the strings-and-winds mask is a (note, channel) pair,
+whereas the evaluation unit of the piano tables is a (piece, seed)
+combination and is always written out as a fit. Finally, the exponent
+$\alpha$ and the eigenvalue $\nu$ of this thesis differ from the Mat\'ern
+smoothness convention of the graph-GP literature.
+
+% =====================================================================

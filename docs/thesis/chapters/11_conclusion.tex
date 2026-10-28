@@ -1,0 +1,48 @@
+\chapter{Conclusion}\label{ch:conclusion}
+This thesis reads a recording as score, expression, timbre and noise, and
+recovers the expression layer note by note together with its uncertainty.
+The proposed model is a single multi-output Gaussian process on the score
+graph, with the channels coupled by coregionalization, the side information
+marginalized into the kernel, and every hyperparameter learned by the
+per-piece evidence. It contains the strongest two-stage pipeline as a
+special case, the diagonal-$B$, fixed-graph, plug-in-mean, no-feature slice
+of its parameter space on the shared-shape restriction, and it recovers
+hidden expressive detail better than that pipeline. This prediction was
+fixed in advance and is supported on a held-out test set of pieces that no
+modelling decision had touched.
+
+The marginal value of each ingredient is isolated. Per-piece Bayesian
+weighting of score features and music-model embeddings does the recovering,
+and the graph makes the uncertainty calibrated, a contribution that the
+held-out test set also supports. The music model earns its place as a
+feature provider inside the kernel. One step further, on the development
+set of both corpora, the graph's value is reproduced by the same graph
+without its pitch term, so the structure rewarded is smoothness in score
+time over about two beats. Six downstream tasks draw two boundaries:
+structure helps note by note but not for whole-performance summaries, and
+per-piece adaptation helps interpolation but not excerpt extrapolation. The
+evaluation is protected against leakage, contamination, fit collapse and
+selection inflation.
+
+The piano contribution stands on its own, and the same prior has been
+carried, unchanged in form, to intonation, vibrato, loudness, timing and
+vibrato onset delay on real recordings. On the strings-and-winds held-out
+test set the predictions for intonation recovery, vibrato calibration and
+coverage are supported, and the secondary timing hypothesis is not. Its diagnosed remedy, correlated timing noise across
+notes, was then supported on a second, disclosed evaluation of the same test
+set. A tonal-metric calibration hypothesis evaluated alongside it was not
+supported.
+
+The step to audio through a differentiable synthesizer is where the most
+novel work lies. Its development studies reach whole pitch curves whose
+median error against the reference centre is below that of the tracker's
+frames, and note boundaries inferred jointly from score-nominal starting
+points. They also fix the design constraint that the remaining joint loop
+must solve, bridging the estimand gap between the harmonic model and the
+annotation chain. The score prior has entered that inference over three
+spans, with a two-sided answer. A note or joint with no acoustic evidence
+inherits its context's common offset with a calibrated band, and the score
+graph outperforms a purely temporal prior at phrase scale, but nothing
+measurable beyond the common offset has yet been found. The strong form of the hypothesis is left for the joint loop.
+
+% =====================================================================

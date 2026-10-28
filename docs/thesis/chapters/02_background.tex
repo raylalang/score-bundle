@@ -1,0 +1,91 @@
+\chapter{Background and Related Work}\label{ch:related}
+
+\section{Computational models of expressive performance}
+Expressive-performance research models how performers deviate from the
+notated score in timing, dynamics and articulation. Historically this was
+done with rule-based systems, and more recently with sequence models trained
+on aligned corpora \cite{cancino2018,oore2018}. Most such work predicts a
+single expressive rendering or studies aggregate statistics. This thesis
+differs in framing the problem as per-note Bayesian inference with
+calibrated uncertainty. It asks not only how accurately expression can be
+predicted but also how \emph{trustworthy} the per-note confidence is.
+
+\section{Score-to-performance alignment}
+Aligned corpora pair a symbolic score with a performance through a note- or
+beat-level correspondence, from which continuous deviations can be read off.
+ASAP provides score$\leftrightarrow$performance alignments for piano with
+beat and downbeat annotations \cite{asap}, and it is the source of the
+targets used here. The quality of this alignment bounds from above the
+quality of the extracted targets. This dependence is treated as an explicit
+limitation of the work (Chapter~\ref{ch:discussion}).
+
+\section{Structured priors: graph Gaussian processes, GMRFs, and the SPDE approach}
+Gaussian Markov random fields place a Gaussian prior whose sparse precision
+encodes conditional-independence structure \cite{rueheld2005}. The SPDE
+approach links Gaussian fields to GMRFs and yields Mat\'ern-type priors with
+interpretable range and smoothness \cite{lindgren2011}. These constructions
+extend to graphs, giving Mat\'ern Gaussian processes on graph nodes
+\cite{borovitskiy2021}. For vector-valued outputs, both the
+intrinsic-coregionalization construction of \cite{borovitskiy2021} and the
+Kronecker output coupling of Gaussian processes over graphs
+\cite{venkitaraman2018} prescribe an explicit cross-output covariance.
+Gaussian processes on \emph{evolving} graphs \cite{blancomulero2021} address
+dynamic structure, which a fixed score does not need. The proposed model is
+exactly such a multi-output graph Gaussian process, with the graph built
+from musical adjacency rather than physical space. Its graph kernel is a
+spectral function of the score-graph Laplacian, its channels are coupled by
+a coregionalization matrix, its side information is marginalized into the
+kernel as Bayesian linear means, and every hyperparameter is learned by the
+exact evidence.
+
+\section{Symbolic music language models}
+Transformer and RNN models over tokenised MIDI, among them the Music
+Transformer, REMI and performance RNNs, learn strong distributions over
+symbolic music \cite{musictransformer,remi,oore2018}. This thesis builds a
+small decoder-only model from scratch, in the spirit of nanoGPT
+\cite{nanogpt}, rather than using a pretrained one. The reason is that the
+uncertainty layer must attach to the model's internals. With a model built
+here, the calibration of its outputs and the absence of leakage in its
+read-out remain inspectable.
+
+\section{Differentiable synthesis}
+Differentiable digital signal processing renders audio from interpretable
+controls, namely fundamental frequency, harmonic amplitudes and noise,
+through a differentiable synthesizer \cite{ddsp}. This is the intended
+waveform likelihood of the thesis. It connects the latent performance
+variables to a waveform while keeping the amplitudes conditionally
+Gaussian, so that they can be marginalised in closed form
+(Chapter~\ref{app:phase3}). The DDSP line has since grown hierarchical
+note-to-performance-to-audio \emph{generation} (MIDI-DDSP
+\cite{wu2022midi}), physically structured interpretable effect modules such
+as a differentiable guitar amplifier \cite{yeh2024ddspamp}, and semantically
+disentangled timbre control for multitimbral synthesis \cite{dalri2026}.
+Those works run the synthesis direction, with learned neural encoders and
+decoders. This thesis runs the \emph{inverse analysis} direction. The
+synthesizer is a hand-structured probabilistic observation model, a harmonic
+basis with Gaussian amplitudes marginalised exactly, rather than a trained
+neural decoder, and the recovered object is the posterior over
+score-aligned performance variables rather than audio.
+
+A complementary line puts the periodicity itself into a Gaussian-process
+\emph{kernel} rather than into a deterministic basis. Spectral mixture
+kernels learn a stationary covariance as a Gaussian mixture over
+frequencies \cite{wilson2013}. Their non-stationary generalization, the
+\emph{generalized spectral mixture} kernel, lets the frequencies, amplitudes
+and coherence lengths vary with the input, each modelled as a latent
+function \cite{remes2017}. Applied to music audio, per-note change windows
+that switch between Gaussian processes with harmonic, exponentiated-cosine
+covariances support pitch estimation and gap imputation directly on the
+waveform \cite{alvarado2016}. These families are the natural priors for the
+\emph{within-note} structure that this thesis measures but does not model,
+such as a vibrato whose period and extent drift. Both places where they
+could enter, a curve-level estimator and the pitch-curve prior of the
+waveform setting, were tried on the development set, and neither improved
+on the simpler alternative (\S\ref{ch:future}), so their imprint on this
+thesis is conceptual. The design difference is a choice and is worth
+stating. Kernel-side constructions marginalize the note's structure away,
+whereas this thesis keeps named per-note variables ($c$, $\gamma$,
+$f^{\mathrm{vib}}$, \dots) because the variables themselves are the object
+of study.
+
+% =====================================================================

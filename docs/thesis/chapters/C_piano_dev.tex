@@ -1,0 +1,200 @@
+\chapter{Piano development studies}\label{app:phase1dev}
+This appendix collects the development studies of the piano setting in
+full. Each of them has a short summary in the main line
+(\S\ref{sec:masksweep}, \S\ref{sec:devstudies}, \S\ref{sec:musictheory}),
+and all of the evidence reported here comes from the development set under
+the protocol of \S\ref{sec:hygiene}. The studies concern, in turn, the
+sensitivity of the results to the masking level, the sufficiency of
+hand-built score features, calibrated deep baselines, task-matched
+pretraining of the music model, the comparison of graph kernels in the
+two-stage regime, and music-theoretic feature columns together with probes
+of the embeddings.
+
+\section{The masking-level sweep, in full}\label{app:masksweep}
+The published operating point hides \maskRate{} of the notes of each piece.
+That fraction was inherited from earlier work rather than derived, so its
+influence was measured on the development pieces after the held-out
+evaluation. The hidden fraction was swept from 50\% down to 10\%, with the
+leak-free mask-aware embeddings recomputed at each fraction, since
+leak-freeness requires blanking exactly the notes that each mask hides. The
+sweep was extended to the leave-one-out limit, where every note is predicted
+from all the others through the closed-form GP identity. At that limit only,
+two relaxations of the protocol apply. The hyperparameters are fitted on the
+full piece, which is the textbook leave-one-out cross-validation estimator,
+and the embeddings are the leak-free pre-velocity readout rather than
+per-mask re-embeddings. Both relaxations apply identically to all three
+systems, so the comparison of their ordering remains a fair paired
+comparison, although the absolute numbers of the leave-one-out row are not
+strict-protocol values.
+
+The ordering of the models, with the proposed model below the no-graph
+ablation and that below the features-only model, is stable at every level
+including leave-one-out, so the operating point is arbitrary but not
+fortunate. The paired contribution of the graph is significant from 50\%
+down to 20\% hidden and at the leave-one-out limit. The contribution of the
+embeddings grows monotonically with observation density, from $-0.005$ RMSE
+at 50\% hidden to $-0.021$ at leave-one-out, paired, as context-dependent
+features would be expected to behave. Coverage stays at 0.92--0.93
+throughout, so calibration is insensitive to the masking level. One
+piece-seed combination at 30\% hidden reproduces, on a development piece,
+the Gaussian-tail failure of the log score described in
+\S\ref{sec:guard-gp}, identically across all three systems, which is
+consistent with the failure being a property of the tail of the likelihood
+rather than of any one model. Figure~\ref{fig:masksweep} shows both curves.
+
+\figph{masksweep_dev.png}{1.0}{Sensitivity to the masking level on the
+development set. Left: pooled held-out RMSE as the hidden fraction falls
+from 50\% to 10\% and to the leave-one-out limit (open markers, whose
+hyperparameters are fitted on the full piece). Right: the paired per-piece
+contributions of the graph and of the music-model embeddings at each level,
+with bootstrap 95\% intervals. The interval for the contribution of the
+graph excludes zero at every level except 10\% hidden, where only
+$\sim$10\% of the notes are scored per piece.\label{fig:masksweep}}
+
+\section{Hand-built score features and the music model}
+The second study asks whether hand-built score features suffice in place of
+the music model, on the development set. Against the 25-feature hand-built
+score baseline fitted under the same protocol, the music model shows no
+measurable difference in average error. Its edge, which is significant,
+lies in calibration and in the velocity channel. The two sources of
+information also combine. Under the two-stage plug-in baseline,
+concatenating the two means lowers the RMSE from $\rmseNetGraph$ to
+$\rmseStack$, and in the proposed model, where both enter as feature
+kernels, the marginal value of the embeddings is $-0.008$ RMSE and $-0.034$
+NLL, paired and significant, with the cost of their removal reproduced in
+direction on the held-out test set. Per channel, the mean-only edge of the
+music model over the 25-feature baseline is confined to velocity, with no
+measurable difference on timing and articulation. This is the same
+placement that the decomposition of \S\ref{sec:attribution} recovers from
+inside the fitted model.
+
+\section{Calibrated deep baselines}
+The comparisons of the main line give the deep model a single shared
+predictive scale, which understates it as a rival on the calibration axis.
+Two deep baselines that produce their own per-note uncertainty were
+therefore evaluated on the development set under the identical strict
+protocol and information set: the 25 features together with the music-model
+embeddings, standardized per piece, with strict mask-aware embeddings at
+evaluation and the same per-piece variance floor. The first is a
+heteroscedastic MLP head, which outputs $\mu_c(x)$ and $\log\sigma_c^2(x)$
+per channel and is trained by Gaussian negative log-likelihood on the head
+pieces. The second is a five-member deep ensemble of such heads. The
+proposed model is better than both on both axes by wide paired margins. Its
+RMSE is $0.360$ against $0.450$--$0.454$, a paired difference of $-0.090$
+with interval $[-0.115, -0.067]$, and its NLL is $-0.404$ against $-0.069$
+to $-0.104$, a paired difference of $-0.30$ with interval $[-0.40, -0.21]$.
+Ensembling five heads adds almost nothing over one.
+
+Where the deep heads land is the instructive part. At an RMSE of
+$\approx 0.45$ they sit at the level of the cross-piece plug-in mean
+without a graph. Their coverage is respectable at $0.92$, so the variance
+head does its job, but their NLL is far behind, because ranking which notes
+are uncertain requires per-piece adaptation and the graph. This is the
+attribution result of the main line, reached from the other side. A
+follow-up at the leave-one-out limit of \S\ref{sec:masksweep}, the densest
+observation and the regime in which a read-out head should be at its best,
+leaves the conclusion unchanged. The proposed model is better on every
+channel on both axes: against the ensemble, timing RMSE is $0.149$ against
+$0.165$ and NLL $-1.12$ against $-0.50$, articulation RMSE is $0.546$
+against $0.755$, and velocity RMSE is $0.066$ against $0.084$. The
+uncertainty ranking of the ensemble therefore does not catch up with denser
+observation. The scope of the comparison is that of read-out heads on fixed
+embeddings, the natural deep comparator at matched information and training
+data, and a fine-tuned end-to-end deep model remains untested.
+
+\section{Task-matched pretraining}
+A bidirectional, mask-aware retraining of the music model, matched exactly
+to the evaluation task, was compared with the original at matched compute on
+the development set. It is not better. Pooled error is slightly but
+significantly worse, by $+0.011$, confidence quality shows no measurable
+difference strict-to-strict ($-0.325$ against $-0.322$), and a $3\times$
+training budget does not close the gap, since timing improves while
+articulation and velocity do not. The reading is that the original read-out
+had already extracted what the change of objective was meant to unlock. The
+study also showed that the bidirectional read-out admits the leakage pattern
+that the causal read-out excludes, because a note read at its own velocity
+token contains that velocity. The pattern was recognised by its signature,
+and the design rule that follows from it is a leave-one-out read-out, in
+which each note is read with its own tokens masked, enforced by a
+structural test.
+
+\section{Kernel comparison in the two-stage regime}\label{sec:kernels}
+The kernel comparison was run under the two-stage plug-in baseline on the
+development set: the plug-in mean $\muLM$ under the strict protocol, one
+scalar GP per channel, identical masks in every row, and recovery and
+calibration scored paired per piece. It moved one of the two design axes of
+\S\ref{sec:graphvariants} at a time, either the graph $\Lg$ or the spectral
+profile $g(\nu;s)$. Three findings stand, and they are the reason the
+proposed model keeps the plain graph with the additive profile.
+
+First, the profile is inert. Graph Mat\'ern at $\alpha = 2$ and $3$, the
+diffusion kernel and the normalized Laplacian are statistically
+indistinguishable from the additive Laplacian on RMSE ($0.392$--$0.393$
+against $0.393$) and do not improve NLL. Their evidence-fitted filters
+coincide over the low-frequency components, where the prior mass lies, and
+differ only where the feature kernels and the noise absorb the variance.
+Second, the graph is not inert. Removing every edge raises RMSE to $0.446$
+and NLL to $-0.190$, both paired differences with intervals excluding zero,
+and the temporal chain shows no measurable difference from the full graph
+on RMSE but is worse calibrated, with a paired NLL difference of $+0.031$
+whose interval excludes zero. Third, music theory helps as extra edges and
+not as a replacement metric. Tonal distance in place of semitone distance
+is worse on both axes (RMSE $0.403$, NLL $-0.300$, both intervals excluding
+zero), whereas adding chord and voice-leading edges gave the only
+improvement on both axes, a paired RMSE difference of $-0.008$ and a paired
+NLL difference of $-0.013$ with intervals excluding zero, robust to a sweep
+over six settings of the untuned edge weights scaled by $\times 3$ and by
+$\div 3$.
+
+Under the proposed model the chord edges are redundant at the 40\%
+operating point once the music-model embeddings enter the kernel. The
+effect follows a density gradient, with a recovery gain at 30/20/10\%
+hidden, no measurable difference at 40\%, and nothing at 50\%. The proposed
+model therefore keeps the plain graph, and adopting the chord edges would
+call for a fresh held-out evaluation under the protocol of
+\S\ref{sec:hygiene}. The full tables, the row definitions and the $\mu = 0$
+block are in the development record.\footnote{The kernel comparison is
+recorded in \texttt{docs/kernel\_comparison\_results.md} and the density
+gradient of the chord edges in \texttt{docs/kernel\_multirate\_results.md}.}
+
+\section{Music-theoretic feature columns and embedding probes}\label{app:theoryfeat}
+The incremental route adds music-theoretic score features to the hand-built
+set, where they compose with any kernel. Fourteen score-only columns were
+added: local key by Krumhansl--Schmuckler profiles (key clarity, mode, a
+scale-degree encoding, an in-scale flag and the circle-of-fifths motion of
+the local key), a metrical-weight hierarchy, within-chord dissonance and a
+bass flag, phrase-boundary salience, motif-repetition counts and per-voice
+tessitura. On the development set they change nothing of note. The paired
+RMSE difference is $-0.002$ without the music-model embeddings, with an
+interval that touches zero, and $+0.001$ beside them, with an interval
+covering zero, and no single channel is significant in either regime. The
+finding is not specific to the 40\% operating point. Repeated at every
+masking level of \S\ref{sec:masksweep}, the columns stay non-significant
+beside the embeddings at each level and reach marginal significance on the
+plain model only at 10\% hidden, with a paired RMSE difference of $-0.004$.
+This is the same pattern as the chord edges show: where the per-piece
+weights are best determined, explicit theory carries a small signal that
+the embeddings already cover.
+
+A follow-up linear-probe study sharpens the interpretation, and not in the
+obvious direction. Probing the embeddings directly, with a cross-piece
+ridge fitted on the head pieces and scored out of sample on the development
+pieces, shows that they encode voicing and rhythm: bass-note membership
+(AUC $0.99$), metrical weight, phrase-boundary salience and register. They
+do not encode tonality. Scale degree, in-scale membership, mode and local
+key are all at chance from the embeddings ($R^2 \approx 0$, AUC
+$\approx 0.5$), whether or not piece-level information is removed, and a
+2048-dimensional random-features probe replicates every tonal result, so
+this is not an artifact of probe linearity. The failure of the theory
+columns is therefore \emph{not} explained by the embeddings already
+carrying the tonal signal. Taken together with the tonal-metric result of
+route (A) of \S\ref{sec:musictheory}, the consistent reading is that tonal
+structure carries no measurable marginal signal for these three expressive
+channels at this scale, while the rhythmic and voicing structure that the
+columns add is already in the kernel. This sharpens the attribution of
+\S\ref{sec:attribution} in an unexpected direction: the value of the
+embeddings lies in rhythm, texture and dynamics convention, not in harmony.
+The columns remain available in the implementation as an interpretable
+probe and are switched off by default.
+
+% =====================================================================

@@ -1,0 +1,97 @@
+\chapter{Downstream Tasks}\label{ch:downstream}
+Four tasks with objective metrics and matched baselines test whether the
+per-note posterior is useful beyond imputation, and all outcomes are
+reported. Table~\ref{tab:downstream} summarises them, and the results of the
+two-stage pipeline during development stand beside them in the development
+record.\footnote{\texttt{docs/downstream\_tasks\_results.md} in the
+repository.} Every task was run under the two-stage pipeline during
+development and evaluated again under the proposed model with identical
+corruptions and masks wherever the task permits pairing. Two
+whole-performance summary tasks run during development are recorded there
+and not reported here: musical-era classification, a negative result under
+both models, and performer identification on the Vienna 4x22 corpus, mixed
+under both, because smoothing removes the idiosyncrasy that identifies a
+pianist. They are the evidence for the second half of the structure boundary
+of \S\ref{sec:boundary}.
+
+\begin{table}[h]\centering
+\caption{Downstream tasks under the proposed model. The results of the
+two-stage pipeline during development are recorded in the development
+record.}
+\label{tab:downstream}
+\footnotesize
+\begin{tabular}{@{}p{4.6cm}p{8.2cm}@{}}
+\toprule
+Task & Outcome under the proposed model \\
+\midrule
+Error spotting (anomaly) & best on all channels ($v$ 0.995) \\
+Denoising, known noise & better (0.182/0.276, cov 0.90) \\
+Denoising, blind noise & no improvement in either parameterization \\
+Completion from excerpt & partial, with an extrapolation boundary (\S\ref{sec:boundary}) \\
+Selective prediction & better on the confident half, transfers (confident-half RMSE 0.076) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Error spotting}
+Error spotting corrupts a small fraction of notes and ranks every note by
+its suspiciousness, so the measure is the quality of the ranking. The
+two-stage graph model ranks better than every structure-free baseline on
+every channel, with AUROC rising from $0.94 \to 0.98$ at $3\sigma$ and from
+$0.85 \to 0.94$ at $2\sigma$. The proposed model, which scores each note by
+its joint leave-one-out predictive surprise, improves further on all three
+channels, reaching a velocity AUROC of $0.995$, an articulation AUROC of
+$0.986$ and a timing AUROC of $0.978$. Error spotting is therefore the task
+on which structure helps most clearly, and the advantage is larger under the
+proposed model than under the two-stage pipeline.
+
+\section{Denoising}
+Denoising recovers the true values of the per-note variables from added
+noise. With the noise level known, structure is better than per-note
+shrinkage on both error and calibration, with all 8 paired differences having
+intervals that exclude zero and coverage near $0.90$. The proposed model's
+oracle-noise form is slightly better still, with RMSE $0.182$ and $0.276$ at
+the two noise levels against $0.186$ and $0.282$, and coverage $0.90$. A
+negative result holds unchanged under both models: estimating the noise level
+blind from a single piece is unreliable in \emph{both} parameterizations,
+because the intervals collapse, so transcription noise must be treated as
+known for each system.
+
+\section{Completion from an excerpt}
+Completion predicts the expression of the rest of a piece from its opening.
+Interpolation, with scattered hidden notes, is where the model is clearly
+better, with RMSE falling from $0.450 \to 0.393$ and NLL from $0.21 \to 0.10$
+at half the notes observed. When the prediction extrapolates far past the
+excerpt, the music-model prediction carries it and the graph is neutral or
+slightly harmful. The proposed model makes this boundary sharp. Its per-piece
+feature weights, fit on the opening excerpt alone, can extrapolate wildly,
+and one evaluation with a prefix of 25\% reached an RMSE of
+$1.6\times 10^4$, so the cross-piece read-out head, which never adapts to the
+piece, is the appropriate tool for excerpt extrapolation. Per-piece Bayesian
+adaptation needs observed coverage of the feature space, and rendering from a
+short excerpt does not provide it.
+
+\section{Selective prediction}
+Selective prediction discards the least-confident predictions and measures
+the error on those that remain. Discarding lowers error most clearly for
+articulation, where keeping the confident half cuts its RMSE from $0.83 \to
+0.54$, and for catching the model's own misfires, where a timing blow-up at
+$0.61$ overall falls to $0.07$ on the confident half. Only the graph provides
+the per-note confidence that this triage needs, because the no-graph
+baselines rank at piece level only. Under the proposed model the triage is
+slightly better still, with a confident-half RMSE of $0.076$ against $0.080$
+at matched abstention, so the property transfers from the two-stage pipeline
+to the proposed model.
+
+\section{Two boundaries}\label{sec:boundary}
+Across the tasks, two boundaries emerge. Boundary (1), the structure
+boundary, holds under both models: the graph prior helps whenever notes are
+judged one by one for accuracy or confidence, and does not help when a
+performance is collapsed into a summary. Boundary (2), the adaptation
+boundary, belongs to the proposed model: per-piece Bayesian feature weighting
+is better on every interpolation-style task and breaks down at excerpt
+extrapolation, where the cross-piece head remains the appropriate tool. Both
+boundaries are statements this thesis makes, and each is bounded by evidence
+on both sides.
+
+% =====================================================================

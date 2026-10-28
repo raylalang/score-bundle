@@ -1,0 +1,89 @@
+\chapter{Discussion}\label{ch:discussion}
+
+\section{Interpretation}
+The attribution of \S\ref{sec:attribution} assigns the two halves of the
+result to two parts of the model: per-piece feature weighting recovers the
+hidden values, and the score graph calibrates the uncertainty. The posterior
+decomposition sharpens this picture from inside a single fit. The graph
+component and the music-model component act nearly orthogonally at each
+note, with a component correlation of $\approx 0$, so the two are complements
+rather than rivals. Which of them dominates is itself a per-piece property
+that the evidence assigns, and the assignment can invert completely between
+pieces (Fig.~\ref{fig:component-contrast}). Two questions remain that the
+numbers alone do not answer: why structure improves calibration rather than
+only accuracy, and why the music model's marginal contribution is
+concentrated in a single channel.
+
+Structure improves calibration because coupling correlated notes lets each
+held-out note borrow statistical strength from its neighbours. Borrowing
+sharpens the posterior mean, but its more important effect is on the
+posterior variance, which then reflects how well a note is actually
+determined by its context. An independent predictor must choose a single
+global uncertainty for every note. The graph gives each note its own, and
+that per-note uncertainty is what brings coverage to the nominal level.
+
+The music model's marginal contribution is concentrated in velocity because
+dynamics is the channel most predictable from learned performance
+conventions. Phrase-level swells and metrical stress are conventions that a
+sequence model captures and that local hand-built features do not. Timing is
+the channel on which every model's error plateaus, since much of its
+variance is note-local. Articulation is comparatively idiosyncratic. On
+those two channels the music model's additional information therefore has
+the least to add.
+
+\section{Limitations}
+Two results are supported on held-out test sets that were evaluated once
+against hypotheses fixed in advance (\S\ref{sec:hygiene}): the symbolic
+piano result and the six-channel result on real recordings. The latter rests
+on a single corpus, the 13 held-out pieces of URMP, and two of its findings
+run against the model. The secondary timing-calibration hypothesis was not
+supported, and timing recovery showed a small adverse difference whose
+interval excludes zero. Two follow-up hypotheses
+were then evaluated on the same strings-and-winds test set a second time,
+with the re-use disclosed (\S\ref{sec:phase2-reuse}). The revised timing
+noise model was supported, and the tonal metric's primary calibration
+prediction was not. Evidence from a re-used test set is weaker in kind than
+evidence from a test set evaluated once.
+
+The waveform evidence is exploratory and comes entirely from the development
+set. Its tests of the thesis's methodological hypothesis, three spans
+covering short chains, note joints and phrases
+(\S\ref{sec:phase3-priorvalue}), support only the weak form of that
+hypothesis. The score prior outperforms a purely temporal prior at phrase
+scale, but beyond the context's common offset it adds nothing measurable at
+the spans tested. A further development-set finding qualifies the graph
+itself. On both corpora the graph's value is reproduced, and on piano
+slightly exceeded, by the same graph with its pitch term removed
+(Appendix~\ref{app:trackscale}). The structure that does the work is
+therefore smoothness in score time over about two beats, not the pitch
+coupling that makes the graph a score graph. The results supported on the
+held-out test sets stand as comparisons of the full model with its
+alternatives, but their attribution is narrower than the model's name
+suggests.
+
+The remaining limitations concern the data and the model's form. The piano
+targets depend on the quality of a single corpus's
+score$\leftrightarrow$performance alignment (ASAP), and the evaluation sets,
+although held out and filtered for contamination, are modest in size, with
+30 development pieces and 20 held-out test pieces. Two model-level
+limitations are observed rather than hypothetical. The Gaussian likelihood's
+quadratic tail can amplify a handful of timing outliers on a very steady
+piece into the pooled NLL (\S\ref{sec:guard-gp}), and per-piece feature
+weighting breaks down under excerpt extrapolation (\S\ref{sec:boundary}).
+Generalisation beyond these settings is untested.
+
+\section{Threats to validity}
+The main threats to validity were addressed explicitly rather than assumed
+away. Target leakage was found and corrected, and the correction was
+verified by structural tests and by a bitwise end-to-end audit of the
+proposed model's path (\S\ref{ch:results}). Train/test contamination was
+filtered (\S\ref{sec:contam}). Hyperparameter fit collapse was safeguarded
+against and made visible by reporting the median and the worst piece
+(\S\ref{sec:eb}). Multiple-comparison and selection pressure was met by
+per-piece paired significance throughout and, decisively, by the held-out
+test set of \S\ref{sec:hygiene}, evaluated once against hypotheses fixed in
+advance, which exposed one development-set advantage that did not replicate.
+The threat that remains open is external validity beyond the two corpora
+studied, ASAP for piano and URMP for chamber ensembles.
+
+% =====================================================================

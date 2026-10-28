@@ -1,0 +1,637 @@
+\chapter{Results: Strings and Winds from Tracked Audio}
+\label{ch:phase2}\label{sec:phase2}
+This chapter is stage 2 of the observation ladder, in which the prior of
+the piano setting meets realistic measurement uncertainty. It carries the
+proposed model to strings and winds, where the performer controls pitch.
+Nothing in the latent prior changes. The graph and feature kernels of
+\eqref{eq:gpfirst}, its first two terms, the hyperparameter fit
+(\S\ref{sec:eb}) and the exact conjugate posterior (\S\ref{sec:gpfirst})
+are reused. One term is absent: the music model is trained on piano, so
+its embedding kernel takes no part here, and the evidence branch consists
+of the hand-built score features alone. The observation-noise term belongs
+to the likelihood, and the likelihood is what changes. Three things
+therefore change, and the first section specifies each of them: the
+channel set, the way the targets are obtained, and the observation noise,
+which stops being negligible.
+
+
+\section{The model in this setting: channels, targets and noise}
+\label{sec:phase2-delta}
+
+\subsection{The channel set}
+A fixed-pitch keyboard affords no performer-controlled intonation, and its
+dynamics is a MIDI velocity. Neither holds for strings and winds. We call
+the per-note vector of channels the \textbf{bundle}, in the everyday sense
+fixed in the Introduction, and in this setting it becomes
+\begin{equation}
+  y_i \;=\; \bigl[\, \tau_i,\ \log r_i,\ \ell_i,\ c_i,\ f_i^{\mathrm{vib}},\ \gamma_i,\ d_i^{\mathrm{vib}} \,\bigr]
+  \;\in\; \R^{k},
+  \label{eq:phase2-channels}
+\end{equation}
+where each channel is, as on piano, one scalar per note of the known
+score. The first two channels keep their piano meaning: $\tau_i$ is the
+onset residual against the score-time warp, re-anchored for this corpus
+by the annotated onsets as described below, and $\log r_i$ is the
+articulation ratio. The loudness channel $\ell_i$ replaces the MIDI
+velocity $v_i$ and is read from the note's own audio. The note's span is
+cut into four equal-length chunks of samples $x^{(q)}$, $q = 1, \dots, 4$,
+the energy of each chunk is summarised by its log root-mean-square, and
+\begin{align}
+  \ell_i &\;=\; \frac{1}{4} \sum_{q=1}^{4} \log \mathrm{rms}\bigl(x^{(q)}\bigr)
+  \;-\; \overline{\ell}_{\mathrm{track}},
+  \label{eq:loudness}\\
+  \widehat{\operatorname{Var}}[\ell_i] &\;=\; \frac{s^2_{\mathrm{chunks}}}{4}.
+  \nonumber
+\end{align}
+
+The chunking is what makes loudness an estimate rather than a bare
+number. The four chunks are internal replicates, so their mean is the
+note's level, and the sample variance of the four log chunk-RMS values,
+$s^2_{\mathrm{chunks}}$, yields the standard error
+$s^2_{\mathrm{chunks}}/4$. This standard error is automatically larger for
+notes whose level changes inside the note, during the attack or the decay,
+which is exactly when one loudness value per note is least well defined.
+Four is an untuned small default, enough replicates to estimate a spread
+while the chunks remain long enough to average over waveform periods on
+short notes. The term $\overline{\ell}_{\mathrm{track}}$ is the track's
+mean of the per-note values, and subtracting it centres the channel per
+recording. Absolute level is arbitrary per track, through microphone gain,
+distance and mastering, so only relative loudness within a recording is
+meaningful. The remaining channels are new to this setting. The static
+intonation offset $c_i$ measures how sharp or flat the note's held centre
+sits, and $(f_i^{\mathrm{vib}}, \gamma_i, d_i^{\mathrm{vib}})$ are the
+vibrato rate, extent and onset delay defined below. The superscript keeps
+the delay distinct from the performed duration $\delta_i$ of
+\eqref{eq:logr}.
+
+This vector leaves two decisions open, and one of them is settled by
+measurement against a criterion fixed before the numbers were computed.
+The delay is identifiable on $95$--$97\%$ of vibrato-identifiable notes
+on both the reference and the tracked pitch curves, with a median
+agreement of $18$\,ms between tracker and reference, so
+$d_i^{\mathrm{vib}}$ is a channel and $k = 7$ as written. On the
+evaluation corpus (\S\ref{sec:urmp}) articulation has no measured offset
+chain, that is, no sequence of annotated performed note ends from which
+$\log r_i$ could be computed, so the bundle evaluated there consists of
+the remaining six channels. The second decision stays open: whether
+$\ell_i$, which is an amplitude rather than a keystroke, is comparable
+enough with $v_i$ for the two to be discussed as one channel across
+settings. We do not assume that they are.
+
+What these quantities mean to a listener, how sharp or flat and by how
+much, the vibrato's speed, width and delayed onset, the note's loudness
+relative to its own recording, is spelled out in musical terms in
+Appendix~\ref{app:glossary}. Structurally, what matters is that none of
+these values is annotated by hand. Every one is \emph{estimated} from the
+recording: a pitch tracker supplies the note's pitch curve, and the
+per-note fit described next turns that curve into these numbers, each
+with its own uncertainty. This is why the observation noise of
+\eqref{eq:phase2-noise} becomes substantial in this setting. The corpus's
+human annotations supply only the note spans, that is, the onsets,
+durations and written pitches. Its annotated pitch curves serve to
+calibrate the tracker and never as channel values.
+
+\subsection{From a pitch curve to per-note targets}
+Let $f_0^{(i)}(t)$ be the fundamental estimated on the sounding interval
+of note $i$, restricted to the samples the tracker marks as voiced. Its
+deviation from the equal-tempered target, in cents, is
+\begin{equation}
+  c_i(t) \;=\; 1200\,\log_2 \frac{f_0^{(i)}(t)}{f_{\mathrm{ref}}\, 2^{\,(p_i - 69)/12}} ,
+  \label{eq:cents-curve}
+\end{equation}
+with $f_{\mathrm{ref}} = 440$\,Hz the frequency of A4, whose MIDI number
+is $69$, so that the denominator is the equal-tempered frequency of the
+written pitch $p_i$. This curve is not itself a target, because it mixes
+a static mistuning with an oscillation. Following the standard sinusoidal
+description of vibrato \cite{seashore1936,prame1994,prame1997}, it is
+decomposed as
+\begin{equation}
+  c_i(t) \;=\; \underbrace{c_i}_{\text{intonation}} \;+\; u_i(t) \;+\; \epsilon_i(t),
+  \qquad
+  u_i(t) \;=\;
+  \begin{cases}
+    \gamma_i \sin\!\bigl(2\pi f_i^{\mathrm{vib}}\,(t - t_i - d_i^{\mathrm{vib}})\bigr), & t \ge t_i + d_i^{\mathrm{vib}},\\[2pt]
+    0, & \text{otherwise},
+  \end{cases}
+  \label{eq:vibrato}
+\end{equation}
+with $t_i$ the performed onset. Thus $c_i$ (cents) is the vibrato-free
+centre, $\gamma_i$ (cents) the vibrato extent, $f_i^{\mathrm{vib}}$ (Hz)
+its rate, and $d_i^{\mathrm{vib}}$ (s) the delay before it begins.
+
+Estimating $(c_i, f_i^{\mathrm{vib}}, \gamma_i, d_i^{\mathrm{vib}})$ is a
+small nonlinear least-squares fit per note on the voiced samples, and
+per-note vibrato parameter estimation from recordings is an established
+analysis task \cite{driedger2016}. The fit runs in two forms. A continuous
+sinusoid supplies $(c_i, \gamma_i, f_i^{\mathrm{vib}})$, and in that form
+the delay coordinate is only a phase, identified modulo one period. The
+delayed-onset form of \eqref{eq:vibrato}, in which the oscillation grows
+out of the centre at $t_i + d_i^{\mathrm{vib}}$, supplies the delay
+itself, with its own identifiability rule and a variance obtained by
+linearisation. The centre $c_i$ is \emph{not} the mean of $c_i(t)$: the
+mean coincides with the vibrato-free centre only over a whole number of
+cycles, which a note rarely supplies, and perceived pitch likewise departs
+from the curve mean on short vibrato tones \cite{dalessandro1994}.
+
+The observation rule fixes every threshold by the development
+measurements of \S\ref{sec:urmp}. Note $i$'s sample set is
+\begin{equation}
+  J_i \;=\; \bigl\{\, \text{frames } j:\; t_j \in [t_i,\, t_i + \delta_i),\;
+  \text{voiced}_j,\; \pi_j \ge q_{0.2}(\text{track}) \,\bigr\},
+  \label{eq:framerule}
+\end{equation}
+so that the tracker's per-frame confidence $\pi_j$ is thresholded at the
+track's lowest quintile, which the development measurements identified as
+the gross-error filter. From this set follow three observation decisions,
+stated separately.
+\begin{itemize}[leftmargin=\parindent,noitemsep]
+  \item The intonation entry is observed if and only if $|J_i| \ge 4$ and
+        $|\hat c_i| \le 150$ cents, the octave-failure rule validated
+        against the reference.
+  \item The vibrato entries additionally require identifiability, at
+        least $8$ voiced frames and at least $1.5$ cycles at the fitted
+        rate, without which $(\gamma_i, f_i^{\mathrm{vib}},
+        d_i^{\mathrm{vib}})$ cannot be read from the note at all.
+  \item Every other entry is missing for the model.
+\end{itemize}
+One choice remains open, namely a robust loss rather than least squares
+inside the fit.
+
+\subsection{Per-channel missingness}
+The identifiability rule makes missingness structural rather than
+incidental. A short note may support $c_i$ but no vibrato parameters, so
+a target can be missing for some channels of a note and not for others.
+We call each (note, channel) pair an \textbf{entry}, and the resulting
+pattern of observed entries the \textbf{observation mask}. The conjugate
+posterior of \S\ref{sec:gpfirst} assumes per-note masks, which is exactly
+what keeps the observed block Kronecker-compatible (\S\ref{sec:gpfirst}).
+Per-entry missingness breaks that structure but not the exactness: the
+conjugate posterior conditions on an arbitrary observed index set, so
+what must give way is the per-note mask interface and any
+Kronecker-structured shortcut, not conjugacy. The model therefore accepts
+per-entry observation masks. Its exactness in this generalised form is
+verified against brute-force Gaussian conditioning, the per-note case
+reproduces the published path, and a synthetic end-to-end pilot exercises
+it with estimator-induced missingness (\S\ref{sec:phase2-pilot}).
+Figure~\ref{fig:phase2-datapoint} shows one data point of each kind.
+
+\figph{phase2_datapoint_dev.png}{1.0}{One strings-and-winds data point (violin,
+development track). Top: a $1.49$\,s note, showing the confidence-kept
+tracker frames (banded at the tracker's $\sim$10-cent frequency grid),
+the delayed-onset fit of \eqref{eq:vibrato} riding them, the flat stretch
+before the fitted onset delay (dashed) and the vibrato-free centre
+(dotted). At right, the note's six-entry record with each entry's
+estimator uncertainty, where the wide $\pm 37$\,ms on $\tau$ is the
+warp's noise row. Bottom: a $0.32$\,s note, too short for the
+identifiability rule, so that its three vibrato entries are missing while
+intonation, loudness and timing are still observed, which illustrates the
+observation mask. The third row shows the loudness construction of
+\eqref{eq:loudness} on the same long note: the waveform quartered into
+equal chunks, each chunk's $\pm$RMS level and log-RMS value, and the
+computation, in which the chunk mean minus the track mean gives
+$\ell_i = -0.18$ and the chunk spread gives the $\pm 0.12$ standard
+error, widened by the audible crescendo inside the note. The result
+matches the $\ell$ row of the record card.\label{fig:phase2-datapoint}}
+
+The missingness mechanism deserves naming \cite{rubin1976}. The
+evaluation's hidden notes are missing completely at random by
+construction, through a seeded coin per note. The estimator's missing
+entries are not: the identifiability rule removes a vibrato entry exactly
+when the note's vibrato is short or weak, so this missingness is
+informative, missing \emph{not} at random and dependent on the value it
+hides. Two consequences follow. The held-out scores stay interpretable,
+but for the identifiable sub-population only: random masking inside an
+informatively filtered set of entries is unbiased for the notes whose
+vibrato the estimator can measure, not for all notes. And the posteriors
+the model supplies at estimator-missing entries borrow from vibrato-rich
+observed neighbours and may therefore be biased toward audible vibrato,
+of which the delay posterior's occasional sub-zero stretches are the
+visible signature. Filled entries are posterior extrapolations under the
+prior and are to be read as such, not as recovered measurements.
+
+\subsection{Heteroscedastic observation noise}
+On piano the targets are read from clean MIDI and $\Sigma_e \approx 0$.
+Here every target is an estimate, and its uncertainty is both known and
+unequal across notes: the $f_0$ tracker reports a per-frame periodicity
+or confidence, and the per-note fit of \eqref{eq:vibrato} returns a
+parameter covariance. Writing $\sigma_{e,ij}^2$ for the variance of
+channel $j$ of note $i$,
+\begin{equation}
+  \tilde y \;=\; y + e, \qquad
+  e \sim \N\bigl(0,\ \Sigma_e\bigr), \qquad
+  \Sigma_e = \operatorname{diag}\bigl(\sigma_{e,ij}^2\bigr),
+  \label{eq:phase2-noise}
+\end{equation}
+which replaces the per-channel term $\operatorname{diag}(\varsigma^2)\otimes I$ of
+\eqref{eq:gpfirst} by a full diagonal over (note, channel). Conjugacy is
+untouched, since a diagonal is a diagonal, so the posterior and the
+marginal likelihood are unchanged in form. The noise floor and the
+safeguard of \S\ref{sec:eb} carry over.
+
+One decision remains: whether the estimator-supplied variances enter the
+likelihood unchanged, or carry a per-channel learned scale, so that the
+evidence may discover that the tracker is over- or under-confident. We
+call the first option the \textbf{given variances}, the estimator's own
+variances used without rescaling. The synthetic pilot
+(\S\ref{sec:phase2-pilot}) reverses the a-priori guess. With calibrated
+estimator variances, the given variances are better on every channel,
+and the learned scale over-shrinks the vibrato-extent channel (coverage
+$0.76$--$0.81$ against $0.86$--$0.87$). The learned scale is therefore
+the fallback for a mis-calibrated tracker, not the default. Real data
+gave the same answer (\S\ref{sec:phase2-real}): with estimator octave
+failures present, the learned scale collapses while the given variances
+stay healthy, and after the octave-failure rule the given variances
+remain the better-calibrated choice.
+
+\subsection{What the per-note compression discards}
+The channels of \eqref{eq:phase2-channels} hold every parameter fixed
+within the note: they are time-averages. A development drift study
+(Appendix~\ref{app:drift}) measures what the averaging discards. About
+two thirds of notes carry a real within-note drift of the intonation
+centre, found by the tracked and the reference curves independently,
+with a median of $10.5$ cents per note, an order of magnitude above the
+entry's reported standard error. Yet the discarded structure is
+graph-white: within-note slopes carry essentially no note-to-note
+correlation ($+0.03$, against $+0.59$ for timing, the channel the graph
+demonstrably helps). The per-note resolution is therefore empirically the
+right level for this model, and the mismatch is priced into the
+residual-based entry variances, which is why calibration held on the
+held-out test set. The discarded structure itself belongs to the waveform
+setting's frame-level likelihood, whose amplitude envelope $A_i(t)$ and
+pitch-curve model are built to carry it. Slope channels remain candidates
+for later work under the $d^{\mathrm{vib}}$ template, included as output
+and asserting nothing.
+
+\subsection{The score-time warp and the alignment error}
+The piano setting obtained the score-time warp $T(\cdot)$ from an aligned
+beat grid supplied with the MIDI. There is no MIDI here. $T$ must come
+from audio-to-score alignment, and its error propagates directly into
+$\tau_i$, since $\tau_i = t_i - T(b_i)$ by definition. Worse, alignment
+error is correlated along score time, which is precisely the structure
+the graph prior expects expressive timing to have. A model fit naively
+will therefore absorb some alignment error as expressive timing and
+report it with confident error bars. There are two defensible responses.
+One folds the aligner's own uncertainty into the $\tau$ row of
+\eqref{eq:phase2-noise}, with the caveat that \eqref{eq:phase2-noise} is
+diagonal, so it captures the error's scale but cannot represent its
+correlation along score time. The other withholds $\tau$ from this
+chapter's hypotheses entirely and reports only the channels the audio
+measures directly. This is the single largest threat to validity in this
+setting, and it has no analogue on piano.
+
+On the chosen corpus the threat has a measured resolution. URMP's
+note-level onset annotations anchor the warp without any audio aligner on
+76 of 78 development tracks, half by exact score-order matching and half
+by a pitch DTW. The two tracks without a usable warp remain in the
+evaluation with their $\tau$ entries missing, not dropped. The
+feasibility statistic uses a local leave-one-out warp: with score-onset
+and performed-onset pairs $(b_j, t_j)$, each note gets a tempo line with
+slope $\hat\varphi_i$ and intercept $\hat\psi_i$ fitted from its
+neighbours alone,
+\begin{align}
+  (\hat\varphi_i,\, \hat\psi_i)
+  &\;=\; \arg\min_{\varphi,\,\psi}\; \sum_{0 < |j - i| \le 8}
+     \bigl(t_j - \varphi\, b_j - \psi\bigr)^2,
+  \label{eq:localwarp}\\
+  \tau_i &\;=\; t_i \,-\, \bigl(\hat\varphi_i\, b_i + \hat\psi_i\bigr),
+  \nonumber
+\end{align}
+so the note being judged never enters its own warp. The result is a
+median $\operatorname{std}(\tau)$ of $79$\,ms with lag-1 neighbour
+correlation $+0.59$, that is, piano-scale timing with exactly the
+structure the graph prior models. On this basis $\tau$ is a channel of
+the evaluated bundle, and its noise row is the tempo line's leave-one-out
+predictive variance, which carries the aligner error's scale but not its
+correlation, as noted above. This is development evidence.
+
+\subsection{The score graph and the tonal metric}
+The graph construction \eqref{eq:adjacency} and its alternatives
+(\S\ref{sec:graphvariants}) carry over, with per-channel length scales.
+One earlier result becomes newly interesting. The kernel comparison
+(\S\ref{sec:kernels}) found that replacing the semitone metric by the
+circle-of-fifths metric \eqref{eq:tonaladj} made recovery and calibration
+significantly worse: expressive behaviour travels with register
+proximity, not tonal proximity. But that experiment measured timing,
+articulation and velocity, none of which is a pitch. This setting
+introduces a channel whose target is pitch itself. It is therefore an
+open and cheap question whether the tonal metric that is worse for
+expression is better for intonation, that is, whether notes a fifth apart
+share a mistuning that notes a semitone apart do not, as temperament and
+a fixed tuning reference would predict.
+
+The test was run on the development set, with the hypothesis stated
+before the numbers were computed (Appendix~\ref{app:tonal}). The
+circle-of-fifths metric improves held-out intonation significantly on
+both axes while re-imposing the familiar replacement penalty on timing.
+The tonal geometry helps exactly where the target is pitch and hurts
+where it is not, the first evidence in this thesis that a music-theoretic
+\emph{geometry}, rather than merely music-theoretic \emph{edges}, earns
+its place. The hypothesis was then evaluated on the held-out test set
+(\S\ref{sec:phase2-reuse}): the recovery gain held, but the calibration
+gain, the pre-specified primary measure, did not, its interval reaching
+zero. The metric stays exploratory, and none of the main hypotheses of
+this chapter depends on it.
+
+
+\section{Data and protocol}\label{sec:phase2-protocol}
+The corpus is URMP, described with the other corpora in \S\ref{sec:urmp},
+together with the three preparatory measurements that govern its use:
+tracker calibration, the composition-level split into a development set
+and a held-out test set, and the sense in which recovery means agreement
+with the estimator's targets rather than with a gold standard. That sense
+applies to every number in this chapter. The evaluation protocol is that
+of the piano setting, held-out imputation on both axes with a paired
+per-piece bootstrap (\S\ref{ch:data}), and the selection discipline of
+\S\ref{sec:hygiene} applies without exception. Because the targets carry
+real noise, calibration rather than RMSE becomes the more informative
+axis, and the predictive variance floor is no longer a technicality but a
+first-order modelling term. The held-out test set of this setting is the 13-piece set of
+\S\ref{sec:hygiene}, and the hypotheses it tests
+(\S\ref{sec:phase2-real}) were fixed on the development set alone.
+
+
+\section{Development results}\label{sec:phase2-devres}
+
+\subsection{A synthetic pilot}
+\label{sec:phase2-pilot}
+Before any real audio, the full pipeline was validated end to end on
+synthetic pieces whose per-note truth is known. On these pieces the graph
+model is better than the no-graph ablation on every channel. Missing
+vibrato entries, which no per-note method can even express, are recovered
+at roughly $4\times$ better than prior scale with coverage at nominal,
+and the given-variance noise default is settled there. This is a
+synthetic result: it validates the machinery and settles design
+defaults, and it asserts nothing about real audio.
+
+\subsection{Results on real audio}
+\label{sec:phase2-real}
+The full pipeline then ran end to end on real recordings: tracked $f_0$,
+confidence-filtered per-note estimation of $[c, \log\gamma, \log
+f^{\mathrm{vib}}]$, per-note loudness $\ell$ (log RMS, centred per
+recording), the onset-anchored timing channel $\tau$, and the delay
+$d^{\mathrm{vib}}$ from the delayed-onset fit, which together form the
+six-channel bundle. The estimator variances enter as the given variances,
+with per-entry missingness from the identifiability rule and the
+heteroscedastic model with per-entry observation masks. The per-track
+vibrato-identifiable fraction ranges from $2\%$ to $97\%$ with median
+$38\%$, so missingness is the norm, not an edge case. The run covers 77
+of the 78 unique development tracks, after deduplication of shared
+recordings and with one track below the minimum of 30 usable notes,
+hiding 30\% of notes. One target-quality rule was added with measured
+justification rather than by assumption: $2.2\%$ of intonation targets
+are octave slips ($|c| \approx 1200$ cents), the cross-check against the
+reference rejects every one of them (0 of 358 agree with the
+reference-derived value), and they are marked missing, treated exactly
+like unidentifiable vibrato.
+
+Paired against the no-graph ablation under the given-variance noise
+model, the declared default, recovery improves significantly on
+intonation and on both vibrato channels ($\Delta$RMSE $-0.89$ cents,
+$-0.26$, $-0.30$), calibration improves significantly on both vibrato
+channels and on timing ($\Delta$NLL $-3.8$, $-0.43$, $-0.29$), and
+coverage is $0.88$--$0.91$ at nominal $90\%$ on every one of the six
+channels. Table~\ref{tab:phase2-dev} collects the paired contrasts. Under
+this noise model the loudness, timing and delay recovery contrasts are
+small and not significant ($-0.003$, $-0.002$, $-0.001$), and the
+loudness NLL contrast is $+0.04$ \emph{against} the graph, small but the
+bundle's one significant adverse result. In the per-family breakdown,
+computed under the learned-scale contrast, the brass intonation contrast
+is not significant on its own, while the vibrato gain holds within every
+family and the intonation gain within strings and
+woodwind.\footnote{The learned-scale fallback makes all six recovery
+contrasts significant but is the worse-calibrated noise model against the
+reference (coverage $0.72$--$0.86$ vs $0.82$--$0.86$). Its full rows are
+in the results record.} The ordering of systems is unchanged when scored
+against the reference targets derived from the provided pitch curves.
+
+A check with fresh mask seeds (seeds 2, 3, same protocol) reproduces
+every direction, every significant recovery difference to two decimals,
+and the adverse loudness result. The significance of the heavy-tailed
+calibration contrasts changes with the seed: the extent-channel
+$\Delta$NLL, $-3.8$ with an interval excluding zero on the first seed, is
+$-0.22$ and not significant on the fresh seeds. This variability was
+therefore known before the held-out evaluation rather than discovered by
+it.
+
+\begin{table}[t]\centering
+\caption{Strings-and-winds development results under the given-variance
+noise model, the declared default, paired per (track, seed) against the
+no-graph ablation ($95\%$ bootstrap intervals, with $^{*}$ marking an
+interval that excludes zero and $n = 148$--$153$ pairs per channel), with
+coverage at nominal $90\%$. All numbers are development numbers. The
+hypotheses of the held-out evaluation were fixed on these columns. The
+fallback noise model is reported in the results record.}
+\label{tab:phase2-dev}
+\footnotesize
+\begin{tabular}{@{}lrrc@{}}
+\toprule
+channel & $\Delta$RMSE & $\Delta$NLL & cov@90 \\
+\midrule
+intonation $c$ (cents) & $-0.891^{*}$ & $-0.020$\phantom{$^{*}$} & 0.89 \\
+extent $\log\gamma$ & $-0.256^{*}$ & $-3.772^{*}$ & 0.90 \\
+rate $\log f^{\mathrm{vib}}$ & $-0.300^{*}$ & $-0.426^{*}$ & 0.88 \\
+loudness $\ell$ & $-0.003$\phantom{$^{*}$} & $+0.042^{*}$ & 0.90 \\
+timing $\tau$ (s) & $-0.002$\phantom{$^{*}$} & $-0.292^{*}$ & 0.91 \\
+delay $d^{\mathrm{vib}}$ (s) & $-0.001$\phantom{$^{*}$} & $+0.057$\phantom{$^{*}$} & 0.89 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Estimator-missing vibrato entries on visible notes receive posteriors,
+the capability no per-note method has (Fig.~\ref{fig:phase2-real}). All
+of this is development evidence in the piano chapter's sense. It selected
+the design defaults above and fixed the hypotheses for the held-out
+evaluation. The main hypotheses are recovery on intonation, calibration
+on \emph{both} vibrato channels, and coverage within $[0.85, 0.95]$ on
+all six channels. Timing calibration is a secondary hypothesis whose
+outcome does not decide the others, and the delay channel carries no
+hypothesis. Every number of the held-out evaluation is reported.
+
+\section{Held-out evaluation}
+\label{sec:phase2-conf}
+The held-out test set, 13 pieces and 40 unique tracks after recording
+deduplication, was evaluated once with two mask seeds under the protocol
+of \S\ref{sec:hygiene}, and Table~\ref{tab:phase2-conf} reports the
+outcome. The main hypotheses were supported. Intonation recovery is
+$-0.877\,[-1.236, -0.538]$, an interval that excludes zero, reproducing
+the development basis of $-0.891$ almost exactly. Vibrato calibration
+improves on both channels, $-2.990\,[-6.575, -0.435]$ on extent and
+$-0.564\,[-0.739, -0.392]$ on rate, both intervals excluding zero. The
+extent contrast is precisely the seed-sensitive one noted on the
+development set, and it held. Coverage is $0.88$--$0.91$ on all six
+channels.
+
+The secondary timing hypothesis was not supported. Timing calibration is
+$-0.030$ $[-0.061, +0.006]$, the predicted sign but an interval that
+includes zero, against a development basis of $-0.292$ whose interval had
+excluded zero. It is accompanied by a small adverse timing recovery
+difference whose interval excludes zero ($+0.003$ $[+0.000, +0.007]$,
+three milliseconds against a 65-millisecond RMSE). The graph's value on
+the timing channel therefore did not carry to the held-out test set. The development set's adverse loudness result did
+\emph{not} replicate ($+0.015$, not significant), the delay channel
+stayed graph-neutral as expected, and the ordering against the reference
+targets is unchanged. The given variances remain the better-calibrated
+noise model, with vibrato coverage $0.80/0.85$ against the learned
+scale's $0.72/0.73$. By the decision rule fixed in advance, with the
+three main hypotheses supported, the principal result of the
+strings-and-winds setting holds: the unchanged graph prior extends to
+real audio with calibrated uncertainty on a held-out test set. Every
+number of the evaluation, all three systems and the per-entry evidence
+are archived with the run logs.
+
+\begin{table}[t]\centering
+\caption{Strings-and-winds held-out results (the held-out test set
+evaluated once, given-variance noise model, protocol fixed in advance),
+paired per (track, seed) against the no-graph ablation ($95\%$ bootstrap
+intervals, with $^{*}$ marking an interval that excludes zero and
+$n = 78$--$80$ pairs per channel), with coverage at nominal $90\%$.
+}
+\label{tab:phase2-conf}
+\footnotesize
+\begin{tabular}{@{}lrrc@{}}
+\toprule
+channel & $\Delta$RMSE & $\Delta$NLL & cov@90 \\
+\midrule
+intonation $c$ (cents) & $-0.877^{*}$ & $-0.029$\phantom{$^{*}$} & 0.88 \\
+extent $\log\gamma$ & $-0.425^{*}$ & $-2.990^{*}$ & 0.89 \\
+rate $\log f^{\mathrm{vib}}$ & $-0.429^{*}$ & $-0.564^{*}$ & 0.89 \\
+loudness $\ell$ & $-0.002$\phantom{$^{*}$} & $+0.015$\phantom{$^{*}$} & 0.90 \\
+timing $\tau$ (s) & $+0.003^{*}$ & $-0.030$\phantom{$^{*}$} & 0.91 \\
+delay $d^{\mathrm{vib}}$ (s) & $+0.006$\phantom{$^{*}$} & $+0.065$\phantom{$^{*}$} & 0.88 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\figph{phase2_real_example.png}{1.0}{The six-channel bundle on one real development track
+(violin), 30\% of notes hidden, four of the six channels shown. First
+panel: intonation, with the estimator's per-note values and their own
+uncertainties (dots), the posterior of the model with per-entry masks and
+its 90\% predictive band, and the hidden notes' estimator values (open
+circles). Second: vibrato extent, where squares mark notes whose extent
+the estimator could not identify from the audio and the model supplies a
+posterior anyway, informed by neighbours through the graph and by the
+coupled channels. Third: the onset-anchored timing channel $\tau$, whose
+error bars are the tempo line's leave-one-out predictive standard
+deviations, the aligner error carried in the noise row (note the
+wide-interval edge note at the right). Fourth: the vibrato onset delay
+from the delayed-onset fit, where squares again mark estimator-missing
+entries filled by the model. Its posterior may stray below zero on
+unobserved stretches, since the channel is modelled as an unconstrained
+Gaussian field while every observed delay is nonnegative by construction.
+Loudness and the full per-channel numbers are in the tables. Loudness is
+also the bundle's null result under the default noise
+model.\label{fig:phase2-real}}
+
+Figure~\ref{fig:arch-phase2} records the architectural change. Relative
+to Figure~\ref{fig:arch-phase1}, the coregionalization grows from
+$3 \times 3$ to $k \times k$ as channels join the bundle, re-learned
+rather than carried over, and the observation noise $\Sigma_e$ becomes
+substantial because the targets are estimates rather than symbolic MIDI
+values. The prior's structure and the exact conjugate posterior are
+untouched. The extension is scoped so that a negative result would cost
+the piano contribution nothing: that contribution stands on its own, and
+the extension's value is the demonstration that the same prior,
+unchanged, extends to channels it was never designed for. That
+demonstration is now made on real recordings and on a held-out test set
+for the main hypotheses, while the secondary timing hypothesis was not
+supported.
+
+\figph{arch_phase2.pdf}{1.0}{The strings-and-winds system as run (development level,
+\S\ref{sec:phase2-real}). Audio and the annotated onsets enter only to
+derive the per-note entries $[c, \log\gamma,
+\log f^{\mathrm{vib}}, \ell, \tau, d^{\mathrm{vib}}]$, each with
+its own variance. One structural block changed relative to
+Figure~\ref{fig:arch-phase1}, the likelihood, where $\Sigma_e$ is now
+substantive and heteroscedastic, while the coregionalization is
+re-learned at $k \times k$. The prior branches and the conjugate
+posterior head are reused unchanged. The music-model kernel is absent
+here, because the model is trained on piano, so the evidence branch
+carries the score features alone.\label{fig:arch-phase2}}
+
+\section{Two follow-up hypotheses on the held-out test set}
+\label{sec:phase2-reuse}
+Two hypotheses developed after the evaluation of \S\ref{sec:phase2-conf}
+were tested on the same 13-piece held-out test set, which had therefore
+already been used once: its targets and plain-graph fits were known when
+the hypotheses were selected, while the hypothesis-specific quantities
+had never been computed on it. Both hypotheses were developed on the
+development set alone, with the primary measure, the decision rule, the
+systems and the exact computation fixed before the test set was touched.
+The inputs are the archived targets of the first evaluation, and the
+masks, entries and seeds are those of Table~\ref{tab:phase2-conf}. This
+second use of the held-out test set is weaker evidence than the single
+use described in \S\ref{sec:hygiene}.\footnote{Reproduction records: the synthetic pilot of
+\S\ref{sec:phase2-pilot} is recorded in
+\texttt{docs/phase2\_synthetic\_pilot.md}, the two follow-up evaluations
+in \texttt{results/corrnoise\_confirmation\_results.md} and
+\texttt{results/phase2\_tonal\_confirmation\_results.md}, with their
+evidence under \texttt{evidence/phase2\_reuse\_confirmation/}. The
+correlated-noise computation below is the routine
+\texttt{gp.noise\_corr} of Chapter~\ref{ch:future}.}
+
+\subsection{Correlated timing noise}
+The timing hypothesis of the main evaluation was not supported, and the
+diagnosis pointed to the noise model: alignment error is correlated along
+score time, which the diagonal noise row cannot represent. The revised
+noise model places an AR(1) block in the timing channel's noise
+covariance, $\Sigma_{\tau}(\rho)_{ij} = \sqrt{d_i d_j}\,\rho^{|i-j|}$ in
+note order, with $d_i$ the given entry variances and $\rho$ chosen per
+(track, seed) by the observed block's marginal likelihood on a fixed
+grid. Held-out timing is predicted through the full covariance including
+the noise cross-terms. Setting $\rho = 0$ recovers the published diagonal
+path, which is the paired baseline, and the correlated-noise option of
+Chapter~\ref{ch:future} is numerically identical to this computation. The
+primary measure was the paired timing NLL, cluster-bootstrapped over the
+40 unique tracks. The paired RMSE was a secondary measure that did not
+enter the decision, and coverage and the share of (track, seed)
+evaluations with $\rho > 0$ were descriptive.
+
+The primary measure supported the hypothesis. The paired difference in
+timing NLL is $-0.121$ with an interval of $[-0.156, -0.089]$, which
+excludes zero, against a development basis of $-0.111$. The secondary
+measure agrees: the paired RMSE difference is $-0.011$
+$[-0.016, -0.007]$ s, from $0.058 \to 0.047$ s. Coverage stayed at
+nominal, $0.908$ against the diagonal's $0.911$, and $\rho > 0$ on 79 of
+80 (track, seed) evaluations, with median $0.45$. The risk stated in
+advance, that this test set's timing channel is cleaner than the
+development set's, showed as a smaller absolute recovery gain rather
+than as an interval reaching zero. By the decision rule fixed in advance,
+the correlated timing-noise row resolves the timing-calibration
+hypothesis that the main evaluation had left unsupported, on this second
+use of the held-out test set.
+
+\subsection{The tonal metric}
+The exploratory finding of \S\ref{sec:phase2-delta} and
+Appendix~\ref{app:tonal}, that replacing the semitone metric of
+\eqref{eq:adjacency} by the circle-of-fifths metric \eqref{eq:tonaladj}
+improves held-out intonation, was tested with calibration as the primary
+measure: the paired intonation NLL, tonal minus plain graph, under the
+given variances, per (track, seed), with a 95\% bootstrap interval
+required to exclude zero. Recovery, the paired intonation RMSE, was the
+secondary measure and did not enter the decision, with its power stated
+in advance at $0.52$--$0.63$ on this test set. The development timing
+penalty was a descriptive prediction. All five arms ran together, and
+the three plain arms are those of Table~\ref{tab:phase2-conf}.
+
+The primary hypothesis was not supported. The paired intonation NLL
+difference is $-0.023$ with an interval of $[-0.049, +0.001]$: the mean
+lies on the predicted side but the interval reaches zero, against a
+development basis of $-0.050$ $[-0.072, -0.029]$. The secondary measure
+was supported, with a recovery difference of $-0.312$ cents
+$[-0.599, -0.081]$ (development $-0.213$). The predicted timing penalty
+did not appear under the given variances ($-0.002$ $[-0.011, +0.007]$).
+By the decision rule fixed in advance, the thesis does not state that the
+tonal metric improves intonation calibration. The metric stays
+exploratory and Appendix~\ref{app:tonal} keeps its status. The three
+plain arms reproduced Table~\ref{tab:phase2-conf} digit for digit, so
+this evaluation left the earlier result untouched. Two descriptive
+results are recorded beside the hypotheses: a small adverse loudness
+calibration difference whose interval excludes zero ($+0.020$), and the
+tonal graph improving on the no-graph ablation in intonation calibration
+($-0.053$ $[-0.099, -0.010]$) where the plain graph had not
+(\S\ref{sec:phase2-conf}: $-0.029$, not significant). The latter is
+suggestive, was not a pre-specified hypothesis, and is not pursued further. Of
+the two follow-up hypotheses, then, one was supported and one was not,
+and the held-out test set has now been used twice.
+
+% =====================================================================

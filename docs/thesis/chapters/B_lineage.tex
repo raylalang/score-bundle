@@ -1,0 +1,86 @@
+\chapter{Development lineage: the two-stage pipeline}\label{app:lineage}
+The proposed model was reached through an earlier version, the two-stage
+pipeline, which combines a plug-in mean with a per-channel graph GP on the
+residual. The final model contains that pipeline as the corner of its
+constraint space in which every constraint is switched on
+(\S\ref{sec:special-cases}), so the earlier version survives as a nested
+special case of the proposed model and as its ablation chain. This appendix
+records the per-channel, precision-side formulation that the pipeline used,
+since that is the form in which the graph prior is most easily read. The
+posteriors of the constrained models, the ablation sequence of the
+development, the selection history and the two-stage results of the
+downstream tasks form the development record and are kept in the repository
+beside the code.\footnote{The development record is the design document
+\texttt{docs/graphgp\_first\_design.md} in the repository, together with the
+results documents it names. It also records the ablation sequence and the
+selection history that led from the per-channel form of this appendix to the
+proposed model.} The main line carries the comparison of the two models on
+the held-out test set (Table~\ref{tab:headline-conf}).
+
+\section{The per-channel form, precision-side}
+With $B$ diagonal and the feature kernels switched off, the joint GP
+factorises into three scalar graph GPs, and each of these is more naturally
+written through its \emph{precision}, the inverse covariance
+$\Qg = K_G^{-1}$ scaled per channel. The two precisions used in the
+development sequence are
+\begin{align}
+  \text{additive:} \quad & \Qg = \lambda I + \eta\, \Lg,
+      && \lambda > 0,\;\; \eta \ge 0;
+  \label{eq:additive-prec}\\[2pt]
+  \text{graph Mat\'ern / SPDE:} \quad & \Qg = \sigma_g^{-2}\,(\kappa^2 I + \Lg)^{\alpha},
+      && \sigma_g > 0,\;\; \kappa > 0,\;\; \alpha \in \mathbb{Z}_{\ge 1},
+  \label{eq:matern-prec}
+\end{align}
+where the additive form matches \eqref{eq:additive} with shape
+$s = \eta / \lambda$ and scale $1/\lambda$, the scale being carried by
+$B_{cc}$ in the normalised parameterisation, and the Mat\'ern form matches
+\eqref{eq:matern} in the same way. The additive precision has a direct
+reading. The term $\eta\,\Lg$ penalises differences between connected notes,
+while the ridge $\lambda I$ pulls the field toward its mean and sets the
+overall scale. The choice between precision and kernel is computational
+rather than a modelling choice. The precision $\Qg$ is sparse, because each
+note couples only to its graph neighbours, which is precisely the Markov
+property of a \textbf{Gaussian Markov random field} (GMRF), and this
+sparsity makes the per-channel posterior below cheap. The full model, by
+contrast, is naturally written on the covariance side, since the
+coregionalization and the feature kernels add dense terms, and it is
+evaluated spectrally through \eqref{eq:spectral} with one eigendecomposition
+per piece.
+
+With a plug-in mean $\mu$ and a diagonal observation precision $P$, equal to
+$1/\sigma_e^2$ on observed notes and $0$ on masked notes, the per-channel
+posterior is
+\begin{equation}
+  \Sy \;=\; \bigl(\Qg + P\bigr)^{-1}, \qquad
+  m \;=\; \Sy \bigl(\Qg\, \mu + P\, \tilde y\bigr)
+  \label{eq:posterior-chan}
+\end{equation}
+which is the precision-side counterpart of \eqref{eq:posterior}, and to
+which \eqref{eq:posterior} reduces under the constraints. The plug-in mean
+itself is one of three choices. The first is $\mu = 0$. The second is a
+ridge regression on the hand-built features $X_{\mathrm{feat}}$. The third
+is the \textbf{music-model mean} $\muLM$, a ridge head $W_{\mathrm{head}}$,
+fitted once on a piece-disjoint split, applied to the embeddings of
+\S\ref{sec:features},
+\begin{equation}
+  \mu_{\mathrm{LM},i} = W_{\mathrm{head}}^{\top}\,[\, h_i;\, 1\,],
+  \qquad
+  y = \muLM + \xi, \qquad \xi \sim \N\!\bigl(0,\, \Qg^{-1}\bigr),
+  \label{eq:lm-mean}
+\end{equation}
+with the graph modelling the residual $y - \muLM$. The hyperparameters
+$\theta = (\lambda, \eta, \sigma_e^2)$ are fitted per channel by the same
+marginal likelihood \eqref{eq:marglik} restricted to that channel, with the
+plug-in mean subtracted from $\tilde y$, with the same noise floor, and with
+a per-channel safeguard. The safeguard is a fallback sequence: the marginal
+likelihood first, then the calibration-split objective, then the
+conservative decoupled fit with $\eta = 0$ and
+$\lambda = 1/\widehat{\operatorname{Var}}[\tilde y_o - \mu_o]$. The
+per-channel safeguard differs from that of the joint model in one respect.
+Its screen tests \emph{recovery} only, that is, the error against the
+mean-only fallback, whereas the overconfidence screen of \S\ref{sec:eb}
+exists only in the safeguard of the joint model. The two screens are
+related, not identical, and the ablation sequence that led from this form to
+the proposed model is part of the development record named above.
+
+% =====================================================================

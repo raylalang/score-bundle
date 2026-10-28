@@ -1,0 +1,252 @@
+\chapter{Introduction}\label{ch:intro}
+
+\section{Motivation}
+A score specifies what is to be played, and a performance realises how it is
+played. The difference between the two, in micro-timing, articulation and
+dynamics, is where musical expression lives. Recovering that difference from
+a recording is of scientific interest in its own right and of practical use
+in analysis, in pedagogy, in expressive rendering, and as structured
+supervision for audio models. Two commitments shape the whole thesis. First,
+the score is treated as known, so the problem is the inverse of expressive
+synthesis rather than full transcription. Second, uncertainty is a primary
+output: a per-note estimate is only actionable together with a calibrated
+error bar, and calibration is therefore evaluated throughout with the same
+weight as accuracy.
+
+The vocabulary of the thesis is a decomposition of the recording into four
+layers. The score is what was written. The expression is how each written
+note was played, a small vector of interpretable variables per note. The
+timbre is what the instrument adds to a note once its expression is fixed,
+and the noise is the rest. The score is given, the expression is the object
+of inference, the timbre is a nuisance that the waveform setting integrates
+out exactly rather than estimates, and the noise is modelled per note and
+per channel. Every chapter can be placed in this picture. The piano and
+strings-and-winds settings observe the expression layer through an
+intermediate measurement, aligned MIDI in the one case and a pitch tracker
+in the other, whereas the waveform setting observes the recording itself and
+must separate all four layers at once.
+
+Two statements of different kinds run through the thesis and are kept
+distinct. The scientific objective is the representation itself: an
+interpretable, score-aligned description of how a performance was played,
+in per-note variables and later in within-note trajectories, that can be
+inferred from a recording with explicit uncertainty. The methodological
+contribution is the inference framework that recovers it, Bayesian
+score-conditioned inverse synthesis, in which a score-structured prior is
+combined with an observation model of the performance. The two are
+complementary, and neither is asserted beyond what the experiments
+validate. The representation is interpretable by construction but not
+semantically validated, and the framework is validated stage by stage,
+with its full integration at the waveform still open
+(\S\ref{sec:future-phase3}).
+
+The title names the object of study. With each note of the known score is
+associated a small \emph{bundle} of expressive variables, timing,
+articulation and dynamics at first and later intonation, vibrato and
+loudness, so that a performance becomes a per-note field over the score
+support and transcription becomes posterior inference over that field.
+``Bundle'' is used in this everyday sense throughout. The geometric reading,
+with per-note fibres and a connection over the score graph, is not developed
+here.
+
+\section{Problem statement}
+Let a symbolic score fix, for each note, its pitch, its score onset and its
+notated duration. A performance assigns to each note a small vector of
+continuous expressive variables, here the onset residual $\tau$, the log
+articulation ratio $\log r$ and the normalised velocity $v$. Given the score
+and an aligned performance, the task is to infer the posterior over these
+per-note variables, including for notes that are held out (masked), and to
+do so with calibrated uncertainty. This is score-informed performance
+transcription, or equivalently probabilistic inverse synthesis. In symbols,
+with $S$ the score, $x$ the observation of the performance and $z$ the
+latent expressive variables,
+\begin{equation*}
+  p(z \mid x, S) \;\propto\; p(x \mid z, S)\, p(z \mid S),
+\end{equation*}
+where $S$ is the score layer and $z$ the expression layer. The timbre and
+noise layers live inside the observation model, in the waveform setting as
+the harmonic amplitudes $a$, which are marginalised exactly, and the
+residual $\varepsilon$. The score-structured prior $p(z \mid S)$ is the
+subject of Chapter~\ref{ch:model}. The observation model $p(x \mid z, S)$ is
+made progressively rawer over the thesis: per-note values read from aligned
+MIDI (Chapter~\ref{ch:results}), tracker-derived per-note estimates with
+their variances (Chapter~\ref{ch:phase2}), and the waveform itself through
+a differentiable harmonic synthesizer (Chapter~\ref{app:phase3}). Inferring
+the score itself, that is, full automatic music transcription, is out of
+scope (\S\ref{sec:scope} and \S\ref{sec:future-amt}).
+
+The thesis asks three questions, in the order in which the settings answer
+them.
+\begin{itemize}
+  \item RQ1 (representation). What do interpretable per-note variables,
+        and later within-note trajectories, capture of expressive
+        performance, and what do they measurably discard?
+  \item RQ2 (structured inference). Does a score-structured prior improve
+        both the recovery of expressive variables and the calibration of
+        their uncertainty, compared with independent or purely temporal
+        baselines, when observations are missing (piano) or noisy (strings
+        and winds)?
+  \item RQ3 (direct waveform inference). Can a differentiable harmonic
+        observation model recover expressive trajectories directly from
+        the waveform, and can its uncertainty separate genuine performance
+        ambiguity from the model's own mismatch?
+\end{itemize}
+RQ2 is the core of the thesis. Its hypotheses were fixed before any test
+number was seen, and support was defined as improvement on both axes at
+once, accuracy and calibration (\S\ref{sec:metrics}). RQ1 is answered by construction together
+with a quantified account of what the representation discards, through the
+within-note drift study of Appendix~\ref{app:drift} and the curve-level
+extension of Chapter~\ref{app:phase3}. RQ3 is answered on the development
+set only (Chapter~\ref{app:phase3}). Joining its observation model to the
+RQ2 prior, which would close the inverse-synthesis loop, is the endpoint of
+the programme rather than a result of this thesis. Its first span, the
+score prior over per-note constants inside the waveform inference
+(\S\ref{sec:phase3-priorvalue}), is studied on the development set over
+three spans. There the value of the structure is the context's common
+offset, with nothing measurable beyond it against that baseline, and a
+significant advantage over a purely temporal prior at phrase scale. The
+purely temporal baseline of RQ2 is also examined at whole-track scale on
+both corpora, again on the development set. A naive note-order chain is
+worse than the score graph, but the same graph with its pitch term removed
+and its two-beat time window kept matches it
+(Appendix~\ref{app:trackscale}), so the structure that the test-set results
+reward is smoothness in score time rather than pitch proximity.
+
+\section{The proposed model and the two-stage pipeline}\label{sec:twostage}
+Two names recur throughout the thesis. \textbf{The proposed model} is the
+thesis model: one multi-output Gaussian process over all notes and channels,
+in which the score graph, the hand-built score features and the per-note
+representation of the music model enter a single kernel, with every
+hyperparameter learned from one per-piece marginal likelihood
+(\S\ref{sec:gpfirst}). The music model is a small symbolic language model
+trained from scratch before everything else. \textbf{The two-stage
+pipeline} is the earlier development system that the proposed model
+provably contains as a special case (\S\ref{sec:special-cases}). It
+consists of a plug-in mean, a cross-piece point estimate of each note's
+expression, followed by a separate per-channel graph Gaussian process on
+the residual.
+
+\section{Contributions}
+\begin{enumerate}
+  \item A multi-output graph Gaussian process for expressive performance
+        (\S\ref{sec:gpfirst}). Channels are coupled by coregionalization,
+        the graph kernel is a spectral function of the score-graph
+        Laplacian, and all side information, hand-built score features and
+        learned music-model embeddings alike, enters as marginalized
+        Bayesian linear means. Every hyperparameter is learned by the exact
+        per-piece evidence, and the posterior and its calibration follow in
+        closed form. Its hypotheses were fixed in advance and evaluated
+        once on test pieces untouched by any modelling decision.
+  \item An attribution of the model's value to its parts
+        (\S\ref{sec:attribution}). Per-piece Bayesian weighting of
+        informative features does the recovering, the graph makes the
+        confidence calibrated, with its calibration contribution supported
+        independently on the test set, and the music model trained from
+        scratch earns its place as a feature provider inside the kernel.
+        Each of these statements is isolated by nested ablations, including
+        the entire two-stage pipeline as a provable special case. The graph
+        term is attributed one step further on the development set of both
+        corpora: the same graph without its pitch term reproduces its value
+        (Appendix~\ref{app:trackscale}), so what the graph contributes is
+        smoothness in score time over about two beats.
+  \item A map of where the structure helps, obtained from six downstream
+        tasks with objective metrics and re-validated under the final
+        model. It yields two boundaries (\S\ref{sec:boundary}): structure
+        helps note-level judgements but not whole-performance summaries,
+        and per-piece adaptation helps interpolation but not extrapolation
+        from an excerpt.
+  \item An evaluation protocol in which leakage control is itself a result
+        (\S\ref{sec:hygiene}). An evaluation leak in the music-model
+        read-out was found and corrected, and structural tests together
+        with bitwise end-to-end audits now exclude it. The protocol further
+        comprises contamination filtering between corpora, robustness
+        safeguards that validate themselves, and a development/test split
+        that exposed the inflation of numbers reused for selection.
+\end{enumerate}
+The waveform endpoint, the full inverse-synthesis loop with the score-graph
+prior inside the waveform inference, is the intended destination of the
+programme and is not presented as a contribution. Its components are
+studied on the development set (Chapter~\ref{app:phase3}), and the
+integration is built only in its first span, where the score-graph prior
+couples the per-note intonation constants inside the waveform inference on
+short chains. In that span, with hypotheses stated in advance and after a
+flaw in the first design had been found and corrected, the value of the
+prior is the transfer of the track's shared tuning offset to a note whose
+audio is absent. Beyond that common mode, score structure adds nothing
+measurable for intonation at chain or phrase scale or for timing at chain
+scale, although at phrase scale it is better than a purely temporal prior.
+These are three development studies
+(\S\ref{sec:phase3-priorvalue}). The curve-level coupling, the remaining
+channels and whole-performance scale remain open: the within-note curves
+still carry independent priors, and the graph meets the full waveform
+posterior only post hoc, as an observation channel of the
+Chapter~\ref{ch:phase2} bundle. A geometric ``connection-Laplacian''
+generalisation of the graph prior likewise remains future work
+(Chapter~\ref{ch:future}).
+
+\section{Scope and non-goals}\label{sec:scope}
+The core result is scoped to piano and to symbolic performance variables
+read from MIDI, namely onset timing $\tau$, articulation $\log r$ and
+dynamics $v$. The score support is known, that is, the note identities,
+the score onsets and the score durations are given. Evaluation is on
+held-out notes and pieces and always includes calibration. Four things are
+explicitly outside the scope of this first version.
+\begin{itemize}[noitemsep]
+  \item discovering unknown score support from audio, which is full
+        automatic music transcription and a future extension
+        (\S\ref{sec:future-amt}).
+  \item performer-controlled intonation or timbre \emph{from piano}, which
+        do not exist on a fixed-pitch keyboard.
+  \item arbitrary instruments and room acoustics.
+  \item any suggestion that the model performs general automatic music
+        transcription.
+\end{itemize}
+Audio input and output and continuously pitched instruments enter only
+with the strings-and-winds and waveform settings. The work is staged so
+that each stage produces a defensible result before the next difficulty is
+taken on, and the stages are ordered toward the waveform endpoint: each
+isolates one new difficulty on the way to inference from sound alone.
+Table~\ref{tab:phases} records the stages and their status. The thesis
+names the stages by their content.\footnote{In the code, the results files
+and the names of archived artifacts the four stages are numbered 0--3 in
+this order: the music model, piano, strings and winds, the waveform.}
+
+\begin{table}[h]\centering
+\caption{The four stages and their status.}
+\label{tab:phases}
+\footnotesize
+\begin{tabular}{@{}p{2.6cm}p{3.8cm}p{3.7cm}p{3.4cm}@{}}
+\toprule
+Stage & Scope & Adds & Status \\
+\midrule
+music model (foundation) & From-scratch symbolic music model (backbone + representations) &
+Per-note embeddings $h_i$ (a feature kernel of the GP; the plug-in mean $\muLM$ of the two-stage baseline) & Implemented \\
+piano (stage 1): isolating the prior & Timing, articulation, dynamics from aligned score+performance &
+Score-graph GMRF prior, closed-form posterior, calibrated uncertainty &
+Evaluated on a held-out test set (Chapter~\ref{ch:results}) \\
+strings and winds (stage 2): measurement uncertainty & Intonation, vibrato, loudness on continuously pitched instruments &
+$f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & Evaluated on a held-out test set (URMP): intonation recovery, vibrato calibration and coverage supported, the secondary timing hypothesis not supported (Chapter~\ref{ch:phase2}) \\
+waveform (stage 3): the endpoint & Differentiable synthesizer as audio likelihood &
+Harmonic amplitudes $a$, audio $x$ & Development studies: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); no held-out evaluation yet \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Thesis outline}
+Chapter~\ref{ch:related} positions the work against expressive-performance
+modelling, alignment, structured priors, symbolic music models and
+differentiable synthesis. Chapter~\ref{ch:model} gives the model and its
+derivation in the piano setting. Chapter~\ref{ch:data} describes the data
+and the evaluation protocol, including contamination control.
+Chapter~\ref{ch:results} reports the piano result and the methodological
+findings, and Chapter~\ref{ch:downstream} maps the downstream reach.
+Chapter~\ref{ch:phase2} carries the same prior, unchanged, to real
+recordings and reports the strings-and-winds results on the held-out test
+set. Chapters~\ref{ch:discussion}--\ref{ch:conclusion} discuss, situate and
+conclude. The appendices hold the notation summary (\ref{app:notation}),
+the per-channel form of the two-stage lineage (\ref{app:lineage}), the
+relocated piano and strings-and-winds development studies
+(\ref{app:phase1dev}, \ref{app:phase2dev}) and the calibration profile
+(\ref{app:extra}).
+
+% =====================================================================

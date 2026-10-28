@@ -257,7 +257,19 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   the study machinery), `downstream.completion_guard`. Tests:
   `tests/test_adoption_optin.py` (incl. ρ=0 bit-equality and brute-force
   conditioning pins).
-- **Thesis state (2026-10-28, main=c709c5d+): 74 pp, compile clean** (cut from 83 on
+- **Thesis STYLE MAKEOVER (2026-10-28, Ray: "almost a whole makeover", the draft read
+  like a company project report).** `draft.tex` now `\input`s `docs/thesis/chapters/*.tex`
+  (one file per chapter/appendix + `bibliography.tex`); `docs/thesis/style_guide.md` is
+  the authority (academic voice, no run-in `\paragraph` headers, bold only at
+  definitions, no bookkeeping/verdict vocabulary, protocol described ONCE in
+  `sec:hygiene` "Development and held-out evaluation", results reported as
+  prediction / estimate with interval / meaning, no dates, no code identifiers in
+  prose, no self-grading words); `scripts/check_thesis_style.py OLD NEW` (or `--all
+  BASELINE_DIR`) enforces it and proves numbers, labels, refs, cites, equations and
+  table bodies unchanged. Pre-makeover text = tag `thesis-pre-makeover-2026-10-28`.
+  80 pp after the makeover (prose expanded; no content added or cut). Any future
+  thesis edit follows the style guide and is run through the checker.
+- **Thesis state (2026-10-28, main=c709c5d+): 74 pp before the makeover, 80 after, compile clean** (cut from 83 on
   2026-10-28, Ray: "subtract the irrelevant and obsolete": two-stage-era kernel table,
   per-channel ablation table and fitted filters, lineage B.2-B.5, synthetic pilot,
   leakage appendix folded into §5.4, era/performer-ID downstream tasks and the Vienna
