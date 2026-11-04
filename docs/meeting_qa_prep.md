@@ -10,7 +10,15 @@
 > attribution, decomposition framing, number audit, the two re-used-pool
 > one-shots in `sec:phase2-reuse`, the 10-28 cut to 74 pages).
 
-## Run order for today (2026-11-04)
+## Status note (2026-11-04)
+
+No meeting on 11-04; Ray sent a written update instead. The proposal
+deck (`proposal_endgoal.pdf`) is an INTERNAL document: Ray explained the
+proposal orally on 10-28 and did not share the deck. The 11-04 pilot is
+the proof of concept promised then. The run order below is kept for the
+next meeting that has a slot for it.
+
+## Run order for the next meeting (written 2026-11-04)
 
 Before the room: sync Overleaf with the whole `docs/thesis/` directory
 (the draft is now split into `docs/thesis/chapters/`, rewritten in
