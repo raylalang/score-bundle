@@ -31,6 +31,10 @@ data/
 !docs/thesis/figures/
 /results/*
 !/results/*.md
+!/results/motif_pilot/
+/results/motif_pilot/*
+!/results/motif_pilot/*.md
+!/results/motif_pilot/*.json
 *.pt
 *.pkl
 *.pdf

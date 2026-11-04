@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 2026-10-23. Submission tentatively **2027-02-02**; progress
+Updated 2026-11-04. Submission tentatively **2027-02-02**; progress
 presentation expected around **2027-01-07**. **From 2026-10-23 the professor is
 hands-off; every gate below is Ray's. Writing freeze in force.** One ongoing task at a time. Order stays deliberate:
 understanding, then legibility, then modelling. New studies run only on
@@ -26,6 +26,7 @@ the deck or the brief. New runs happen only on Ray's go.
 | October (now) | the direction-and-scope meeting: objective, positioning, integration scope, variables, evidence bar, registration pool (brief §H) | Ray + professor |
 | October (done) | tuning-scalar follow-up of the prior-value experiment: run under the corrected protocol; verdict = tuning bookkeeping, coverage repaired | — |
 | October (done, 10-27) | registration pool decided (disclosed URMP re-use, Ray 10-23); both one-shots frozen and run once on 10-27: correlated timing noise PASSED (τ log score −0.121*, RMSE −0.011*), the tonal metric MISSED its calibration primary (−0.023 ns) and kept recovery (−0.312*) | — |
+| November (done, 11-04) | **motif study, stage one, first pilot** (`results/motif_pilot_dev.md`, proposal deck frame 10; dev only, 21 Beethoven first movements): with whole occurrences hidden, annotated motif edges lower the timing log score on those notes by 0.117 nats [−0.245, −0.006] against the time-only graph; articulation RMSE −5 percent; velocity bands too narrow (one shared weight). Next design step: per-channel motif weight; then more seeds and the embeddings; registration only after a power check | Ray |
 | November | decide the channel design for the waveform strand: scalars or curve level | Ray |
 | November | a transient model at the note boundary (the pre-named next lever for the ~18 ms acoustic-vs-musical gap) | Ray's go |
 | November *(proposed)* | the registered waveform claim: after three spans the only positive is the weak form (score graph beats a purely temporal prior at phrase scale, −1.63*) and the common-offset gain; decide whether that is worth registering (power check first) or whether the three-span verdict is the chapter's measured answer | Ray |

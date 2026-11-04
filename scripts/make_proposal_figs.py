@@ -139,7 +139,58 @@ def mock_results():
     fig.savefig(OUT + "proposal_mock_results.png", bbox_inches="tight")
 
 
+def pilot_results():
+    """Measured development pilot (results/motif_pilot/effects.json): paired
+    timing log-score difference of each arm against the time-only graph, on
+    hidden motif notes, both masking schemes; and the learned motif weight
+    per piece.  No banner: these are measured numbers (development set)."""
+    import json
+    E = json.load(open("results/motif_pilot/effects.json"))
+    eff, wm = E["effects"], E["w_m_occ"]
+    fig, (axa, axb) = plt.subplots(1, 2, figsize=(11, 3.9),
+                                   gridspec_kw={"width_ratios": [1.25, 1.0], "wspace": 0.35})
+    fig.text(0.5, 0.995, "MEASURED, DEVELOPMENT SET, 21 BEETHOVEN FIRST MOVEMENTS, 400-NOTE EXCERPTS",
+             ha="center", va="top", fontsize=9, color=GREEN, fontweight="bold")
+    rows = []
+    for sc, scl in [("occ", "whole occurrences hidden"), ("random", "40% at random")]:
+        for arm, al in [("time_pitch", "time + pitch"), ("time_motif", "time + annotated motif"),
+                        ("time_pitch_motif", "time + pitch + motif")]:
+            e = eff[f"{sc}|motif|{arm}|tau"]
+            rows.append((f"{al}\n({scl})", e["dnll"], sc))
+    y = np.arange(len(rows))[::-1]
+    axa.axvline(0, color=MUTED, lw=0.8)
+    for yi, (lab, (m, lo, hi), sc) in zip(y, rows):
+        c = BLUE if sc == "occ" else MUTED
+        axa.hlines(yi, lo, hi, color=c, lw=2.2)
+        axa.scatter([m], [yi], color=c, s=40, zorder=3)
+        axa.text(max(hi, 0) + 0.006, yi, f"{m:+.3f} [{lo:+.3f}, {hi:+.3f}]", va="center",
+                 fontsize=8, color=INK)
+    axa.set_yticks(y)
+    axa.set_yticklabels([r[0] for r in rows], fontsize=8.5)
+    lo_all = min(r[1][1] for r in rows); hi_all = max(r[1][2] for r in rows)
+    axa.set_xlim(min(lo_all, -0.02) - 0.01, max(hi_all, 0.02) + 0.14)
+    axa.set_xlabel("paired timing NLL difference vs the time-only graph, hidden motif notes\n(negative = better; interval = 95% bootstrap over pieces)")
+    axa.set_title("A    stage one, first pilot: timing log score on hidden motif notes", loc="left")
+
+    names = sorted(wm, key=lambda k: wm[k])
+    vals = np.maximum(np.array([wm[k] for k in names]), 1e-3)   # switched-off pieces shown at the floor
+    axb.barh(np.arange(len(names)), vals, color=BLUE, height=0.7)
+    axb.set_yticks(np.arange(len(names)))
+    axb.set_yticklabels(names, fontsize=7.5)
+    axb.set_xscale("log")
+    axb.set_xlim(1e-3, 100)
+    axb.axvline(1.0, color=MUTED, lw=0.8, ls="--")
+    axb.set_xlabel("learned motif edge weight $w_m$ (evidence, occurrences hidden)\nvalues below 0.001 are switched off and drawn at 0.001")
+    axb.set_title("B    how much motif edge each piece's evidence asked for", loc="left")
+    fig.savefig(OUT + "proposal_pilot_results.png", bbox_inches="tight")
+
+
 if __name__ == "__main__":
-    motif_graph()
-    mock_results()
-    print("wrote", OUT + "proposal_{motif_graph,mock_results}.png")
+    import sys
+    if "--pilot" in sys.argv:
+        pilot_results()
+        print("wrote", OUT + "proposal_pilot_results.png")
+    else:
+        motif_graph()
+        mock_results()
+        print("wrote", OUT + "proposal_{motif_graph,mock_results}.png")

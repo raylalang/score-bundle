@@ -249,6 +249,25 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Stage one, first pilot: measured on 4 November (development, no claim)}
+  \includegraphics[width=0.88\textwidth]{proposal_pilot_results.png}
+  \vspace{0.5mm}
+
+  \footnotesize 21 Beethoven first movements, 400-note excerpts, score
+  features without the music model, two seeds, 336 fits, hypotheses
+  fixed before the run. \textbf{H1 supported at the edge}: with whole
+  occurrences hidden, the motif edges lower the timing log score on
+  those notes by $0.117$ nats against the time-only graph, interval
+  $[-0.245,\,-0.006]$; the pitch term gives $-0.014$. Articulation RMSE
+  $0.637 \to 0.611$, interval excluding zero. Velocity bands narrow too
+  far (coverage $0.88 \to 0.82$): one weight for three channels is the
+  wrong design, so the next step is a per-channel weight. Under random
+  masking the family is invisible, as the time window already
+  interpolates inside an occurrence. The evidence switches the family
+  off on eight pieces and asks for it on six (panel B).
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Stage two, later: occurrences predicted by the ISMIR 2026 model}
   \footnotesize
   \textbf{Typed note graph and note states.} Notes are vertices, with edge
@@ -296,10 +315,11 @@
     \begin{column}{0.5\textwidth}
       \textbf{Five working days}
       \begin{enumerate}
-        \item motif edge builder from the annotations (relative position),
-          and ASAP score MIDI aligned to the BPS-motif note lists;
-        \item hypotheses and masking rule committed before any run;
-        \item development runs, three arms, Beethoven pieces, sharded;
+        \item \textcolor{muted}{done 4 Nov:} edge builder from the annotations, ASAP
+          scores aligned to the BPS-motif note lists (21 of 23 movements);
+        \item \textcolor{muted}{done 4 Nov:} hypotheses and masking rule committed before the run;
+        \item \textcolor{muted}{done 4 Nov:} development pilot, four arms, two
+          masking schemes; next: per-channel weight, seeds, embeddings;
         \item write-up: a section in the piano chapter, a slide in the deck;
         \item if H1 holds: one pre-specified evaluation on untouched
           Beethoven performances, before the January talk.

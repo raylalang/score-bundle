@@ -257,6 +257,24 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   the study machinery), `downstream.completion_guard`. Tests:
   `tests/test_adoption_optin.py` (incl. ρ=0 bit-equality and brute-force
   conditioning pins).
+- **MOTIF STUDY (end-goal proposal, 2026-10-28; first pilot 2026-11-04, dev only, no claim).**
+  Proposal deck `docs/slides/proposal_endgoal.tex` (12 frames, notes
+  `proposal_endgoal_notes.md`, figures by `scripts/make_proposal_figs.py`): one more
+  edge family in the score graph from the BPS-motif annotations
+  (`/home/ray/Research/ISMIR/graph-motif-discovery/datasets/Beethoven_motif-main/`,
+  all 32 Beethoven sonata first movements), notes of two occurrences of one type joined
+  by a Gaussian in relative position inside the occurrence (ℓ_u = 0.1, many-to-many,
+  nothing learned inside the family), W = W_time (+W_pitch) + w_m W_motif, log w_m
+  learned by evidence. Pilot `scripts/eval_motif_pilot_dev.py` (align / run sharded /
+  report; hypotheses in the docstring), record `results/motif_pilot_dev.md`: 21 ASAP
+  first movements aligned to the annotations by (crotchet onset, pitch) after an offset
+  search (3-1 and 24-1 EXCLUDED: piano confirmation pieces); four arms, two masking
+  schemes (whole occurrences hidden / random 40%), two seeds. H1 supported at the edge
+  (timing ΔNLL −0.117 [−0.245, −0.006] on hidden motif notes with occurrences hidden),
+  articulation RMSE −0.033*, velocity calibration worse (+0.069*, one shared weight).
+  Next: per-channel w_m, more seeds, embeddings; stage two = occurrences predicted by
+  the ISMIR 2026 model; a registered test needs a power check first. Score features
+  only (no LM), so no contamination question. The thesis does not carry it yet.
 - **Thesis STYLE MAKEOVER (2026-10-28, Ray: "almost a whole makeover", the draft read
   like a company project report).** `draft.tex` now `\input`s `docs/thesis/chapters/*.tex`
   (one file per chapter/appendix + `bibliography.tex`); `docs/thesis/style_guide.md` is

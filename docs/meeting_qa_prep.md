@@ -1,4 +1,4 @@
-# Meeting brief (written 2026-10-14, brought to 2026-10-27 for the meeting of 2026-10-28)
+# Meeting brief (written 2026-10-14, brought to 2026-11-04 for today's meeting)
 
 > Purpose: report the state and the decisions taken, and hear objections.
 > The deck (`docs/slides/deck.pdf`, 37 pages, speaker notes for every
@@ -10,7 +10,64 @@
 > attribution, decomposition framing, number audit, the two re-used-pool
 > one-shots in `sec:phase2-reuse`, the 10-28 cut to 74 pages).
 
-## Run order for today (2026-10-28)
+## Run order for today (2026-11-04)
+
+Before the room: sync Overleaf with the whole `docs/thesis/` directory
+(the draft is now split into `docs/thesis/chapters/`, rewritten in
+academic voice on 10-28, 80 pages); open `docs/slides/proposal_endgoal.pdf`
+(12 pages) and `docs/slides/deck.pdf` (37 pages).
+
+1. **Where things stand, 60 s, no slide.** Thesis 80 pages, frozen except
+   for one bounded study; the deck of 10-28 unchanged; every confirmation
+   pool spent.
+2. **The end-goal proposal, about 10 min** (`proposal_endgoal.pdf`,
+   speaker notes in `docs/slides/proposal_endgoal_notes.md`): frames 2 to 3
+   (the gap and the three candidates), 5 to 7 (the motif edge family and
+   what it does to a hidden note), 8 (methodology), then **frame 10, the
+   first measured pilot, run this morning** (21 movements, 336 fits: with whole occurrences hidden, the motif edges lower the timing log score on those notes by 0.117 nats, interval [−0.245, −0.006]; articulation RMSE −5 percent; velocity bands too narrow; development only). Frame 9 is
+   the mock figure drawn last week; show it only to say the pilot replaced
+   it. Frame 11 (the ISMIR model as stage two) if asked.
+3. **The decision to ask for:** whether the motif study becomes the
+   thesis's end-goal chapter (stage one on the annotations now, stage two
+   with predicted occurrences after the January talk), or whether the
+   thesis closes on the attribution result and the motif work stays a
+   Future Work item. Say which outcome the pilot points to and why.
+4. **The three asks** of 10-28 if they were not answered: reading the
+   draft before January, the progress-talk slot, the writing freeze.
+
+What is NOT on the table: new modelling runs outside the motif study, a
+longer thesis, any rerun of a confirmation pool.
+
+## Since 2026-10-28, in one breath
+
+- The thesis was rewritten in academic voice on 10-28 (one file per
+  chapter under `docs/thesis/chapters/`, a style guide and a checker that
+  proves every number, label, equation and table body unchanged; 80
+  pages). No content was added or cut.
+- The end-goal proposal deck (`proposal_endgoal.pdf`) was written on
+  10-28: the feedback application as drawn is decoration, its proper form
+  (an across-performer model) is deferred to Future Work, and the
+  proposal is the motif study: one more edge family in the score graph
+  from the BPS-motif annotations, notes of two occurrences of one motif
+  joined by a Gaussian in relative position inside the occurrence.
+- **Today (11-04): the first pilot of that study was run** on the
+  development side (`scripts/eval_motif_pilot_dev.py`,
+  `results/motif_pilot_dev.md`): the ASAP Beethoven first movements
+  aligned to the BPS-motif note lists (21 of 23 at 0.94 to 1.00 match;
+  3-1 and 24-1 excluded as confirmation pieces), four graph arms on
+  identical masks (time-only, time + pitch, each with and without the
+  annotated motif edges, weight learned by evidence), two masking
+  schemes, two seeds, 336 fits. The pre-stated primary (H1, timing log
+  score on hidden motif notes when whole occurrences are hidden, motif
+  arm vs time-only) is supported at the edge: −0.117 [−0.245, −0.006];
+  the pitch term gives −0.014 there. Articulation RMSE 0.637 → 0.611
+  (interval excludes zero). Velocity calibration worsens (+0.069 nats,
+  coverage 0.88 → 0.82): one shared weight is the wrong design, a
+  per-channel weight is the next step. Under the thesis's random masking
+  the family is invisible. The evidence switches the family off on eight
+  pieces and asks for it strongly on six. Proposal deck frame 10.
+
+## Run order of 2026-10-28 (kept for the record)
 
 Before the room: sync Overleaf; open `docs/slides/deck.pdf` (37 pages)
 and this brief; optionally have the three clips in
