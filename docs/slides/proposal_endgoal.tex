@@ -1,4 +1,5 @@
-% Proposal deck: the thesis's end goal (2026-10-28, revised the same day).
+% Proposal deck: the thesis's end goal (2026-10-28, revised the same day;
+% frame 10 measured 2026-11-04; narrative in bullets 2026-11-04, Ray).
 % One proposal (motif structure) with one deferred alternative (the
 % across-performer model). Separate from deck.tex. Mock figures are
 % labelled as such in the figure itself and in the frame.
@@ -42,26 +43,25 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Where the thesis stands}
-  \textbf{What it answers, three times.} Given a score and an observation,
-  the expression of every note is recovered with calibrated uncertainty:
-  from aligned MIDI (piano), from tracked audio (strings and winds) and
-  from the waveform itself. Each step was tested on held-out pieces.
-  \vspace{2mm}
-
-  \textbf{What it found about the structure.} The score graph's measured
-  value is smoothing in score time over about two beats. The pitch term
-  adds nothing on piano, on strings and winds, or in the waveform, at
-  chain, phrase or track scale.
-  \vspace{2mm}
-
-  \textbf{What it cannot yet say.}
+  \textbf{What it answers, three times}
   \begin{itemize}
-    \item which \emph{score structure beyond time} performance follows,
-      which is the question the title implies;
-    \item what the recovered representation is \emph{for}, beyond the
-      downstream tasks of Chapter 6.
+    \item score $+$ observation $\to$ the expression of every note, with calibrated uncertainty
+    \item from aligned MIDI (piano), tracked audio (strings and winds), the waveform itself
+    \item each step tested on held-out pieces
   \end{itemize}
-  \vspace{2mm}
+  \vspace{1mm}
+  \textbf{What it found about the structure}
+  \begin{itemize}
+    \item the score graph's measured value: smoothing in score time over about two beats
+    \item the pitch term adds nothing, on either corpus, at chain, phrase or track scale
+  \end{itemize}
+  \vspace{1mm}
+  \textbf{What it cannot yet say}
+  \begin{itemize}
+    \item which \emph{score structure beyond time} performance follows (the title's question)
+    \item what the recovered representation is \emph{for}, beyond the downstream tasks of Chapter 6
+  \end{itemize}
+  \vspace{1mm}
   The proposal closes the first gap and gives the second a concrete form.
 \end{frame}
 
@@ -83,20 +83,22 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{The deferred alternative: an across-performer model}
-  \small
-  The feedback application needs a band that means \emph{the range of
-  reasonable interpretations}, not \emph{what this one performer would
-  have done}. That band comes from a model of performer variation. For
-  a piece with performances $r = 1, \dots, R$,
+  \footnotesize
+  \begin{itemize}
+    \item a feedback view needs a band meaning \emph{the range of reasonable interpretations}; that is a model of performer variation, performances $r = 1, \dots, R$ of one piece:
+  \end{itemize}
+  \vspace{-2mm}
   \[
     y^{(r)} = \mu + \delta^{(r)}, \qquad
     \mu \sim \N\bigl(0,\, B_\mu \otimes K_{\mathcal G}(s)\bigr), \qquad
     \delta^{(r)} \overset{\text{iid}}{\sim} \N\bigl(0,\, B_\delta \otimes K_{\mathcal G}(s)\bigr),
   \]
-  so that the shared mean $\mu$ and every deviation $\delta^{(r)}$ live
-  on the same score graph, and the feature kernels and noise of the
-  proposed model are kept. A new performance $y^{(\star)}$ is then scored
-  against
+  \vspace{-1mm}
+  \begin{itemize}
+    \item shared mean $\mu$ and every deviation $\delta^{(r)}$ on the same score graph; feature kernels and noise kept
+    \item a new performance $y^{(\star)}$ is scored against
+  \end{itemize}
+  \vspace{-2mm}
   \[
     p\bigl(y^{(\star)}_i \mid y^{(1)}, \dots, y^{(R)}\bigr),
     \qquad
@@ -104,208 +106,192 @@
       + \underbrace{(B_\delta)_{cc}\,[K_{\mathcal G}]_{ii}}_{\text{performer variation}}
       + \varsigma_c^2,
   \]
-  which is the band a feedback view should draw. ASAP supplies the data:
-  27 performances of the 21st sonata's first movement, 21 of the 31st, 17
-  of the 23rd.
-  \vspace{2mm}
-
-  \textbf{Why deferred.} It is a new model with its own fitting, its own
-  identifiability question ($\mu$ against $\delta$ when $R$ is small) and
-  its own evaluation. One to two weeks. It is the right Future Work item
-  for the application, and the motif study does not depend on it.
+  \vspace{-1mm}
+  \begin{itemize}
+    \item data: ASAP, 27 performances of the 21st sonata's first movement, 21 of the 31st, 17 of the 23rd
+    \item \textbf{deferred}: a new model with its own fitting, identifiability ($\mu$ against $\delta$ at small $R$) and evaluation, one to two weeks; the Future Work item for the application
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{The proposal: expression follows what the score repeats}
-  \includegraphics[width=0.86\textwidth]{proposal_motif_graph.png}
+  \includegraphics[width=0.66\textwidth]{proposal_motif_graph.png}
   \vspace{1mm}
 
-  \small The current graph connects score neighbours (grey). The motif
-  edge family (blue) connects each note of a motif occurrence to the
-  notes at the same relative position in the other occurrences, taken
-  first from the BPS-motif annotations. A hidden note then has two kinds
-  of neighbour: the notes around it in time, and the notes that
-  \emph{are} it, elsewhere in the piece. The drawing shows equal-length
-  occurrences; the edge definition does not require them.
+  \small
+  \begin{itemize}
+    \item grey: the current graph, score neighbours in time
+    \item blue: the motif family, each note joined to the same relative position in every other occurrence (BPS-motif annotations first)
+    \item a hidden note then has two kinds of neighbour: the notes around it, and the notes that \emph{are} it elsewhere in the piece
+    \item the drawing shows equal-length occurrences; the edge definition does not require them
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{The bridge: from annotated occurrences to an edge family}
   \footnotesize
-  \textbf{What the annotations give.} Occurrences $O_1, \dots, O_K$ as
-  note sets with a span $[b_k^{\text{start}}, b_k^{\text{end}}]$ in beats
-  and a type $q(k)$. Returns of one motif differ in length, so a
-  note-to-note correspondence is not well defined in general.
-  \vspace{1mm}
-
-  \textbf{Correspondence by relative position, many to many.} Each note
-  sits at its relative position inside its occurrence,
+  \begin{itemize}
+    \item the annotations give occurrences $O_1, \dots, O_K$: note sets with a span $[b_k^{\text{start}}, b_k^{\text{end}}]$ in beats and a type $q(k)$
+    \item returns of one motif differ in length, so no note-to-note map in general
+    \item instead, relative position inside the occurrence, and closeness in that coordinate, many to many:
+  \end{itemize}
+  \vspace{-2mm}
   \[
     u_i = \frac{b_i - b_k^{\text{start}}}{\,b_k^{\text{end}} - b_k^{\text{start}}\,} \in [0, 1],
     \qquad i \in O_k,
   \]
-  and connect notes of two same-type occurrences by closeness in that
-  coordinate, with the Gaussian form the time edges already use,
+  \vspace{-3mm}
   \[
     \bigl(W_{\text{motif}}\bigr)_{ij} \;=\;
     \sum_{k \neq l,\; q(k) = q(l)} \mathbf 1[i \in O_k]\, \mathbf 1[j \in O_l]\;
     \exp\!\Bigl(-\frac{(u_i - u_j)^2}{2\,\ell_u^2}\Bigr),
   \]
-  with $\ell_u$ fixed at about a tenth of the span. Equal-length returns
-  recover one-to-one edges; unequal ones get a soft many-to-many block
-  that needs no alignment. Nothing is learned here.
-  \vspace{1mm}
-
-  \textbf{The score graph.} The thesis's adjacency gains the family with
-  one learned weight,
+  \vspace{-1mm}
+  \begin{itemize}
+    \item $\ell_u$ fixed at a tenth of the span; equal-length returns give one-to-one edges, unequal ones a soft block, no alignment, nothing learned
+    \item the thesis's adjacency gains the family with one learned weight:
+  \end{itemize}
+  \vspace{-2mm}
   \[
     W \;=\; W_{\text{time}} + w_{\text{m}}\, W_{\text{motif}}, \qquad
     \Lg = D - W, \qquad
     K_{\mathcal G}(s) = U\,\diag\bigl(g(\nu; s)\bigr)\,U^{\top},
   \]
-  and the rest of the model, $K = B \otimes K_{\mathcal G}(s) + \sum_f \diag(c_f) \otimes X_f X_f^{\top} + \diag(\varsigma^2) \otimes I$,
-  is unchanged. $w_{\text{m}}$ joins $\theta$ in the per-piece evidence,
-  which can switch the family off: the falsification route.
+  \vspace{-1mm}
+  \begin{itemize}
+    \item the rest, $K = B \otimes K_{\mathcal G}(s) + \sum_f \diag(c_f) \otimes X_f X_f^{\top} + \diag(\varsigma^2) \otimes I$, is unchanged
+    \item $w_{\text{m}}$ joins $\theta$ in the per-piece evidence, which can switch the family off: the falsification route
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{The GP side: what a motif edge does to a hidden note}
   \footnotesize
-  In the nested single-channel case with the additive kernel,
-  $g(\nu; s) = 1/(1 + s\nu)$, the prior is the Gaussian Markov random
-  field with precision $Q = I + s\Lg$, and the conditional of a hidden
-  note $h$ given the other notes is explicit:
+  \begin{itemize}
+    \item single channel, additive kernel $g(\nu; s) = 1/(1 + s\nu)$: the prior is the GMRF with precision $Q = I + s\Lg$
+    \item the conditional of a hidden note $h$ given the others is explicit:
+  \end{itemize}
+  \vspace{-2mm}
   \[
     \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{s \sum_{j} W_{hj}\, y_j}{1 + s\, d_h},
     \qquad
     \operatorname{Var}\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{1}{1 + s\, d_h},
     \qquad d_h = \sum_j W_{hj}.
   \]
-  Splitting the degree into the two families, $d_h = d_h^{\text{time}} + w_{\text{m}} d_h^{\text{motif}}$,
+  \vspace{-1mm}
+  \begin{itemize}
+    \item split the degree into the two families, $d_h = d_h^{\text{time}} + w_{\text{m}} d_h^{\text{motif}}$:
+  \end{itemize}
+  \vspace{-2mm}
   \[
     \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\;
     \frac{s\, d_h^{\text{time}}}{1 + s d_h}\;\overline{y}^{\,\text{time}}_h
     \;+\; \frac{s\, w_{\text{m}}\, d_h^{\text{motif}}}{1 + s d_h}\;\overline{y}^{\,\text{motif}}_h,
   \]
-  the degree-weighted mean of the temporal neighbours and the
-  relative-position-weighted mean of the other occurrences' notes. The posterior of the
-  full model, $m = C_{\cdot o} K_{oo}^{-1} \tilde y_o$, mixes the same two
-  sources through the coupling $B$, the feature kernels and the noise, but
-  this is the mechanism.
+  \vspace{-1mm}
+  \begin{itemize}
+    \item a mean of the temporal neighbours plus a mean of the other occurrences' notes, weighted by relative position
+    \item the full posterior $m = C_{\cdot o} K_{oo}^{-1} \tilde y_o$ mixes the same two sources through $B$, the feature kernels and the noise
+  \end{itemize}
   \vspace{1mm}
-
-  \textbf{Two readable predictions.} If performers shape a motif the same
-  way at each return, $\overline{y}^{\,\text{motif}}_h$ is closer to the
-  truth than $\overline{y}^{\,\text{time}}_h$ and the evidence raises
-  $w_{\text{m}}$: the recovery error on hidden motif notes falls (H1,
-  RMSE) and the band tightens by exactly the extra degree, which is the
-  calibration test (H1, NLL and coverage). If they do not, the counterpart
-  mean is noise, the evidence drives $w_{\text{m}}$ toward zero, and the
-  arms coincide with the time-only graph: the falsification outcome.
+  \textbf{Two readable predictions}
+  \begin{itemize}
+    \item performers shape a motif the same way at each return: $\overline{y}^{\,\text{motif}}_h$ is closer than $\overline{y}^{\,\text{time}}_h$, the evidence raises $w_{\text{m}}$, error falls (H1b) and the band tightens by exactly the extra degree (H1)
+    \item they do not: the counterpart mean is noise, the evidence drives $w_{\text{m}}$ to zero, the arms coincide with the time-only graph (falsification)
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Methodology: arms, masking, data, hypotheses}
-  \small
-  \textbf{Arms}, paired per piece and seed, the per-piece bias column in
-  every arm: time-only graph (the attribution winner), time $+$ pitch
-  (the current model), time $+$ annotated motif edges. Predicted edges
-  are a second stage, not part of this study.
-  \vspace{1mm}
-
-  \textbf{Masking.} Hide notes inside motif occurrences while at least
-  one other occurrence of the same type stays fully observed, at the
-  usual 40 percent rate on the remaining notes. Score timing, articulation and velocity by
-  paired RMSE and NLL, and coverage of the 90 percent band, on the hidden
-  motif notes and on all hidden notes.
-  \vspace{1mm}
-
-  \textbf{Data.} BPS-motif annotates the first movements of all 32
-  Beethoven sonatas. ASAP holds 25 of them, over 200 performances, nine
-  pieces already inside the thesis's pools. The 400-note excerpts are the
-  expositions, where the motif returns.
-  \vspace{1mm}
-
-  \textbf{Hypotheses, fixed before the first run.} H1: on hidden motif
-  notes, the annotated-motif arm improves timing and velocity NLL against
-  the time-only graph, with an interval excluding zero. H1b: it also
-  improves RMSE there. Report-only: the learned $w_{\text{m}}$ per piece
-  and the effect on non-motif notes. Falsification: an H1 interval that
-  includes zero means the structure performance follows is temporal
-  smoothing, and the thesis says so.
+  \footnotesize
+  \textbf{Arms}, paired per piece and seed, a per-piece bias column in every arm
+  \begin{itemize}
+    \item time-only graph (the attribution winner); time $+$ pitch (the current model); time $+$ annotated motif edges
+    \item predicted edges are a second stage, not part of this study
+  \end{itemize}
+  \textbf{Masking and scoring}
+  \begin{itemize}
+    \item hide whole occurrences while another occurrence of the type stays observed; also the usual 40 percent at random
+    \item timing, articulation, velocity: paired RMSE and NLL, coverage of the 90 percent band, on hidden motif notes
+  \end{itemize}
+  \textbf{Data}
+  \begin{itemize}
+    \item BPS-motif annotates all 32 Beethoven sonata first movements; ASAP holds 25; 400-note excerpts, the expositions; confirmation pieces excluded
+  \end{itemize}
+  \textbf{Hypotheses, fixed before the first run}
+  \begin{itemize}
+    \item H1: on hidden motif notes, the motif arm lowers timing NLL against the time-only graph, interval excluding zero; H1b: RMSE too
+    \item report-only: $w_{\text{m}}$ per piece, the other channels, the random scheme; falsification: an H1 interval covering zero means the structure is temporal smoothing, and the thesis says so
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{What the result would look like (mock, not measured)}
-  \includegraphics[width=0.95\textwidth]{proposal_mock_results.png}
-  \vspace{1mm}
+  \includegraphics[width=0.84\textwidth]{proposal_mock_results.png}
+  \vspace{0.5mm}
 
-  \small Panel A is the study's one decisive figure: the annotated-motif
-  arm against the time-only graph on hidden motif notes, with the current
-  pitch term shown for scale. Panel B is the application view the same
-  posterior gives for free: how one motif was shaped at each of its
-  returns, with uncertainty. Both panels are drawn from hand-set numbers
-  to show the form of the answer, not its value.
+  \footnotesize
+  \begin{itemize}
+    \item panel A: the study's one decisive figure, motif arm against the time-only graph on hidden motif notes, pitch term for scale
+    \item panel B: the application view the same posterior gives for free, one motif at each return, with uncertainty
+    \item both drawn from hand-set numbers: the form of the answer, not its value; the next frame is the measured one
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Stage one, first pilot: measured on 4 November (development, no claim)}
-  \includegraphics[width=0.88\textwidth]{proposal_pilot_results.png}
+  \includegraphics[width=0.70\textwidth]{proposal_pilot_results.png}
   \vspace{0.5mm}
 
-  \footnotesize 21 Beethoven first movements, 400-note excerpts, score
-  features without the music model, two seeds, 336 fits, hypotheses
-  fixed before the run. \textbf{H1 supported at the edge}: with whole
-  occurrences hidden, the motif edges lower the timing log score on
-  those notes by $0.117$ nats against the time-only graph, interval
-  $[-0.245,\,-0.006]$; the pitch term gives $-0.014$. Articulation RMSE
-  $0.637 \to 0.611$, interval excluding zero. Velocity bands narrow too
-  far (coverage $0.88 \to 0.82$): one weight for three channels is the
-  wrong design, so the next step is a per-channel weight. Under random
-  masking the family is invisible, as the time window already
-  interpolates inside an occurrence. The evidence switches the family
-  off on eight pieces and asks for it on six (panel B).
+  \footnotesize
+  \begin{itemize}
+    \item 21 Beethoven first movements, 400-note excerpts, score features without the music model, two seeds, 336 fits, hypotheses fixed before the run
+    \item \textbf{H1 supported at the edge}: occurrences hidden, timing log score $-0.117$ nats vs the time-only graph, interval $[-0.245,\,-0.006]$; the pitch term gives $-0.014$
+    \item articulation RMSE $0.637 \to 0.611$, interval excluding zero
+    \item velocity bands too narrow (coverage $0.88 \to 0.82$): one weight for three channels is the wrong design; next, a per-channel weight
+    \item random masking: invisible, the time window already interpolates inside an observed occurrence; panel B: the evidence switches the family off on eight pieces, asks for it on six
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Stage two, later: occurrences predicted by the ISMIR 2026 model}
   \footnotesize
-  \textbf{Typed note graph and note states.} Notes are vertices, with edge
-  types for simultaneity, temporal proximity and overlap. A pretrained
-  encoder gives $\mathbf h_i^{(0)}$, and relational graph convolutions
-  update
+  \begin{itemize}
+    \item typed note graph: notes are vertices, edge types for simultaneity, temporal proximity, overlap; a pretrained encoder gives $\mathbf h_i^{(0)}$, relational graph convolutions update
+  \end{itemize}
+  \vspace{-2mm}
   \[
     \mathbf h_i^{(\ell+1)} = \phi\Bigl( W^{(\ell)}_{\text{self}} \mathbf h_i^{(\ell)}
       + \sum_{r} \frac{W^{(\ell)}_r}{|\mathcal N_r(i)|} \sum_{j \in \mathcal N_r(i)} \mathbf h_j^{(\ell)} \Bigr),
     \qquad \mathbf h_i \in \R^{d} \text{ after } L \text{ layers.}
   \]
-  \textbf{Two heads.} A motif-note probability and a pair affinity on
-  candidate pairs $\mathcal C$ taken from the graph edges,
+  \vspace{-1mm}
+  \begin{itemize}
+    \item two heads: a motif-note probability and a pair affinity on candidate pairs $\mathcal C$ from the graph edges
+  \end{itemize}
+  \vspace{-2mm}
   \[
     m_i = \sigma\bigl(f_{\text{MNID}}(\mathbf h_i)\bigr), \qquad
     \hat a_{ij} = \sigma\bigl(\mathrm{MLP}(\mathbf g_{ij})\bigr), \quad
     \mathbf g_{ij} = \bigl[\mathbf h_i, \mathbf h_j, \mathbf h_i \odot \mathbf h_j,
       \tfrac{|t_i - t_j|}{q + \varepsilon}, \tfrac{|p_i - p_j|}{s_p}, \mathbf 1[t_i = t_j]\bigr].
   \]
-  \textbf{Training by label propagation.} Annotated occurrences $O_k$ seed
-  $S_{ki} = 1/|O_k|$ on their notes, and memberships diffuse along the
-  learned affinities with restart,
+  \vspace{-1mm}
+  \begin{itemize}
+    \item training by label propagation: annotated occurrences seed $S_{ki} = 1/|O_k|$, memberships diffuse along the learned affinities with restart
+  \end{itemize}
+  \vspace{-2mm}
   \[
     T = D^{-1}(A + s_{\text{self}} I), \qquad
     M^{(t+1)} = \alpha S + (1 - \alpha)\, M^{(t)} T, \qquad
     t_{\max} = 4,\; \alpha = 0.55,
   \]
-  with losses at the note-pair, occurrence and motif-type levels on $M$.
-  \textbf{Decoding.} The gated affinity $A^{\text{dec}}_{ij} = A_{ij}(m_i m_j)^{\alpha_{\text{dec}}/2}$
-  is thresholded at $\tau_{\text{occ}}$, connected components become
-  occurrences $\hat O_1, \dots, \hat O_{\hat K}$, and a Gaussian mixture
-  on pooled states $\hat{\mathbf z}_k$ assigns each occurrence a type
-  $q(k)$.
-  \vspace{1mm}
-
-  \textbf{What stage two takes:} the occurrences $\hat O_k$ with spans
-  and types $q(k)$ in place of the annotations, on any score
-  (establishment F1 $0.732$ on BPS-motif). It waits for stage one's answer.
+  \vspace{-1mm}
+  \begin{itemize}
+    \item losses at the note-pair, occurrence and motif-type levels on $M$
+    \item decoding: gated affinity $A^{\text{dec}}_{ij} = A_{ij}(m_i m_j)^{\alpha_{\text{dec}}/2}$ thresholded at $\tau_{\text{occ}}$, connected components are occurrences $\hat O_k$, a Gaussian mixture on pooled states gives each a type $q(k)$
+    \item stage two takes $\hat O_k$ with spans and types in place of the annotations, on any score (establishment F1 $0.732$ on BPS-motif); it waits for stage one's answer
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------

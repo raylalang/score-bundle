@@ -1,4 +1,4 @@
-# Speaker notes: proposal_endgoal.pdf (12 frames, 2026-10-28, revised twice; frame 10 added 2026-11-04)
+# Speaker notes: proposal_endgoal.pdf (12 frames, 2026-10-28, revised twice; frame 10 added 2026-11-04; narrative in bullets 2026-11-04 at Ray's request, equations unchanged)
 
 A separate deck, not part of deck.tex. Frame 10 is the MEASURED development
 pilot of 2026-11-04 (`results/motif_pilot_dev.md`). Frame 9 shows MOCK numbers,
