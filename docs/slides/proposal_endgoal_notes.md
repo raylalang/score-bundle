@@ -75,14 +75,39 @@ same per-piece behaviour the feature kernels show. What this is not: a
 registered result, a thesis claim, or a test with the headline model's
 embeddings.
 
-## 11. Stage two, later: the ISMIR model
+## 11. Stage one, second pilot (measured 17 November)
+Still development, still no claim. The question the first pilot left:
+is the velocity penalty the shared weight? The per-channel form lets
+the family enter as its own coregionalization block through the
+feature-kernel path, one scale per channel learned by the evidence, no
+change to the model code. Four seeds now; seeds 0 and 1 reproduce the
+first pilot to the last digit, so the machinery is deterministic. The
+answer in two halves. Velocity: the penalty is gone and becomes a gain,
+coverage back at nominal, so that half of H2 holds. Timing: the
+per-channel form gives nothing on the log score, and the rule written
+before the run says the family's timing value came from the shared
+coupling. Say the harder sentence plainly: on four seeds the shared
+weight's own timing gain is minus 0.071 with an interval that covers
+zero; the first pilot's star was two seeds and three pieces against
+one. What survives everything is articulation accuracy, minus 0.035
+shared and minus 0.019 per channel, both intervals clear of zero, and
+panel B says it directly: the evidence keeps the family on the
+articulation channel for ten pieces and switches it off on timing for
+nineteen. Consequence: the pre-specified test on held-out performances
+takes articulation RMSE as its primary, with power 0.95 at eighteen
+pieces at this effect and 0.51 at two thirds; the shared weight is the
+named arm because its articulation effect is larger and more even, and
+the per-channel form runs beside it and is reported. The timing log
+score is the secondary, power 0.33, reported either way.
+
+## 12. Stage two, later: the ISMIR model
 Only if stage one gives an answer worth extending. Walk the model top to
 bottom: typed graph and R-GCN states, the two heads, label propagation
 with restart in training, thresholded gated affinity and connected
 components at test time, GMM grouping into types. Its occurrences, spans
 and types would replace the annotations on any score.
 
-## 12. Plan and recommendation
+## 13. Plan and recommendation
 Three of the five days are done as of 4 November; the pilot leans toward
 H1. Next: per-channel weight, more seeds, embeddings, then one
 pre-specified evaluation if the development result warrants it. Either outcome is a finding. Recommend the motif

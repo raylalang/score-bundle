@@ -177,7 +177,46 @@ treats the feature kernels: the learned weight falls below $0.1$ on eight
 movements and exceeds $2$ on six.
 
 \subsection{The per-channel form}\label{sec:motif-pilot2}
-% PENDING: pilot two (results/motif_pilot2_dev.md), four seeds.
+The second study repeated the first on the same movements and masks with
+four seeds, the first two of which reproduce the first study exactly, and
+added the per-channel form of \eqref{eq:motif-pc}. Its prediction was that
+the per-channel form keeps the timing gain of the shared form and removes
+the velocity miscalibration. The second half holds: the velocity log score
+on the hidden motif notes falls by $0.086$ against the time-only graph,
+interval $[-0.200, -0.018]$, the velocity error by $0.0057$, interval
+$[-0.0106, -0.0023]$, and the coverage of the $90\%$ band rises from
+$0.878$ to $0.944$. The first half does not: the per-channel form changes
+the timing log score by $-0.005$, interval $[-0.076, +0.054]$. By the rule
+fixed before the run, whatever timing value the shared form had came from
+the coupling of the three channels through one weight, not from the edges
+on their own.
+
+The four seeds also change what the shared form's timing gain is. On all
+four it is $-0.071$ with interval $[-0.230, +0.097]$, and on the two added
+seeds alone $-0.026$ with interval $[-0.247, +0.259]$. The per-movement
+differences have a median near zero, with three movements far below and one
+far above, so the timing effect of the first study rested on two seeds and
+three movements. The effect that holds on every pair of seeds and in both
+forms is articulation accuracy: the root mean squared error on the hidden
+motif notes falls from $0.732$ to $0.698$ in the shared form, a difference
+of $-0.035$ with interval $[-0.060, -0.013]$, and to $0.713$ in the
+per-channel form, $-0.019$ with interval $[-0.038, -0.005]$, with fifteen
+and thirteen of the twenty-one movements below zero. The learned scales say
+the same thing directly. On the timing channel $c_{\mathrm m}$ falls below
+$0.01$ on nineteen movements, so the evidence switches the family off
+where the time-only graph is already well calibrated. On the articulation
+channel it exceeds $0.1$ on ten movements, and on the velocity channel it
+is kept on seven. The two forms trade. The shared form gives the larger
+articulation gain and a small timing error gain, $-0.0027$~s with interval
+$[-0.0055, -0.0004]$, at the cost of velocity coverage, $0.835$. The
+per-channel form gives a smaller articulation gain, velocity on both axes
+and coverage at nominal, and nothing on timing. Adding the pitch term to
+the per-channel form changes nothing. Under the random scheme the family
+again has little to act on, and the per-channel form's timing log score
+over all hidden notes is $+0.087$ with interval $[-0.000, +0.241]$, at the
+edge of worse. The measured value of the family at this stage is therefore
+articulation accuracy, and the pre-specified evaluation of
+\S\ref{sec:motif-heldout} takes that as its primary measure.
 
 \subsection{Predicted occurrences}\label{sec:motif-stage2}
 % PENDING: stage two (results/motif_stage2_dev.md).

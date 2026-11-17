@@ -7,6 +7,7 @@ in this script reads an evaluation record.
 
   proposal_motif_graph.png   the motif edge family on a score excerpt
   proposal_mock_results.png  what the motif study's result would look like
+  proposal_pilot_results.png / proposal_pilot2_results.png  measured pilots (--pilot / --pilot2)
 
     PYTHONPATH=src python scripts/make_proposal_figs.py
 """
@@ -185,9 +186,62 @@ def pilot_results():
     fig.savefig(OUT + "proposal_pilot_results.png", bbox_inches="tight")
 
 
+def pilot2_results():
+    """Measured second pilot (results/motif_pilot2/effects.json, four seeds):
+    paired log-score difference per channel of the shared-weight and the
+    per-channel arms against the time-only graph on hidden motif notes with
+    occurrences hidden; and the learned per-channel scale c_m per piece.
+    No banner: measured numbers (development set)."""
+    import json
+    E = json.load(open("results/motif_pilot2/effects.json"))
+    eff, cm = E["effects"], E["c_m_occ|time_motif_pc"]
+    fig, (axa, axb) = plt.subplots(1, 2, figsize=(11, 3.9),
+                                   gridspec_kw={"width_ratios": [1.25, 1.0], "wspace": 0.35})
+    fig.text(0.5, 0.995, "MEASURED, DEVELOPMENT SET, 21 BEETHOVEN FIRST MOVEMENTS, FOUR SEEDS, OCCURRENCES HIDDEN",
+             ha="center", va="top", fontsize=9, color=GREEN, fontweight="bold")
+    chans = [("tau", "timing"), ("log r", "articulation"), ("v", "velocity")]
+    arms = [("time_motif", "shared weight", BLUE), ("time_motif_pc", "per-channel block", VERM)]
+    rows = []
+    for ch, chl in chans:
+        for arm, al, c in arms:
+            e = eff[f"occ|motif|{arm}|{ch}"]
+            rows.append((f"{chl}, {al}", e["dnll"], e["drmse"], c))
+    y = np.arange(len(rows))[::-1]
+    axa.axvline(0, color=MUTED, lw=0.8)
+    for yi, (lab, (m, lo, hi), (rm, rlo, rhi), c) in zip(y, rows):
+        axa.hlines(yi, lo, hi, color=c, lw=2.2)
+        axa.scatter([m], [yi], color=c, s=40, zorder=3)
+        star = "*" if rhi < 0 or rlo > 0 else ""
+        axa.text(0.115, yi, f"{m:+.3f} [{lo:+.3f}, {hi:+.3f}]   RMSE {rm:+.4f}{star}", va="center",
+                 fontsize=7.6, color=INK)
+    axa.set_yticks(y)
+    axa.set_yticklabels([r[0] for r in rows], fontsize=8.5)
+    axa.set_xlim(-0.25, 0.42)
+    axa.set_xlabel("paired log-score difference vs the time-only graph, hidden motif notes\n(negative = better; 95% bootstrap over pieces; * = the RMSE interval excludes zero)", fontsize=8.5)
+    axa.set_title("A    second pilot: per channel, two forms of the family", loc="left")
+
+    names = sorted(cm, key=lambda k: cm[k][1])
+    yy = np.arange(len(names))
+    for j, (ch, chl, c, mk) in enumerate([("tau", "timing", BLUE, "o"), ("log r", "articulation", GREEN, "s"), ("v", "velocity", VERM, "^")]):
+        vals = np.maximum(np.array([cm[k][j] for k in names]), 1e-4)
+        axb.scatter(vals, yy + (1 - j) * 0.22, color=c, marker=mk, s=18, label=chl, zorder=3)
+    axb.set_yticks(yy)
+    axb.set_yticklabels(names, fontsize=7.5)
+    axb.set_xscale("log")
+    axb.set_xlim(1e-4, 3)
+    axb.axvline(1e-2, color=MUTED, lw=0.8, ls="--")
+    axb.legend(loc="upper center", bbox_to_anchor=(0.5, -0.30), ncol=3, fontsize=8, handletextpad=0.3, columnspacing=1.2)
+    axb.set_xlabel("learned per-channel motif scale $c_m$ (evidence)\nvalues below 0.0001 drawn at 0.0001; dashed line 0.01", fontsize=8.5)
+    axb.set_title("B    which channel the evidence puts the family on", loc="left")
+    fig.savefig(OUT + "proposal_pilot2_results.png", bbox_inches="tight")
+
+
 if __name__ == "__main__":
     import sys
-    if "--pilot" in sys.argv:
+    if "--pilot2" in sys.argv:
+        pilot2_results()
+        print("wrote", OUT + "proposal_pilot2_results.png")
+    elif "--pilot" in sys.argv:
         pilot_results()
         print("wrote", OUT + "proposal_pilot_results.png")
     else:

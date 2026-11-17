@@ -254,6 +254,20 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{Stage one, second pilot: the per-channel weight, four seeds (measured 17 November, development, no claim)}
+  \includegraphics[width=0.60\textwidth]{proposal_pilot2_results.png}
+  \vspace{-1mm}
+
+  \scriptsize
+  \begin{itemize}
+    \item same 21 movements and masks, four seeds (0 and 1 reproduce the first pilot bit-exactly), four arms, 672 fits; H2 fixed before the run: the per-channel form keeps the timing gain and removes the velocity penalty
+    \item \textbf{H2 holds in one half}, velocity log score $-0.086$ $[-0.200,\,-0.018]$, coverage $0.88 \to 0.94$; \textbf{and fails in the other}, timing $-0.005$ $[-0.076,\,+0.054]$. On four seeds the shared weight's own timing gain is $-0.071$ $[-0.230,\,+0.097]$: the first pilot's star was two seeds and three pieces against one
+    \item what survives every seed pair and both forms: \textbf{articulation accuracy}, RMSE $-0.035$ shared and $-0.019$ per channel, intervals excluding zero; panel B: the evidence keeps the family on articulation for 10 of 21 pieces and switches it off on timing for 19
+    \item consequence for the pre-specified test: primary = articulation RMSE (power 0.95 at 18 pieces at this effect, 0.51 at two thirds), arm = the shared weight; the per-channel form runs beside it and is reported
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Stage two, later: occurrences predicted by the ISMIR 2026 model}
   \footnotesize
   \begin{itemize}

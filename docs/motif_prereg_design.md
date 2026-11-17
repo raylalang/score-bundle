@@ -3,8 +3,8 @@
 > **Status: DRAFT, written 2026-11-17 after Ray's decision (AskUserQuestion,
 > 2026-11-17: the motif study becomes a thesis chapter with one
 > pre-specified test on untouched performances). The numbers marked
-> PROVISIONAL come from pilot one and are replaced by pilot two's before
-> the freeze. It becomes REGISTERED at the commit that carries the tag
+> PROVISIONAL were replaced by pilot two's on 2026-11-17 (the draft is
+> complete; the freeze is the tag). It becomes REGISTERED at the commit that carries the tag
 > `motif-registration-2026-11-20`, which freezes the claims, the decision
 > rule, the pool, the arms and the exact commands BEFORE the run. The run
 > is one deliberate act, performed ONCE by `scripts/run_motif_heldout.sh`,
@@ -24,30 +24,40 @@ log score and the articulation error on the hidden notes against the
 time-only graph. Pilot one, 21 pieces, two seeds, one shared weight:
 timing ΔNLL −0.117 [−0.245, −0.006]; articulation ΔRMSE −0.033 [−0.066,
 −0.007]; velocity calibration worse (+0.069, one shared weight). Pilot
-two (per-channel weight, four seeds): PROVISIONAL, filled in at the
-freeze.
+two (four seeds; the per-channel block added): the shared weight's timing
+ΔNLL is −0.071 [−0.230, +0.097] (the pilot-one star did not survive two
+more seeds), its articulation ΔRMSE −0.0345 [−0.0600, −0.0125] on every
+seed pair; the per-channel block gives articulation ΔRMSE −0.0189
+[−0.0381, −0.0053], velocity ΔNLL −0.086 [−0.200, −0.018] with coverage
+0.944, and nothing on timing (−0.005). The robust development finding is
+articulation accuracy.
 
 Claims, hidden motif notes under the occurrence-hidden scheme, paired per
 piece (seeds and performances averaged within the piece), the chosen
 motif arm minus the time-only arm:
 
-- **M1 (PRIMARY).** The better-powered of the two pre-named contrasts by
-  pilot two's power table (section "Power check"): either the timing
-  log score (ΔNLL < 0) or the articulation RMSE (ΔRMSE < 0), with the
-  95 percent bootstrap interval excluding zero. PROVISIONAL from pilot
-  one: articulation RMSE (0.86 at 18 pieces) over the timing log score
-  (0.60).
-- **M2 (SECONDARY, non-gating).** The other of the two, same rule.
+- **M1 (PRIMARY).** The articulation RMSE on the hidden motif notes,
+  ΔRMSE < 0 with the 95 percent bootstrap interval excluding zero. Fixed
+  2026-11-17 from pilot two's power table (section "Power check"):
+  articulation RMSE 0.95 at 18 pieces against 0.33 for the timing log
+  score; the two contrasts were pre-named in the draft of the same day
+  and the better-powered one is the primary, as that draft said.
+- **M2 (SECONDARY, non-gating).** The timing log score on the same
+  notes, ΔNLL < 0 with the interval excluding zero (power 0.33 at 18
+  pieces at the four-seed effect; a miss is expected and reported).
 - **M3 (report-only).** Velocity log score and coverage on the same
   notes (the pilot-one penalty is expected to be gone with the
   per-channel weight; a remaining penalty is reported); the timing RMSE;
   the pitch term is not run (the arms are time-only against time plus
   motif).
 
-The motif arm is ONE of `time_motif` (shared weight inside the
-adjacency) and `time_motif_pc` (the family as its own per-channel block),
-chosen at the freeze from pilot two by the same power table and named
-here; the other runs as report-only.
+The motif arm for M1 and M2 is `time_motif` (the shared weight inside
+the adjacency), chosen 2026-11-17 by the power table (0.95 against 0.93
+for the per-channel block at 18 pieces; the larger and more even
+articulation effect, 15 of 21 pieces below zero against 13).
+`time_motif_pc` (the family as its own per-channel block) runs beside it
+and is reported in full (its velocity gain and coverage, its articulation
+RMSE); nothing about it gates.
 
 ## Decision rule (verbatim, to be frozen)
 
@@ -111,19 +121,24 @@ note.
 
 ## Power check
 
-PROVISIONAL (pilot one, 21 pieces, two seeds, shared weight;
-`scripts/power_motif.py`, pieces resampled, the report's bootstrap rule):
+Pilot two (21 pieces, four seeds; `scripts/power_motif.py
+results/motif_pilot2 --arm ARM --scheme occ --channel CH --metric M
+--reps 1000`, pieces resampled, the report's bootstrap rule), P(star):
 
-| n pieces | timing ΔNLL at the measured effect | articulation ΔRMSE at the measured effect |
-|---|---|---|
-| 10 | 0.52 | 0.62 |
-| 14 | 0.55 | 0.73 |
-| **18 (this pool)** | **0.60** | **0.86** |
-| 21 | 0.69 | 0.91 |
+| n pieces | articulation ΔRMSE, `time_motif` | `time_motif_pc` | timing ΔNLL, `time_motif` | `time_motif_pc` |
+|---|---|---|---|---|
+| 10 | 0.74 | 0.66 | 0.31 | 0.03 |
+| 14 | 0.86 | 0.84 | 0.31 | 0.02 |
+| **18 (this pool)** | **0.95** | **0.93** | **0.33** | **0.02** |
+| 21 | 0.97 | 0.96 | 0.30 | 0.03 |
 
-At two thirds of the measured effect both fall below 0.35. The table is
-recomputed from pilot two (per-channel arm, four seeds) at the freeze
-and decides M1 and the motif arm.
+At two thirds of the measured effect, 18 pieces: articulation 0.51
+(`time_motif`) and 0.39 (`time_motif_pc`); timing 0.14; at half, 0.26 and
+0.17. The performances of the pool are different from the development
+performance, so the effect on them is unknown; a held-out effect of two
+thirds of the development one gives about one chance in two of a star.
+The pilot-one table (timing 0.60, articulation 0.86 at 18 pieces, two
+seeds) is superseded.
 
 ## Protocol constants (frozen)
 
@@ -163,7 +178,7 @@ the performance list, shard logs, cells, report, effects) archived under
 - [x] Guarded one-shot runner (`scripts/run_motif_heldout.sh`) with the
       refusal tests in `tests/test_motif_pilot.py`; the held-out source
       refuses without consent and never returns the first performance
-- [ ] Pilot two read; M1, the motif arm and the power table fixed
+- [x] Pilot two read; M1, the motif arm and the power table fixed (2026-11-17)
 - [ ] Claims M1–M3, the decision rule and this protocol frozen in the
       registration commit; tag `motif-registration-2026-11-20`
 - [ ] Run once; evidence archived; verdict scored by the frozen rule

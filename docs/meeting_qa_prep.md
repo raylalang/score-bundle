@@ -28,9 +28,16 @@ Before the room: sync Overleaf with the whole `docs/thesis/` directory
    interval [−0.245, −0.006]; articulation RMSE −5 percent; velocity
    bands too narrow under one shared weight; development only). If the
    pilot-two report is in by the morning (`results/motif_pilot2_dev.md`,
-   the per-channel weight, four seeds): say in one sentence whether the
-   velocity penalty went away and whether the timing gain held.
-3. **The calendar to 12-03, one table** (ROADMAP): pilot two (running),
+   the per-channel weight, four seeds, measured 11-17, proposal deck
+   frame 11): the velocity penalty went away (−0.086 nats, coverage
+   0.94) and the timing gain did not hold (−0.005; on four seeds the
+   shared weight's own timing gain is −0.071 with an interval covering
+   zero, the first pilot's star was two seeds); what holds on every seed
+   pair and in both forms is articulation accuracy (RMSE −0.035 shared,
+   −0.019 per channel, intervals clear of zero), and the evidence puts
+   the family on the articulation channel. So the pre-specified test's
+   primary is articulation RMSE, power 0.95 at 18 pieces.
+3. **The calendar to 12-03, one table** (ROADMAP): pilot two (done),
    stage two with the ISMIR model's predicted occurrences (11-18), two
    registrations announced before they run (the waveform phrase-scale
    claim on the URMP confirmation tracks, launched 11-19; the motif

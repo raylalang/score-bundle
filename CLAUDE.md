@@ -272,9 +272,25 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   schemes (whole occurrences hidden / random 40%), two seeds. H1 supported at the edge
   (timing ΔNLL −0.117 [−0.245, −0.006] on hidden motif notes with occurrences hidden),
   articulation RMSE −0.033*, velocity calibration worse (+0.069*, one shared weight).
-  Next: per-channel w_m, more seeds, embeddings; stage two = occurrences predicted by
-  the ISMIR 2026 model; a registered test needs a power check first. Score features
-  only (no LM), so no contamination question. The thesis does not carry it yet.
+  **Pilot two (2026-11-17, `results/motif_pilot2_dev.md`, four seeds, 672 fits; H2 in
+  the docstring):** the per-channel form (`time_motif_pc`: K_m from the motif-note
+  Laplacian as one more feature block, c_m per channel learned by evidence, no gp.py
+  change, test-pinned) removes the velocity penalty (−0.086*, coverage 0.944) but does
+  not keep the timing log-score gain (−0.005); on four seeds the shared weight's timing
+  gain is −0.071 ns (the pilot-one star was two seeds; seeds 0-1 reproduce pilot one
+  bit-exactly). The robust effect in both forms and on every seed pair is ARTICULATION
+  RMSE (−0.035* shared, −0.019* per channel); the evidence switches the family off on
+  timing (19/21 pieces) and keeps it on articulation (10/21). **Decided 2026-11-17
+  (Ray): the motif study is a thesis chapter (`chapters/09_motif.tex`, `ch:motif`) with
+  ONE pre-specified test on held-out performances** (`docs/motif_prereg_design.md`,
+  DRAFT until tag `motif-registration-2026-11-20`; M1 = articulation ΔRMSE, arm
+  `time_motif`, power 0.95 at 18 pieces; M2 timing ΔNLL 0.33; pool = aligned
+  performances other than the dev one, capped at 4 per piece, 18 pieces / 58
+  performances; guarded runner `scripts/run_motif_heldout.sh` needs
+  `MOTIF_HELDOUT_I_AM_SURE=yes`, run ONCE on 11-23, never rerun). Stage two (`scripts/
+  run_motif_stage2.sh`, H3: edges from the ISMIR model's held-out predicted
+  occurrences at q = 0.86, masks and cells unchanged) runs 11-17/18. Score features
+  only (no LM), so no contamination question. Power script `scripts/power_motif.py`.
 - **Thesis STYLE MAKEOVER (2026-10-28, Ray: "almost a whole makeover", the draft read
   like a company project report).** `draft.tex` now `\input`s `docs/thesis/chapters/*.tex`
   (one file per chapter/appendix + `bibliography.tex`); `docs/thesis/style_guide.md` is
@@ -287,7 +303,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   table bodies unchanged. Pre-makeover text = tag `thesis-pre-makeover-2026-10-28`.
   80 pp after the makeover (prose expanded; no content added or cut). Any future
   thesis edit follows the style guide and is run through the checker.
-- **Thesis state (2026-10-28, main=c709c5d+): 74 pp before the makeover, 80 after, compile clean** (cut from 83 on
+- **Thesis state (2026-11-17, main=9735cf3+): 84 pp with the motif chapter input (80 after the makeover of 2026-10-28), compile clean** (cut from 83 on
   2026-10-28, Ray: "subtract the irrelevant and obsolete": two-stage-era kernel table,
   per-channel ablation table and fitted filters, lineage B.2-B.5, synthetic pilot,
   leakage appendix folded into §5.4, era/performer-ID downstream tasks and the Vienna
