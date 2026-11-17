@@ -59,9 +59,25 @@ from eval_phase3_chain_dev import (SR, chain_segment, NOTE_MIN_S,      # noqa: E
                                    NOTE_MAX_S, GAP_LO, GAP_HI)
 from eval_phase3_curve_dev import load_hypers         # noqa: E402
 
-CELLS_DIR = "results/phase3_cells"
-PREFIX = "priorval_phrase"
-OUT_MD = "results/prior_value_phrase_dev.md"
+# --- CONFIRMATION MODE (registered one-shot, docs/phrase_prior_prereg_design.md) ---
+# PHASE2_SPLIT=confirmation switches this script onto the 40 unique tracks of
+# the frozen 13-piece URMP confirmation pool (spent 2026-08-27 and re-used with
+# disclosure on 2026-10-27; never touched by any waveform study before).  It is
+# refused without the same three consent variables as the re-use runner, writes
+# ONLY to its own artifacts, and is run ONCE by scripts/run_phrase_prior_confirmation.sh.
+CONF = os.environ.get("PHASE2_SPLIT", "dev") == "confirmation"
+if CONF and (os.environ.get("PHASE2_CONFIRMATION_I_AM_SURE") != "yes"
+             or os.environ.get("PHASE2_REUSE_I_AM_SURE") != "yes"):
+    raise SystemExit(
+        "REFUSED: PHASE2_SPLIT=confirmation targets the frozen URMP confirmation "
+        "pool for the registered phrase-scale one-shot "
+        "(docs/phrase_prior_prereg_design.md). Set PHASE2_CONFIRMATION_I_AM_SURE=yes "
+        "and PHASE2_REUSE_I_AM_SURE=yes only through scripts/run_phrase_prior_confirmation.sh.")
+CELLS_DIR = "results/phase3_cells/conf_phrase" if CONF else "results/phase3_cells"
+PREFIX = "priorval_phrase_conf" if CONF else "priorval_phrase"
+OUT_MD = ("results/phrase_prior_confirmation_results.md" if CONF
+          else "results/prior_value_phrase_dev.md")
+CACHE = ".cache/urmp_targets_conf.pkl" if CONF else ".cache/urmp_targets_dev.pkl"
 ARMS = pv.ARMS
 PHRASE_MIN, PHRASE_MAX = 6, 10
 CAP_PER_TRACK = 4
@@ -112,17 +128,23 @@ def select_phrases(notes, midi, gt_c):
     return picks
 
 
-def iter_cells():
-    import soundfile as sf
-    from scipy.signal import resample_poly
-    from eval_phase2_real import dev_unique_tracks
-    from score_bundle.phase2.urmp import read_notes_annotation
-    from score_bundle.graph import build_adjacency
-    from score_bundle.score import Score
+def split_tracks():
+    """The unique tracks of the side this process is switched to (md5-deduped,
+    as every strings-and-winds study): development by default, the frozen
+    confirmation pool only under the consent variables above."""
+    from eval_phase2_real import _unique_tracks
+    return _unique_tracks("confirmation" if CONF else "dev")
 
-    data = pickle.load(open(".cache/urmp_targets_dev.pkl", "rb"))
+
+def candidates():
+    """Every admissible cell of the side, in track order, BEFORE the draw; the
+    selection rule reads note lists and the reference centre only (no audio,
+    no fit).  Returns (data, tracks, cands) with cands = [(key, idx, j)]."""
+    from score_bundle.phase2.urmp import read_notes_annotation
+    data = pickle.load(open(CACHE, "rb"))
+    tracks = split_tracks()
     cands = []
-    for p, tr in dev_unique_tracks():
+    for p, tr in tracks:
         key = (p.index, tr.number)
         if key not in data or not os.path.exists(tr.audio):
             continue
@@ -131,6 +153,17 @@ def iter_cells():
         picks = select_phrases(notes, np.asarray(d["midi"]), d["est_gt"][:, 0])
         for idx, j in picks[:CAP_PER_TRACK]:
             cands.append((key, idx, j))
+    return data, tracks, cands
+
+
+def iter_cells():
+    import soundfile as sf
+    from scipy.signal import resample_poly
+    from score_bundle.phase2.urmp import read_notes_annotation
+    from score_bundle.graph import build_adjacency
+    from score_bundle.score import Score
+
+    data, tracks, cands = candidates()
     rng = np.random.default_rng(0)
     order = rng.permutation(len(cands))[:N_CELLS]
     chosen = sorted(order.tolist())
@@ -138,8 +171,7 @@ def iter_cells():
     for gidx, ci in enumerate(chosen):
         key, idx, j = cands[ci]
         d = data[key]
-        tr = next(t for p, t in dev_unique_tracks()
-                  if (p.index, t.number) == key)
+        tr = next(t for p, t in tracks if (p.index, t.number) == key)
         if key not in cache:
             notes = read_notes_annotation(tr.notes)
             audio48, sr48 = sf.read(tr.audio)
@@ -169,6 +201,31 @@ def iter_cells():
                          recur=True, recur_dist=int(dist),
                          recur_dt=float(abs(onsets[q_near] - onsets[j])),
                          edge_w=float(A[j, q_near]), span=float(t[-1]))
+
+
+def stage_count():
+    """Fit-free: the candidate pool and the drawn cells of the side (the
+    registration states these numbers before any fit)."""
+    data, tracks, cands = candidates()
+    n = min(N_CELLS, len(cands))
+    rng = np.random.default_rng(0)
+    chosen = sorted(rng.permutation(len(cands))[:N_CELLS].tolist())
+    fam = {"strings": ("vn", "va", "vc", "db"), "winds": ("fl", "ob", "cl", "bn", "sax"),
+           "brass": ("tpt", "hn", "tbn", "tba")}
+    def famof(i):
+        return next(f for f, m in fam.items() if i in m)
+    inst = [data[cands[c][0]]["instrument"] for c in chosen]
+    print(f"side {'CONFIRMATION' if CONF else 'dev'}: {len(tracks)} unique tracks, "
+          f"{len({c[0] for c in cands})} with admissible cells, {len(cands)} candidates "
+          f"after the cap of {CAP_PER_TRACK} per track, {n} cells drawn (cap {N_CELLS})")
+    print("drawn cells by family: " + ", ".join(
+        f"{f} {sum(famof(i) == f for i in inst)}" for f in fam))
+    print("drawn cells by instrument: " + ", ".join(
+        f"{i} {inst.count(i)}" for i in sorted(set(inst))))
+    for g, c in enumerate(chosen):
+        key, idx, j = cands[c]
+        print(f"  cell {g}: track {key} notes {idx[0]}..{idx[-1]} hidden #{j} "
+              f"{data[key]['instrument']}")
 
 
 def stage_smoke():
@@ -239,9 +296,12 @@ def stage_report():
                 f"(better on {np.mean(d < 0):.0%}, n={d.size})")
 
     lines = [
-        "# The prior-value experiment at phrase scale: distant pitch recurrence "
-        "(protocol v2 + tuning scalar; DEV, exploratory, no claims)\n",
-        "\n6-10-note legato runs from all development tracks in which the hidden "
+        ("# The prior-value experiment at phrase scale on the URMP CONFIRMATION "
+         "tracks (registered one-shot, docs/phrase_prior_prereg_design.md; "
+         "third disclosed use of the pool, first at the waveform level)\n" if CONF else
+         "# The prior-value experiment at phrase scale: distant pitch recurrence "
+         "(protocol v2 + tuning scalar; DEV, exploratory, no claims)\n"),
+        f"\n6-10-note legato runs from all {'confirmation' if CONF else 'development'} tracks in which the hidden "
         "(middle) note's pitch\nrecurs at index distance >= 2 and not at distance 1; "
         "otherwise the machinery of\n`scripts/eval_prior_value_dev.py` unchanged "
         "(hidden note dropped from the design, free per-chain\ntuning scalar in every "
@@ -295,6 +355,8 @@ if __name__ == "__main__":
         stage_run(sys.argv[2])
     elif verb == "smoke":
         stage_smoke()
+    elif verb == "count":
+        stage_count()
     elif verb == "report":
         stage_report()
     else:
