@@ -1,0 +1,191 @@
+\chapter{Motif Structure in the Score Graph}\label{ch:motif}
+The attribution results of the previous chapters leave the score graph with
+a modest role. On both corpora its value is temporal smoothing over about
+two beats, and the pitch term adds nothing measurable
+(Chapter~\ref{ch:discussion}, Appendix~\ref{app:trackscale}). This chapter
+asks whether a different kind of score structure, one that the time window
+cannot see, carries expressive information: the repetition of a motif. A
+performer who shapes a motif at its first statement is expected to shape
+its returns in a related way, and a return that has not yet been heard
+should then be predictable from the statements that have. The chapter adds
+one edge family to the score graph from motif annotations, states what the
+family does to a hidden note, and evaluates it on Beethoven sonata
+movements under a masking scheme that hides whole occurrences. The
+development studies and a pre-specified evaluation on held-out performances
+follow the protocol of \S\ref{sec:hygiene}. The evaluation uses score
+features only, without the music model, since the question is one score
+structure against another on identical features.
+
+\section{An edge family from motif occurrences}\label{sec:motif-family}
+The BPS-motif annotations \cite{hsiao2023bpsmotif} mark, in all thirty-two
+first movements of the Beethoven piano sonatas, the occurrences of each
+movement's motifs: an occurrence $O_k$ is a set of notes with a span
+$[b_k^{\mathrm{start}}, b_k^{\mathrm{end}}]$ in beats and a type $q(k)$, and
+two occurrences of one type are returns of one motif. Returns differ in
+length and in note count, so there is in general no note-to-note map
+between them. The family therefore works in a coordinate that every
+occurrence shares, the relative position of a note inside its occurrence,
+\begin{equation}
+  u_i \;=\; \frac{b_i - b_k^{\mathrm{start}}}{\,b_k^{\mathrm{end}} - b_k^{\mathrm{start}}\,}
+  \;\in\; [0, 1], \qquad i \in O_k,
+  \label{eq:motif-u}
+\end{equation}
+and joins notes of two different occurrences of the same type by their
+closeness in that coordinate,
+\begin{equation}
+  \bigl(W_{\mathrm{motif}}\bigr)_{ij} \;=\;
+  \max_{k \neq l,\; q(k) = q(l)}\;
+  \mathbf 1[i \in O_k]\, \mathbf 1[j \in O_l]\;
+  \exp\!\Bigl(-\frac{(u_i - u_j)^2}{2\,\ell_u^2}\Bigr),
+  \qquad \bigl(W_{\mathrm{motif}}\bigr)_{ii} = 0 .
+  \label{eq:motif-adj}
+\end{equation}
+The length scale $\ell_u$ is fixed at a tenth of the span. Returns of equal
+length then receive one-to-one edges between corresponding notes, and
+returns of unequal length receive a soft block between the notes near the
+same relative position. Nothing is aligned and nothing inside the family is
+learned. A note that belongs to no occurrence, or whose type occurs only
+once in the excerpt, has no motif edge.
+
+The family enters the model of Chapter~\ref{ch:model} in two forms. In the
+\textbf{shared form} the adjacency \eqref{eq:adjacency} gains the family
+with one weight,
+\begin{equation}
+  W \;=\; W_{\mathrm{time}} + w_{\mathrm m}\, W_{\mathrm{motif}},
+  \qquad \Lg = D - W,
+  \qquad K_G(s) = U \diag\bigl(g(\nu; s)\bigr) U^{\top},
+  \label{eq:motif-shared}
+\end{equation}
+so that one graph kernel, built from the Laplacian of the combined
+adjacency, is shared by the three channels through the coregionalization
+matrix $B$ of \eqref{eq:gpfirst}, and $\log w_{\mathrm m}$ joins the
+hyperparameters fitted by the per-piece evidence. The evidence can drive
+$w_{\mathrm m}$ to zero, which recovers the time-only graph exactly. In the
+\textbf{per-channel form} the family is its own additive term with one
+scale per channel,
+\begin{equation}
+  K \;=\; B \otimes K_G(s) \;+\; \diag(c_{\mathrm m}) \otimes K_{\mathrm m}
+  \;+\; \sum_f \diag(c_f) \otimes X_f X_f^{\top}
+  \;+\; \diag(\varsigma^2) \otimes I,
+  \qquad K_{\mathrm m} = U_{\mathrm m} \diag\bigl(g(\nu_{\mathrm m}; 1)\bigr) U_{\mathrm m}^{\top},
+  \label{eq:motif-pc}
+\end{equation}
+where $(\nu_{\mathrm m}, U_{\mathrm m})$ is the eigendecomposition of the
+Laplacian of $W_{\mathrm{motif}}$ on the motif notes, $K_{\mathrm m}$ is zero
+on every other note, and $c_{\mathrm m} \in \R^{3}$ is learned by the
+evidence like the feature scales $c_f$. Since $K_{\mathrm m}$ factorizes as
+$X_{\mathrm m} X_{\mathrm m}^{\top}$ with
+$X_{\mathrm m} = U_{\mathrm m} \diag(g^{1/2})$, the per-channel form is a
+feature kernel of \eqref{eq:gpfirst} and needs no change to the model's
+inference. The two forms differ in what they let the evidence decide: the
+shared form ties the three channels to one motif weight through $B$, and
+the per-channel form lets a channel switch the family off on its own.
+
+\section{What a motif edge does to a hidden note}\label{sec:motif-conditional}
+For one channel with the additive kernel $g(\nu; s) = 1/(1 + s\nu)$ the
+prior is the Gaussian Markov random field with precision $I + s \Lg$, and
+the conditional of a hidden note $h$ given all others is explicit,
+\begin{equation}
+  \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{s \sum_{j} W_{hj}\, y_j}{1 + s\, d_h},
+  \qquad
+  \operatorname{Var}\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{1}{1 + s\, d_h},
+  \qquad d_h = \sum_j W_{hj} .
+  \label{eq:motif-cond}
+\end{equation}
+Splitting the degree into its two families,
+$d_h = d_h^{\mathrm{time}} + w_{\mathrm m} d_h^{\mathrm{motif}}$, writes the
+conditional mean as a mixture of two neighbourhood means,
+\begin{equation}
+  \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\;
+  \frac{s\, d_h^{\mathrm{time}}}{1 + s d_h}\;\overline{y}^{\,\mathrm{time}}_h
+  \;+\; \frac{s\, w_{\mathrm m}\, d_h^{\mathrm{motif}}}{1 + s d_h}\;\overline{y}^{\,\mathrm{motif}}_h ,
+  \label{eq:motif-mix}
+\end{equation}
+the mean of the temporal neighbours and the mean of the corresponding notes
+in the other occurrences, weighted by relative position. The full posterior
+of \eqref{eq:posterior} mixes the same two sources through $B$, the feature
+kernels and the noise. Two readable predictions follow. If performers shape
+a motif in a related way at each return, the motif mean is closer to the
+hidden value than the temporal mean, the evidence raises $w_{\mathrm m}$,
+the error falls and the predictive band tightens by the extra degree. If
+they do not, the motif mean is noise, the evidence drives $w_{\mathrm m}$ to
+zero and every motif arm coincides with the time-only graph. The second
+outcome is the family's own falsification route and needs no separate
+test.
+
+\section{Evaluation design}\label{sec:motif-design}
+The data are the ASAP first movements with an annotated counterpart. The
+annotation's note list is matched to the ASAP score by crotchet onset and
+pitch after a global offset search over the opening notes, and a movement
+is used when at least $85\%$ of its excerpt notes match. Twenty-five
+annotated movements have an ASAP score. Two of them sit in the piano
+held-out test set and are excluded, and two more fall below the matching
+threshold, which leaves twenty-one movements, each as the first $400$
+matched notes of one aligned performance, the thesis's excerpt convention.
+A note belongs to an occurrence when its onset lies in the occurrence's
+span and its annotated type is the occurrence's type. The arms are the
+time-only Gaussian graph, which the attribution studies single out, and the
+same graph with the motif family in one of its two forms, paired on
+identical masks and data. Every arm carries the score features with a
+per-piece bias column, the coregionalization matrix, the floored noise, the
+exact per-piece evidence and the predictive-variance floor of
+\eqref{eq:floor}.
+
+Two masking schemes are used. The random scheme is the thesis protocol,
+$40\%$ of notes hidden at random. The occurrence scheme hides whole
+occurrences: for every motif type with at least two occurrences, each
+occurrence is hidden with probability $0.4$, with at least one occurrence of
+the type left observed and at least one hidden, and every note outside a
+motif observed. The occurrence scheme is the application's case, a passage
+not yet played whose earlier statements have been heard, and it is where the
+family can act, since under the random scheme the two-beat time window
+already interpolates inside an occurrence. Scores are computed on the hidden
+motif notes whose type has another occurrence with an observed note, per
+channel, as the Gaussian log score and the root mean squared error, paired
+per piece with seeds averaged, with $95\%$ bootstrap intervals over pieces.
+The hypotheses were fixed before each run. The first study predicted a
+lower timing log score for the motif arm against the time-only graph on the
+hidden motif notes under the occurrence scheme, with the interval excluding
+zero, and a lower timing error. The second study predicted that the
+per-channel form keeps that gain and removes the velocity miscalibration
+of the shared form. The third study predicted that edges built from a
+model's predicted occurrences keep at least half of the annotated edges'
+gain on the same notes. The learned weights, the other channels, the random
+scheme and the pitch term were recorded without prediction.
+
+\section{Development results}\label{sec:motif-dev}
+
+\subsection{The shared form}\label{sec:motif-pilot1}
+With whole occurrences hidden, joining their notes to the observed returns
+of the same motif lowers the timing log score on those notes by $0.117$
+nats against the time-only graph, interval $[-0.245, -0.006]$, on
+twenty-one movements and two seeds. The pitch term of the thesis's graph
+gives $-0.014$ on the same notes, interval $[-0.046, +0.016]$. The timing
+error falls by $0.0026$~s, interval $[-0.0054, -0.0003]$, which is the gain
+the pitch term also gives, so on timing accuracy the motif edges do what
+the pitch term does and the extra is in calibration. The clearest gain is
+articulation accuracy, root mean squared error $0.637$ to $0.611$, a
+difference of $-0.033$ with interval $[-0.066, -0.007]$, with the log score
+moving the same way but with an interval covering zero. Velocity gets
+worse in calibration, log score $+0.069$, interval $[+0.005, +0.138]$, and
+the coverage of the $90\%$ band falls from $0.878$ to $0.823$: the motif
+edges tie the velocities of returns together more tightly than performers
+play them, and one weight shared by the three channels cannot loosen one
+channel alone. Under the random scheme the family is mostly invisible, as
+expected. The evidence treats the family as a switch per piece, as it
+treats the feature kernels: the learned weight falls below $0.1$ on eight
+movements and exceeds $2$ on six.
+
+\subsection{The per-channel form}\label{sec:motif-pilot2}
+% PENDING: pilot two (results/motif_pilot2_dev.md), four seeds.
+
+\subsection{Predicted occurrences}\label{sec:motif-stage2}
+% PENDING: stage two (results/motif_stage2_dev.md).
+
+\section{Held-out performances}\label{sec:motif-heldout}
+% PENDING: the pre-specified evaluation (results/motif_heldout_results.md).
+
+\section{What the result means}\label{sec:motif-meaning}
+% PENDING: written after the held-out evaluation.
+
+% =====================================================================
