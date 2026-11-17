@@ -6,8 +6,8 @@ is the title page). The note for each slide states what the slide says,
 defines every symbol on it, and gives an example. Written at the
 simplest level that is still complete.
 
-Coverage: every slide, 2 to 37 (the deck was cut from 56 to 37 pages
-on 2026-10-28, Ray's direction: findings only; the removed frames and
+Coverage: every slide, 2 to 42 (the motif section, slides 32 to 36, was added
+on 2026-11-18; the deck was cut from 56 to 37 pages on 2026-10-28, Ray's direction: findings only; the removed frames and
 their notes are in git history, commit 9fe8778). (`docs/zemi_prep.md` holds the older
 notes for the 28-slide zemi deck; its frame numbers do not match this
 deck.)
@@ -591,7 +591,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   halfway through the curve fit. In a real recording `ε` contains bow
   and breath noise, room reverberation, harmonics above the eighth,
   slight inharmonicity, and the mismatch between piecewise-constant
-  amplitudes and the true envelope. Caveat, said on slide 35: it is not
+  amplitudes and the true envelope. Caveat, said on slide 40: it is not
   white; the residual at the harmonics is strongly correlated across
   samples (0.944 measured), so the likelihood counts correlated samples
   as independent votes and is overconfident, which is why the
@@ -1024,7 +1024,183 @@ of the graph term." If asked whether the thesis should switch to the
 pitch-less graph: that is a change to a reported protocol and would need
 its own registration; it is the decision on the plan slide.
 
-## Slide 32. Summary
+## Slide 32. Divider: Motif structure
+
+
+Say: "The attribution left the graph with a modest role, a two-beat
+time window. This last section asks whether a structure the window
+cannot see, the repetition of a motif, carries anything of its own.
+Development studies first, then one pre-specified test."
+
+## Slide 33. Motif edges: the family, and what it does to a hidden note
+
+
+**What is on the slide.** The one new edge family, its two forms, and
+the closed-form effect of a motif edge on a hidden note.
+
+**Symbols.** `O_k`: the k-th annotated occurrence, a set of notes with
+a span in beats from `b_k^start` to `b_k^end` and a type `q(k)` (two
+occurrences of one type are returns of one motif). The annotations are
+BPS-motif, which covers all 32 Beethoven sonata first movements. `u_i`:
+the relative position of note `i` inside its occurrence, 0 at the start
+and 1 at the end, so returns of different length share one coordinate.
+`(W_motif)_ij`: a Gaussian in the difference of relative positions,
+taken over every pair of occurrences of the same type that contain `i`
+and `j` (the max over pairs, so a note that belongs to several
+occurrences keeps its strongest link). `ℓ_u = 0.1`: a tenth of the
+span, fixed. Equal-length returns give one-to-one edges, unequal ones a
+soft block, no alignment and nothing learned inside the family.
+
+**Two forms.** Shared: the thesis adjacency gains the family with one
+weight `w_m`, learned on the log scale by the per-piece evidence like
+every other hyperparameter, and shared by the three channels through
+the coregionalization matrix `B`. Per channel: the family is its own
+additive kernel term, `K_m` the shape-normalized kernel of the motif
+Laplacian on the motif notes (zero elsewhere), with one scale `c_m` per
+channel, so a channel can switch the family off on its own. Because
+`K_m` factorizes as `X_m X_m^T`, it is a feature kernel of the model
+and nothing in the inference changes.
+
+**The conditional.** In the single-channel GMRF with precision `I + sL`
+the mean of a hidden note is a weighted average of its neighbours and
+its variance is `1/(1 + s d_h)`, with `d_h` the weighted degree. Split
+the degree by family and the mean splits into the time-neighbour
+average and the motif-neighbour average, each weighted by its share of
+the degree. Example: a hidden note with a time degree of 2 and a motif
+degree of 1 at `w_m = 1`, `s = 1`, takes two thirds of its mean from
+the notes around it and one third from the returns, and its variance
+falls from `1/3` to `1/4` for the extra edge.
+
+**Two readings.** If performers shape a motif alike at each return,
+the motif average is closer to the truth than the time average, the
+evidence raises `w_m`, the error falls, and the band tightens by
+exactly the extra degree. If not, the motif average is noise, the
+evidence drives `w_m` to zero and the time-only graph returns exactly.
+That second route is the falsification: the study can come back empty.
+
+## Slide 34. Motif edges, development: whole occurrences hidden, 21 movements, 4 seeds
+
+
+**What is on the slide.** The two development studies in one table:
+the shared form and the per-channel form, each against the time-only
+graph on the hidden motif notes.
+
+**Setup.** 21 Beethoven first movements from ASAP aligned to the
+annotations (two more movements exist but are piano confirmation pieces
+and were never touched), 400-note excerpts, score features without the
+music model so that the contrast is one score structure against
+another on identical features, a per-piece intercept in every arm. The
+masking scheme hides whole occurrences while another occurrence of the
+same type stays observed, four seeds, 672 fits in all. Paired per
+movement, 95 percent percentile bootstrap, negative favours the motif
+arm.
+
+**The table.** Shared form: timing log score `−0.071` with the interval
+reaching `+0.097`, timing error `−0.0027` seconds with the interval
+excluding zero, articulation RMSE `−0.035` with the interval excluding
+zero, velocity log score `+0.033` with the interval reaching zero and
+coverage of the 90 percent band `0.835`, below nominal: one weight for
+three channels ties the velocities of returns together more tightly
+than performers play them. Per-channel form: timing nothing (`−0.005`),
+articulation `−0.019` with the interval excluding zero, velocity
+`−0.086` with the interval excluding zero and coverage `0.944`. So the
+per-channel form removes the velocity penalty and gives up the timing
+log-score gain.
+
+**The three bullets.** First: the first study, on two seeds, had a
+timing star of `−0.117`; seeds 0 and 1 reproduce it bit for bit, seeds
+2 and 3 give `−0.026` with a wide interval, so that star rested on two
+seeds and three movements. Second: the learned per-channel scales say
+where the family lives. On timing it is below `0.01` on 19 of 21
+movements, switched off, because the time-only graph is already well
+calibrated there. On articulation it exceeds `0.1` on 10 movements, on
+velocity it is kept on 7. Third: the one effect that holds on every
+pair of seeds and in both forms is articulation accuracy, and that is
+what the pre-specified test takes as its primary. Under random masking
+the time window already interpolates inside an observed occurrence and
+the family has little to act on.
+
+## Slide 35. Motif edges from a discovery model's predictions (development)
+
+
+**What is on the slide.** The same evaluation with the annotations
+replaced, as the edge source only, by the occurrences a motif-discovery
+model predicts on each movement held out from its training fold.
+
+**The model, in one pass.** Notes are vertices of a typed graph
+(simultaneity, temporal proximity, overlap). A pretrained encoder gives
+each note a vector `h_i`, relational graph convolutions update it. Two
+heads: `m_i`, the probability that note `i` belongs to any motif, and
+`â_ij`, an affinity on candidate pairs from the graph edges. Training
+is label propagation: the annotated occurrences seed a membership
+matrix `S`, memberships `M` diffuse along the learned affinities with
+restart weight `α`, and the losses act on `M` at the pair, occurrence
+and type levels. Decoding gates the affinity by the memberships,
+thresholds it (the quantile `0.86` is the model's headline operating
+point), takes connected components as occurrences and clusters their
+pooled states into types. Lalang and Yoshii, ISMIR 2026.
+
+**What changed and what did not.** Predicted occurrences are mapped to
+the excerpt by onset and pitch exactly as the annotations were, the
+span is the first to last matched onset, the type is the pattern index.
+The masks and the scored notes stay those of the annotated occurrences,
+identical to slide 34, so the only change is where the edges come from.
+Membership against the annotation: precision from `0.12` to `1.00`,
+recall from `0.44` to `0.99`, F1 median `0.78`; on two movements the
+model predicts several times the annotated number of motif notes.
+
+**The table.** Shared form, predicted edges: timing log score `−0.034`,
+`0.48` of the annotated `−0.071`, with the interval reaching `+0.003`;
+articulation RMSE `−0.0135`, four tenths of `−0.035`, interval reaching
+`+0.003`; velocity coverage `0.865`. The two edge sources act on the
+same movements: per-movement effects correlate at `0.59` on timing and
+`0.86` on articulation, and 15 of 21 movements lie below zero for both.
+The prediction fixed before the run was half the effect with an
+interval clear of zero. It is not met, by a small margin on both
+counts, and the slide says so. The honest sentence: a model's
+occurrences on a score without annotations give about half the effect
+at this size.
+
+## Slide 36. The pre-specified test: held-out performances of the same movements
+
+
+**What is on the slide.** The registration of the one motif claim that
+will be tested, before it is run, and the power behind it.
+
+**The pool.** For each of the 21 development movements, the other
+aligned ASAP performances, at most four per movement in sorted order,
+none read by any run so far. 18 movements have at least one (three have
+none and drop out), 58 performances in all. Everything else is the
+development study's: scores, annotations, masks, edges, the cell
+list. Only the performances, which supply the targets, are new. So the
+test asks whether the development finding holds across performers of
+the same pieces, not across pieces, and the thesis labels it that way
+wherever it appears. The unit of analysis is the movement, with
+performances averaged inside it before pairing, so no movement counts
+four times.
+
+**The claims.** M1, the primary and the only gate: articulation RMSE on
+the hidden motif notes, shared form against the time-only graph,
+negative with the 95 percent interval excluding zero. M2, secondary and
+non-gating: the timing log score by the same rule. M3, report only:
+velocity log score and coverage, timing RMSE, the per-channel form
+running beside the shared one, and the random scheme. The arm is the
+shared form because its power is the higher of the two (`0.95` against
+`0.93`) and its articulation effect the larger and more even across
+movements.
+
+**The power table.** By subsampling 18 of the 21 development movements
+many times and asking how often the interval clears zero: articulation
+RMSE `0.95` at the measured effect and `0.51` at two thirds of it;
+timing log score `0.33` at the measured effect and below `0.2` at two
+thirds. So M1 is the well-powered claim and M2 is included because it
+was the first study's hypothesis, with its weak power stated.
+
+**Timing.** Frozen and tagged on 20 November, run once on 23 November
+with a guarded runner that refuses a second run, every number reported
+whatever the outcome. The result goes on this slide verbatim.
+
+## Slide 37. Summary
 
 
 Four sentences, say them exactly. Piano: beats the two-stage baseline
@@ -1034,39 +1210,46 @@ estimated channels, confirmed once. Audio: the method is in place and
 running at development level, the score prior measured inside it at
 three spans, no claims. What the graph does: its value is smoothing in
 score time over about two beats, on both corpora; pitch proximity adds
-nothing measurable, a development finding.
+nothing measurable, a development finding. Fifth, new: motif structure,
+one edge family outside the time window. On development it improves
+articulation accuracy on hidden returns in both of its forms, the
+evidence switches it off on timing, and a discovery model's predicted
+occurrences give about half the effect. Its one pre-specified test on
+held-out performances runs on 23 November.
 
-## Slide 33. Plan
+## Slide 38. Plan
 
 
-October, done: curve studies at scale, the curve as a bundle channel,
-joint boundaries, the three spans of slide 30, the attribution of slide 31. Decided on 23 October, with the professor hands-off: the
-attribution is stated in the thesis as a development finding; the
-headline models keep their score graph, because a pitch-less default
-would be a change to a reported protocol needing its own registration;
-the four-layer framing of slide 3 is adopted; the writing freeze starts
-now rather than in January. Run once on 27 October, rules frozen that
-morning: two one-shots on the 13-piece strings-and-winds confirmation
-pool, re-used with full disclosure (it was spent on the four original
-claims; the two new claims were developed on the development split
-only). First, correlated timing noise: an AR(1) block in the timing
-channel's noise, which answers the one registered claim that failed.
-It passed, calibration `−0.121` and recovery `−0.011` seconds, both
-intervals excluding zero. Second, the tonal pitch metric for the
-intonation channel's graph: its calibration primary missed, `−0.023`
-with the interval reaching zero; its recovery claim held, `−0.312`
-cents. Both are in the thesis verbatim; slide 20 has the table. The
-audit of every number against its record is done (three sentences
-corrected); the review pass remains. After: the transient model at the
-joints and the whole-performance joint loop are Future Work; the
-progress talk in January uses this deck; submission on 2 February.
+Six rows, read top down. October, done: the curve studies, the bundle
+channel, joint boundaries, the three spans of slide 30, the attribution
+of slide 31; decided on 23 October with the professor hands-off: the
+attribution is stated as a development finding, the headline models
+keep their score graph (a pitch-less default would change a reported
+protocol and need its own registration), writing freeze. Run once on
+27 October: the two one-shots of slide 20 on the disclosed re-used
+strings-and-winds pool, correlated timing noise passed (`−0.121`
+calibration, `−0.011` seconds recovery, both intervals excluding zero),
+the tonal metric missed its calibration primary (`−0.023`, interval
+reaching zero) and kept its recovery gain (`−0.312` cents). November,
+done: the motif family's two development studies and the
+predicted-occurrence study, slides 34 and 35, and the thesis chapter
+with its framing. Registered on 18 November: the phrase-scale waveform
+claim, the weak form of slide 30 (graph beats temporal on the hidden
+note), as one shot on the same re-used pool at the waveform level, its
+third use, disclosed; power only 0.3 to 0.5, run anyway so the chapter
+has a held-out answer; run the same day, verdict on slide 30. Registered
+on 20 November: the motif test of slide 36, run once on 23 November.
+Then: the lab seminar on 3 December with the results closed, December
+for writing only, no new experiments, the progress talk on 7 January
+from this deck, submission on 2 February. The transient model at the
+joints and the whole-performance joint loop stay Future Work.
 
-## Slide 34. Divider: Backup
+## Slide 39. Divider: Backup
 
 
 Shown only if asked.
 
-## Slide 35. Backup: the curve from the waveform, three notes
+## Slide 40. Backup: the curve from the waveform, three notes
 
 
 Three development notes: violin, cello, clarinet. Blue: the curve from
@@ -1083,7 +1266,7 @@ measurement chain, off by 2 to 4 cents, so the band does not and should
 not cover them. That gap is carried separately as a calibrated floor
 wherever the curve is used downstream.
 
-## Slide 36. Backup: the three spans, paired
+## Slide 41. Backup: the three spans, paired
 
 
 Three panels, one per test. Each row: the mean paired difference in the
@@ -1101,7 +1284,7 @@ Third bullet, the positive content: the common offset alone, which
 every prior gets through `s`, is worth about 7 cents on intonation and
 10 to 14 ms on boundaries against the no-transfer references.
 
-## Slide 37. Backup: the three priors at track scale (strings and winds)
+## Slide 42. Backup: the three priors at track scale (strings and winds)
 
 
 **What is on the slide.** The track-scale version of the three-prior

@@ -308,7 +308,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   table bodies unchanged. Pre-makeover text = tag `thesis-pre-makeover-2026-10-28`.
   80 pp after the makeover (prose expanded; no content added or cut). Any future
   thesis edit follows the style guide and is run through the checker.
-- **Thesis state (2026-11-17, main=9735cf3+): 84 pp with the motif chapter input (80 after the makeover of 2026-10-28), compile clean** (cut from 83 on
+- **Thesis state (2026-11-18, main=6baf314+): 87 pp with the motif chapter and its framing in the abstract, intro, discussion, future work and conclusion (80 after the makeover of 2026-10-28), compile clean** (cut from 83 on
   2026-10-28, Ray: "subtract the irrelevant and obsolete": two-stage-era kernel table,
   per-channel ablation table and fitted filters, lineage B.2-B.5, synthetic pilot,
   leakage appendix folded into §5.4, era/performer-ID downstream tasks and the Vienna
@@ -320,9 +320,12 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   representation with uncertainty; method = Bayesian score-conditioned inverse
   synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
   ladder; three-question RQ hierarchy. `docs/slides/deck.tex` is the one full
-  thesis deck (37 pages since the 2026-10-28 cut, Ray: findings only; main line to 33,
-  backup 35-37; the week's three spans and the time-window attribution are main-line
-  slides 30-31; the two re-used-pool one-shots are main-line slide 20; **every deck.tex change must be
+  thesis deck (42 pages since 2026-11-18: the 2026-10-28 cut to 37, Ray: findings only,
+  plus the motif section, divider 32 and main-line slides 33-36 = family and conditional,
+  development table, predicted occurrences, the pre-specified test; Summary 37, Plan 38,
+  backup 40-42; the three spans and the time-window attribution are main-line slides
+  30-31; the two re-used-pool one-shots are main-line slide 20; Ray cuts the zemi
+  version himself; **every deck.tex change must be
   followed by a change to `docs/slides/speaker_notes.md`, same commit — Ray's
   standing rule 2026-10-21**). `docs/meeting_qa_prep.md` = the 2026-10-14
   direction-and-scope brief (asks A–H); `docs/ROADMAP.md` carries NOW/NEXT.
