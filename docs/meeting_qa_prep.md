@@ -13,11 +13,24 @@
 ## Run order for 2026-11-18 (written 2026-11-17, Ray back from a week at a conference)
 
 Before the room: sync Overleaf with the whole `docs/thesis/` directory
-(unchanged since 10-28, 80 pages); open `docs/slides/proposal_endgoal.pdf`
-(12 pages, internal) and `docs/ROADMAP.md` (the calendar table).
+(87 pages as of the morning of 11-18, the motif chapter and its framing
+in); open `docs/slides/proposal_endgoal.pdf` (13 pages, internal),
+`docs/slides/deck.pdf` (42 pages, the motif section is slides 32 to 36)
+and `docs/ROADMAP.md` (the calendar table).
 
-1. **Where things stand, 60 s, no slide.** Thesis 80 pages, every
-   confirmation pool spent, the main study complete; one week lost to
+Morning of 11-18, before the meeting (done): the phrase-scale waveform
+claim was frozen and tagged (`phrase-prior-registration-2026-11-18`,
+pushed) and the one-shot launched at 04:47 on 12 shards (about 4 h),
+so its verdict may be on the table at the meeting; if the run is not
+done, say "registered this morning, running, verdict today, reported
+verbatim". The thesis framing (abstract, intro, discussion, future
+work, conclusion) and the deck's motif section were written the same
+morning, verdict-free, so the writing week has only the held-out
+sentences left.
+
+1. **Where things stand, 60 s, no slide.** Thesis 87 pages, every
+   confirmation pool spent, the main study complete, the motif chapter
+   drafted with two sections pending the held-out run; one week lost to
    the conference; the zemi on 12-03 is the point where the results are
    done, December is writing.
 2. **The proof of concept promised on 10-28, about 8 min** (frame 10
@@ -44,12 +57,15 @@ Before the room: sync Overleaf with the whole `docs/thesis/` directory
    not met by a small margin.
 3. **The calendar to 12-03, one table** (ROADMAP): pilot two (done),
    stage two done (11-17), two
-   registrations announced before they run (the waveform phrase-scale
-   claim on the URMP confirmation tracks, launched 11-19; the motif
-   claim on untouched performances of the same 21 pieces, run 11-23),
-   the thesis chapter and deck by 11-30, nothing new after December.
-   Say the power check plainly: the waveform one-shot has 0.6 to 0.7
-   at best on a brass-heavy pool, and its verdict is reported verbatim.
+   registrations (the waveform phrase-scale claim on the URMP
+   confirmation tracks, frozen and launched the morning of 11-18, verdict
+   the same day; the motif claim on untouched performances of the same
+   21 pieces, frozen 11-20, run 11-23), the thesis chapter and deck
+   already carrying everything but the two verdicts, nothing new after
+   December. Say the power check plainly: the waveform one-shot has 0.3
+   to 0.5 on the drawn cells (strings 14, winds 25, brass 9 of 48), and
+   its verdict is reported verbatim. Confirm the motif arm: the shared
+   weight (power 0.95 against 0.93 for the per-channel form).
 4. **The asks:** (a) the zemi slot's length and language on 12-03;
    (b) whether he will read the draft before the January talk, and by
    when; (c) the progress-talk date.
