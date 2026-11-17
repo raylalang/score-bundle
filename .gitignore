@@ -70,3 +70,7 @@ data/
 /results/motif_stage2/*
 !/results/motif_stage2/*.md
 !/results/motif_stage2/*.json
+!/results/motif_heldout/
+/results/motif_heldout/*
+!/results/motif_heldout/*.md
+!/results/motif_heldout/*.json

@@ -130,6 +130,12 @@ MAX_NOTES = 400
 ELL_U = 0.1
 S_M = 1.0                             # fixed shape of the per-channel motif block
 PRED = {"root": None, "q": None}      # stage two: --pred-root / --pred-q
+PERF = {"source": "first", "cap": 4}  # --perf-source first|heldout, --max-perf
+# HELD-OUT PERFORMANCES (the registered one-shot, docs/motif_prereg_design.md):
+# every aligned performance of a piece EXCEPT the first (the development one),
+# capped at PERF["cap"] in sorted order; unit of analysis = the piece (group).
+# Refused without MOTIF_HELDOUT_I_AM_SURE=yes; run ONCE by
+# scripts/run_motif_heldout.sh, which also refuses once its results exist.
 EXCLUDE = {"3-1", "24-1"}   # piano confirmation set (positions 30-49 of the shuffle)
 CHANNELS = ["tau", "log r", "v"]
 
@@ -164,18 +170,41 @@ def bps_annotation(name):
     return onset, pitch, ntype, occ
 
 
-def load_excerpt(folder, max_notes=MAX_NOTES):
-    """First aligned performance of the folder -> (score_m, y, crotchet onsets)."""
+def aligned_performances(folder, ann=None):
+    """Sorted aligned performances of an ASAP folder (the pilot used the first)."""
+    from score_bundle import features
+    if ann is None:
+        ann = features.load_asap_annotations(ASAP)
+    return sorted(p for p in ann if p.startswith(f"Beethoven/Piano_Sonatas/{folder}/")
+                  and ann[p].get("score_and_performance_aligned"))
+
+
+def performances_for(folder, ann=None):
+    """The performances this run uses for a folder: the first (development),
+    or the held-out ones (all but the first, capped) under the consent variable."""
+    perfs = aligned_performances(folder, ann)
+    if PERF["source"] == "first":
+        return perfs[:1]
+    if os.environ.get("MOTIF_HELDOUT_I_AM_SURE") != "yes":
+        raise SystemExit("REFUSED: --perf-source heldout reads the registered held-out "
+                         "performances (docs/motif_prereg_design.md); run it once through "
+                         "scripts/run_motif_heldout.sh with MOTIF_HELDOUT_I_AM_SURE=yes.")
+    return perfs[1:1 + PERF["cap"]]
+
+
+def load_excerpt(folder, max_notes=MAX_NOTES, perf=None):
+    """One aligned performance of the folder (the first unless given)
+    -> (perf, score_m, y, crotchet onsets)."""
     from score_bundle import features
     from score_bundle.score import Score
     import pretty_midi
     warnings.filterwarnings("ignore")
     ann = features.load_asap_annotations(ASAP)
-    perfs = sorted(p for p in ann if p.startswith(f"Beethoven/Piano_Sonatas/{folder}/")
-                   and ann[p].get("score_and_performance_aligned"))
-    if not perfs:
-        return None
-    perf = perfs[0]
+    if perf is None:
+        perfs = aligned_performances(folder, ann)
+        if not perfs:
+            return None
+        perf = perfs[0]
     score, obs = features.load_asap(perf, ASAP, annotations=ann)
     # crotchet onsets of the score notes from the score MIDI ticks (unit-free)
     pm = pretty_midi.PrettyMIDI(f"{ASAP}/{os.path.dirname(perf)}/midi_score.mid")
@@ -295,8 +324,15 @@ def parse_arm(arm):
 
 def build_pieces():
     rows, pieces = [], []
+    jobs = []
     for folder, name in asap_first_movements():
-        got = load_excerpt(folder)
+        perfs = performances_for(folder)
+        if not perfs:
+            rows.append((folder, name, "no aligned performance" if PERF["source"] == "first"
+                         else "no held-out performance")); continue
+        jobs += [(folder, name, perf) for perf in perfs]
+    for folder, name, perf in jobs:
+        got = load_excerpt(folder, perf=perf)
         if got is None:
             rows.append((folder, name, "no aligned performance")); continue
         perf, score_m, y, q = got
@@ -313,14 +349,15 @@ def build_pieces():
             if len(v) >= 2:
                 for o in v:
                     motif_notes[o["notes"]] = True
-        rows.append((folder, name, f"{len(q)} notes, matched {frac:.2f}, offset {off:+.2f}, "
+        label = folder if PERF["source"] == "first" else f"{folder} / {os.path.basename(perf)}"
+        rows.append((label, name, f"{len(q)} notes, matched {frac:.2f}, offset {off:+.2f}, "
                      f"{len(occs)} occurrences ({n_rep} of repeated types, "
                      f"{len([t for t,v in types.items() if len(v)>=2])} types), "
                      f"{int(motif_notes.sum())} motif notes"))
         if frac < 0.85 or n_rep < 2:
             rows[-1] = rows[-1][:2] + (rows[-1][2] + "  -> EXCLUDED",)
             continue
-        piece = {"folder": folder, "bps": name, "performance": perf,
+        piece = {"folder": label, "group": folder, "bps": name, "performance": perf,
                  "pitch": score_m.pitch, "onset": score_m.onset,
                  "duration": score_m.duration, "voice": score_m.voice,
                  "y": np.asarray(y), "q": q, "occs": occs, "offset": off,
@@ -486,7 +523,7 @@ def stage_report(args):
             lines.append(f"\n## scheme = {sc}, hidden notes = {subset}\n")
             lines.append("| arm | channel | NLL | RMSE | cov@0.90 | dNLL vs time [95% CI] | dRMSE vs time [95% CI] | n pieces |")
             lines.append("|---|---|---|---|---|---|---|---|")
-            per = {}  # (arm, ch) -> per-piece (nll, mse) averaged over seeds
+            per = {}  # (arm, ch) -> per-piece (nll, mse) averaged over seeds, then performances
             for arm in ARMS:
                 for c in range(3):
                     vals = []
@@ -508,8 +545,13 @@ def stage_report(args):
                             cv.append(float(np.mean(np.abs(z) < 1.6449)))
                             ns.append(int(sel.sum()))
                         if nl:
-                            vals.append((pi, np.mean(nl), np.mean(ms), np.mean(cv), np.sum(ns)))
-                    per[(arm, c)] = {v[0]: v[1:] for v in vals}
+                            vals.append((pieces[pi].get("group", pieces[pi]["folder"]),
+                                         np.mean(nl), np.mean(ms), np.mean(cv), np.sum(ns)))
+                    grouped = {}
+                    for g, *v in vals:
+                        grouped.setdefault(g, []).append(v)
+                    per[(arm, c)] = {g: tuple(np.mean(np.array(v)[:, :3], axis=0)) + (int(np.sum(np.array(v)[:, 3])),)
+                                     for g, v in grouped.items()}
             for arm in ARMS:
                 for c in range(3):
                     d = per[(arm, c)]; d0 = per[("time", c)]
@@ -602,7 +644,10 @@ def main():
     ap.add_argument("--occ-source", choices=["annot", "pred"], default="annot")
     ap.add_argument("--pred-root", default="/home/ray/Research/ISMIR/graph-motif-discovery/runs/camera_ready_sweep")
     ap.add_argument("--pred-q", default=None, help="sweep quantile dir suffix, e.g. 80")
+    ap.add_argument("--perf-source", choices=["first", "heldout"], default="first")
+    ap.add_argument("--max-perf", type=int, default=4)
     args = ap.parse_args()
+    PERF["source"], PERF["cap"] = args.perf_source, args.max_perf
     OUT, SEEDS = args.out, args.seeds
     ARMS = [a for a in args.arms.split(",") if a]
     SCHEMES = [a for a in args.schemes.split(",") if a]
