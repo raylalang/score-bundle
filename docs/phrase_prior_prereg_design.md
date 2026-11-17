@@ -1,8 +1,8 @@
-# Phrase-scale prior-value one-shot on the URMP confirmation tracks — REGISTRATION DRAFT (2026-11-17)
+# Phrase-scale prior-value one-shot on the URMP confirmation tracks — REGISTERED (2026-11-18)
 
-> **Status: DRAFT, written 2026-11-17 after Ray's decision to register and
-> run (AskUserQuestion, 2026-11-17: "Register and run anyway", with the
-> power check below in view). It becomes REGISTERED at the commit that
+> **Status: REGISTERED 2026-11-18 (drafted 2026-11-17 after Ray's decision
+> to register and run; AskUserQuestion, 2026-11-17: "Register and run
+> anyway", with the power check below in view). Frozen at the commit that
 > carries the tag `phrase-prior-registration-2026-11-18`, which freezes
 > the claim, the decision rule, the cells, the inputs and the exact
 > commands BEFORE the run. The run is one deliberate act, performed ONCE
@@ -167,6 +167,11 @@ under `evidence/phrase_prior_confirmation/` in the same commit.
 - [x] Guarded one-shot runner (`scripts/run_phrase_prior_confirmation.sh`)
       with the refusal test `tests/test_phrase_prior_guard.py`; the
       development path reproduces its 48 cells bit-exactly
-- [ ] Claims W1–W3, the decision rule and this protocol frozen in the
+- [x] Claims W1–W3, the decision rule and this protocol frozen in the
       registration commit; tag `phrase-prior-registration-2026-11-18`
+      (2026-11-18). The curve prior file `.cache/phase3_prior_fit.json`
+      is not tracked by git, so a copy is archived at
+      `evidence/phrase_prior_registration/phase3_prior_fit.json` in the
+      same commit (md5 `d6e41db36d86031c4a1151f90cc242e6`) and the runner
+      checks the live file against that md5 before any fit
 - [ ] Run once; evidence archived; verdict scored by the frozen rule

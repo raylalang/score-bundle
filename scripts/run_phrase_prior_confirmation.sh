@@ -56,6 +56,8 @@ ARCH=evidence/phase2_confirmation/urmp_targets_conf_inputs.pkl
 MD5=6a44d902589a1a0369f551cea1b991a9
 if [ ! -e .cache/urmp_targets_conf.pkl ]; then cp "$ARCH" .cache/urmp_targets_conf.pkl; fi
 echo "$MD5  .cache/urmp_targets_conf.pkl" | md5sum -c - || { echo "REFUSED: input cache md5 mismatch"; exit 1; }
+PRIOR_MD5=d6e41db36d86031c4a1151f90cc242e6   # evidence/phrase_prior_registration/phase3_prior_fit.json
+echo "$PRIOR_MD5  .cache/phase3_prior_fit.json" | md5sum -c - || { echo "REFUSED: curve prior file differs from the registered copy"; exit 1; }
 
 mkdir -p logs "$CELLS"
 rm -f "$CELLS"/${PREFIX:-priorval_phrase_conf}.shard*.pkl
