@@ -105,6 +105,27 @@ under the prior. The evaluation design changes with it. With no per-note
 observations there is no visible/hidden split, and the natural protocol is
 held-out pieces with posterior-predictive resynthesis.
 
+\section{Motif structure: the next steps}\label{sec:future-motif}
+Chapter~\ref{ch:motif} stops at one composer, one performance per movement
+in development, and hand-made annotations. Three steps follow from its
+results. The first is a model across performers: the held-out evaluation
+treats further performances of a movement as further draws of the same
+targets, and a performer-level term, shared across the movements one
+performer plays, would turn that into a model of how a performer shapes a
+motif. The second is the discovery model as the only source of
+occurrences, on scores without annotations and on other composers, since
+the predicted edges keep about half of the annotated effect on the
+Beethoven movements and the question is whether that fraction holds where
+no annotation exists to compare against. The third is the form of the
+family. The present family is undirected and joins every pair of returns
+alike. A directed form, in which earlier statements inform later ones but
+not the reverse, matches how a listener hears a return, and the width
+$\ell_u$ of the relative-position kernel, fixed in this thesis, could be
+learned by the same evidence that learns the weight. The family also
+transfers without change to the strings-and-winds bundle, where the
+returns of a motif may share intonation and vibrato as well as timing and
+articulation.
+
 \section{Incorporating music theory}\label{sec:musictheory}
 Music theory can inform the model in two places, the graph or kernel and
 the prior mean, which is equivalently the feature kernels. The two routes
@@ -145,6 +166,8 @@ distance are alternatives to \eqref{eq:fifths} that have not been tried.
 Fourteen music-theoretic score columns, covering local key, metrical weight,
 dissonance, phrase salience, motif repetition and tessitura, change nothing
 on any channel at any masking level, with no paired interval excluding zero.
+(Motif repetition as an edge family, rather than as a column, is the graph
+route's counterpart and is evaluated in Chapter~\ref{ch:motif}.)
 A linear and random-features probe of the embeddings rules out the obvious
 explanation, that the columns duplicate what the music model already
 encodes. The embeddings encode voicing, rhythm and register but \emph{not}

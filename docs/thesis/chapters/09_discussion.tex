@@ -31,6 +31,15 @@ variance is note-local. Articulation is comparatively idiosyncratic. On
 those two channels the music model's additional information therefore has
 the least to add.
 
+The motif edges of Chapter~\ref{ch:motif} are the one score structure in
+this thesis whose value lies outside the two-beat time window. Where the
+time-only graph is already well calibrated, on timing, the evidence
+switches the family off, and it keeps the family on articulation, the
+channel on which the hand-built features and the music model have least
+to say. Returns of a motif inform each other on how the notes are
+detached and held, and that is a kind of information no local window can
+reach.
+
 \section{Limitations}
 Two results are supported on held-out test sets that were evaluated once
 against hypotheses fixed in advance (\S\ref{sec:hygiene}): the symbolic
@@ -60,6 +69,15 @@ coupling that makes the graph a score graph. The results supported on the
 held-out test sets stand as comparisons of the full model with its
 alternatives, but their attribution is narrower than the model's name
 suggests.
+
+The motif study is a development result on twenty-one movements of one
+composer with hand-made annotations, and its one pre-specified evaluation
+uses further performances of the same movements rather than new pieces
+(\S\ref{sec:motif-heldout}), so it tests generalisation across performers
+and not across repertoire. Its effect is confined to one channel,
+articulation. The timing effect of the first development study did not
+hold on more seeds, and edges from a discovery model keep about half of
+the effect with intervals that cover zero at this size.
 
 The remaining limitations concern the data and the model's form. The piano
 targets depend on the quality of a single corpus's

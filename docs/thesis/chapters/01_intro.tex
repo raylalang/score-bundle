@@ -111,6 +111,10 @@ worse than the score graph, but the same graph with its pitch term removed
 and its two-beat time window kept matches it
 (Appendix~\ref{app:trackscale}), so the structure that the test-set results
 reward is smoothness in score time rather than pitch proximity.
+Chapter~\ref{ch:motif} then asks whether a structure that the time window
+cannot see, the repetition of a motif, carries expressive information of
+its own, and answers on the development set and in one pre-specified
+evaluation on held-out performances.
 
 \section{The proposed model and the two-stage pipeline}\label{sec:twostage}
 Two names recur throughout the thesis. \textbf{The proposed model} is the
@@ -184,6 +188,19 @@ Chapter~\ref{ch:phase2} bundle. A geometric ``connection-Laplacian''
 generalisation of the graph prior likewise remains future work
 (Chapter~\ref{ch:future}).
 
+The last study of the thesis (Chapter~\ref{ch:motif}) follows from the
+attribution. If the graph's value is temporal smoothing, the open question
+is whether any score structure outside the time window carries expressive
+information. One further edge family, built from motif annotations and
+joining the notes of a motif's returns by their relative position inside
+the occurrence, is added to the graph and evaluated under a masking scheme
+that hides whole occurrences. On the development set the family lowers the
+articulation error of the hidden notes with an interval excluding zero in
+both of its forms, the evidence switches it off on timing, and edges built
+from the predictions of a motif-discovery model keep about half of the
+effect. Its one pre-specified evaluation, on further performances of the
+same movements, is reported in \S\ref{sec:motif-heldout}.
+
 \section{Scope and non-goals}\label{sec:scope}
 The core result is scoped to piano and to symbolic performance variables
 read from MIDI, namely onset timing $\tau$, articulation $\log r$ and
@@ -228,6 +245,8 @@ strings and winds (stage 2): measurement uncertainty & Intonation, vibrato, loud
 $f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & Evaluated on a held-out test set (URMP): intonation recovery, vibrato calibration and coverage supported, the secondary timing hypothesis not supported (Chapter~\ref{ch:phase2}) \\
 waveform (stage 3): the endpoint & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Development studies: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); no held-out evaluation yet \\
+motif edges: structure outside the time window & Motif repetition in the score graph (Beethoven sonata movements, annotated and predicted occurrences) &
+One further edge family $W_{\mathrm{motif}}$, in a shared and a per-channel form & Development studies and one pre-specified evaluation on held-out performances of the same movements (Chapter~\ref{ch:motif}) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -242,8 +261,11 @@ Chapter~\ref{ch:results} reports the piano result and the methodological
 findings, and Chapter~\ref{ch:downstream} maps the downstream reach.
 Chapter~\ref{ch:phase2} carries the same prior, unchanged, to real
 recordings and reports the strings-and-winds results on the held-out test
-set. Chapters~\ref{ch:discussion}--\ref{ch:conclusion} discuss, situate and
-conclude. The appendices hold the notation summary (\ref{app:notation}),
+set. Chapter~\ref{ch:phase3} takes the waveform itself as the observation
+and reports the development studies of that setting, and
+Chapter~\ref{ch:motif} adds motif structure to the score graph and
+evaluates it. Chapters~\ref{ch:discussion}--\ref{ch:conclusion} discuss,
+situate and conclude. The appendices hold the notation summary (\ref{app:notation}),
 the per-channel form of the two-stage lineage (\ref{app:lineage}), the
 relocated piano and strings-and-winds development studies
 (\ref{app:phase1dev}, \ref{app:phase2dev}) and the calibration profile
