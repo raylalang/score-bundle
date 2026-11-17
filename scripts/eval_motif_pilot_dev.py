@@ -59,6 +59,54 @@ Hypotheses, stated before the run (2026-11-04):
     PYTHONPATH=src:scripts python scripts/eval_motif_pilot_dev.py --stage align
     PYTHONPATH=src:scripts python scripts/eval_motif_pilot_dev.py --stage run --shard 0/12
     PYTHONPATH=src:scripts python scripts/eval_motif_pilot_dev.py --stage report
+
+PILOT TWO (2026-11-17, DEVELOPMENT ONLY): the per-channel motif weight.  Pilot
+one learned ONE weight w_m inside the adjacency, shared by the three channels
+through B (x) K_G, and the velocity bands narrowed too far (+0.069 nats, coverage
+0.878 -> 0.823).  The `_pc` arms let the family enter as its own diagonal
+coregionalization block through the feature-kernel path of MultiOutputGraphGP:
+
+    K_m = U_m diag(g(nu_m; s_m)) U_m^T,  g = 1/(1 + s_m nu), s_m = 1 fixed,
+    from the Laplacian of W_motif on the motif notes (zero elsewhere),
+    X_m = U_m diag(sqrt g)  passed as one more feature block, so the evidence
+    learns one scale c_m[channel] per channel (n_graph = 0, no eigh per step).
+
+Arms: time, time_motif (pilot one's shared weight), time_motif_pc,
+time_pitch_motif_pc; both masking schemes; FOUR seeds (0-3; seeds 0-1 are the
+pilot-one masks, bit-identical).  Output results/motif_pilot2/.
+  H2  (primary) on MOTIF hidden notes under the occ scheme, time_motif_pc keeps
+      the timing log-score gain of pilot one against time (paired 95% interval
+      below 0) AND removes the velocity penalty: the velocity dNLL interval
+      covers or lies below 0 and velocity coverage is >= 0.87.
+  Falsification: the timing gain lost => the family's value came from the
+      shared coupling, not from the edges; the velocity penalty kept => the
+      penalty is not the shared weight; reported as such either way.
+  Report-only: c_m per channel per piece; the pitch arm; the random scheme;
+      the pilot-one arm on four seeds (seed stability).
+
+STAGE TWO (2026-11-17/18, DEVELOPMENT ONLY): predicted occurrences.  The edge
+family is built from the ISMIR 2026 model's held-out (cross-validated)
+predictions instead of the annotations (`--occ-source pred --pred-root DIR
+--pred-q Q`: DIR/sweep_qQ/fold*/motifs/NN-1.json, occurrence = a list of
+(crotchet onset, pitch) notes, type = pattern index).  A predicted occurrence
+is mapped to the excerpt by the same (onset, pitch) key after the piece's
+annotation offset; its span is [min onset, max onset] of the matched notes.
+MASKS AND THE SCORING SET STAY ON THE ANNOTATED OCCURRENCES (identical cells to
+pilots one and two), so the only change is the edge source.  Arms:
+time_motif_pred, time_motif_pc_pred (and the pitch variants).
+  H3  on MOTIF hidden notes under the occ scheme, time_motif_pc_pred has a
+      timing log-score gain against time whose point estimate is at least half
+      of the annotated arm's on the same cells.
+  Falsification: the interval covers 0 => the predictions do not carry the
+      annotated edges' value at excerpt scale; reported as such.
+  Report-only: note-level precision/recall of predicted vs annotated motif
+      membership per piece.
+
+    PYTHONPATH=src:scripts python scripts/eval_motif_pilot_dev.py --stage align \
+        --out results/motif_pilot2
+    PYTHONPATH=src:scripts python scripts/eval_motif_pilot_dev.py --stage run \
+        --out results/motif_pilot2 --seeds 4 \
+        --arms time,time_motif,time_motif_pc,time_pitch_motif_pc --shard 0/14
 """
 from __future__ import annotations
 
@@ -74,12 +122,14 @@ import numpy as np
 
 ASAP = "/home/ray/Research/data/asap-dataset"
 BPS = "/home/ray/Research/ISMIR/graph-motif-discovery/datasets/Beethoven_motif-main"
-OUT = "results/motif_pilot"
-ARMS = ["time", "time_pitch", "time_motif", "time_pitch_motif"]
-SCHEMES = ["random", "occ"]
-SEEDS = 2
+OUT = "results/motif_pilot"          # pilot one; --out overrides
+ARMS = ["time", "time_pitch", "time_motif", "time_pitch_motif"]   # --arms overrides
+SCHEMES = ["random", "occ"]           # --schemes overrides
+SEEDS = 2                             # --seeds overrides
 MAX_NOTES = 400
 ELL_U = 0.1
+S_M = 1.0                             # fixed shape of the per-channel motif block
+PRED = {"root": None, "q": None}      # stage two: --pred-root / --pred-q
 EXCLUDE = {"3-1", "24-1"}   # piano confirmation set (positions 30-49 of the shuffle)
 CHANNELS = ["tau", "log r", "v"]
 
@@ -188,6 +238,61 @@ def motif_adjacency(n, occs, ell_u=ELL_U):
     return W
 
 
+def predicted_occurrences(q, pitch, off, name):
+    """Stage two: the ISMIR model's held-out predictions for annotation `name`,
+    mapped to the excerpt by (crotchet onset - off, pitch).  Returns a list in
+    the same form as occurrence_membership (type = pattern index)."""
+    import json
+    hits = glob.glob(f"{PRED['root']}/sweep_q{PRED['q']}/fold*/motifs/{name}.json")
+    if len(hits) != 1:
+        raise RuntimeError(f"{name}: {len(hits)} prediction files under {PRED}")
+    pats = json.load(open(hits[0]))["patterns"]
+    key = {}
+    for i, (x, pp) in enumerate(zip(np.round(q * 16).astype(int), pitch)):
+        key.setdefault((x, int(pp)), i)
+    out = []
+    for t, pat in enumerate(pats):
+        for k, occ in enumerate(pat):
+            members = sorted({key[(int(round((on - off) * 16)), int(pp))]
+                              for on, pp in occ
+                              if (int(round((on - off) * 16)), int(pp)) in key})
+            if len(members) < 2:
+                continue
+            s, e = q[members].min(), q[members].max()
+            if e <= s:
+                continue
+            out.append({"k": (t, k), "type": f"pred{t}", "notes": np.array(members),
+                        "u": (q[members] - s) / (e - s), "start": s, "end": e})
+    return out
+
+
+def motif_feature_block(n, occs, s_m=S_M, ell_u=ELL_U):
+    """Per-channel design (pilot two): X_m with X_m X_m^T = K_m, the shape-
+    normalized graph kernel of the motif subgraph (zero rows for non-motif
+    notes), so that the feature-kernel path learns one scale per channel."""
+    from score_bundle.graph import laplacian
+    W = motif_adjacency(n, occs, ell_u)
+    on = np.where(W.sum(1) > 0)[0]
+    X = np.zeros((n, len(on)))
+    if len(on) == 0:
+        return X
+    nu, U = np.linalg.eigh(laplacian(W[np.ix_(on, on)]))
+    g = 1.0 / (1.0 + s_m * np.clip(nu, 0.0, None))
+    X[on] = U * np.sqrt(g)
+    return X
+
+
+def parse_arm(arm):
+    """'time_pitch_motif_pc_pred' -> (base, motif, per_channel, predicted)."""
+    a = arm
+    pred = a.endswith("_pred"); a = a[:-5] if pred else a
+    pc = a.endswith("_pc"); a = a[:-3] if pc else a
+    motif = a.endswith("_motif"); a = a[:-6] if motif else a
+    assert a in ("time", "time_pitch"), arm
+    assert motif or not (pc or pred), arm
+    return a, motif, pc, pred
+
+
 def build_pieces():
     rows, pieces = [], []
     for folder, name in asap_first_movements():
@@ -215,11 +320,23 @@ def build_pieces():
         if frac < 0.85 or n_rep < 2:
             rows[-1] = rows[-1][:2] + (rows[-1][2] + "  -> EXCLUDED",)
             continue
-        pieces.append({"folder": folder, "bps": name, "performance": perf,
-                       "pitch": score_m.pitch, "onset": score_m.onset,
-                       "duration": score_m.duration, "voice": score_m.voice,
-                       "y": np.asarray(y), "q": q, "occs": occs,
-                       "motif_notes": motif_notes, "match_frac": frac})
+        piece = {"folder": folder, "bps": name, "performance": perf,
+                 "pitch": score_m.pitch, "onset": score_m.onset,
+                 "duration": score_m.duration, "voice": score_m.voice,
+                 "y": np.asarray(y), "q": q, "occs": occs, "offset": off,
+                 "motif_notes": motif_notes, "match_frac": frac}
+        if PRED["root"]:
+            piece["occs_pred"] = predicted_occurrences(q, score_m.pitch, off, name)
+            pm = np.zeros(len(q), dtype=bool)
+            for o in piece["occs_pred"]:
+                pm[o["notes"]] = True
+            tp = int((pm & motif_notes).sum())
+            piece["pred_prec"] = tp / max(int(pm.sum()), 1)
+            piece["pred_rec"] = tp / max(int(motif_notes.sum()), 1)
+            rows[-1] = rows[-1][:2] + (rows[-1][2] + f"; predicted: {len(piece['occs_pred'])} "
+                       f"occurrences, {int(pm.sum())} notes, precision {piece['pred_prec']:.2f} "
+                       f"recall {piece['pred_rec']:.2f}",)
+        pieces.append(piece)
     return pieces, rows
 
 
@@ -276,14 +393,18 @@ def arm_setup(p, arm):
     score = piece_score(p)
     X = zscore_cols(rich_score_features(score, rff_dim=0))
     feats = [np.concatenate([X, np.ones((len(X), 1))], axis=1)]
-    ell_p = 1e6 if arm.startswith("time_motif") or arm == "time" else 4.0
+    base, motif, pc, pred = parse_arm(arm)
+    ell_p = 1e6 if base == "time" else 4.0
     W0 = build_adjacency(score, ell_p=ell_p)
-    if arm.endswith("motif"):
-        Wm = motif_adjacency(len(score), p["occs"])
+    occs = p["occs_pred"] if pred else p["occs"]
+    if motif and not pc:
+        Wm = motif_adjacency(len(score), occs)
 
         def graph_eig(gp_params):  # [log w_m]
             return np.linalg.eigh(laplacian(W0 + np.exp(gp_params[0]) * Wm))
         return feats, graph_eig, 1, np.log([1.0])
+    if motif and pc:
+        feats = feats + [motif_feature_block(len(score), occs)]
     eig = np.linalg.eigh(laplacian(W0))
 
     def graph_eig(gp_params):
@@ -413,34 +534,83 @@ def stage_report(args):
                             "n": len(common), "nll": float(nll), "rmse": float(rmse),
                             "cov": float(cov)}
                     lines.append(f"| {arm} | {CHANNELS[c]} | {nll:.3f} | {rmse:.4f} | {cov:.3f} | {dn} | {dr} | {len(common)} |")
-    # learned motif weights
-    lines.append("\n## learned w_m per piece (time_motif arm, occ scheme, seed-averaged)\n")
-    lines.append("| piece | w_m (occ) | w_m (random) | occurrences | motif notes |")
-    lines.append("|---|---|---|---|---|")
-    for pi, p in enumerate(pieces):
-        ws = {}
-        for sc in SCHEMES:
-            w = [cells[(pi, sc, s, "time_motif")]["info"]["graph_params"][0]
-                 for s in range(SEEDS) if (pi, sc, s, "time_motif") in cells]
-            ws[sc] = f"{np.exp(np.mean(np.log(w))):.2f}" if w else "—"
-        lines.append(f"| {p['folder']} | {ws['occ']} | {ws['random']} | {len(p['occs'])} | {int(p['motif_notes'].sum())} |")
+    # learned motif weights (shared-weight arms) and per-channel scales (pc arms)
+    import json
+    extra = {}
+    shared = [a for a in ARMS if parse_arm(a)[1] and not parse_arm(a)[2]]
+    pcarms = [a for a in ARMS if parse_arm(a)[2]]
+    for arm in shared:
+        lines.append(f"\n## learned w_m per piece ({arm} arm, geometric mean over seeds)\n")
+        lines.append("| piece | " + " | ".join(f"w_m ({sc})" for sc in SCHEMES) + " | occurrences | motif notes |")
+        lines.append("|---|" + "---|" * len(SCHEMES) + "---|---|")
+        wm = {}
+        for pi, p in enumerate(pieces):
+            ws = {}
+            for sc in SCHEMES:
+                w = [cells[(pi, sc, s, arm)]["info"]["graph_params"][0]
+                     for s in range(SEEDS) if (pi, sc, s, arm) in cells]
+                ws[sc] = float(np.exp(np.mean(np.log(w)))) if w else np.nan
+            wm[p["folder"]] = ws.get("occ", np.nan)
+            lines.append(f"| {p['folder']} | " + " | ".join("—" if np.isnan(ws[sc]) else f"{ws[sc]:.2f}" for sc in SCHEMES)
+                         + f" | {len(p['occs'])} | {int(p['motif_notes'].sum())} |")
+        extra[f"w_m_occ|{arm}"] = wm
+    k, ntri = 3, 6
+    for arm in pcarms:
+        lines.append(f"\n## learned per-channel motif scale c_m per piece ({arm} arm, occ scheme, geometric mean over seeds)\n")
+        lines.append("| piece | c_m tau | c_m log r | c_m v | c_score tau | c_score log r | c_score v |")
+        lines.append("|---|---|---|---|---|---|---|")
+        cm = {}
+        for pi, p in enumerate(pieces):
+            xs = [np.asarray(cells[(pi, "occ", s, arm)]["info"]["x_hat"])
+                  for s in range(SEEDS) if (pi, "occ", s, arm) in cells]
+            if not xs:
+                continue
+            x = np.mean(xs, axis=0)           # mean of log-scales = geometric mean
+            c0 = np.exp(x[1 + ntri: 1 + ntri + k]); c1 = np.exp(x[1 + ntri + k: 1 + ntri + 2 * k])
+            cm[p["folder"]] = c1.tolist()
+            lines.append(f"| {p['folder']} | " + " | ".join(f"{v:.3g}" for v in c1) + " | "
+                         + " | ".join(f"{v:.3g}" for v in c0) + " |")
+        extra[f"c_m_occ|{arm}"] = cm
+    if pieces and "pred_prec" in pieces[0]:
+        lines.append("\n## predicted vs annotated motif membership (note level)\n")
+        lines.append("| piece | predicted occurrences | precision | recall |")
+        lines.append("|---|---|---|---|")
+        for p in pieces:
+            lines.append(f"| {p['folder']} | {len(p['occs_pred'])} | {p['pred_prec']:.2f} | {p['pred_rec']:.2f} |")
+        extra["pred_membership"] = {p["folder"]: [p["pred_prec"], p["pred_rec"]] for p in pieces}
     txt = "\n".join(lines) + "\n"
     open(f"{OUT}/report.md", "w").write(txt)
-    import json
-    wm = {p["folder"]: float(np.exp(np.mean([np.log(cells[(pi, "occ", s, "time_motif")]["info"]["graph_params"][0])
-                                            for s in range(SEEDS) if (pi, "occ", s, "time_motif") in cells] or [np.nan])))
-          for pi, p in enumerate(pieces)}
-    json.dump({"effects": effects, "w_m_occ": wm}, open(f"{OUT}/effects.json", "w"), indent=1)
+    out = {"effects": effects, "arms": ARMS, "seeds": SEEDS, "schemes": SCHEMES}
+    out.update(extra)
+    if "w_m_occ|time_motif" in extra:
+        out["w_m_occ"] = extra["w_m_occ|time_motif"]   # pilot-one key, kept for the figure script
+    json.dump(out, open(f"{OUT}/effects.json", "w"), indent=1)
     print(txt)
 
 
 def main():
+    global OUT, ARMS, SCHEMES, SEEDS
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", required=True, choices=["align", "run", "report"])
     ap.add_argument("--shard", default="0/1")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--maxiter", type=int, default=200)
+    ap.add_argument("--out", default=OUT)
+    ap.add_argument("--arms", default=",".join(ARMS))
+    ap.add_argument("--schemes", default=",".join(SCHEMES))
+    ap.add_argument("--seeds", type=int, default=SEEDS)
+    ap.add_argument("--occ-source", choices=["annot", "pred"], default="annot")
+    ap.add_argument("--pred-root", default="/home/ray/Research/ISMIR/graph-motif-discovery/runs/camera_ready_sweep")
+    ap.add_argument("--pred-q", default=None, help="sweep quantile dir suffix, e.g. 80")
     args = ap.parse_args()
+    OUT, SEEDS = args.out, args.seeds
+    ARMS = [a for a in args.arms.split(",") if a]
+    SCHEMES = [a for a in args.schemes.split(",") if a]
+    for a in ARMS:
+        parse_arm(a)
+    if args.occ_source == "pred" or any(parse_arm(a)[3] for a in ARMS):
+        assert args.pred_q, "--pred-q is required for predicted occurrences"
+        PRED["root"], PRED["q"] = args.pred_root, args.pred_q
     {"align": stage_align, "run": stage_run, "report": stage_report}[args.stage](args)
 
 

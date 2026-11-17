@@ -237,6 +237,10 @@ def fit_and_predict(Y, mask, feats, graph_eig, n_graph, g0, kernel, x_init=None,
         yt.append(Y[held, c]); pr.append(M[held, c])
         sd.append(np.sqrt(S[held, c] ** 2 + nv[c]))
         ch.append(np.full(int(held.sum()), c, dtype=int))
+    # the fitted GP parameter vector (layout: MultiOutputGraphGP.unpack), kept
+    # for post-hoc readings of the learned scales; numerically inert (2026-11-17)
+    info = dict(info)
+    info["x_hat"] = np.asarray(x_hat, dtype=float).tolist()
     return (np.concatenate(yt), np.concatenate(pr), np.concatenate(sd),
             np.concatenate(ch)), info
 

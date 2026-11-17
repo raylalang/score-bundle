@@ -477,6 +477,11 @@ never run it again.
 `libstdc++` (GLIBCXX_3.4.29). The NVIDIA driver is CUDA 12.8, so torch must be the **cu128**
 build (`pip install torch==2.11.0+cu128 --index-url https://download.pytorch.org/whl/cu128`);
 the default PyPI cu130 wheel disables CUDA. Datasets live in `../data/`.
+**GPU rule (Ray, 2026-11-17): on the sacs14 server use ONLY GPU 6 and GPU 7
+(`CUDA_VISIBLE_DEVICES=6,7`, both RTX A6000 48 GB) unless told otherwise; check
+`nvidia-smi` and `uptime` first.** Every GP study in this repo is CPU-bound
+(sharded, `OMP_NUM_THREADS=2`); the GPUs matter only for music-model training
+and embedding extraction.
 
 ## Design decisions worth respecting
 

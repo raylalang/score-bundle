@@ -62,3 +62,11 @@ data/
 # committed against the regenerable-artifacts rule; see evidence/README.md.
 !evidence/**/*.pkl
 !evidence/**/*.log
+!/results/motif_pilot2/
+/results/motif_pilot2/*
+!/results/motif_pilot2/*.md
+!/results/motif_pilot2/*.json
+!/results/motif_stage2/
+/results/motif_stage2/*
+!/results/motif_stage2/*.md
+!/results/motif_stage2/*.json
