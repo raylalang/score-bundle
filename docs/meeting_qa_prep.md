@@ -36,9 +36,14 @@ Before the room: sync Overleaf with the whole `docs/thesis/` directory
    pair and in both forms is articulation accuracy (RMSE −0.035 shared,
    −0.019 per channel, intervals clear of zero), and the evidence puts
    the family on the articulation channel. So the pre-specified test's
-   primary is articulation RMSE, power 0.95 at 18 pieces.
+   primary is articulation RMSE, power 0.95 at 18 pieces. Stage two
+   (frame 12, also measured 11-17): the ISMIR model's held-out
+   occurrences in place of the annotations give about half the effect
+   (timing 0.48, articulation 0.4 of the annotated one, intervals
+   reaching zero); the rule asked for half with a clear interval and was
+   not met by a small margin.
 3. **The calendar to 12-03, one table** (ROADMAP): pilot two (done),
-   stage two with the ISMIR model's predicted occurrences (11-18), two
+   stage two done (11-17), two
    registrations announced before they run (the waveform phrase-scale
    claim on the URMP confirmation tracks, launched 11-19; the motif
    claim on untouched performances of the same 21 pieces, run 11-23),

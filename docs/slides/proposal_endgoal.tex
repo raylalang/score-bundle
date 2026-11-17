@@ -268,8 +268,8 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Stage two, later: occurrences predicted by the ISMIR 2026 model}
-  \footnotesize
+\begin{frame}{Stage two: occurrences predicted by the ISMIR 2026 model (measured 17 November, development, no claim)}
+  \scriptsize
   \begin{itemize}
     \item typed note graph: notes are vertices, edge types for simultaneity, temporal proximity, overlap; a pretrained encoder gives $\mathbf h_i^{(0)}$, relational graph convolutions update
   \end{itemize}
@@ -304,7 +304,7 @@
   \begin{itemize}
     \item losses at the note-pair, occurrence and motif-type levels on $M$
     \item decoding: gated affinity $A^{\text{dec}}_{ij} = A_{ij}(m_i m_j)^{\alpha_{\text{dec}}/2}$ thresholded at $\tau_{\text{occ}}$, connected components are occurrences $\hat O_k$, a Gaussian mixture on pooled states gives each a type $q(k)$
-    \item stage two takes $\hat O_k$ with spans and types in place of the annotations, on any score (establishment F1 $0.732$ on BPS-motif); it waits for stage one's answer
+    \item \textbf{measured 17 November}: the held-out fold predictions ($\tau_{\text{occ}}$ quantile $0.86$) replace the annotations as the edge source, masks and scored notes unchanged (membership F1 median $0.78$); timing log score $-0.034$ $[-0.085,\,+0.003]$, $0.48$ of the annotated $-0.071$; articulation RMSE $-0.0135$ $[-0.032,\,+0.003]$, $0.4$ of $-0.0345$; per-piece effects of the two sources correlate at $0.86$. H3 (half, interval clear of zero) not met by a small margin: a model's occurrences on an unannotated score give about half the effect
   \end{itemize}
 \end{frame}
 

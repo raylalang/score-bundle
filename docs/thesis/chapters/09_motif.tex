@@ -219,7 +219,39 @@ articulation accuracy, and the pre-specified evaluation of
 \S\ref{sec:motif-heldout} takes that as its primary measure.
 
 \subsection{Predicted occurrences}\label{sec:motif-stage2}
-% PENDING: stage two (results/motif_stage2_dev.md).
+The third study replaces the annotated occurrences by those predicted by
+a graph-based motif discovery model \cite{lalang2026motif}, taking for each
+movement the predictions of the cross-validation fold that held it out.
+A predicted occurrence is a set of notes, mapped to the excerpt by onset
+and pitch as the annotations were, with its span the first and last
+matched onset and its type the model's pattern index. The masks and the
+scored notes remain those of the annotated occurrences, identical to the
+second study, so the edge source is the only change. At the note level the
+predicted membership has a precision of $0.12$ to $1.00$ and a recall of
+$0.44$ to $0.99$ against the annotation, with a median F1 of $0.78$. On two
+movements the model predicts several times the annotated number of motif
+notes and the precision falls below $0.2$. The prediction fixed before the
+run was that the predicted edges keep at least half of the annotated
+edges' timing log-score gain on the same notes, with an interval excluding
+zero.
+
+With the shared form the predicted edges lower the timing log score by
+$0.034$, interval $[-0.085, +0.003]$, which is $0.48$ of the annotated
+$0.071$ on the same notes with an interval that reaches zero, so the
+prediction is not met, by a small margin on both counts. On articulation
+accuracy, the effect that is robust in the second study, the predicted
+edges give $-0.0135$ with interval $[-0.0317, +0.0030]$, four tenths of
+the annotated $-0.0345$. The two edge sources act on the same movements:
+their per-movement timing differences correlate at $0.59$ and their
+articulation differences at $0.86$, and fifteen of the twenty-one
+movements lie below zero for both. The movements with the lowest
+membership precision receive large learned weights without a gain on the
+annotated notes, while among the rest the size of the effect does not
+order by F1. The per-channel form with predicted edges changes nothing and
+costs $0.0014$~s of timing error, interval $[+0.0005, +0.0024]$. The
+family can therefore be built from a model's occurrences on a score
+without annotations and keeps about half of its effect at this size, with
+intervals that cover zero on twenty-one movements.
 
 \section{Held-out performances}\label{sec:motif-heldout}
 % PENDING: the pre-specified evaluation (results/motif_heldout_results.md).

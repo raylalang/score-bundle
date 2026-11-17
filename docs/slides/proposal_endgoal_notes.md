@@ -100,12 +100,25 @@ named arm because its articulation effect is larger and more even, and
 the per-channel form runs beside it and is reported. The timing log
 score is the secondary, power 0.33, reported either way.
 
-## 12. Stage two, later: the ISMIR model
-Only if stage one gives an answer worth extending. Walk the model top to
-bottom: typed graph and R-GCN states, the two heads, label propagation
-with restart in training, thresholded gated affinity and connected
-components at test time, GMM grouping into types. Its occurrences, spans
-and types would replace the annotations on any score.
+## 12. Stage two: the ISMIR model (measured 17 November)
+Walk the model top to bottom in one breath: typed graph and R-GCN
+states, the two heads, label propagation with restart in training,
+thresholded gated affinity and connected components at test time, GMM
+grouping into types. Then the measurement, same day as the second pilot:
+each piece's edges come from the fold that held it out, the masks and
+the scored notes stay on the annotated occurrences, so the edge source
+is the only change. The predicted membership matches the annotation at
+a median F1 of 0.78, with two pieces where the model finds several
+times too many motif notes. Timing log score minus 0.034, interval
+reaching zero, 0.48 of the annotated effect on the same notes;
+articulation RMSE minus 0.0135, four tenths of the annotated one. The
+two edge sources act on the same pieces, correlation 0.86 per piece on
+articulation. The rule written before the run asked for at least half
+with an interval clear of zero, and it is not met, narrowly on both
+counts. The sentence to say: on a score without annotations the model's
+occurrences give about half of the effect. The per-channel block with
+predicted edges does nothing. Stage three, scores outside the annotated
+corpus, is future work.
 
 ## 13. Plan and recommendation
 Three of the five days are done as of 4 November; the pilot leans toward

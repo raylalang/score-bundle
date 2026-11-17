@@ -287,9 +287,14 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   `time_motif`, power 0.95 at 18 pieces; M2 timing ΔNLL 0.33; pool = aligned
   performances other than the dev one, capped at 4 per piece, 18 pieces / 58
   performances; guarded runner `scripts/run_motif_heldout.sh` needs
-  `MOTIF_HELDOUT_I_AM_SURE=yes`, run ONCE on 11-23, never rerun). Stage two (`scripts/
-  run_motif_stage2.sh`, H3: edges from the ISMIR model's held-out predicted
-  occurrences at q = 0.86, masks and cells unchanged) runs 11-17/18. Score features
+  `MOTIF_HELDOUT_I_AM_SURE=yes`, run ONCE on 11-23, never rerun). Stage two MEASURED
+  2026-11-17 (`scripts/run_motif_stage2.sh`, `results/motif_stage2_dev.md`, H3: edges
+  from the ISMIR model's held-out predicted occurrences at q = 0.86, masks and cells
+  unchanged, 252 fits): predicted edges give 0.48 of the annotated timing log-score
+  effect (−0.034 [−0.085, +0.003]) and 0.4 of the articulation RMSE effect (−0.0135
+  [−0.032, +0.003]), per-piece effects correlated 0.86; H3 (half, interval clear of 0)
+  NOT met by a small margin; membership F1 median 0.78. Thesis `sec:motif-stage2`
+  carries it; cite `lalang2026motif`. Score features
   only (no LM), so no contamination question. Power script `scripts/power_motif.py`.
 - **Thesis STYLE MAKEOVER (2026-10-28, Ray: "almost a whole makeover", the draft read
   like a company project report).** `draft.tex` now `\input`s `docs/thesis/chapters/*.tex`
