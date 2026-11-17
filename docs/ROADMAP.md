@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 2026-11-04. Submission tentatively **2027-02-02**; progress
+Updated 2026-11-17. Submission tentatively **2027-02-02**; progress
 presentation expected around **2027-01-07**. **From 2026-10-23 the professor is
 hands-off; every gate below is Ray's. Writing freeze in force.** One ongoing task at a time. Order stays deliberate:
 understanding, then legibility, then modelling. New studies run only on
@@ -13,28 +13,45 @@ the chronology, the music model named directly. The internal Phase-0..3
 numbering survives only in code, results files, and the frozen names of
 registered artifacts; this file uses the content names.
 
-## THE PLAN to submission (restored 2026-10-15 from the 2026-10-14 session)
+## THE PLAN to submission (rewritten 2026-11-17 after Ray's week at a conference)
 
-The plan the deck's Plan frame and the 2026-10-14 session carried, in one
-place, with the decision gates that are Ray's. Rows marked *(proposed)*
-are sequencing suggestions, not agreed; everything else was stated in
-the deck or the brief. New runs happen only on Ray's go.
+Ray's calendar (2026-11-17): zemi on **2026-12-03** where about 95 percent
+of the results must be done; **no major experiments after December**;
+progress talk about **2027-01-07**; submission **2027-02-02**; thesis
+presentation about three months out. Feasibility, assessed 11-17: the main
+study is complete (piano and strings-and-winds confirmed, two disclosed
+re-used one-shots run, thesis 80 pp, clean compile); the open result lines
+are the motif study and one waveform one-shot, both bounded, all compute
+done by 11-25. Decisions of 11-17 (Ray): the motif study becomes a thesis
+chapter with one pre-specified test on untouched performances; the
+phrase-scale waveform claim is registered and run on the URMP confirmation
+tracks although the power check says 0.6 to 0.7 at best (verdict reported
+verbatim either way); the main deck carries the full spine and Ray cuts
+the zemi version himself.
 
 | when | what | gate |
 |---|---|---|
-| October (done) | first curve-from-waveform studies at scale; the curve as a bundle channel; joint note boundaries; **three spans of the bridge** (intonation at chain scale, boundaries at chain scale, intonation at phrase scale): the score prior transfers the context's common offset and nothing measurable beyond it; at phrase scale it beats a purely temporal prior | — |
-| October (now) | the direction-and-scope meeting: objective, positioning, integration scope, variables, evidence bar, registration pool (brief §H) | Ray + professor |
-| October (done) | tuning-scalar follow-up of the prior-value experiment: run under the corrected protocol; verdict = tuning bookkeeping, coverage repaired | — |
-| October (done, 10-27) | registration pool decided (disclosed URMP re-use, Ray 10-23); both one-shots frozen and run once on 10-27: correlated timing noise PASSED (τ log score −0.121*, RMSE −0.011*), the tonal metric MISSED its calibration primary (−0.023 ns) and kept recovery (−0.312*) | — |
-| November (done, 11-04) | **motif study, stage one, first pilot** (`results/motif_pilot_dev.md`, proposal deck frame 10; dev only, 21 Beethoven first movements): with whole occurrences hidden, annotated motif edges lower the timing log score on those notes by 0.117 nats [−0.245, −0.006] against the time-only graph; articulation RMSE −5 percent; velocity bands too narrow (one shared weight). Next design step: per-channel motif weight; then more seeds and the embeddings; registration only after a power check | Ray |
-| November | decide the channel design for the waveform strand: scalars or curve level | Ray |
-| November | a transient model at the note boundary (the pre-named next lever for the ~18 ms acoustic-vs-musical gap) | Ray's go |
-| November *(proposed)* | the registered waveform claim: after three spans the only positive is the weak form (score graph beats a purely temporal prior at phrase scale, −1.63*) and the common-offset gain; decide whether that is worth registering (power check first) or whether the three-span verdict is the chapter's measured answer | Ray |
-| December | **whole-phrase joint inference from the waveform** — the "December row": all notes of a performance under the graph prior, the transient model at the joints, loudness/articulation (amplitudes) brought under the prior instead of read out post hoc, the estimand bridge between the harmonic constant and the annotation functional; consolidate thesis chapters as results land | — |
-| December *(proposed)* | adopt the decomposition framing (score + expression + timbre + noise) in the intro/abstract, held since 2026-10-14 for after the meeting | Ray |
-| 2027-01-07 (approx.) | **progress presentation**: deck from `deck.tex`, results that stand on their own only | — |
-| January *(proposed)* | writing freeze: no new runs after the progress talk; Discussion / Limitations / Conclusion finalized; Codex review pass; Overleaf synced | Ray |
-| 2027-02-02 (tentative) | **thesis submission** | — |
+| October (done) | three spans of the bridge; track-scale attribution; the two re-used-pool one-shots (10-27); thesis cut and makeover (10-28) | — |
+| 11-04 (done) | **motif study, stage one, first pilot** (`results/motif_pilot_dev.md`, proposal deck frame 10; dev only, 21 Beethoven first movements, 336 fits): with whole occurrences hidden, annotated motif edges lower the timing log score on those notes by 0.117 nats [−0.245, −0.006] against the time-only graph; articulation RMSE −5 percent; velocity bands too narrow (one shared weight) | — |
+| 11-17 (running) | **pilot two**: the per-channel motif weight (the family as its own diagonal coregionalization block), four seeds, both schemes, 672 fits (`scripts/run_motif_pilot2.sh`, H2 in the script docstring); record `results/motif_pilot2_dev.md` | — |
+| 11-18 | MEETING (brief run order); **stage two**: edges from the ISMIR model's held-out predicted occurrences, masks and cells unchanged (H3), `results/motif_stage2_dev.md` | — |
+| 11-19 | **waveform one-shot**: confirmation path for the phrase-scale script, guarded runner, registration frozen and tagged (`docs/phrase_prior_prereg_design.md`), launched overnight (about 8 h on 12 shards); third disclosed re-use of the URMP confirmation pool, first at the waveform level | Ray's go given 11-17 |
+| 11-20 | waveform verdict, record, evidence archived; **motif registration** frozen and tagged (`docs/motif_prereg_design.md`: untouched performances of the 21 pieces, capped at four per piece, unit = piece; primary = timing log score on hidden motif notes with occurrences hidden; power table from pilot two) | Ray's go given 11-17 |
+| 11-23 | **motif one-shot** run once; verdict, record, evidence | — |
+| 11-24 to 11-29 | thesis: new motif chapter (after the waveform chapter), Ch. 8 held-out section, Ch. 4 third re-use, abstract / contributions / outline / Discussion / Future Work / Conclusion; style checker on every file | — |
+| 11-30 to 12-02 | deck: motif main-line slides, the waveform verdict on the spans slide, Plan slide; speaker notes; Ray syncs Overleaf and cuts the zemi deck | Ray |
+| **12-03** | **zemi** (95 percent of the results done) | — |
+| December | writing only: Codex review by hand, main deck to bullet style, Limitations, figures; no new runs | — |
+| 2027-01-07 (approx.) | **progress presentation** from `deck.tex` | — |
+| 2027-02-02 | **thesis submission**; presentation about three months from 11-17 | — |
+
+Not run, by decision of 11-17 (Future Work only): the transient model at
+the note boundary, the whole-phrase joint loop (the former "December
+row"), the scalar-vs-curve channel decision for the waveform strand, the
+music-model embeddings inside the motif study (the claim is graph against
+graph on identical features, so the embeddings are not needed for it).
+The decomposition framing was adopted on 10-23 (the former "December
+(proposed)" row).
 
 Decisions still open from the 2026-10-14 session, verbatim list:
 (a) tuning-scalar follow-up — DONE 10-15, verdict negative; (b)
@@ -47,7 +64,11 @@ vocabulary. The worktree branch is merged (2026-10-15); its raw cell
 pickles and shard logs are gitignored and still live only in
 `.claude/worktrees/audit-week-0813` — copy or archive before removing it.
 
-## NOW — Direction and scope (meeting brief dated 2026-10-14)
+## NOW — The last results (11-17 to 11-25), then writing
+
+The calendar above is the NOW list; the sections below are the record.
+
+## Direction and scope (meeting brief dated 2026-10-14, decided 10-23)
 
 `docs/meeting_qa_prep.md` is the direction-and-scope brief (sections
 A–H); `docs/slides/deck.pdf` (37 pages, the one consolidated thesis

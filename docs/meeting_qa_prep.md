@@ -1,4 +1,4 @@
-# Meeting brief (written 2026-10-14, brought to 2026-11-04 for today's meeting)
+# Meeting brief (written 2026-10-14, brought to 2026-11-18 for tomorrow's meeting)
 
 > Purpose: report the state and the decisions taken, and hear objections.
 > The deck (`docs/slides/deck.pdf`, 37 pages, speaker notes for every
@@ -10,6 +10,41 @@
 > attribution, decomposition framing, number audit, the two re-used-pool
 > one-shots in `sec:phase2-reuse`, the 10-28 cut to 74 pages).
 
+## Run order for 2026-11-18 (written 2026-11-17, Ray back from a week at a conference)
+
+Before the room: sync Overleaf with the whole `docs/thesis/` directory
+(unchanged since 10-28, 80 pages); open `docs/slides/proposal_endgoal.pdf`
+(12 pages, internal) and `docs/ROADMAP.md` (the calendar table).
+
+1. **Where things stand, 60 s, no slide.** Thesis 80 pages, every
+   confirmation pool spent, the main study complete; one week lost to
+   the conference; the zemi on 12-03 is the point where the results are
+   done, December is writing.
+2. **The proof of concept promised on 10-28, about 8 min** (frame 10
+   of the proposal deck, speaker notes in
+   `docs/slides/proposal_endgoal_notes.md`): the first pilot of 11-04
+   (21 movements, 336 fits; with whole occurrences hidden the annotated
+   motif edges lower the timing log score on those notes by 0.117 nats,
+   interval [−0.245, −0.006]; articulation RMSE −5 percent; velocity
+   bands too narrow under one shared weight; development only). If the
+   pilot-two report is in by the morning (`results/motif_pilot2_dev.md`,
+   the per-channel weight, four seeds): say in one sentence whether the
+   velocity penalty went away and whether the timing gain held.
+3. **The calendar to 12-03, one table** (ROADMAP): pilot two (running),
+   stage two with the ISMIR model's predicted occurrences (11-18), two
+   registrations announced before they run (the waveform phrase-scale
+   claim on the URMP confirmation tracks, launched 11-19; the motif
+   claim on untouched performances of the same 21 pieces, run 11-23),
+   the thesis chapter and deck by 11-30, nothing new after December.
+   Say the power check plainly: the waveform one-shot has 0.6 to 0.7
+   at best on a brass-heavy pool, and its verdict is reported verbatim.
+4. **The asks:** (a) the zemi slot's length and language on 12-03;
+   (b) whether he will read the draft before the January talk, and by
+   when; (c) the progress-talk date.
+
+What is NOT on the table: modelling beyond the two registered one-shots,
+a longer thesis, any rerun of a spent claim.
+
 ## Status note (2026-11-04)
 
 No meeting on 11-04; Ray sent a written update instead. The proposal
@@ -18,7 +53,7 @@ proposal orally on 10-28 and did not share the deck. The 11-04 pilot is
 the proof of concept promised then. The run order below is kept for the
 next meeting that has a slot for it.
 
-## Run order for the next meeting (written 2026-11-04)
+## Run order written 2026-11-04 (superseded by the 11-18 order above)
 
 Before the room: sync Overleaf with the whole `docs/thesis/` directory
 (the draft is now split into `docs/thesis/chapters/`, rewritten in
