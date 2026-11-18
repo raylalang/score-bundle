@@ -979,6 +979,27 @@ with the note dropped from the model, the independent prior returns
 exactly the prior mean (zero) and the structured priors track the truth
 through the common offset.
 
+**The fourth row, added 18 November.** The phrase-scale claim was
+registered that morning (claim, rule and cell rule frozen and tagged
+before the run) and run once on the strings-and-winds confirmation
+tracks: 48 phrases from 20 of the 40 tracks by the unchanged
+development rule, 14 strings, 25 winds, 9 brass. This is the pool's
+third use, disclosed, and the first at the waveform level: no waveform
+script had ever read those tracks. The primary, graph minus temporal on
+the hidden note, is `−0.82` cents with the interval `[−1.59, −0.05]`,
+excluding zero, better on 62 percent of phrases. The expectation stated
+before the run for this winds-heavy mix was about `−0.9` (development
+`−1.63` was carried by strings), and the power was only 0.3 to 0.5, so
+the star was not expected with confidence. Everything else repeats
+development: graph minus independent `−0.13` with the interval covering
+zero (the strong form gets no new support), temporal minus independent
+`+0.68`, same sign and size as development but not starred, clean rows
+zero, coverage 0.94 to 0.98, no dose-response. By family, strings
+`−1.55`, winds `−0.54`, brass `−0.44`, none starred alone, the
+development ordering repeated. Say it in one breath: "the weak form
+holds on tracks the waveform studies had never read; the strong form
+does not, there either."
+
 ## Slide 31. What in the graph does the work: the time window
 
 
@@ -1208,7 +1229,8 @@ on accuracy and calibration, confirmed once on untouched pieces.
 Strings and winds: the graph improves recovery and calibration on the
 estimated channels, confirmed once. Audio: the method is in place and
 running at development level, the score prior measured inside it at
-three spans, no claims. What the graph does: its value is smoothing in
+three spans, and one registered claim, the weak form at phrase scale,
+confirmed once on the re-used pool. What the graph does: its value is smoothing in
 score time over about two beats, on both corpora; pitch proximity adds
 nothing measurable, a development finding. Fifth, new: motif structure,
 one edge family outside the time window. On development it improves
@@ -1237,7 +1259,8 @@ with its framing. Registered on 18 November: the phrase-scale waveform
 claim, the weak form of slide 30 (graph beats temporal on the hidden
 note), as one shot on the same re-used pool at the waveform level, its
 third use, disclosed; power only 0.3 to 0.5, run anyway so the chapter
-has a held-out answer; run the same day, verdict on slide 30. Registered
+has a held-out answer; run the same day and passed, `−0.82` cents with
+the interval excluding zero, the fourth row of slide 30. Registered
 on 20 November: the motif test of slide 36, run once on 23 November.
 Then: the lab seminar on 3 December with the results closed, December
 for writing only, no new experiments, the progress talk on 7 January

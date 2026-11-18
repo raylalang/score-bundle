@@ -1,10 +1,13 @@
 \chapter{The Waveform as the Observation}\label{ch:phase3}\label{app:phase3}\label{sec:phase3-math}
 The waveform setting is stage 3 of the thesis's progression: the
 observation becomes the waveform itself, the endpoint toward which the
-piano and strings-and-winds settings were built. Every study in this chapter is exploratory and was conducted on
-the development set, and no evaluation of the waveform setting on a held-out
-test set has been performed (the protocol is described in
-\S\ref{sec:hygiene}). The chapter nevertheless belongs to the main line of
+piano and strings-and-winds settings were built. Every study in this
+chapter was conducted on the development set, and one finding of its last
+section, the weak form of the methodological hypothesis at phrase scale,
+was then carried to a single pre-specified evaluation on the held-out test
+pieces of the strings-and-winds setting (\S\ref{sec:phase3-heldout}), under
+the protocol of \S\ref{sec:hygiene} and as a disclosed third use of those
+pieces. The chapter belongs to the main line of
 the thesis, because the waveform setting is the most novel step of the
 programme and because its design constraints have now been quantified on
 real audio rather than assumed.
@@ -377,8 +380,9 @@ evidence is absent, and whether it costs anything where the evidence is
 strong. Two hypotheses are distinguished. The weak form holds that score
 structure at least matches a naive temporal prior, and the strong form
 holds that it carries information beyond the common offset shared by the
-notes of a chain. Both are evaluated on the development set, and the
-findings are reported in full.
+notes of a chain. Both are evaluated on the development set, the findings
+are reported in full, and the weak form at phrase scale is then tested
+once on held-out tracks (\S\ref{sec:phase3-heldout}).
 
 \subsection{Design of the prior-value experiment}
 
@@ -449,7 +453,8 @@ the hidden element's error with $95\%$ bootstrap intervals, every arm
 carrying the common-mode scalar. A negative value favours the first arm,
 and a superscript asterisk marks an interval that excludes zero. Chains and
 joints are from four development tracks, phrases from all $78$. All
-entries are exploratory results on the development set.}
+entries are results on the development set. The held-out evaluation of
+the phrase-scale row is in Table~\ref{tab:phase3-heldout}.}
 \label{tab:phase3-priorvalue}
 \footnotesize
 \begin{tabular}{@{}llcc@{}}
@@ -576,5 +581,86 @@ removed, and in the piano setting the pitch-less graph is slightly better
 than the principal model. At every scale, corpus and observation type
 tested, the structure that helps is smoothness in score time over about two
 beats, and the score-specific pitch coupling does not show.
+
+\subsection{Held-out evaluation at phrase scale}\label{sec:phase3-heldout}
+One finding of the three spans was carried to the held-out test pieces:
+the weak form at phrase scale, that the score graph gives a smaller error
+on the hidden note than a purely temporal prior. The hypothesis, its decision
+rule and the rule selecting the phrases were fixed and committed before the run, following
+\S\ref{sec:hygiene}. The primary hypothesis was that the mean paired
+difference in absolute error on the hidden note, score graph minus
+temporal prior, in the masked condition and against the reference
+centre, is negative with a $95\%$ bootstrap interval excluding zero. Two
+further quantities were pre-specified for report without a decision, the contrast with
+the independent prior, where a tie was expected, and the clean-condition
+contrasts, where ties were required as a control. The held-out pieces are
+the $13$ strings-and-winds test pieces, $40$ unique tracks, used here for
+the third time and for the first time at the waveform level, as
+\S\ref{sec:hygiene} discloses. No waveform study had read those tracks
+before, so the contrast itself was new to them, but the tracks were no
+longer untouched, and the result is read as the weakest of the three
+checks made on them. The phrase selection rule of the development study, unchanged,
+selected $48$ phrases from $20$ of the tracks before any fit, $14$ on
+strings, $25$ on winds and $9$ on brass, a different mix from the
+development phrases, where strings carried the effect. On that basis the
+expected difference was stated in advance as about $-0.9$ cents rather
+than the development value of $-1.63$, with a power of roughly $0.3$ to
+$0.5$ for the primary hypothesis. The run was then performed once.
+
+\begin{table}[t]\centering
+\caption{The held-out evaluation at phrase scale: $48$ phrases from $20$
+held-out strings-and-winds tracks, the hidden middle note's pitch
+recurring at an index distance of at least two, every arm carrying the
+common-mode scalar. Mean paired difference in the hidden note's absolute
+error in cents with $95\%$ bootstrap intervals, and the median absolute
+error and coverage of the nominal-$90\%$ band per arm. A negative value
+favours the first arm. The test pieces are used for the third time, as
+disclosed in \S\ref{sec:hygiene}.}
+\label{tab:phase3-heldout}
+\footnotesize
+\begin{tabular}{@{}llc@{}}
+\toprule
+condition & contrast & paired difference (cents) \\
+\midrule
+masked & graph $-$ temporal (primary) & $-0.82$ $[-1.59, -0.05]$ \\
+masked & graph $-$ independent & $-0.13$ $[-0.44, +0.17]$ \\
+masked & temporal $-$ independent & $+0.68$ $[-0.19, +1.52]$ \\
+clean & graph $-$ independent & $-0.00$ $[-0.01, +0.01]$ \\
+clean & temporal $-$ independent & $+0.00$ $[-0.01, +0.01]$ \\
+\midrule
+& arm & median error / coverage, masked \\
+\midrule
+& independent & $4.11$ / $0.98$ \\
+& temporal & $4.01$ / $0.94$ \\
+& graph & $3.68$ / $0.96$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The primary hypothesis is supported. On the held-out phrases the score graph
+is better than the temporal prior by $0.82$ cents, with the interval
+$[-1.59, -0.05]$ excluding zero, and it is better on $62\%$ of the
+phrases, against $-1.63$ on the development phrases and the $-0.9$
+expected for this mix of instruments. Everything else repeats the
+development reading. The graph shows no difference from the independent
+prior with the common-mode scalar, $-0.13$ with interval
+$[-0.44, +0.17]$, so the strong form receives no new support. The
+temporal prior is worse than the independent one by $+0.68$, in the
+direction and size of the development value but with an interval that
+reaches zero, so the graph's advantage is once more the harm of the
+temporal prior undone. The clean contrasts are zero to the second decimal.
+Coverage of the hidden note is $0.94$ to $0.98$, above nominal for the
+independent arm, and the graph has the smallest posterior standard
+deviation, $8.9$ cents against $9.8$ and $11.3$. There is no dose-response
+with the edge weight, with a correlation of $-0.06$. Read by instrument
+family, which was not pre-specified beyond the stated expectation, the
+contrast is $-1.55$ on the string phrases, $-0.54$ on the winds and
+$-0.44$ on the brass, each with an interval that covers zero, so the
+ordering of the development study repeats and no family carries a result
+on its own. The weak form of the methodological hypothesis therefore
+holds on tracks the waveform studies had never read, with the
+qualification that the tracks had been consulted twice before at the
+tracked-target level. The strong form remains unsupported on the
+development set and on the held-out pieces alike.
 
 % =====================================================================

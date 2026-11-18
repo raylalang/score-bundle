@@ -103,8 +103,9 @@ the programme rather than a result of this thesis. Its first span, the
 score prior over per-note constants inside the waveform inference
 (\S\ref{sec:phase3-priorvalue}), is studied on the development set over
 three spans. There the value of the structure is the context's common
-offset, with nothing measurable beyond it against that baseline, and a
-significant advantage over a purely temporal prior at phrase scale. The
+offset, with nothing measurable beyond it against that baseline, and an
+advantage over a purely temporal prior at phrase scale, the one waveform
+finding carried to a held-out evaluation, where it was supported. The
 purely temporal baseline of RQ2 is also examined at whole-track scale on
 both corpora, again on the development set. A naive note-order chain is
 worse than the score graph, but the same graph with its pitch term removed
@@ -178,9 +179,10 @@ flaw in the first design had been found and corrected, the value of the
 prior is the transfer of the track's shared tuning offset to a note whose
 audio is absent. Beyond that common mode, score structure adds nothing
 measurable for intonation at chain or phrase scale or for timing at chain
-scale, although at phrase scale it is better than a purely temporal prior.
-These are three development studies
-(\S\ref{sec:phase3-priorvalue}). The curve-level coupling, the remaining
+scale, although at phrase scale it is better than a purely temporal prior,
+a finding that was then supported once on held-out tracks
+(\S\ref{sec:phase3-heldout}). These are three development studies and one
+pre-specified evaluation (\S\ref{sec:phase3-priorvalue}). The curve-level coupling, the remaining
 channels and whole-performance scale remain open: the within-note curves
 still carry independent priors, and the graph meets the full waveform
 posterior only post hoc, as an observation channel of the
@@ -244,7 +246,7 @@ Evaluated on a held-out test set (Chapter~\ref{ch:results}) \\
 strings and winds (stage 2): measurement uncertainty & Intonation, vibrato, loudness on continuously pitched instruments &
 $f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & Evaluated on a held-out test set (URMP): intonation recovery, vibrato calibration and coverage supported, the secondary timing hypothesis not supported (Chapter~\ref{ch:phase2}) \\
 waveform (stage 3): the endpoint & Differentiable synthesizer as audio likelihood &
-Harmonic amplitudes $a$, audio $x$ & Development studies: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); no held-out evaluation yet \\
+Harmonic amplitudes $a$, audio $x$ & Development studies: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); one pre-specified claim, the weak form at phrase scale, evaluated once on the re-used strings-and-winds test pieces and supported \\
 motif edges: structure outside the time window & Motif repetition in the score graph (Beethoven sonata movements, annotated and predicted occurrences) &
 One further edge family $W_{\mathrm{motif}}$, in a shared and a per-channel form & Development studies and one pre-specified evaluation on held-out performances of the same movements (Chapter~\ref{ch:motif}) \\
 \bottomrule

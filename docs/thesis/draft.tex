@@ -148,8 +148,8 @@ set. A tonal pitch metric evaluated in the same way does not meet its
 pre-specified calibration criterion and remains exploratory.
 
 The waveform setting, in which the observation is the audio through a
-differentiable synthesizer, is studied on the development set only, and no
-hypothesis is tested there. From the raw waveform alone, without a pitch
+differentiable synthesizer, is studied on the development set, and one of
+its findings is then tested once on held-out pieces. From the raw waveform alone, without a pitch
 tracker, the model infers whole within-note pitch curves with a smaller
 median error than the tracker's frames, strengthens the six-channel bundle
 as a further observation channel, and infers note boundaries jointly from
@@ -157,7 +157,10 @@ score-nominal starting points. On short chains with one note removed it
 recovers the hidden note or joint from its context under a cross-note
 prior, but this gain is entirely the context's common offset. Beyond that
 offset, score structure adds nothing measurable at chain or phrase scale,
-although at phrase scale it is better than a purely temporal prior. With that one qualification, these three results are negative. The central design constraint of the waveform setting is also
+although at phrase scale it is better than a purely temporal prior, and
+that advantage is supported in a pre-specified evaluation on the held-out
+pieces of the second setting, disclosed as a third use of them. With that
+one qualification, these three results are negative. The central design constraint of the waveform setting is also
 quantified: calibration must bridge the estimand gap between the harmonic
 model and the annotation chain. A development finding on both corpora
 attributes the graph's value. The same graph with its pitch term removed
