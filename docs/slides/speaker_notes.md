@@ -1204,8 +1204,8 @@ four times.
 the hidden motif notes, shared form against the time-only graph,
 negative with the 95 percent interval excluding zero. M2, secondary and
 non-gating: the timing log score by the same rule. M3, report only:
-velocity log score and coverage, timing RMSE, the per-channel form
-running beside the shared one, and the random scheme. The arm is the
+velocity log score and coverage, timing RMSE, and the per-channel form
+running beside the shared one. The arm is the
 shared form because its power is the higher of the two (`0.95` against
 `0.93`) and its articulation effect the larger and more even across
 movements.
@@ -1217,9 +1217,28 @@ timing log score `0.33` at the measured effect and below `0.2` at two
 thirds. So M1 is the well-powered claim and M2 is included because it
 was the first study's hypothesis, with its weak power stated.
 
-**Timing.** Frozen and tagged on 20 November, run once on 23 November
-with a guarded runner that refuses a second run, every number reported
-whatever the outcome. The result goes on this slide verbatim.
+**The result, run once on 18 November.** Frozen and tagged at midday,
+two days ahead of the planned freeze with nothing in the protocol
+changed, and run once that afternoon: 696 fits, 14 shards, under two
+hours. M1 holds: the articulation error of the hidden returns falls by
+`0.029` with interval `[−0.049, −0.011]`, below zero on 15 of the 18
+movements, against `0.035` on development, and the per-movement effects
+of the two studies correlate at `0.88`, so the family helps the other
+performers on the same movements it helped the development performer
+on. M2 does not hold: timing log score `−0.018` with the interval
+`[−0.191, +0.225]`, as the power table said it would most likely not.
+Report only: the shared form's timing error falls by `0.0037` seconds
+with the interval clear of zero, its velocity penalty from the first
+study is gone (`−0.016`, interval covering zero, coverage `0.847`), and
+the per-channel form reproduces its development picture (articulation
+`−0.051` log score and `−0.023` error, velocity `−0.085` with coverage
+`0.934`, nothing on timing). The learned weights say the same: the
+shared weight above `0.1` on 37 of 58 performances, the per-channel
+scale above `0.1` on articulation on 26 and on timing or velocity on
+none. Say the one sentence at the bottom: articulation of a hidden
+return holds across performers of the same movements, timing is
+switched off by the evidence. The test is across performers, not
+repertoire, and stays labelled so.
 
 ## Slide 37. Summary
 
@@ -1237,12 +1256,14 @@ one edge family outside the time window. On development it improves
 articulation accuracy on hidden returns in both of its forms, the
 evidence switches it off on timing, and a discovery model's predicted
 occurrences give about half the effect. Its one pre-specified test on
-held-out performances runs on 23 November.
+held-out performances of the same movements was run once on 18
+November: articulation holds, `−0.029` with the interval excluding zero,
+timing does not.
 
 ## Slide 38. Plan
 
 
-Six rows, read top down. October, done: the curve studies, the bundle
+Five rows, read top down. October, done: the curve studies, the bundle
 channel, joint boundaries, the three spans of slide 30, the attribution
 of slide 31; decided on 23 October with the professor hands-off: the
 attribution is stated as a development finding, the headline models
@@ -1260,8 +1281,11 @@ claim, the weak form of slide 30 (graph beats temporal on the hidden
 note), as one shot on the same re-used pool at the waveform level, its
 third use, disclosed; power only 0.3 to 0.5, run anyway so the chapter
 has a held-out answer; run the same day and passed, `−0.82` cents with
-the interval excluding zero, the fourth row of slide 30. Registered
-on 20 November: the motif test of slide 36, run once on 23 November.
+the interval excluding zero, the fourth row of slide 30. The same
+afternoon, registered at midday and run once: the motif test of slide
+36, articulation passed (`−0.029`, interval `[−0.049, −0.011]`), timing
+missed as its power table said. The two sit in one row. With that, every
+result line of the thesis is in.
 Then: the lab seminar on 3 December with the results closed, December
 for writing only, no new experiments, the progress talk on 7 January
 from this deck, submission on 2 February. The transient model at the

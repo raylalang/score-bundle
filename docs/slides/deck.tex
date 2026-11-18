@@ -844,39 +844,43 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{The pre-specified test: held-out performances of the same movements}
-  \footnotesize
+  \scriptsize
   \textbf{Pool.} For each development movement, the other aligned ASAP
   performances, at most four, none read by any run: 18 movements, 58
-  performances. Scores, annotations, masks and edges are those of the
-  development study, only the targets are new, so the test is across
-  performers, not across pieces, and is labelled so wherever it appears.
-  Unit of analysis the movement, performances averaged within it before
-  pairing, percentile bootstrap $B = 2000$.
+  performances. Scores, annotations, masks and edges are the development
+  study's, only the targets are new: a test across performers, not across
+  pieces, labelled so wherever it appears. Unit of analysis the movement,
+  performances averaged within it before pairing, percentile bootstrap
+  $B = 2000$.
 
   \textbf{Claims}, time-only graph against the shared form, hidden motif
-  notes, whole occurrences hidden.
+  notes, whole occurrences hidden. Frozen and tagged at midday on
+  18 November, run once that afternoon (696 fits), every number reported.
   \begin{itemize}
     \item M1, primary: articulation RMSE, paired difference $< 0$ with the
-          95 percent interval excluding zero
-    \item M2, secondary, non-gating: timing log score, same rule
-    \item M3, report only: velocity log score and coverage, timing RMSE,
-          the per-channel form beside it, the random scheme
+          95 percent interval excluding zero (power $0.95$ at 18 movements)
+    \item M2, secondary, non-gating: timing log score, same rule (power $0.33$)
+    \item M3, report only: velocity, timing RMSE, coverage, the per-channel form
   \end{itemize}
   \vspace{-1mm}
   \begin{center}
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{@{}lcc@{}}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}llcl@{}}
     \toprule
-    power, 18 movements, by subsampling the development study & M1 articulation RMSE & M2 timing log score \\
+    & contrast, hidden returns & estimate $[95\%]$ & reading \\
     \midrule
-    at the measured effect & $0.95$ & $0.33$ \\
-    at two thirds of it & $0.51$ & below $0.2$ \\
+    M1 & articulation RMSE, shared & $-0.029$ $[-0.049, -0.011]$ & holds, 15 of 18, dev.\ $-0.035$, corr.\ $0.88$ \\
+    M2 & timing log score, shared & $-0.018$ $[-0.191, +0.225]$ & miss, as the power table said \\
+    M3 & velocity log score, shared & $-0.016$ $[-0.042, +0.009]$ & penalty gone, cov.\ $0.847$, timing RMSE $-0.0037$ \\
+    M3 & artic.\ log score, per-channel & $-0.051$ $[-0.104, -0.012]$ & RMSE $-0.023$, cov.\ $0.919$ \\
+    M3 & velocity log score, per-channel & $-0.085$ $[-0.177, -0.022]$ & RMSE $-0.0060$, cov.\ $0.934$ \\
     \bottomrule
   \end{tabular}
   \end{center}
   \vspace{-1mm}
-  Frozen and tagged on 20 November, run once on 23 November, every number
-  reported whatever the outcome. The result enters this slide verbatim.
+  Articulation of a hidden return holds across performers of the same
+  movements; timing is switched off by the evidence, as on development.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -898,18 +902,19 @@
           corpora, its value is smoothing in score time over about two
           beats; pitch proximity adds nothing measurable (development).
     \item \textbf{Motif structure}: one edge family outside the time
-          window; on development, articulation accuracy on hidden
-          returns in both forms, timing switched off by the evidence,
-          about half the effect from a discovery model's predictions;
-          one pre-specified test on held-out performances (23 November).
+          window; articulation accuracy on hidden returns in both forms,
+          timing switched off by the evidence, half the effect from a
+          discovery model's predictions; held-out performances, run
+          once: articulation holds ($-0.029$, interval excluding zero),
+          timing does not.
   \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Plan}
   \begin{center}
-  \footnotesize
-  \begin{tabular}{@{}lp{90mm}@{}}
+  \scriptsize
+  \begin{tabular}{@{}lp{92mm}@{}}
     \toprule
     done (October) & curve-from-waveform studies, the bundle channel,
           joint boundaries, the score prior at three spans, the graph's
@@ -923,12 +928,12 @@
     done (November) & the motif family: two development studies and the
           predicted-occurrence study (slides 34 and 35); the thesis gains
           its motif chapter and the framing around it. \\
-    registered (18 November) & the phrase-scale waveform claim, one shot
-          on the re-used pool at the waveform level, power 0.3 to 0.5,
-          run once the same day and passed ($-0.82$ cents
-          $[-1.59,-0.05]$, slide 30). \\
-    registered (20 November) & the motif test on held-out performances
-          (slide 36), run once on 23 November. \\
+    run once (18 November) & morning: the phrase-scale waveform claim on
+          the re-used pool at the waveform level, power 0.3 to 0.5, passed
+          ($-0.82$ cents $[-1.59,-0.05]$, slide 30). Afternoon: the motif
+          test on held-out performances (slide 36), articulation passed
+          ($-0.029$ $[-0.049,-0.011]$), timing missed as its power said.
+          Every result line of the thesis is in. \\
     then & 3 December: lab seminar with the results closed; December:
           writing only, no new experiments; progress talk 7 January from
           this deck; submission 2 February. The transient model at the

@@ -179,8 +179,10 @@ from the predictions of a motif-discovery model. With whole occurrences
 hidden, the family lowers the articulation error of the hidden notes on
 the development set with an interval excluding zero, in a shared form and
 in a per-channel form, the evidence switches it off on timing, and
-predicted occurrences keep about half of the effect. One pre-specified
-evaluation on further performances of the same movements closes the study.
+predicted occurrences keep about half of the effect. In one pre-specified
+evaluation on further performances of the same movements the articulation
+effect holds, with an interval excluding zero and on fifteen of eighteen
+movements, and the timing effect does not.
 \end{abstract}
 
 \tableofcontents
@@ -302,8 +304,9 @@ and its two-beat time window kept matches it
 reward is smoothness in score time rather than pitch proximity.
 Chapter~\ref{ch:motif} then asks whether a structure that the time window
 cannot see, the repetition of a motif, carries expressive information of
-its own, and answers on the development set and in one pre-specified
-evaluation on held-out performances.
+its own, and answers that it does for articulation, on the development set
+and in one pre-specified evaluation on held-out performances of the same
+movements.
 
 \section{The proposed model and the two-stage pipeline}\label{sec:twostage}
 Two names recur throughout the thesis. \textbf{The proposed model} is the
@@ -389,7 +392,8 @@ articulation error of the hidden notes with an interval excluding zero in
 both of its forms, the evidence switches it off on timing, and edges built
 from the predictions of a motif-discovery model keep about half of the
 effect. Its one pre-specified evaluation, on further performances of the
-same movements, is reported in \S\ref{sec:motif-heldout}.
+same movements, supports the articulation effect with an interval excluding
+zero and not the timing effect (\S\ref{sec:motif-heldout}).
 
 \section{Scope and non-goals}\label{sec:scope}
 The core result is scoped to piano and to symbolic performance variables
@@ -436,7 +440,7 @@ $f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{
 waveform (stage 3): the endpoint & Differentiable synthesizer as audio likelihood &
 Harmonic amplitudes $a$, audio $x$ & Development studies: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); one pre-specified claim, the weak form at phrase scale, evaluated once on the re-used strings-and-winds test pieces and supported \\
 motif edges: structure outside the time window & Motif repetition in the score graph (Beethoven sonata movements, annotated and predicted occurrences) &
-One further edge family $W_{\mathrm{motif}}$, in a shared and a per-channel form & Development studies and one pre-specified evaluation on held-out performances of the same movements (Chapter~\ref{ch:motif}) \\
+One further edge family $W_{\mathrm{motif}}$, in a shared and a per-channel form & Development studies, and one pre-specified evaluation on held-out performances of the same movements that supports the articulation effect (Chapter~\ref{ch:motif}) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -3130,7 +3134,15 @@ length then receive one-to-one edges between corresponding notes, and
 returns of unequal length receive a soft block between the notes near the
 same relative position. Nothing is aligned and nothing inside the family is
 learned. A note that belongs to no occurrence, or whose type occurs only
-once in the excerpt, has no motif edge.
+once in the excerpt, has no motif edge. Figure~\ref{fig:motif-graph} draws
+the two families on a score excerpt.
+
+\figph{proposal_motif_graph.png}{0.78}{The two edge families on a score
+excerpt. Grey edges are the time-window neighbours of the graph of
+Chapter~\ref{ch:model}. Blue edges are the motif family of
+\eqref{eq:motif-adj}: each note of an occurrence is joined to the notes at
+the same relative position in every other occurrence of its
+type.\label{fig:motif-graph}}
 
 The family enters the model of Chapter~\ref{ch:model} in two forms. In the
 \textbf{shared form} the adjacency \eqref{eq:adjacency} gains the family
@@ -3303,6 +3315,32 @@ edge of worse. The measured value of the family at this stage is therefore
 articulation accuracy, and the pre-specified evaluation of
 \S\ref{sec:motif-heldout} takes that as its primary measure.
 
+Table~\ref{tab:motif-dev} collects the second study's results on the hidden
+motif notes under the occurrence scheme.
+
+\begin{table}[t]\centering
+\caption{The second development study: twenty-one movements, four seeds,
+the occurrence scheme, scores on the hidden motif notes, paired per
+movement with seeds averaged, $95\%$ bootstrap intervals over movements.
+Each motif arm against the time-only graph, whose coverage of the
+nominal-$90\%$ band is $0.970$ on timing, $0.891$ on articulation and
+$0.878$ on velocity. A negative value favours the motif arm.}
+\label{tab:motif-dev}
+\footnotesize
+\begin{tabular}{@{}llccc@{}}
+\toprule
+arm & channel & $\Delta$ log score & $\Delta$ RMSE & coverage \\
+\midrule
+shared & timing & $-0.071$ $[-0.230, +0.097]$ & $-0.0027$ $[-0.0055, -0.0004]$ & $0.971$ \\
+shared & articulation & $-0.047$ $[-0.117, +0.025]$ & $-0.0345$ $[-0.0600, -0.0125]$ & $0.879$ \\
+shared & velocity & $+0.033$ $[-0.012, +0.078]$ & $+0.0001$ $[-0.0021, +0.0022]$ & $0.835$ \\
+per-channel & timing & $-0.005$ $[-0.076, +0.054]$ & $+0.0010$ $[-0.0041, +0.0058]$ & $0.975$ \\
+per-channel & articulation & $-0.044$ $[-0.113, +0.004]$ & $-0.0189$ $[-0.0381, -0.0053]$ & $0.921$ \\
+per-channel & velocity & $-0.086$ $[-0.200, -0.018]$ & $-0.0057$ $[-0.0106, -0.0023]$ & $0.944$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Predicted occurrences}\label{sec:motif-stage2}
 The third study replaces the annotated occurrences by those predicted by
 a graph-based motif discovery model \cite{lalang2026motif}, taking for each
@@ -3339,10 +3377,100 @@ without annotations and keeps about half of its effect at this size, with
 intervals that cover zero on twenty-one movements.
 
 \section{Held-out performances}\label{sec:motif-heldout}
-% PENDING: the pre-specified evaluation (results/motif_heldout_results.md).
+The pre-specified evaluation uses, for each development movement, the
+other aligned ASAP performances of the same movement, at most four in
+sorted order, none of which any run had read. Eighteen movements have at
+least one and three have none, fifty-eight performances in all. Everything
+else is the second study's: the scores, the annotations, the occurrence
+scheme with its four seeds, the arms and the scored notes. Only the
+performances, and so the targets, are new, so the evaluation asks whether
+the development finding holds across performers of the same movements and
+not across repertoire, and \S\ref{sec:hygiene} labels it so. The unit of
+analysis is the movement. Seeds are averaged within a performance and
+performances within a movement before pairing, with the percentile
+bootstrap over the eighteen movements. The primary measure, fixed before
+the run from the second study's power table, is the articulation error of
+the hidden motif notes under the occurrence scheme, shared form against the
+time-only graph, with the prediction that the paired difference is negative
+with an interval excluding zero. The power of that measure at eighteen
+movements was $0.95$ at the development effect. The timing log score was
+the secondary measure under the same rule, with a power of $0.33$. The
+velocity channel, the timing error, the coverage and the per-channel form
+were recorded without prediction.
+
+\begin{table}[t]\centering
+\caption{The pre-specified evaluation on held-out performances: eighteen
+movements, fifty-eight performances that no development run had read, the
+occurrence scheme with four seeds, scores on the hidden motif notes, paired
+per movement with seeds and performances averaged within it, $95\%$
+bootstrap intervals over movements. Each motif arm against the time-only
+graph, whose coverage of the nominal-$90\%$ band is $0.968$ on timing,
+$0.891$ on articulation and $0.878$ on velocity. A negative value favours
+the motif arm. The articulation error of the shared form is the
+pre-specified primary measure.}
+\label{tab:motif-heldout}
+\footnotesize
+\begin{tabular}{@{}llccc@{}}
+\toprule
+arm & channel & $\Delta$ log score & $\Delta$ RMSE & coverage \\
+\midrule
+shared & timing & $-0.018$ $[-0.191, +0.225]$ & $-0.0037$ $[-0.0076, -0.0007]$ & $0.966$ \\
+shared & articulation & $-0.026$ $[-0.098, +0.034]$ & $-0.0286$ $[-0.0494, -0.0109]$ & $0.878$ \\
+shared & velocity & $-0.016$ $[-0.042, +0.009]$ & $-0.0032$ $[-0.0059, -0.0007]$ & $0.847$ \\
+per-channel & timing & $+0.006$ $[-0.049, +0.051]$ & $-0.0005$ $[-0.0040, +0.0026]$ & $0.976$ \\
+per-channel & articulation & $-0.051$ $[-0.104, -0.012]$ & $-0.0232$ $[-0.0411, -0.0064]$ & $0.919$ \\
+per-channel & velocity & $-0.085$ $[-0.177, -0.022]$ & $-0.0060$ $[-0.0121, -0.0019]$ & $0.934$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:motif-heldout} gives the result. The articulation error of
+the hidden returns falls from $0.622$ to $0.598$ in the shared form, a
+paired difference of $-0.029$ with interval $[-0.049, -0.011]$, below zero
+on fifteen of the eighteen movements, so the prediction holds. The
+development effect was $-0.035$ on twenty-one movements, and the
+per-movement differences of the two studies correlate at $0.88$ on the
+eighteen movements they share: the movements on which the family helped
+on the development performance are those on which it helps the other
+performers. The timing log score moves by $-0.018$ with interval
+$[-0.191, +0.225]$, so the secondary prediction does not hold, as on four
+seeds of the development set and as its power anticipated. The timing error
+falls by $0.0037$~s with interval $[-0.0076, -0.0007]$. On velocity the
+miscalibration of the first study is absent in the shared form, log score
+$-0.016$ with interval $[-0.042, +0.009]$ and the error lower by $0.0032$,
+with the coverage of the $90\%$ band at $0.847$ against $0.878$ for the
+time-only graph. The per-channel form reproduces its development picture:
+articulation log score $-0.051$ with interval $[-0.104, -0.012]$ and error
+$-0.023$, velocity log score $-0.085$ with interval $[-0.177, -0.022]$ with
+coverage $0.934$, and nothing on timing. The learned weights say the same.
+The shared weight exceeds $0.1$ on thirty-seven of the fifty-eight
+performances, and the per-channel scale exceeds $0.1$ on articulation on
+twenty-six performances and on none for timing or velocity.
 
 \section{What the result means}\label{sec:motif-meaning}
-% PENDING: written after the held-out evaluation.
+The motif family is the one score structure in this thesis whose measured
+value lies outside the two-beat time window, and the held-out evaluation
+places that value where the development studies placed it, in how the
+returns of a motif are detached and held. The time window cannot see a
+return that has not been heard. The motif edges can, and on articulation
+the performers of eighteen movements shape their returns alike enough for
+the edges to lower the error of a hidden return by about four percent, on
+the performance the family was developed on and on up to four others. On
+timing the time-only graph is already well calibrated and the evidence
+switches the family off, on the development set and again here. On
+velocity the family's value depends on its form. One weight shared with
+timing and articulation over-ties the velocities of returns, and the
+per-channel form, which lets each channel choose its own scale, turns the
+penalty of the first study into a gain on both axes with coverage near
+nominal. The effect is small in absolute terms and confined to one
+channel, and the evaluation is across performers of the same movements and
+not across repertoire, since no annotated movement outside the development
+set has an aligned performance. Within those limits the question the
+attribution left open has a measured answer. A structure the time window
+cannot see carries expressive information of its own, the first such
+structure in this thesis, and the direction it points to, an
+across-performer model of motif shaping, is taken up in
+Chapter~\ref{ch:future}.
 
 % =====================================================================
 
@@ -3422,10 +3550,10 @@ alternatives, but their attribution is narrower than the model's name
 suggests.
 
 The motif study is a development result on twenty-one movements of one
-composer with hand-made annotations, and its one pre-specified evaluation
-uses further performances of the same movements rather than new pieces
-(\S\ref{sec:motif-heldout}), so it tests generalisation across performers
-and not across repertoire. Its effect is confined to one channel,
+composer with hand-made annotations, and its one pre-specified evaluation,
+which supports the articulation effect, uses further performances of the
+same movements rather than new pieces (\S\ref{sec:motif-heldout}), so it
+tests generalisation across performers and not across repertoire. Its effect is confined to one channel,
 articulation. The timing effect of the first development study did not
 hold on more seeds, and edges from a discovery model keep about half of
 the effect with intervals that cover zero at this size.
@@ -3711,8 +3839,9 @@ further edge family, from the returns of a motif, lowers the articulation
 error of hidden returns on the development set in both of its forms, is
 switched off by the evidence on timing, and keeps about half of its effect
 when the occurrences come from a motif-discovery model instead of the
-annotations. Its pre-specified evaluation on held-out performances is
-reported in \S\ref{sec:motif-heldout}.
+annotations. Its pre-specified evaluation on held-out performances of the
+same movements supports the articulation effect once, with an interval
+excluding zero, and not the timing effect (\S\ref{sec:motif-heldout}).
 
 % =====================================================================
 

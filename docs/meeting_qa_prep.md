@@ -35,9 +35,9 @@ sentences left.
 
 1. **Where things stand, 60 s, no slide.** Thesis 88 pages, every
    confirmation pool spent, the main study complete, the motif chapter
-   drafted with two sections pending the held-out run (registered and
-   launched at 13:43 today, Ray's go at the midday check, 14 shards,
-   about 2 h); one week lost to
+   complete (the held-out test registered at midday on Ray's go, run
+   once 13:43 to 15:31, M1 passed, written in by 16:30, 89 pages, one
+   file for Overleaf); every result line of the thesis is in; one week lost to
    the conference; the zemi on 12-03 is the point where the results are
    done, December is writing.
 2. **The proof of concept promised on 10-28, about 8 min** (frame 10
@@ -68,11 +68,17 @@ sentences left.
    confirmation tracks, frozen, launched and PASSED the morning of 11-18;
    the motif claim on untouched performances of the same
    21 pieces, frozen and tagged `motif-registration-2026-11-18` at
-   midday and RUNNING since 13:43, two days ahead of the planned
-   freeze; its verdict is reported verbatim today if the report lands
-   before the room, otherwise next week), the thesis chapter and deck
-   already carrying everything but the motif verdict, nothing new after
-   December. Say the power check plainly: the waveform one-shot has 0.3
+   midday and RUN ONCE 13:43 to 15:31, two days ahead of the planned
+   freeze: **M1 passed**, articulation RMSE on hidden returns −0.029
+   [−0.049, −0.011] on 18 movements, 15 of 18 below zero, development
+   −0.035, per-movement effects correlated 0.88 with development; M2
+   timing log score missed, −0.018 with the interval covering zero, as
+   the power table said; the velocity penalty gone; the per-channel form
+   reproduces its development picture. Say: "articulation of a hidden
+   return holds across performers of the same movements; timing is
+   switched off by the evidence, as on development." Thesis
+   `sec:motif-heldout`, deck slide 36), the thesis and deck carrying
+   every result, nothing new after December. Say the power check plainly: the waveform one-shot has 0.3
    to 0.5 on the drawn cells (strings 14, winds 25, brass 9 of 48), and
    its verdict is reported verbatim. The motif arm is the shared
    weight (power 0.95 against 0.93 for the per-channel form; Ray
@@ -535,10 +541,11 @@ from here, so they were decided; state each as a decision and listen.
   pair and in both forms (−0.035 shared, −0.019 per channel), and the
   evidence itself switches the family off on timing on 19 of 21
   movements and keeps it on articulation on 10. Power 0.95 against 0.33.
-- **"What if M1 misses?"** The chapter keeps its development results as
-  development results and states the miss; the thesis's last sentence on
-  motif structure becomes "measured on development, not supported on
-  held-out performances". Nothing else in the thesis depends on it.
+- **"M1 passed at 0.83 of the development effect. Is that the same
+  finding?"** Yes: the per-movement effects correlate at 0.88 across the
+  18 movements the two studies share, so the family helps the other
+  performers on the movements it helped the development performer on.
+  Across performers, not repertoire, and labelled so.
 - **"Is this the GPU work?"** No. Every study here is CPU (14 shards,
   two threads each); the GPUs are for the music model only, and on
   sacs14 only GPU 6 and 7 are ours.

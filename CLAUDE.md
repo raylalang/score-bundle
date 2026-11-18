@@ -301,8 +301,18 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   `time_motif`, power 0.95 at 18 pieces; M2 timing ΔNLL 0.33; pool = aligned
   performances other than the dev one, capped at 4 per piece, 18 pieces / 58
   performances; guarded runner `scripts/run_motif_heldout.sh` needs
-  `MOTIF_HELDOUT_I_AM_SURE=yes`, RUN ONCE 2026-11-18 14:00 on Ray's go, never rerun;
-  verdict in `results/motif_heldout_results.md` once scored). Stage two MEASURED
+  `MOTIF_HELDOUT_I_AM_SURE=yes`, **RUN ONCE 2026-11-18 13:43-15:31** on Ray's go, 696
+  fits, never rerun). **VERDICT (`results/motif_heldout_results.md`, evidence
+  `evidence/motif_heldout/`): M1 PASS, articulation ΔRMSE −0.0286 [−0.0494, −0.0109]*
+  on 18 movements (dev −0.0345; 15 of 18 below zero; per-piece effects correlate 0.88
+  with dev); M2 timing ΔNLL −0.018 [−0.191, +0.225] miss, as the power table (0.33)
+  said; report-only: shared timing RMSE −0.0037*, velocity penalty gone (−0.016 ns,
+  cov 0.847), per-channel form reproduces dev (artic −0.051*/−0.0232*, velocity
+  −0.085* cov 0.934, timing nothing). Headline by the registered rule: annotated motif
+  structure carries expressive information beyond temporal smoothing, confirmed once on
+  held-out performances of the development pieces (disclosed; across performers, not
+  repertoire). Thesis `sec:motif-heldout` + `tab:motif-heldout`, `sec:motif-meaning`,
+  `tab:motif-dev`, `fig:motif-graph`; deck slide 36 result table, Summary, Plan. Stage two MEASURED
   2026-11-17 (`scripts/run_motif_stage2.sh`, `results/motif_stage2_dev.md`, H3: edges
   from the ISMIR model's held-out predicted occurrences at q = 0.86, masks and cells
   unchanged, 252 fits): predicted edges give 0.48 of the annotated timing log-score
@@ -324,7 +334,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   table bodies unchanged. Pre-makeover text = tag `thesis-pre-makeover-2026-10-28`.
   80 pp after the makeover (prose expanded; no content added or cut). Any future
   thesis edit follows the style guide and is run through the checker.
-- **Thesis state (2026-11-18, main=2988941+): 88 pp with the motif chapter, its framing in the abstract, intro, discussion, future work and conclusion, and the waveform held-out section (80 after the makeover of 2026-10-28), compile clean** (cut from 83 on
+- **Thesis state (2026-11-18 evening, main=1ff2fe9+): 89 pp, ONE FILE, every result line in: the motif chapter complete (held-out section, meaning section, development table, graph figure), its framing in the abstract, intro, discussion, future work and conclusion, the waveform held-out section (80 after the makeover of 2026-10-28), compile clean, checker additions-only** (cut from 83 on
   2026-10-28, Ray: "subtract the irrelevant and obsolete": two-stage-era kernel table,
   per-channel ablation table and fitted filters, lineage B.2-B.5, synthetic pilot,
   leakage appendix folded into §5.4, era/performer-ID downstream tasks and the Vienna
