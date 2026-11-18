@@ -13,8 +13,8 @@
 ## Run order for 2026-11-18 (written 2026-11-17, Ray back from a week at a conference)
 
 Before the room: sync Overleaf with the whole `docs/thesis/` directory
-(87 pages as of the morning of 11-18, the motif chapter and its framing
-in); open `docs/slides/proposal_endgoal.pdf` (13 pages, internal),
+(88 pages as of the morning of 11-18, the motif chapter, its framing and
+the waveform held-out section in); open `docs/slides/proposal_endgoal.pdf` (13 pages, internal),
 `docs/slides/deck.pdf` (42 pages, the motif section is slides 32 to 36)
 and `docs/ROADMAP.md` (the calendar table).
 
@@ -33,9 +33,11 @@ work, conclusion) and the deck's motif section were written the same
 morning, verdict-free, so the writing week has only the held-out
 sentences left.
 
-1. **Where things stand, 60 s, no slide.** Thesis 87 pages, every
+1. **Where things stand, 60 s, no slide.** Thesis 88 pages, every
    confirmation pool spent, the main study complete, the motif chapter
-   drafted with two sections pending the held-out run; one week lost to
+   drafted with two sections pending the held-out run (registered and
+   launched at 13:43 today, Ray's go at the midday check, 14 shards,
+   about 2 h); one week lost to
    the conference; the zemi on 12-03 is the point where the results are
    done, December is writing.
 2. **The proof of concept promised on 10-28, about 8 min** (frame 10
@@ -65,12 +67,16 @@ sentences left.
    registrations (the waveform phrase-scale claim on the URMP
    confirmation tracks, frozen, launched and PASSED the morning of 11-18;
    the motif claim on untouched performances of the same
-   21 pieces, frozen 11-20, run 11-23), the thesis chapter and deck
-   already carrying everything but the two verdicts, nothing new after
+   21 pieces, frozen and tagged `motif-registration-2026-11-18` at
+   midday and RUNNING since 13:43, two days ahead of the planned
+   freeze; its verdict is reported verbatim today if the report lands
+   before the room, otherwise next week), the thesis chapter and deck
+   already carrying everything but the motif verdict, nothing new after
    December. Say the power check plainly: the waveform one-shot has 0.3
    to 0.5 on the drawn cells (strings 14, winds 25, brass 9 of 48), and
-   its verdict is reported verbatim. Confirm the motif arm: the shared
-   weight (power 0.95 against 0.93 for the per-channel form).
+   its verdict is reported verbatim. The motif arm is the shared
+   weight (power 0.95 against 0.93 for the per-channel form; Ray
+   confirmed it at midday, so it is a statement now, not an ask).
 4. **The asks:** (a) the zemi slot's length and language on 12-03;
    (b) whether he will read the draft before the January talk, and by
    when; (c) the progress-talk date.
@@ -499,6 +505,43 @@ from here, so they were decided; state each as a decision and listen.
    pursued this cycle.
 
 ## If asked (quick answers)
+
+- **"Why test the waveform claim on a pool already spent twice?"** It is
+  the only held-out audio with reference pitch curves we have; the two
+  earlier uses read the tracked targets, never the waveform; the claim
+  was selected on the development set alone; the registration says all
+  of this and the thesis labels the result a third disclosed use. The
+  alternative was no held-out answer at all for Chapter 8.
+- **"Power 0.3 to 0.5 and it passed. Lucky?"** The pre-stated
+  expectation for this winds-heavy mix was about −0.9 cents and the
+  estimate is −0.82, so the effect came in at the size predicted, with
+  an interval that just clears zero. A miss was the likelier outcome and
+  would have been reported the same way. The strong form (graph beats
+  the independent prior) is still a tie there, exactly as on
+  development.
+- **"Why freeze the motif test today instead of Friday?"** The draft was
+  complete on Monday; the only open item was the arm, decided by the
+  power table and confirmed at midday. Nothing in the protocol moved;
+  the tag name carries the date. Running it now means the verdict is in
+  before the zemi with margin.
+- **"Held-out performances of the same pieces: is that a test?"** It is
+  a test across performers, not across repertoire, and it is labelled
+  that way everywhere. The scores, annotations, masks and edges are the
+  development study's; the targets are new. A test across pieces needs
+  annotated movements outside ASAP (seven exist, without performances).
+- **"Why articulation and not timing as the primary?"** Because the
+  timing gain of the first pilot did not hold on four seeds (−0.071,
+  interval covering zero) while the articulation gain held on every seed
+  pair and in both forms (−0.035 shared, −0.019 per channel), and the
+  evidence itself switches the family off on timing on 19 of 21
+  movements and keeps it on articulation on 10. Power 0.95 against 0.33.
+- **"What if M1 misses?"** The chapter keeps its development results as
+  development results and states the miss; the thesis's last sentence on
+  motif structure becomes "measured on development, not supported on
+  held-out performances". Nothing else in the thesis depends on it.
+- **"Is this the GPU work?"** No. Every study here is CPU (14 shards,
+  two threads each); the GPUs are for the music model only, and on
+  sacs14 only GPU 6 and 7 are ours.
 
 - **"Why are the waveform bands so thin?"** Thousands of samples observe
   the curve through phase; we measured that the band is still too thin
