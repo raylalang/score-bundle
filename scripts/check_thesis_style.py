@@ -147,15 +147,28 @@ def check(old_path: str, new_path: str, quiet: bool = False) -> bool:
         ok = False
         print(f"[{name}] sections: FAIL ({n_sec_o} -> {n_sec_n})")
 
+    # Style counts: the document body only (the preamble's macros are not
+    # prose), and the caps on bold and emphasis are per chapter, as they were
+    # when each chapter was its own file; the front matter is its own block.
+    body = new[new.find("\\begin{document}"):] if "\\begin{document}" in new else new
+    blocks = re.split(r"(?=\\chapter\{)", body)
     prose = re.sub(r"\\(ref|eqref|autoref|label|cite)\{[^}]*\}", "",
-                   strip_footnotes(math_stripped(new)))
+                   strip_footnotes(math_stripped(body)))
+    per_block = []
+    for b in blocks:
+        bp = re.sub(r"\\(ref|eqref|autoref|label|cite)\{[^}]*\}", "",
+                    strip_footnotes(math_stripped(b)))
+        title = re.match(r"\\chapter\{([^}]*)\}", b)
+        per_block.append((title.group(1) if title else "front matter",
+                          len(re.findall(r"\\textbf\{", bp)),
+                          len(re.findall(r"\\emph\{", bp))))
     caps = {
-        "paragraph": (len(re.findall(r"\\paragraph\{", new)), 0),
+        "paragraph": (len(re.findall(r"\\paragraph\{", body)), 0),
         "em-dash": (prose.count("---"), 0),
         "semicolon": (prose.count(";"), 0),
         "asterisk": (len(re.findall(r"(?<!\\)\*", prose)), 0),
-        "textbf": (len(re.findall(r"\\textbf\{", prose)), 5),
-        "emph": (len(re.findall(r"\\emph\{", prose)), 12),
+        "textbf (max per chapter)": (max(t for _, t, _ in per_block), 5),
+        "emph (max per chapter)": (max(e for _, _, e in per_block), 12),
     }
     for k, (n, cap) in caps.items():
         flag = "FAIL" if n > cap else "ok"
@@ -163,6 +176,11 @@ def check(old_path: str, new_path: str, quiet: bool = False) -> bool:
             ok = False
         if n > cap or not quiet:
             print(f"[{name}] {k}: {n} (cap {cap}) {flag}")
+        if n > cap and "per chapter" in k:
+            idx = 1 if "textbf" in k else 2
+            for row in per_block:
+                if row[idx] > cap:
+                    print(f"    {row[0][:50]}: {row[idx]}")
     hits = []
     for pat in BANNED:
         for m in re.finditer(pat, prose):
