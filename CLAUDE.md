@@ -245,7 +245,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   winds −0.54 / brass −0.44 (none starred). `results/phrase_prior_confirmation_results.md`
   (verdict block), `evidence/phrase_prior_confirmation/`. The pool is spent
   three times over; never rerun. Thesis `sec:phase3-heldout` +
-  `tab:phase3-heldout`, deck slide 30 fourth row. Still open: the curve level, the other
+  `tab:phase3-heldout`, deck slide 31 fourth row. Still open: the curve level, the other
   channels, whole-performance scale — the curves themselves carry independent
   priors, amplitudes are read out post hoc. Thesis: main-line Ch. 8
   (`ch:phase3`) + Future Work `sec:future-phase3`. The three spectral-kernel
@@ -312,7 +312,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   structure carries expressive information beyond temporal smoothing, confirmed once on
   held-out performances of the development pieces (disclosed; across performers, not
   repertoire). Thesis `sec:motif-heldout` + `tab:motif-heldout`, `sec:motif-meaning`,
-  `tab:motif-dev`, `fig:motif-graph`; deck slide 36 result table, Summary, Plan. Stage two MEASURED
+  `tab:motif-dev`, `fig:motif-graph`; deck slide 39 result table, Summary, Plan. Stage two MEASURED
   2026-11-17 (`scripts/run_motif_stage2.sh`, `results/motif_stage2_dev.md`, H3: edges
   from the ISMIR model's held-out predicted occurrences at q = 0.86, masks and cells
   unchanged, 252 fits): predicted edges give 0.48 of the annotated timing log-score
@@ -346,11 +346,13 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   representation with uncertainty; method = Bayesian score-conditioned inverse
   synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
   ladder; three-question RQ hierarchy. `docs/slides/deck.tex` is the one full
-  thesis deck (42 pages since 2026-11-18: the 2026-10-28 cut to 37, Ray: findings only,
-  plus the motif section, divider 32 and main-line slides 33-36 = family and conditional,
-  development table, predicted occurrences, the pre-specified test; Summary 37, Plan 38,
-  backup 40-42; the three spans and the time-window attribution are main-line slides
-  30-31; the two re-used-pool one-shots are main-line slide 20; Ray cuts the zemi
+  thesis deck (45 pages since the evening of 2026-11-18, Ray: watch margins and
+  overlaps from slide 26 on, do not smash everything into one slide: the 2026-10-28 cut to
+  37, findings only, plus the motif section, divider 33 and main-line slides 34-39 =
+  family, conditional, development table, predicted occurrences, the pre-specified test's
+  pool and claims, its result; Summary 40, Plan 41, backup 43-45; the three spans are
+  slides 30 (setup) and 31 (table), the time-window attribution 32; the two re-used-pool
+  one-shots are main-line slide 20; Ray cuts the zemi
   version himself; **every deck.tex change must be
   followed by a change to `docs/slides/speaker_notes.md`, same commit — Ray's
   standing rule 2026-10-21**). `docs/meeting_qa_prep.md` = the 2026-10-14

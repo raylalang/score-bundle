@@ -15,7 +15,7 @@
 Before the room: sync Overleaf with the whole `docs/thesis/` directory
 (88 pages as of the morning of 11-18, the motif chapter, its framing and
 the waveform held-out section in); open `docs/slides/proposal_endgoal.pdf` (13 pages, internal),
-`docs/slides/deck.pdf` (42 pages, the motif section is slides 32 to 36)
+`docs/slides/deck.pdf` (45 pages, the motif section is slides 33 to 39)
 and `docs/ROADMAP.md` (the calendar table).
 
 Morning of 11-18, before the meeting (done): the phrase-scale waveform
@@ -28,7 +28,7 @@ pre-stated expectation for the winds-heavy mix about −0.9, power 0.3 to
 rows zero; by family strings −1.55, winds −0.54, brass −0.44, none
 starred alone. Say: "the weak form holds on tracks no waveform study
 had read; the strong form does not, there either." Thesis
-`sec:phase3-heldout`, deck slide 30 fourth row. The thesis framing (abstract, intro, discussion, future
+`sec:phase3-heldout`, deck slide 31 fourth row. The thesis framing (abstract, intro, discussion, future
 work, conclusion) and the deck's motif section were written the same
 morning, verdict-free, so the writing week has only the held-out
 sentences left.
@@ -77,7 +77,7 @@ sentences left.
    reproduces its development picture. Say: "articulation of a hidden
    return holds across performers of the same movements; timing is
    switched off by the evidence, as on development." Thesis
-   `sec:motif-heldout`, deck slide 36), the thesis and deck carrying
+   `sec:motif-heldout`, deck slide 39), the thesis and deck carrying
    every result, nothing new after December. Say the power check plainly: the waveform one-shot has 0.3
    to 0.5 on the drawn cells (strings 14, winds 25, brass 9 of 48), and
    its verdict is reported verbatim. The motif arm is the shared

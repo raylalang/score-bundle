@@ -6,7 +6,7 @@ is the title page). The note for each slide states what the slide says,
 defines every symbol on it, and gives an example. Written at the
 simplest level that is still complete.
 
-Coverage: every slide, 2 to 42 (the motif section, slides 32 to 36, was added
+Coverage: every slide, 2 to 45 (the motif section, slides 33 to 39, was added
 on 2026-11-18; the deck was cut from 56 to 37 pages on 2026-10-28, Ray's direction: findings only; the removed frames and
 their notes are in git history, commit 9fe8778). (`docs/zemi_prep.md` holds the older
 notes for the 28-slide zemi deck; its frame numbers do not match this
@@ -591,7 +591,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   halfway through the curve fit. In a real recording `ε` contains bow
   and breath noise, room reverberation, harmonics above the eighth,
   slight inharmonicity, and the mismatch between piecewise-constant
-  amplitudes and the true envelope. Caveat, said on slide 40: it is not
+  amplitudes and the true envelope. Caveat, said on slide 43: it is not
   white; the residual at the harmonics is strongly correlated across
   samples (0.944 measured), so the likelihood counts correlated samples
   as independent votes and is overconfident, which is why the
@@ -647,7 +647,7 @@ so on. Example: a violin A at 440 Hz also contains waves at 880, 1320,
   margin, multiplied by its fade windows, and the notes' blocks are
   concatenated side by side: `p` becomes the sum over notes and `m` the
   whole segment. That concatenation is where the leak of the withdrawn first run lived
-(slide 30's note).
+(slide 31's note).
 
 **From `z` to `Φ(z)`, step by step** (`chunked_design_torch`).
 1. `z` is the pitch deviation at every sample instant, `cents(t_i)` for
@@ -697,7 +697,7 @@ For a chain of `N` notes (slide 27): each note has its own `Φ_i`,
 `m × p_i` with `p_i = 2KC`, on its own slice plus margin times its fade
 windows; the chain design is `Φ = [Φ_1 … Φ_N]`, `m × P` with
 `P = N · 2KC`; `a` is `P × 1`, `G` is `P × P`; the boundary offsets `db`
-are `(N−1) × 1` with an `(N−1) × (N−1)` prior covariance (slide 30);
+are `(N−1) × 1` with an `(N−1) × (N−1)` prior covariance (slide 31);
 the per-note constants `c` are `N × 1` with an `N × N` prior covariance.
 Cost `O(m p²)`: forming `Φ^T Φ` is `m` rows times `p × p` entries; the
 Cholesky of `G` is `p³`, negligible since `p ≪ m`.
@@ -899,7 +899,7 @@ chain-eligibility rule, honestly left unfitted. Caveat: chains fitted
 independently, envelopes read out after the fit rather than inferred
 under the prior. That is the open work.
 
-## Slide 30. The score prior inside the waveform inference: three spans
+## Slide 30. The score prior inside the waveform inference: the setup
 
 
 **What is on the slide.** The week of 2026-10-15 to 20 on one slide: the
@@ -947,6 +947,13 @@ neighbours, say +3 and +5, so about +4 again. Score graph: the same two
 neighbours and, if the first note has the same pitch, that one at
 higher weight, say +8, so +5. All three are short of +9 by a similar
 amount, which is what the first row says.
+
+## Slide 31. The score prior inside the waveform inference: three spans
+
+
+**What is on the slide.** The three-span table and the reading
+paragraph, moved to their own slide on 18 November so the table no
+longer runs off the right edge; the setup is the slide before.
 
 **The table.** First row, 47 chains of three to five notes from four
 development tracks: graph minus independent −0.02 cents, graph minus
@@ -1000,7 +1007,8 @@ development ordering repeated. Say it in one breath: "the weak form
 holds on tracks the waveform studies had never read; the strong form
 does not, there either."
 
-## Slide 31. What in the graph does the work: the time window
+
+## Slide 32. What in the graph does the work: the time window
 
 
 **What is on the slide.** The same question at whole-track scale with
@@ -1014,7 +1022,7 @@ every pair and only the two-beat time window remains. Time chain:
 weight 1 between consecutive notes, 0 elsewhere. Everything else in the
 GP is identical across the three arms, including the per-piece
 intercept column in the feature kernel, so every contrast is beyond the
-common offset that dominated slide 30.
+common offset that dominated slide 31.
 
 **The table.** Strings and winds, the development evaluation of slide
 19 with 30 percent of the notes hidden per track, 78 tracks, 153
@@ -1045,7 +1053,7 @@ of the graph term." If asked whether the thesis should switch to the
 pitch-less graph: that is a change to a reported protocol and would need
 its own registration; it is the decision on the plan slide.
 
-## Slide 32. Divider: Motif structure
+## Slide 33. Divider: Motif structure
 
 
 Say: "The attribution left the graph with a modest role, a two-beat
@@ -1053,7 +1061,7 @@ time window. This last section asks whether a structure the window
 cannot see, the repetition of a motif, carries anything of its own.
 Development studies first, then one pre-specified test."
 
-## Slide 33. Motif edges: the family, and what it does to a hidden note
+## Slide 34. Motif edges: the family
 
 
 **What is on the slide.** The one new edge family, its two forms, and
@@ -1082,6 +1090,13 @@ channel, so a channel can switch the family off on its own. Because
 `K_m` factorizes as `X_m X_m^T`, it is a feature kernel of the model
 and nothing in the inference changes.
 
+## Slide 35. Motif edges: what they do to a hidden note
+
+
+**What is on the slide.** The conditional of a hidden note in the
+single-channel GMRF, split by edge family, and the two readings that
+follow from it; split from the family slide on 18 November.
+
 **The conditional.** In the single-channel GMRF with precision `I + sL`
 the mean of a hidden note is a weighted average of its neighbours and
 its variance is `1/(1 + s d_h)`, with `d_h` the weighted degree. Split
@@ -1099,7 +1114,8 @@ exactly the extra degree. If not, the motif average is noise, the
 evidence drives `w_m` to zero and the time-only graph returns exactly.
 That second route is the falsification: the study can come back empty.
 
-## Slide 34. Motif edges, development: whole occurrences hidden, 21 movements, 4 seeds
+
+## Slide 36. Motif edges, development: whole occurrences hidden, 21 movements, 4 seeds
 
 
 **What is on the slide.** The two development studies in one table:
@@ -1141,7 +1157,7 @@ what the pre-specified test takes as its primary. Under random masking
 the time window already interpolates inside an observed occurrence and
 the family has little to act on.
 
-## Slide 35. Motif edges from a discovery model's predictions (development)
+## Slide 37. Motif edges from a discovery model's predictions (development)
 
 
 **What is on the slide.** The same evaluation with the annotations
@@ -1165,7 +1181,7 @@ pooled states into types. Lalang and Yoshii, ISMIR 2026.
 the excerpt by onset and pitch exactly as the annotations were, the
 span is the first to last matched onset, the type is the pattern index.
 The masks and the scored notes stay those of the annotated occurrences,
-identical to slide 34, so the only change is where the edges come from.
+identical to slide 36, so the only change is where the edges come from.
 Membership against the annotation: precision from `0.12` to `1.00`,
 recall from `0.44` to `0.99`, F1 median `0.78`; on two movements the
 model predicts several times the annotated number of motif notes.
@@ -1182,7 +1198,7 @@ counts, and the slide says so. The honest sentence: a model's
 occurrences on a score without annotations give about half the effect
 at this size.
 
-## Slide 36. The pre-specified test: held-out performances of the same movements
+## Slide 38. The pre-specified test: held-out performances of the same movements
 
 
 **What is on the slide.** The registration of the one motif claim that
@@ -1217,6 +1233,13 @@ timing log score `0.33` at the measured effect and below `0.2` at two
 thirds. So M1 is the well-powered claim and M2 is included because it
 was the first study's hypothesis, with its weak power stated.
 
+## Slide 39. The pre-specified test: the result, run once
+
+
+**What is on the slide.** The result table of the registered test
+and the one sentence to say; the pool, claims and power table are the
+slide before.
+
 **The result, run once on 18 November.** Frozen and tagged at midday,
 two days ahead of the planned freeze with nothing in the protocol
 changed, and run once that afternoon: 696 fits, 14 shards, under two
@@ -1240,7 +1263,8 @@ return holds across performers of the same movements, timing is
 switched off by the evidence. The test is across performers, not
 repertoire, and stays labelled so.
 
-## Slide 37. Summary
+
+## Slide 40. Summary
 
 
 Four sentences, say them exactly. Piano: beats the two-stage baseline
@@ -1260,12 +1284,12 @@ held-out performances of the same movements was run once on 18
 November: articulation holds, `−0.029` with the interval excluding zero,
 timing does not.
 
-## Slide 38. Plan
+## Slide 41. Plan
 
 
 Five rows, read top down. October, done: the curve studies, the bundle
-channel, joint boundaries, the three spans of slide 30, the attribution
-of slide 31; decided on 23 October with the professor hands-off: the
+channel, joint boundaries, the three spans of slide 31, the attribution
+of slide 32; decided on 23 October with the professor hands-off: the
 attribution is stated as a development finding, the headline models
 keep their score graph (a pitch-less default would change a reported
 protocol and need its own registration), writing freeze. Run once on
@@ -1275,13 +1299,13 @@ calibration, `−0.011` seconds recovery, both intervals excluding zero),
 the tonal metric missed its calibration primary (`−0.023`, interval
 reaching zero) and kept its recovery gain (`−0.312` cents). November,
 done: the motif family's two development studies and the
-predicted-occurrence study, slides 34 and 35, and the thesis chapter
+predicted-occurrence study, slides 36 and 37, and the thesis chapter
 with its framing. Registered on 18 November: the phrase-scale waveform
-claim, the weak form of slide 30 (graph beats temporal on the hidden
+claim, the weak form of slide 31 (graph beats temporal on the hidden
 note), as one shot on the same re-used pool at the waveform level, its
 third use, disclosed; power only 0.3 to 0.5, run anyway so the chapter
 has a held-out answer; run the same day and passed, `−0.82` cents with
-the interval excluding zero, the fourth row of slide 30. The same
+the interval excluding zero, the fourth row of slide 31. The same
 afternoon, registered at midday and run once: the motif test of slide
 36, articulation passed (`−0.029`, interval `[−0.049, −0.011]`), timing
 missed as its power table said. The two sit in one row. With that, every
@@ -1291,12 +1315,12 @@ for writing only, no new experiments, the progress talk on 7 January
 from this deck, submission on 2 February. The transient model at the
 joints and the whole-performance joint loop stay Future Work.
 
-## Slide 39. Divider: Backup
+## Slide 42. Divider: Backup
 
 
 Shown only if asked.
 
-## Slide 40. Backup: the curve from the waveform, three notes
+## Slide 43. Backup: the curve from the waveform, three notes
 
 
 Three development notes: violin, cello, clarinet. Blue: the curve from
@@ -1313,7 +1337,7 @@ measurement chain, off by 2 to 4 cents, so the band does not and should
 not cover them. That gap is carried separately as a calibrated floor
 wherever the curve is used downstream.
 
-## Slide 41. Backup: the three spans, paired
+## Slide 44. Backup: the three spans, paired
 
 
 Three panels, one per test. Each row: the mean paired difference in the
@@ -1331,7 +1355,7 @@ Third bullet, the positive content: the common offset alone, which
 every prior gets through `s`, is worth about 7 cents on intonation and
 10 to 14 ms on boundaries against the no-transfer references.
 
-## Slide 42. Backup: the three priors at track scale (strings and winds)
+## Slide 45. Backup: the three priors at track scale (strings and winds)
 
 
 **What is on the slide.** The track-scale version of the three-prior

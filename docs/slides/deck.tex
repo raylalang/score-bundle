@@ -570,9 +570,8 @@
           vs 8.6 cents).
     \item The inferred curve then feeds the strings-and-winds bundle as
           a seventh channel: held-out intonation improves on 14 of 14
-          track and seed pairs ($-1.36$ cents vs the six-channel bundle,
-          significant), and the empirical calibration floor halves
-          (3.1 to 1.8 cents).
+          track and seed pairs ($-1.36$ cents, interval clear of zero)
+          and the calibration floor halves (3.1 to 1.8 cents).
   \end{itemize}
 \end{frame}
 
@@ -620,23 +619,22 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{The end goal on one passage (development)}
-  \figslotw{endgoal_viz.png}{0.72}{passage decomposition}
+  \figslotw{endgoal_viz.png}{0.66}{passage decomposition}
   \vspace{-2mm}
   {\small\textcolor{muted}{A real violin passage (13 notes, 8 s)
   decomposed from the score and the waveform alone: notes, pitch
   expression with uncertainty, timbre envelopes from the amplitude
-  posterior. Chains fitted independently; the envelope strand is read
-  out after the fit, not yet under the prior. One posterior for a whole
-  recording under the score-graph prior is the joint loop: Future Work.}}
+  posterior. Chains fitted independently, the envelope read out after
+  the fit. One posterior for a whole recording under the score-graph
+  prior is the joint loop: Future Work.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The score prior inside the waveform inference: three spans}
+\begin{frame}{The score prior inside the waveform inference: the setup}
   \small
   One latent per chain element, $\theta \in \R^{n}$ (intonation constants
   $c$ in cents, or joint offsets $b$ in ms); three priors at matched
   marginal variance, every arm with the common-mode scalar $t$:
-  \vspace{-2mm}
   \begin{align*}
     \theta &= t\mathbf{1} + \tilde\theta,\qquad t \sim \N(0,\sigma_t^2),\qquad
     \tilde\theta \sim \N(0,\sigma^2 K_{\mathrm{arm}}),\qquad
@@ -645,38 +643,44 @@
     K_{\mathrm{arm}} = \diag(M)^{-\frac12} M \diag(M)^{-\frac12},\qquad
     M = (I + L_{\mathrm{arm}})^{-1}
   \end{align*}
-  \vspace{-5mm}
-
   $L_{\mathrm{arm}}$: Laplacian of the note-order chain (temporal)
   or of the score graph (time and pitch). The hidden element $h$ is
   dropped from the design, so its posterior is the prior conditional,
   scored against the reference centre:
-  \vspace{-2mm}
   \begin{equation*}
     \theta_h \mid \theta_{-h} \sim \N\big(K_{h,-h} K_{-h,-h}^{-1}
     \theta_{-h},\; K_{hh} - K_{h,-h} K_{-h,-h}^{-1} K_{-h,h}\big).
   \end{equation*}
-  \vspace{-5mm}
+  Three spans, next slide: short chains, joints and phrases, one element
+  hidden per cell, the same likelihood, data and optimizer in every arm.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The score prior inside the waveform inference: three spans}
+  \small
+  Paired differences in the hidden element's error, $95\%$ bootstrap
+  intervals, negative favours the first arm, $*$: the interval excludes
+  zero. The first three rows are development, the fourth is held out.
   \begin{center}
-  \footnotesize
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
   \begin{tabular}{@{}llcc@{}}
     \toprule
-    span (development) & hidden element & graph $-$ independent & graph $-$ temporal \\
+    span & hidden element & graph $-$ independent & graph $-$ temporal \\
     \midrule
     47 chains, 3 to 5 notes & one note's $c$ (cents) & $-0.02$ $[-0.33,+0.32]$ & $-0.19$ $[-0.89,+0.46]$ \\
     40 joints & one joint's $b$ (ms) & $-2.45$ $[-8.38,+3.32]$ & $+1.20$ $[-2.12,+4.45]$ \\
     48 phrases, 6 to 10 notes & a recurring pitch's $c$ (cents) & $-0.07$ $[-0.42,+0.27]$ & $-1.63$ $[-2.93,-0.46]^{*}$ \\
-    48 phrases, held-out tracks (registered, run once 18 Nov) & the same & $-0.13$ $[-0.44,+0.17]$ & $-0.82$ $[-1.59,-0.05]^{*}$ \\
+    48 phrases, held-out tracks (18 Nov) & the same & $-0.13$ $[-0.44,+0.17]$ & $-0.82$ $[-1.59,-0.05]^{*}$ \\
     \bottomrule
   \end{tabular}
   \end{center}
-  \vspace{-2mm}
   Every prior transfers the common offset (about 7 cents, 10 to
   14 ms). The score graph is never worse than the temporal chain and
   repairs its harm at phrase scale (temporal $-$ independent $+1.56^{*}$
   development, $+0.68$ held out), confirmed once on the re-used
   strings-and-winds pool (disclosed, third use, first at the waveform
-  level); beyond the offset, nothing measurable, development or held out.
+  level). Beyond the offset, nothing measurable, development or held out.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -719,13 +723,12 @@
 \divider{Motif structure}{One edge family outside the time window: development studies, then one pre-specified test}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Motif edges: the family, and what it does to a hidden note}
+\begin{frame}{Motif edges: the family}
   \footnotesize
   Annotated occurrences $O_k$ (BPS-motif, all 32 Beethoven sonata first
   movements): a note set, a span $[b_k^{\text{start}}, b_k^{\text{end}}]$
   in beats, a type $q(k)$. Returns differ in length, so the coordinate is
   relative position, and the edge is closeness in it, many to many:
-  \vspace{-2mm}
   \[
     u_i = \frac{b_i - b_k^{\text{start}}}{\,b_k^{\text{end}} - b_k^{\text{start}}\,},
     \qquad
@@ -734,36 +737,50 @@
     \exp\!\Bigl(-\frac{(u_i - u_j)^2}{2\,\ell_u^2}\Bigr),
     \qquad \ell_u = 0.1 .
   \]
-  \vspace{-3mm}
   Two forms, nothing else in the GP changed:
-  \vspace{-2mm}
   \begin{align*}
-    \text{shared: }& W = W_{\text{time}} + w_{\text{m}}\, W_{\text{motif}},\quad
-      \log w_{\text{m}} \text{ learned by the evidence, one weight for the three channels through } B;\\
+    \text{shared: }& W = W_{\text{time}} + w_{\text{m}}\, W_{\text{motif}},\qquad
+      \log w_{\text{m}} \text{ learned by the evidence, one weight for all channels}\\
     \text{per channel: }& K = B \otimes K_{\mathcal G}(s)
       + \diag(c_{\text{m}}) \otimes K_{\text{m}}
       + \textstyle\sum_f \diag(c_f) \otimes X_f X_f^{\top}
       + \diag(\varsigma^2) \otimes I,\\
-      & K_{\text{m}} = U_{\text{m}} \diag\bigl(g(\nu_{\text{m}}; 1)\bigr) U_{\text{m}}^{\top},
+      & K_{\text{m}} = U_{\text{m}} \diag\bigl(g(\nu_{\text{m}}; 1)\bigr) U_{\text{m}}^{\top}
   \end{align*}
-  \vspace{-3mm}
   with $(\nu_{\text{m}}, U_{\text{m}})$ the spectrum of the Laplacian of
   $W_{\text{motif}}$ on the motif notes and $c_{\text{m}} \in \R^3$ one
-  scale per channel, a feature kernel ($X_{\text{m}} = U_{\text{m}}\diag(g^{1/2})$).
-  In the single-channel GMRF $Q = I + s\Lg$ the conditional of a hidden
-  note $h$ splits by family, $d_h = d_h^{\text{time}} + w_{\text{m}} d_h^{\text{motif}}$:
-  \vspace{-2mm}
+  scale per channel: a feature kernel, $X_{\text{m}} = U_{\text{m}}\diag(g^{1/2})$,
+  so the model's inference is unchanged. The shared form ties the three
+  channels to one motif weight through $B$; the per-channel form lets a
+  channel switch the family off on its own.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{Motif edges: what they do to a hidden note}
+  \small
+  For one channel with $g(\nu; s) = 1/(1 + s\nu)$ the prior is the GMRF
+  with precision $I + s\Lg$, and the conditional of a hidden note $h$ is
+  explicit. Its degree splits by family,
+  $d_h = d_h^{\text{time}} + w_{\text{m}} d_h^{\text{motif}}$, so the
+  conditional mean is a mixture of two neighbourhood means:
   \[
     \mathbb E[y_h \mid y_{-h}] =
     \frac{s\, d_h^{\text{time}}}{1 + s d_h}\,\overline{y}^{\,\text{time}}_h
     + \frac{s\, w_{\text{m}}\, d_h^{\text{motif}}}{1 + s d_h}\,\overline{y}^{\,\text{motif}}_h,
     \qquad
-    \operatorname{Var}[y_h \mid y_{-h}] = \frac{1}{1 + s d_h}.
+    \operatorname{Var}[y_h \mid y_{-h}] = \frac{1}{1 + s d_h},
   \]
-  \vspace{-3mm}
-  Returns shaped alike: the evidence raises $w_{\text{m}}$, the error falls,
-  the band tightens by the extra degree. Not alike: $w_{\text{m}} \to 0$
-  and the time-only graph returns exactly.
+  the mean of the temporal neighbours and the mean of the corresponding
+  notes in the other occurrences, weighted by relative position. The
+  full posterior mixes the same two sources through $B$, the feature
+  kernels and the noise.
+  \begin{itemize}
+    \item Returns shaped alike: the evidence raises $w_{\text{m}}$, the
+          error of a hidden return falls, the band tightens by the extra
+          degree.
+    \item Not alike: $w_{\text{m}} \to 0$ and the time-only graph returns
+          exactly. The family carries its own falsification route.
+  \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -809,14 +826,13 @@
   and a pair-affinity head, memberships diffused by label propagation
   from the annotated seeds and decoded into occurrences $\hat O_k$ with
   types (Lalang and Yoshii, ISMIR 2026):
-  \vspace{-2mm}
+  \vspace{-1mm}
   \begin{align*}
     m_i &= \sigma\bigl(f(\mathbf h_i)\bigr),\qquad
     \hat a_{ij} = \sigma\bigl(\mathrm{MLP}(\mathbf g_{ij})\bigr),\qquad
     A^{\text{dec}}_{ij} = A_{ij}\,(m_i m_j)^{\alpha_{\text{dec}}/2},\\
     M^{(t+1)} &= \alpha S + (1-\alpha)\, M^{(t)} D^{-1}(A + s_{\text{self}} I).
   \end{align*}
-  \vspace{-3mm}
   The held-out fold's predictions (decoding quantile $0.86$) replace the
   annotations as the edge source; masks and scored notes unchanged,
   shared form, same 21 movements and 4 seeds:
@@ -835,16 +851,15 @@
   \end{center}
   \vspace{-1mm}
   Membership against the annotation: precision $0.12$ to $1.00$, recall
-  $0.44$ to $0.99$, F1 median $0.78$. The two edge sources act on the same
-  movements (per-movement effects correlate $0.59$ timing, $0.86$
-  articulation). The prediction fixed before the run, half the annotated
-  effect with an interval clear of zero, is not met by a small margin:
-  a model's occurrences on an unannotated score give about half.
+  $0.44$ to $0.99$, F1 median $0.78$. Per-movement effects of the two
+  edge sources correlate $0.59$ (timing) and $0.86$ (articulation). The
+  prediction fixed before the run, half the annotated effect with an
+  interval clear of zero, is not met by a small margin.
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{The pre-specified test: held-out performances of the same movements}
-  \scriptsize
+  \footnotesize
   \textbf{Pool.} For each development movement, the other aligned ASAP
   performances, at most four, none read by any run: 18 movements, 58
   performances. Scores, annotations, masks and edges are the development
@@ -854,33 +869,56 @@
   $B = 2000$.
 
   \textbf{Claims}, time-only graph against the shared form, hidden motif
-  notes, whole occurrences hidden. Frozen and tagged at midday on
-  18 November, run once that afternoon (696 fits), every number reported.
+  notes, whole occurrences hidden.
   \begin{itemize}
     \item M1, primary: articulation RMSE, paired difference $< 0$ with the
-          95 percent interval excluding zero (power $0.95$ at 18 movements)
-    \item M2, secondary, non-gating: timing log score, same rule (power $0.33$)
-    \item M3, report only: velocity, timing RMSE, coverage, the per-channel form
+          95 percent interval excluding zero
+    \item M2, secondary, non-gating: timing log score, same rule
+    \item M3, report only: velocity, timing RMSE, coverage, the
+          per-channel form beside the shared one
   \end{itemize}
-  \vspace{-1mm}
   \begin{center}
-  \scriptsize
-  \setlength{\tabcolsep}{3pt}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    power at 18 movements, by subsampling the development study & M1 & M2 \\
+    \midrule
+    at the measured effect & $0.95$ & $0.33$ \\
+    at two thirds of it & $0.51$ & below $0.2$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  Frozen and tagged at midday on 18 November, run once that afternoon.
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The pre-specified test: the result, run once}
+  \footnotesize
+  696 fits (58 performances, 4 seeds, 3 arms), every number reported.
+  Paired per movement, $95\%$ bootstrap intervals, negative favours the
+  motif arm.
+  \begin{center}
+  \setlength{\tabcolsep}{4pt}
   \begin{tabular}{@{}llcl@{}}
     \toprule
     & contrast, hidden returns & estimate $[95\%]$ & reading \\
     \midrule
-    M1 & articulation RMSE, shared & $-0.029$ $[-0.049, -0.011]$ & holds, 15 of 18, dev.\ $-0.035$, corr.\ $0.88$ \\
+    M1 & articulation RMSE, shared & $-0.029$ $[-0.049, -0.011]$ & holds: 15 of 18 movements \\
     M2 & timing log score, shared & $-0.018$ $[-0.191, +0.225]$ & miss, as the power table said \\
-    M3 & velocity log score, shared & $-0.016$ $[-0.042, +0.009]$ & penalty gone, cov.\ $0.847$, timing RMSE $-0.0037$ \\
-    M3 & artic.\ log score, per-channel & $-0.051$ $[-0.104, -0.012]$ & RMSE $-0.023$, cov.\ $0.919$ \\
-    M3 & velocity log score, per-channel & $-0.085$ $[-0.177, -0.022]$ & RMSE $-0.0060$, cov.\ $0.934$ \\
+    M3 & timing RMSE, shared & $-0.0037$ $[-0.0076, -0.0007]$ & \\
+    M3 & velocity log score, shared & $-0.016$ $[-0.042, +0.009]$ & the first study's penalty gone \\
+    M3 & articulation log score, per-channel & $-0.051$ $[-0.104, -0.012]$ & RMSE $-0.023$ \\
+    M3 & velocity log score, per-channel & $-0.085$ $[-0.177, -0.022]$ & RMSE $-0.0060$, coverage $0.934$ \\
     \bottomrule
   \end{tabular}
   \end{center}
-  \vspace{-1mm}
+  Development effect $-0.035$; the per-movement effects of the two
+  studies correlate at $0.88$. Coverage of the $90\%$ band, shared form:
+  $0.966$ timing, $0.878$ articulation, $0.847$ velocity (time-only
+  $0.968$, $0.891$, $0.878$).
+
   Articulation of a hidden return holds across performers of the same
-  movements; timing is switched off by the evidence, as on development.
+  movements. Timing is switched off by the evidence, as on development.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -926,12 +964,12 @@
           failed timing claim repaired); the tonal metric missed its
           calibration primary and kept its recovery gain. \\
     done (November) & the motif family: two development studies and the
-          predicted-occurrence study (slides 34 and 35); the thesis gains
+          predicted-occurrence study (slides 36 and 37); the thesis gains
           its motif chapter and the framing around it. \\
     run once (18 November) & morning: the phrase-scale waveform claim on
           the re-used pool at the waveform level, power 0.3 to 0.5, passed
-          ($-0.82$ cents $[-1.59,-0.05]$, slide 30). Afternoon: the motif
-          test on held-out performances (slide 36), articulation passed
+          ($-0.82$ cents $[-1.59,-0.05]$, slide 31). Afternoon: the motif
+          test on held-out performances (slide 39), articulation passed
           ($-0.029$ $[-0.049,-0.011]$), timing missed as its power said.
           Every result line of the thesis is in. \\
     then & 3 December: lab seminar with the results closed; December:
