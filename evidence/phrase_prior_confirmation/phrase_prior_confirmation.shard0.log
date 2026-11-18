@@ -1,0 +1,5 @@
+(9, 2) 6 notes hidden#3 gt -19.7 dist 2: masked indep:+1.0 temporal:+3.2 graph:+0.1 [723s]
+(28, 2) 10 notes hidden#5 gt +24.3 dist 2: masked indep:+24.2 temporal:+24.7 graph:+24.2 [6793s]
+(29, 3) 10 notes hidden#5 gt +24.2 dist 2: masked indep:+21.8 temporal:+22.1 graph:+21.7 [5868s]
+(32, 3) 8 notes hidden#4 gt +10.5 dist 2: masked indep:+12.6 temporal:+12.9 graph:+12.5 [1955s]
+wrote results/phase3_cells/conf_phrase/priorval_phrase_conf.shard0of12.pkl (4 cells)

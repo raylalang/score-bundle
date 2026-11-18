@@ -1,0 +1,92 @@
+== phrase-scale one-shot start 2026-11-18T04:47:22+09:00
+code state 6baf3144f9ac36d91b6764d23a3b387fd5c2999e = tag phrase-prior-registration-2026-11-18 (f1ae400ae25212b94de95d4a1413a965fd4e0317)
+shards 12 x OMP_NUM_THREADS=2; load load average: 3.40, 2.46, 2.03
+side CONFIRMATION: 40 unique tracks, 20 with admissible cells, 56 candidates after the cap of 4 per track, 48 cells drawn (cap 48)
+drawn cells by family: strings 14, winds 25, brass 9
+drawn cells by instrument: bn 4, cl 5, fl 7, hn 2, ob 6, sax 3, tbn 1, tpt 6, va 4, vc 1, vn 9
+  cell 0: track (9, 2) notes 6..11 hidden #3 vn
+  cell 1: track (9, 2) notes 19..28 hidden #5 vn
+  cell 2: track (9, 2) notes 30..39 hidden #5 vn
+  cell 3: track (9, 2) notes 40..49 hidden #5 vn
+  cell 4: track (14, 1) notes 0..9 hidden #5 fl
+  cell 5: track (14, 1) notes 25..31 hidden #3 fl
+  cell 6: track (14, 1) notes 33..40 hidden #4 fl
+  cell 7: track (24, 3) notes 48..53 hidden #3 va
+  cell 8: track (24, 3) notes 56..65 hidden #5 va
+  cell 9: track (28, 1) notes 0..5 hidden #3 fl
+  cell 10: track (28, 2) notes 2..7 hidden #3 ob
+  cell 11: track (28, 2) notes 9..15 hidden #3 ob
+  cell 12: track (28, 2) notes 21..30 hidden #5 ob
+  cell 13: track (28, 3) notes 18..23 hidden #3 cl
+  cell 14: track (28, 3) notes 82..87 hidden #3 cl
+  cell 15: track (28, 3) notes 203..212 hidden #5 cl
+  cell 16: track (28, 4) notes 2..7 hidden #3 bn
+  cell 17: track (28, 4) notes 54..61 hidden #4 bn
+  cell 18: track (28, 4) notes 88..97 hidden #5 bn
+  cell 19: track (28, 4) notes 146..153 hidden #4 bn
+  cell 20: track (29, 2) notes 23..28 hidden #3 fl
+  cell 21: track (29, 2) notes 58..63 hidden #3 fl
+  cell 22: track (29, 2) notes 98..104 hidden #3 fl
+  cell 23: track (29, 3) notes 1..8 hidden #4 ob
+  cell 24: track (29, 3) notes 40..49 hidden #5 ob
+  cell 25: track (29, 3) notes 56..64 hidden #4 ob
+  cell 26: track (29, 4) notes 1..8 hidden #4 cl
+  cell 27: track (29, 4) notes 148..156 hidden #4 cl
+  cell 28: track (30, 4) notes 56..62 hidden #3 sax
+  cell 29: track (30, 4) notes 123..128 hidden #3 sax
+  cell 30: track (30, 4) notes 147..152 hidden #3 sax
+  cell 31: track (32, 1) notes 1..8 hidden #4 vn
+  cell 32: track (32, 1) notes 47..54 hidden #4 vn
+  cell 33: track (32, 1) notes 71..78 hidden #4 vn
+  cell 34: track (32, 1) notes 106..115 hidden #5 vn
+  cell 35: track (32, 2) notes 44..51 hidden #4 vn
+  cell 36: track (32, 3) notes 52..59 hidden #4 va
+  cell 37: track (32, 3) notes 158..163 hidden #3 va
+  cell 38: track (32, 4) notes 147..153 hidden #3 vc
+  cell 39: track (34, 2) notes 203..209 hidden #3 tpt
+  cell 40: track (43, 1) notes 0..8 hidden #4 tpt
+  cell 41: track (43, 1) notes 19..27 hidden #4 tpt
+  cell 42: track (43, 2) notes 21..29 hidden #4 tpt
+  cell 43: track (43, 2) notes 31..39 hidden #4 tpt
+  cell 44: track (43, 2) notes 41..49 hidden #4 tpt
+  cell 45: track (43, 3) notes 0..9 hidden #5 hn
+  cell 46: track (43, 3) notes 21..29 hidden #4 hn
+  cell 47: track (43, 4) notes 62..68 hidden #3 tbn
+# The prior-value experiment at phrase scale on the URMP CONFIRMATION tracks (registered one-shot, docs/phrase_prior_prereg_design.md; third disclosed use of the pool, first at the waveform level)
+
+6-10-note legato runs from all confirmation tracks in which the hidden (middle) note's pitch
+recurs at index distance >= 2 and not at distance 1; otherwise the machinery of
+`scripts/eval_prior_value_dev.py` unchanged (hidden note dropped from the design, free per-chain
+tuning scalar in every arm). Committed hypotheses and falsification rule in the script
+docstring (`scripts/eval_prior_value_phrase_dev.py`). Scored against the reference centre.
+
+48 cells, notes/cell median 8, span median 4.8 s, recurrence distance median 2 notes / 1.3 s, hidden-to-recurrence edge weight median 0.82; instruments: bn, cl, fl, hn, ob, sax, tbn, tpt, va, vc, vn
+
+| condition | arm | median abs err (cents) | cov@90 | median sd |
+|---|---|---|---|---|
+| masked | indep | 4.11 | 0.98 | 11.25 |
+| masked | temporal | 4.01 | 0.94 | 9.77 |
+| masked | graph | 3.68 | 0.96 | 8.93 |
+| clean | indep | 1.65 | 0.96 | 6.91 |
+| clean | temporal | 1.67 | 0.96 | 6.51 |
+| clean | graph | 1.67 | 0.96 | 6.30 |
+| masked | (deadpan reference) | 15.53 | --- | --- |
+
+## Paired contrasts, masked condition (negative favours the first arm)
+
+- graph vs temporal: -0.82 [-1.59, -0.05]* (better on 62%, n=48)
+- graph vs indep: -0.13 [-0.44, +0.17]  (better on 56%, n=48)
+- temporal vs indep: +0.68 [-0.19, +1.52]  (better on 40%, n=48)
+- graph vs temporal, upper half of edge weight only: -1.07 [-2.24, +0.03]  (better on 62%, n=24)
+
+## Paired contrasts, clean condition (H-C3: expect ties)
+
+- graph vs indep: -0.00 [-0.01, +0.01]  (better on 46%, n=48)
+- temporal vs indep: +0.00 [-0.01, +0.01]  (better on 44%, n=48)
+
+Dose-response: Pearson r between (graph - temporal) masked error and the hidden-to-recurrence edge weight = -0.06
+
+wall per fit incl. Laplace: median 472 s
+
+wrote results/phrase_prior_confirmation_results.md
+== phrase-scale one-shot done 2026-11-18T10:21:27+09:00
