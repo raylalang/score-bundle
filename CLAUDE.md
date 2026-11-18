@@ -232,7 +232,20 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   (−0.07) and temporal < indep (+1.56*) → the win is the temporal prior's harm
   repaired, no dose-response on edge weight. **Three-span verdict: weak form
   survives (score structure ≥ naive temporal), strong form fails so far
-  (nothing beyond the common offset).** Still open: the curve level, the other
+  (nothing beyond the common offset).** **Phrase-scale one-shot REGISTERED
+  + RUN ONCE 2026-11-18** (tag `phrase-prior-registration-2026-11-18`,
+  `docs/phrase_prior_prereg_design.md`, runner
+  `scripts/run_phrase_prior_confirmation.sh` with the three PHASE2 env vars,
+  guard test `tests/test_phrase_prior_guard.py`; the re-used 13-piece URMP
+  pool, THIRD disclosed use, first at the waveform level; 48 phrases from 20
+  of the 40 tracks by the unchanged dev rule): **W1 PASS**, graph − temporal
+  −0.82 cents [−1.59, −0.05] (dev −1.63; pre-stated expectation ≈ −0.9 for
+  the winds-heavy mix; power 0.3–0.5), W2 tie (graph − indep −0.13 ns), W3
+  clean ties, coverage 0.94–0.98, no dose-response, by family strings −1.55 /
+  winds −0.54 / brass −0.44 (none starred). `results/phrase_prior_confirmation_results.md`
+  (verdict block), `evidence/phrase_prior_confirmation/`. The pool is spent
+  three times over; never rerun. Thesis `sec:phase3-heldout` +
+  `tab:phase3-heldout`, deck slide 30 fourth row. Still open: the curve level, the other
   channels, whole-performance scale — the curves themselves carry independent
   priors, amplitudes are read out post hoc. Thesis: main-line Ch. 8
   (`ch:phase3`) + Future Work `sec:future-phase3`. The three spectral-kernel
@@ -308,7 +321,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   table bodies unchanged. Pre-makeover text = tag `thesis-pre-makeover-2026-10-28`.
   80 pp after the makeover (prose expanded; no content added or cut). Any future
   thesis edit follows the style guide and is run through the checker.
-- **Thesis state (2026-11-18, main=6baf314+): 87 pp with the motif chapter and its framing in the abstract, intro, discussion, future work and conclusion (80 after the makeover of 2026-10-28), compile clean** (cut from 83 on
+- **Thesis state (2026-11-18, main=2988941+): 88 pp with the motif chapter, its framing in the abstract, intro, discussion, future work and conclusion, and the waveform held-out section (80 after the makeover of 2026-10-28), compile clean** (cut from 83 on
   2026-10-28, Ray: "subtract the irrelevant and obsolete": two-stage-era kernel table,
   per-channel ablation table and fitted filters, lineage B.2-B.5, synthetic pilot,
   leakage appendix folded into §5.4, era/performer-ID downstream tasks and the Vienna

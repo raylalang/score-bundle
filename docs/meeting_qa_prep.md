@@ -21,9 +21,14 @@ and `docs/ROADMAP.md` (the calendar table).
 Morning of 11-18, before the meeting (done): the phrase-scale waveform
 claim was frozen and tagged (`phrase-prior-registration-2026-11-18`,
 pushed) and the one-shot launched at 04:47 on 12 shards (about 4 h),
-so its verdict may be on the table at the meeting; if the run is not
-done, say "registered this morning, running, verdict today, reported
-verbatim". The thesis framing (abstract, intro, discussion, future
+and finished at 10:21: **W1 passed**, graph minus temporal −0.82 cents
+[−1.59, −0.05] on 48 held-out phrases (development −1.63, the
+pre-stated expectation for the winds-heavy mix about −0.9, power 0.3 to
+0.5); graph minus independent −0.13, a tie as on development; clean
+rows zero; by family strings −1.55, winds −0.54, brass −0.44, none
+starred alone. Say: "the weak form holds on tracks no waveform study
+had read; the strong form does not, there either." Thesis
+`sec:phase3-heldout`, deck slide 30 fourth row. The thesis framing (abstract, intro, discussion, future
 work, conclusion) and the deck's motif section were written the same
 morning, verdict-free, so the writing week has only the held-out
 sentences left.
@@ -58,8 +63,8 @@ sentences left.
 3. **The calendar to 12-03, one table** (ROADMAP): pilot two (done),
    stage two done (11-17), two
    registrations (the waveform phrase-scale claim on the URMP
-   confirmation tracks, frozen and launched the morning of 11-18, verdict
-   the same day; the motif claim on untouched performances of the same
+   confirmation tracks, frozen, launched and PASSED the morning of 11-18;
+   the motif claim on untouched performances of the same
    21 pieces, frozen 11-20, run 11-23), the thesis chapter and deck
    already carrying everything but the two verdicts, nothing new after
    December. Say the power check plainly: the waveform one-shot has 0.3
