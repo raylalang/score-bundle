@@ -1,0 +1,49 @@
+[13/14] 2-1 / Yang02.mid occ seed0 time_motif: 203s hidden 85 motif-hidden 85 [0.01224342685320391]
+[13/14] 4-1 / Benabdallah01.mid occ seed1 time: 45s hidden 165 motif-hidden 165 
+[13/14] 4-1 / CaiC01.mid occ seed1 time_motif_pc: 43s hidden 165 motif-hidden 165 
+[13/14] 4-1 / Chon03M.mid occ seed2 time_motif: 90s hidden 67 motif-hidden 67 [4.668848167083254]
+[13/14] 4-1 / LeeE02M.mid occ seed3 time: 89s hidden 100 motif-hidden 100 
+[13/14] 5-1 / SunD02M.mid occ seed3 time_motif_pc: 99s hidden 90 motif-hidden 90 
+[13/14] 7-1 / KOLESO01.mid occ seed0 time_motif: 99s hidden 111 motif-hidden 111 [6.060902325905192e-06]
+[13/14] 7-1 / Larionova04M.mid occ seed1 time: 40s hidden 84 motif-hidden 84 
+[13/14] 7-1 / LeeS02M.mid occ seed1 time_motif_pc: 92s hidden 83 motif-hidden 83 
+[13/14] 7-1 / Lee_E01.mid occ seed2 time_motif: 124s hidden 104 motif-hidden 104 [1.6915021619917e-16]
+[13/14] 8-1 / Na06M.mid occ seed3 time: 115s hidden 23 motif-hidden 23 
+[13/14] 11-1 / DeTurck01.mid occ seed3 time_motif_pc: 119s hidden 75 motif-hidden 75 
+[13/14] 11-1 / LiYZ03M.mid occ seed0 time_motif: 127s hidden 73 motif-hidden 73 [11.950478679246238]
+[13/14] 11-1 / MaximovI02M.mid occ seed1 time: 118s hidden 58 motif-hidden 58 
+[13/14] 12-1 / Kleisen05M.mid occ seed1 time_motif_pc: 181s hidden 45 motif-hidden 45 
+[13/14] 12-1 / Zhao02.mid occ seed2 time_motif: 114s hidden 42 motif-hidden 42 [0.15900913493089752]
+[13/14] 15-1 / Sekino01.mid occ seed3 time: 62s hidden 44 motif-hidden 44 
+[13/14] 15-1 / ZhaoA02.mid occ seed3 time_motif_pc: 168s hidden 48 motif-hidden 48 
+[13/14] 16-1 / Khmara05M.mid occ seed0 time_motif: 107s hidden 59 motif-hidden 59 [0.3227277646837875]
+[13/14] 16-1 / LeeSH02M.mid occ seed1 time: 85s hidden 28 motif-hidden 28 
+[13/14] 16-1 / Shybayeva02.mid occ seed1 time_motif_pc: 93s hidden 28 motif-hidden 28 
+[13/14] 17-1_no_repeat / GuoE02M.mid occ seed2 time_motif: 115s hidden 33 motif-hidden 33 [4.75539433522194]
+[13/14] 17-1_no_repeat / HONG01.mid occ seed3 time: 59s hidden 60 motif-hidden 60 
+[13/14] 17-1_no_repeat / KabuliL02M.mid occ seed3 time_motif_pc: 156s hidden 60 motif-hidden 60 
+[13/14] 18-1 / ChenGuang03M.mid occ seed0 time_motif: 99s hidden 76 motif-hidden 76 [0.09115608478541476]
+[13/14] 18-1 / KOLESO06M.mid occ seed1 time: 113s hidden 73 motif-hidden 73 
+[13/14] 18-1 / LeungR02M.mid occ seed1 time_motif_pc: 81s hidden 74 motif-hidden 74 
+[13/14] 18-1 / Levitsky01.mid occ seed2 time_motif: 110s hidden 47 motif-hidden 47 [11.593851468538903]
+[13/14] 21-1_no_repeat / GonzalezJ06M.mid occ seed3 time: 63s hidden 27 motif-hidden 27 
+[13/14] 21-1_no_repeat / KimSY02M.mid occ seed3 time_motif_pc: 202s hidden 27 motif-hidden 27 
+[13/14] 21-1_no_repeat / LeeN02M.mid occ seed0 time_motif: 112s hidden 32 motif-hidden 32 [6.275322045880979]
+[13/14] 22-1 / KOLESO04M.mid occ seed1 time: 76s hidden 78 motif-hidden 78 
+[13/14] 22-1 / WongDoe01.mid occ seed1 time_motif_pc: 82s hidden 79 motif-hidden 79 
+[13/14] 26-1_no_repeat / Kim02M.mid occ seed2 time_motif: 173s hidden 28 motif-hidden 28 [2.538052354291065e-06]
+[13/14] 26-1_no_repeat / Tysman01.mid occ seed3 time: 76s hidden 26 motif-hidden 26 
+[13/14] 26-1_no_repeat / Ye02.mid occ seed3 time_motif_pc: 94s hidden 27 motif-hidden 27 
+[13/14] 27-1 / GiacomelliN04M.mid occ seed0 time_motif: 89s hidden 66 motif-hidden 66 [0.017315170313887067]
+[13/14] 27-1 / Ko01.mid occ seed1 time: 78s hidden 53 motif-hidden 53 
+[13/14] 27-1 / Ko05M.mid occ seed1 time_motif_pc: 181s hidden 53 motif-hidden 53 
+[13/14] 28-1 / KimHJ02M.mid occ seed2 time_motif: 95s hidden 42 motif-hidden 42 [5.725548050072139]
+[13/14] 28-1 / KyykhynenT06M.mid occ seed3 time: 77s hidden 58 motif-hidden 58 
+[13/14] 28-1 / WangY04M.mid occ seed3 time_motif_pc: 174s hidden 58 motif-hidden 58 
+[13/14] 30-1 / Hirata01.mid occ seed0 time_motif: 236s hidden 18 motif-hidden 18 [0.43370932083725394]
+[13/14] 30-1 / Izzard01.mid occ seed1 time: 116s hidden 12 motif-hidden 12 
+[13/14] 30-1 / Katyukova01.mid occ seed1 time_motif_pc: 187s hidden 12 motif-hidden 12 
+[13/14] 30-1 / MaslovV02M.mid occ seed2 time_motif: 229s hidden 17 motif-hidden 17 [3.732589978796313]
+[13/14] 31-1 / AbdelmoulaJS03M.mid occ seed3 time: 128s hidden 5 motif-hidden 5 
+[13/14] 31-1 / Ahfat02M.mid occ seed3 time_motif_pc: 212s hidden 5 motif-hidden 5 
+[13/14] 31-1 / BrendleA03M.mid occ seed0 time_motif: 235s hidden 5 motif-hidden 5 [2.2941852401229242e-23]

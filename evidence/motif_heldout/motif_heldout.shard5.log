@@ -1,0 +1,56 @@
+[5/14] 2-1 / OUSSET01.mid occ seed1 time_motif_pc: 173s hidden 75 motif-hidden 75 
+[5/14] 2-1 / Yang02.mid occ seed2 time_motif: 154s hidden 63 motif-hidden 63 [0.01681182061264596]
+[5/14] 4-1 / Benabdallah01.mid occ seed3 time: 61s hidden 100 motif-hidden 100 
+[5/14] 4-1 / CaiC01.mid occ seed3 time_motif_pc: 56s hidden 100 motif-hidden 100 
+[5/14] 4-1 / LeeE02M.mid occ seed0 time_motif: 122s hidden 138 motif-hidden 138 [2.6118480728006146]
+[5/14] 5-1 / SunD02M.mid occ seed1 time: 72s hidden 78 motif-hidden 78 
+[5/14] 5-1 / Wong01.mid occ seed1 time_motif_pc: 121s hidden 78 motif-hidden 78 
+[5/14] 7-1 / KOLESO01.mid occ seed2 time_motif: 157s hidden 104 motif-hidden 104 [1.3287881969406939e-06]
+[5/14] 7-1 / Larionova04M.mid occ seed3 time: 48s hidden 104 motif-hidden 104 
+[5/14] 7-1 / LeeS02M.mid occ seed3 time_motif_pc: 66s hidden 104 motif-hidden 104 
+[5/14] 8-1 / Na06M.mid occ seed0 time_motif: 184s hidden 32 motif-hidden 32 [0.4981911347173506]
+[5/14] 11-1 / DeTurck01.mid occ seed1 time: 105s hidden 60 motif-hidden 60 
+[5/14] 11-1 / LiC03M.mid occ seed1 time_motif_pc: 165s hidden 58 motif-hidden 58 
+[5/14] 11-1 / LiYZ03M.mid occ seed2 time_motif: 135s hidden 80 motif-hidden 80 [3.2509257859172616e-13]
+[5/14] 11-1 / MaximovI02M.mid occ seed3 time: 100s hidden 73 motif-hidden 73 
+[5/14] 12-1 / Kleisen05M.mid occ seed3 time_motif_pc: 169s hidden 47 motif-hidden 47 
+[5/14] 15-1 / Sekino01.mid occ seed0 time_motif: 116s hidden 77 motif-hidden 77 [0.03523990216515433]
+[5/14] 15-1 / ZhaoA02.mid occ seed1 time: 88s hidden 60 motif-hidden 60 
+[5/14] 16-1 / Khmara01.mid occ seed1 time_motif_pc: 190s hidden 28 motif-hidden 28 
+[5/14] 16-1 / Khmara05M.mid occ seed2 time_motif: 125s hidden 25 motif-hidden 25 [0.8947597484393491]
+[5/14] 16-1 / LeeSH02M.mid occ seed3 time: 73s hidden 37 motif-hidden 37 
+[5/14] 16-1 / Shybayeva02.mid occ seed3 time_motif_pc: 81s hidden 37 motif-hidden 37 
+[5/14] 17-1_no_repeat / HONG01.mid occ seed0 time_motif: 73s hidden 93 motif-hidden 93 [1.3257298589469544]
+[5/14] 17-1_no_repeat / KabuliL02M.mid occ seed1 time: 57s hidden 79 motif-hidden 79 
+[5/14] 17-1_no_repeat / Lee02.mid occ seed1 time_motif_pc: 145s hidden 72 motif-hidden 72 
+[5/14] 18-1 / ChenGuang03M.mid occ seed2 time_motif: 125s hidden 47 motif-hidden 47 [0.28737099463089777]
+[5/14] 18-1 / KOLESO06M.mid occ seed3 time: 48s hidden 72 motif-hidden 72 
+[5/14] 18-1 / LeungR02M.mid occ seed3 time_motif_pc: 64s hidden 72 motif-hidden 72 
+[5/14] 21-1_no_repeat / GonzalezJ06M.mid occ seed0 time_motif: 93s hidden 36 motif-hidden 36 [3.549494521416623]
+[5/14] 21-1_no_repeat / KimSY02M.mid occ seed1 time: 94s hidden 28 motif-hidden 28 
+[5/14] 21-1_no_repeat / Lariviere01.mid occ seed1 time_motif_pc: 138s hidden 28 motif-hidden 28 
+[5/14] 21-1_no_repeat / LeeN02M.mid occ seed2 time_motif: 129s hidden 44 motif-hidden 44 [0.0687177259659065]
+[5/14] 22-1 / KOLESO04M.mid occ seed3 time: 89s hidden 69 motif-hidden 69 
+[5/14] 22-1 / WongDoe01.mid occ seed3 time_motif_pc: 80s hidden 70 motif-hidden 70 
+[5/14] 26-1_no_repeat / Tysman01.mid occ seed0 time_motif: 99s hidden 40 motif-hidden 40 [0.614673497218885]
+[5/14] 26-1_no_repeat / Ye02.mid occ seed1 time: 70s hidden 37 motif-hidden 37 
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:115: RuntimeWarning: overflow encountered in exp
+  cs.append(np.exp(x[i:i + self.k])); i += self.k
+/home/ray/Research/score-bundle/src/score_bundle/gp.py:144: RuntimeWarning: invalid value encountered in multiply
+  blk = blk + c[a] * XXt
+/home/ray/miniconda3/envs/score-bundle/lib/python3.11/site-packages/numpy/linalg/_linalg.py:2350: RuntimeWarning: invalid value encountered in slogdet
+  sign, logdet = _umath_linalg.slogdet(a, signature=signature)
+[5/14] 27-1 / Fung01.mid occ seed1 time_motif_pc: 142s hidden 53 motif-hidden 53 
+[5/14] 27-1 / GiacomelliN04M.mid occ seed2 time_motif: 146s hidden 43 motif-hidden 43 [2.9744554432326506e-06]
+[5/14] 27-1 / Ko01.mid occ seed3 time: 82s hidden 59 motif-hidden 59 
+[5/14] 27-1 / Ko05M.mid occ seed3 time_motif_pc: 160s hidden 59 motif-hidden 59 
+[5/14] 28-1 / KyykhynenT06M.mid occ seed0 time_motif: 120s hidden 60 motif-hidden 60 [0.12132377248258648]
+[5/14] 28-1 / WangY04M.mid occ seed1 time: 107s hidden 47 motif-hidden 47 
+[5/14] 28-1 / Zhdanov01.mid occ seed1 time_motif_pc: 171s hidden 50 motif-hidden 50 
+[5/14] 30-1 / Hirata01.mid occ seed2 time_motif: 237s hidden 17 motif-hidden 17 [4.897325094382821]
+[5/14] 30-1 / Izzard01.mid occ seed3 time: 144s hidden 12 motif-hidden 12 
+[5/14] 30-1 / Katyukova01.mid occ seed3 time_motif_pc: 198s hidden 12 motif-hidden 12 
+[5/14] 31-1 / AbdelmoulaJS03M.mid occ seed0 time_motif: 231s hidden 5 motif-hidden 5 [3.6109449361908856e-06]
+[5/14] 31-1 / Ahfat02M.mid occ seed1 time: 78s hidden 5 motif-hidden 5 
+[5/14] 31-1 / Ahn01.mid occ seed1 time_motif_pc: 200s hidden 5 motif-hidden 5 
+[5/14] 31-1 / BrendleA03M.mid occ seed2 time_motif: 213s hidden 15 motif-hidden 15 [0.00013399630034060733]
