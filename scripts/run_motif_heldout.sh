@@ -18,7 +18,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 N="${1:-14}"
-TAG=motif-registration-2026-11-20
+TAG=motif-registration-2026-11-18
 OUT=results/motif_heldout
 OUT_MD=results/motif_heldout_results.md
 EVID=evidence/motif_heldout

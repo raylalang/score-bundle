@@ -296,11 +296,13 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   timing (19/21 pieces) and keeps it on articulation (10/21). **Decided 2026-11-17
   (Ray): the motif study is a thesis chapter (`chapters/09_motif.tex`, `ch:motif`) with
   ONE pre-specified test on held-out performances** (`docs/motif_prereg_design.md`,
-  DRAFT until tag `motif-registration-2026-11-20`; M1 = articulation ΔRMSE, arm
+  REGISTERED 2026-11-18, tag `motif-registration-2026-11-18`, two days early on
+  Ray's go; M1 = articulation ΔRMSE, arm
   `time_motif`, power 0.95 at 18 pieces; M2 timing ΔNLL 0.33; pool = aligned
   performances other than the dev one, capped at 4 per piece, 18 pieces / 58
   performances; guarded runner `scripts/run_motif_heldout.sh` needs
-  `MOTIF_HELDOUT_I_AM_SURE=yes`, run ONCE on 11-23, never rerun). Stage two MEASURED
+  `MOTIF_HELDOUT_I_AM_SURE=yes`, RUN ONCE 2026-11-18 14:00 on Ray's go, never rerun;
+  verdict in `results/motif_heldout_results.md` once scored). Stage two MEASURED
   2026-11-17 (`scripts/run_motif_stage2.sh`, `results/motif_stage2_dev.md`, H3: edges
   from the ISMIR model's held-out predicted occurrences at q = 0.86, masks and cells
   unchanged, 252 fits): predicted edges give 0.48 of the annotated timing log-score

@@ -1,15 +1,18 @@
-# Motif-study one-shot on held-out performances — REGISTRATION DRAFT (2026-11-17)
+# Motif-study one-shot on held-out performances — REGISTERED (2026-11-18)
 
-> **Status: DRAFT, written 2026-11-17 after Ray's decision (AskUserQuestion,
-> 2026-11-17: the motif study becomes a thesis chapter with one
-> pre-specified test on untouched performances). The numbers marked
-> PROVISIONAL were replaced by pilot two's on 2026-11-17 (the draft is
-> complete; the freeze is the tag). It becomes REGISTERED at the commit that carries the tag
-> `motif-registration-2026-11-20`, which freezes the claims, the decision
-> rule, the pool, the arms and the exact commands BEFORE the run. The run
-> is one deliberate act, performed ONCE by `scripts/run_motif_heldout.sh`,
-> every number reported whatever the outcome. After the run this file is
-> never edited except by a dated erratum block.**
+> **Status: REGISTERED at the commit carrying the tag
+> `motif-registration-2026-11-18` (written 2026-11-17 as a draft after
+> Ray's decision, AskUserQuestion, 2026-11-17: the motif study becomes a
+> thesis chapter with one pre-specified test on untouched performances;
+> the numbers marked PROVISIONAL were replaced by pilot two's on
+> 2026-11-17; the arm `time_motif` and the launch before the meeting
+> confirmed by Ray on 2026-11-18, two days ahead of the planned freeze,
+> nothing else in the protocol changed). The tag freezes the claims, the
+> decision rule, the pool, the arms and the exact commands BEFORE the
+> run. The run is one deliberate act, performed ONCE by
+> `scripts/run_motif_heldout.sh`, every number reported whatever the
+> outcome. After the run this file is never edited except by a dated
+> erratum block.**
 
 ## What is claimed
 
@@ -54,7 +57,8 @@ motif arm minus the time-only arm:
 The motif arm for M1 and M2 is `time_motif` (the shared weight inside
 the adjacency), chosen 2026-11-17 by the power table (0.95 against 0.93
 for the per-channel block at 18 pieces; the larger and more even
-articulation effect, 15 of 21 pieces below zero against 13).
+articulation effect, 15 of 21 pieces below zero against 13) and
+confirmed by Ray on 2026-11-18.
 `time_motif_pc` (the family as its own per-channel block) runs beside it
 and is reported in full (its velocity gain and coverage, its articulation
 RMSE); nothing about it gates.
@@ -179,6 +183,7 @@ the performance list, shard logs, cells, report, effects) archived under
       refusal tests in `tests/test_motif_pilot.py`; the held-out source
       refuses without consent and never returns the first performance
 - [x] Pilot two read; M1, the motif arm and the power table fixed (2026-11-17)
-- [ ] Claims M1–M3, the decision rule and this protocol frozen in the
-      registration commit; tag `motif-registration-2026-11-20`
+- [x] Claims M1–M3, the decision rule and this protocol frozen in the
+      registration commit; tag `motif-registration-2026-11-18` (two days
+      before the planned 11-20 freeze; Ray, 2026-11-18)
 - [ ] Run once; evidence archived; verdict scored by the frozen rule
