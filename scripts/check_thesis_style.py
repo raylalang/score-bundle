@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """Checker for the thesis style makeover (docs/thesis/style_guide.md).
 
-Compares a rewritten chapter file against its pre-makeover version and
-reports (a) hard-constraint violations, which fail the check: any change
+Compares the rewritten thesis file (docs/thesis/draft.tex, one file since
+2026-11-18; before that one file per chapter under chapters/) against its
+earlier version and reports (a) hard-constraint violations, which fail the check: any change
 to the multiset of numbers, the set of labels, the multisets of refs and
 cites, the figure calls, the equation environments, or the tabular bodies;
 and (b) style counts on the new text, which are reported and fail only
@@ -11,7 +12,8 @@ semicolons outside math (0), asterisks outside math (0), bold (<= 5),
 emphasis (<= 12), and the banned-vocabulary list (0 outside footnotes).
 
     python scripts/check_thesis_style.py OLD.tex NEW.tex [--quiet]
-    python scripts/check_thesis_style.py --all BASELINE_DIR   # every chapter
+    python scripts/check_thesis_style.py --git REV   # docs/thesis/draft.tex vs REV
+    python scripts/check_thesis_style.py --all BASELINE_DIR   # chapter files (pre-11-18 layout)
 """
 from __future__ import annotations
 
@@ -181,6 +183,20 @@ def check(old_path: str, new_path: str, quiet: bool = False) -> bool:
 def main() -> None:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     quiet = "--quiet" in sys.argv
+    if "--git" in sys.argv:
+        import os
+        import tempfile
+        rev = args[0] if args else "HEAD"
+        new = "docs/thesis/draft.tex"
+        blob = subprocess.run(["git", "show", f"{rev}:{new}"], capture_output=True,
+                              text=True, check=True).stdout
+        with tempfile.NamedTemporaryFile("w", suffix=".tex", delete=False) as fh:
+            fh.write(blob)
+        try:
+            ok = check(fh.name, new, quiet)
+        finally:
+            os.unlink(fh.name)
+        sys.exit(0 if ok else 1)
     if "--all" in sys.argv:
         import glob
         import os

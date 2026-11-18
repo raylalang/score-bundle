@@ -5,7 +5,9 @@ project report, a lab notebook, or a status update. Every sentence should
 read as if written once, at the end, by someone describing a finished
 piece of research to a reader who was not there while it was done.
 
-This guide governs `docs/thesis/draft.tex` and `docs/thesis/chapters/*.tex`.
+This guide governs `docs/thesis/draft.tex` (one file; the per-chapter
+files of 2026-10-28 were folded back into it on 2026-11-18 for Overleaf).
+Check an edit with `python scripts/check_thesis_style.py --git HEAD`.
 It changes the writing, never the science: see "Hard constraints" first.
 
 ## Hard constraints (the checker enforces these)

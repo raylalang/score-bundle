@@ -294,7 +294,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   bit-exactly). The robust effect in both forms and on every seed pair is ARTICULATION
   RMSE (−0.035* shared, −0.019* per channel); the evidence switches the family off on
   timing (19/21 pieces) and keeps it on articulation (10/21). **Decided 2026-11-17
-  (Ray): the motif study is a thesis chapter (`chapters/09_motif.tex`, `ch:motif`) with
+  (Ray): the motif study is a thesis chapter (`ch:motif` in draft.tex) with
   ONE pre-specified test on held-out performances** (`docs/motif_prereg_design.md`,
   REGISTERED 2026-11-18, tag `motif-registration-2026-11-18`, two days early on
   Ray's go; M1 = articulation ΔRMSE, arm
@@ -312,14 +312,15 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   carries it; cite `lalang2026motif`. Score features
   only (no LM), so no contamination question. Power script `scripts/power_motif.py`.
 - **Thesis STYLE MAKEOVER (2026-10-28, Ray: "almost a whole makeover", the draft read
-  like a company project report).** `draft.tex` now `\input`s `docs/thesis/chapters/*.tex`
-  (one file per chapter/appendix + `bibliography.tex`); `docs/thesis/style_guide.md` is
+  like a company project report).** `draft.tex` is ONE FILE again since 2026-11-18 (Ray: Overleaf
+  works better with one file; the per-chapter `chapters/*.tex` of 10-28 were inlined
+  back, PDF unchanged); `docs/thesis/style_guide.md` is
   the authority (academic voice, no run-in `\paragraph` headers, bold only at
   definitions, no bookkeeping/verdict vocabulary, protocol described ONCE in
   `sec:hygiene` "Development and held-out evaluation", results reported as
   prediction / estimate with interval / meaning, no dates, no code identifiers in
-  prose, no self-grading words); `scripts/check_thesis_style.py OLD NEW` (or `--all
-  BASELINE_DIR`) enforces it and proves numbers, labels, refs, cites, equations and
+  prose, no self-grading words); `scripts/check_thesis_style.py OLD NEW` (or `--git REV`
+  against a committed draft.tex) enforces it and proves numbers, labels, refs, cites, equations and
   table bodies unchanged. Pre-makeover text = tag `thesis-pre-makeover-2026-10-28`.
   80 pp after the makeover (prose expanded; no content added or cut). Any future
   thesis edit follows the style guide and is run through the checker.
