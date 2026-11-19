@@ -97,3 +97,22 @@ family can be built from a model's occurrences and keeps about half of
 its effect, with the interval covering zero at this size. The third
 stage named in the proposal, inference on scores outside the annotated
 corpus, is Future Work.
+
+
+## Erratum (2026-11-19, Codex audit, docs/codex_audit_findings_2026-11-19.md findings 1 and 3)
+
+1. **H3 named the per-channel arm.** The docstring committed before the run
+   (`d147ee1:scripts/eval_motif_pilot_dev.py`, line 97) states H3 for
+   `time_motif_pc_pred`. That arm gives timing ΔNLL +0.036 [−0.010, +0.095]
+   (rows table above), the wrong direction. **H3 is not supported**, by more
+   than the "small margin" the reading above gives. The shared-arm numbers in
+   the reading (−0.034, 0.48 of the annotated −0.071) are correct but were
+   recorded without a prediction.
+2. **Per-piece agreement, articulation.** The "15 of 21 pieces below zero in
+   both" above is wrong: 12 of 21 are below zero for both edge sources, in the
+   power script's per-piece definition (mean of per-seed RMSE) and in the
+   report table's (square root of the seed-mean MSE). The articulation
+   correlation is 0.86 in the power script's definition and 0.84 in the
+   table's; the thesis now uses the table's definition throughout (held-out
+   0.88 is the table's). Recomputed from `results/motif_pilot2/cells.shard*.pkl`
+   and `results/motif_stage2/cells.shard*.pkl`.

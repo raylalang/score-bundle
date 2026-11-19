@@ -72,3 +72,16 @@ wall per fit incl. Laplace: median 673 s
    (score structure recovers note-level expression a performer-wide
    offset cannot). Scope: 48 cells, 9 instruments, legato runs only,
    673 s per fit; development evidence, no claims.
+
+
+## Erratum (2026-11-19, Codex audit findings 7, 8 and 17)
+
+- The 48 phrases come from **30** of the 78 development tracks searched
+  (distinct track keys in `logs/priorval_phrase_eval.shard*.log`), not from
+  all 78.
+- The graph's onsets are the URMP annotation onsets in **seconds**, so
+  `build_adjacency`'s ℓ_b = 2 is a two-second window here, not two beats. The
+  same holds for the strings-and-winds track-scale studies
+  (`results/phase2_chain_prior_dev.md`, `results/phase2_timegauss_prior_dev.md`).
+- The prior scale σ² is the variance of the track's reference centres with the
+  hidden note included, shared by every arm.

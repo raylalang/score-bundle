@@ -167,3 +167,19 @@ The report's title line says "58 Beethoven first movements": the generator count
 - Cells: 696 of 696 fits (58 performances x 4 seeds x 3 arms), no skips, no tracebacks; the occurrence-hidden scheme only, as the frozen commands state. The "hidden notes = all" table equals the motif table because under this scheme every hidden note is a motif note.
 - **Headline, by the registered rule:** annotated motif structure carries expressive information beyond temporal smoothing, confirmed once on held-out performances of the development pieces (disclosed): articulation accuracy on hidden returns. The test is across performers of the same movements, not across repertoire, and is labelled so wherever it appears.
 - Evidence: evidence/motif_heldout/ (run log with the performance list, driver log, 14 shard logs, align.md, report.md, effects.json, pieces.pkl md5 71c06d636712953f057da3ab86fe93cb, 14 cell shards). The pool is spent; never rerun.
+
+
+## Erratum (2026-11-19, Codex audit finding 5; the verdict is unchanged)
+
+- The cells line of the verdict block says the "hidden notes = all" table
+  equals the motif table because every hidden note is a motif note. That is
+  not exact: the scoring set keeps only hidden motif notes whose type has
+  another occurrence with an observed note, and overlapping occurrences can
+  hide notes outside it (e.g. "hidden 77 motif-hidden 55" in
+  `evidence/motif_heldout/motif_heldout.shard2.log`). The two tables differ in
+  the fourth decimal (articulation ΔRMSE −0.0286 on the scored set, −0.0284 on
+  all hidden notes). M1 was scored on the restricted set, as registered.
+- Per-movement agreement with development (report table definition): 13 of
+  the 18 movements below zero on development, 15 held out, 12 in both;
+  correlation 0.88. The 0.83 ratio compares all 21 development movements with
+  the 18 held-out ones.

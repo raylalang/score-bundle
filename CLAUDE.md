@@ -227,7 +227,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   scale), observed-joint bands too narrow (0.7 ms = the estimand gap at the
   boundary). **Third span, phrase scale (2026-10-20,
   `scripts/eval_prior_value_phrase_dev.py`, `results/prior_value_phrase_dev.md`;
-  48 cells from ALL 78 dev tracks, hidden pitch recurring ≥2 notes away)**:
+  48 cells from 30 of the 78 dev tracks searched, hidden pitch recurring ≥2 notes away)**:
   graph beats temporal −1.63* (the pre-stated primary), but graph = indep
   (−0.07) and temporal < indep (+1.56*) → the win is the temporal prior's harm
   repaired, no dose-response on edge weight. **Three-span verdict: weak form
@@ -271,7 +271,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   `tests/test_adoption_optin.py` (incl. ρ=0 bit-equality and brute-force
   conditioning pins).
 - **MOTIF STUDY (end-goal proposal, 2026-10-28; first pilot 2026-11-04, dev only, no claim).**
-  Proposal deck `docs/slides/proposal_endgoal.tex` (12 frames, notes
+  Proposal deck `docs/slides/proposal_endgoal.tex` (13 pages, notes
   `proposal_endgoal_notes.md`, figures by `scripts/make_proposal_figs.py`): one more
   edge family in the score graph from the BPS-motif annotations
   (`/home/ray/Research/ISMIR/graph-motif-discovery/datasets/Beethoven_motif-main/`,
@@ -315,10 +315,14 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   `tab:motif-dev`, `fig:motif-graph`; deck slide 39 result table, Summary, Plan. Stage two MEASURED
   2026-11-17 (`scripts/run_motif_stage2.sh`, `results/motif_stage2_dev.md`, H3: edges
   from the ISMIR model's held-out predicted occurrences at q = 0.86, masks and cells
-  unchanged, 252 fits): predicted edges give 0.48 of the annotated timing log-score
-  effect (−0.034 [−0.085, +0.003]) and 0.4 of the articulation RMSE effect (−0.0135
-  [−0.032, +0.003]), per-piece effects correlated 0.86; H3 (half, interval clear of 0)
-  NOT met by a small margin; membership F1 median 0.78. Thesis `sec:motif-stage2`
+  unchanged, 252 fits): H3 NAMED THE PER-CHANNEL ARM (`time_motif_pc_pred`), which
+  moved timing the wrong way (+0.036 [−0.010, +0.095]) ⇒ H3 NOT SUPPORTED (corrected
+  2026-11-19 after the Codex audit; the 11-17 reading scored the shared arm); the
+  shared arm, recorded without a prediction, gives 0.48 of the annotated timing
+  log-score effect (−0.034 [−0.085, +0.003]) and 0.4 of the articulation RMSE effect
+  (−0.0135 [−0.032, +0.003]), per-piece articulation effects correlated 0.84 in the
+  table's RMSE definition (0.86 in the power script's), 12 of 21 below zero for both;
+  membership F1 median 0.78. Thesis `sec:motif-stage2`
   carries it; cite `lalang2026motif`. Score features
   only (no LM), so no contamination question. Power script `scripts/power_motif.py`.
 - **Thesis STYLE MAKEOVER (2026-10-28, Ray: "almost a whole makeover", the draft read
@@ -334,14 +338,15 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   table bodies unchanged. Pre-makeover text = tag `thesis-pre-makeover-2026-10-28`.
   80 pp after the makeover (prose expanded; no content added or cut). Any future
   thesis edit follows the style guide and is run through the checker.
-- **Thesis state (2026-11-18 evening, main=1ff2fe9+): 89 pp, ONE FILE, every result line in: the motif chapter complete (held-out section, meaning section, development table, graph figure), its framing in the abstract, intro, discussion, future work and conclusion, the waveform held-out section (80 after the makeover of 2026-10-28), compile clean, checker additions-only** (cut from 83 on
+- **Thesis state (2026-11-19, after the Codex audit corrections: 92 pp; 2026-11-18 evening, main=1ff2fe9+: 89 pp), ONE FILE, every result line in: the motif chapter complete (held-out section, meaning section, development table, graph figure), its framing in the abstract, intro, discussion, future work and conclusion, the waveform held-out section (80 after the makeover of 2026-10-28), compile clean, checker additions-only** (cut from 83 on
   2026-10-28, Ray: "subtract the irrelevant and obsolete": two-stage-era kernel table,
   per-channel ablation table and fitted filters, lineage B.2-B.5, synthetic pilot,
   leakage appendix folded into §5.4, era/performer-ID downstream tasks and the Vienna
   corpus, §8.3 compressed to one three-span table + a page per span, connection-Laplacian
   future-work item; pre-cut text in git history).** Main line =
   Intro / Background / Model / Data / piano results / Downstream / strings-and-winds
-  results / **the waveform as the observation (Ch. 8)** / Discussion / Future Work /
+  results / **the waveform as the observation (Ch. 8)** / **motif structure (Ch. 9)** /
+  Discussion / Future Work /
   Conclusion; appendices A–G. Refocus: objective = an interpretable, score-aligned
   representation with uncertainty; method = Bayesian score-conditioned inverse
   synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
@@ -402,10 +407,12 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   **MEASURED 2026-10-22/23:** E1 — score graph beats the time-only chain at
   track scale beyond the common offset (c −0.50*, extent −0.22*, rate −0.21*,
   loudness −0.007*); E1b — the score graph EQUALS the time-only Gaussian graph
-  (pitch term removed, same 2-beat window) on intonation (−0.02 ns) and is
+  (pitch term removed, same window: ℓ_b = 2 on URMP onsets in SECONDS, i.e. two
+  seconds, not two beats — corrected 2026-11-19 after the Codex audit) on intonation (−0.02 ns) and is
   slightly worse on vibrato; the time-Gaussian graph reproduces the confirmed
   graph value (−0.878 vs −0.896) ⇒ **the graph's value is temporal smoothing
-  over ~2 beats, not pitch proximity**, at every scale tested; E3 — chain-scale
+  over a short window (2 beats on piano, 2 seconds on strings/winds and the
+  waveform spans), not pitch proximity**, at every scale tested; E3 — chain-scale
   σ_b: independent band 1.00→0.88, structured 0.75, verdict unchanged. Thesis:
   Appendix `app:trackscale` (tab:trackscale) + Ch. 8 closing paragraph + one
   band sentence; brief §G; ROADMAP; ledger; deck main-line slides 30-31 (2026-10-23,

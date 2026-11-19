@@ -130,3 +130,11 @@ per-piece bias column, so every contrast is beyond the common offset.
    `results/phase2_timegauss_prior_dev.md`.
 5. Scope: development split, selection-reused, no registration; the
    registered strings-and-winds results are untouched.
+
+
+## Erratum (2026-11-19, Codex audit finding 8)
+
+URMP onsets are annotated in seconds, so the graph's time length ℓ_b = 2 is a
+two-second window of performance time in this study, not two beats. Every
+"2-beat" in the hypotheses and readings above should read "2-second". The
+numbers are unchanged.

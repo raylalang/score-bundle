@@ -34,12 +34,12 @@ the zemi version himself.
 | October (done) | three spans of the bridge; track-scale attribution; the two re-used-pool one-shots (10-27); thesis cut and makeover (10-28) | — |
 | 11-04 (done) | **motif study, stage one, first pilot** (`results/motif_pilot_dev.md`, proposal deck frame 10; dev only, 21 Beethoven first movements, 336 fits): with whole occurrences hidden, annotated motif edges lower the timing log score on those notes by 0.117 nats [−0.245, −0.006] against the time-only graph; articulation RMSE −5 percent; velocity bands too narrow (one shared weight) | — |
 | 11-17 (done) | **pilot two**: the per-channel motif weight (the family as its own diagonal coregionalization block), four seeds, both schemes, 672 fits (`scripts/run_motif_pilot2.sh`, H2 in the script docstring); record `results/motif_pilot2_dev.md`. Measured: the velocity penalty is gone under the per-channel block (−0.086*, coverage 0.944) but the timing log-score gain is not kept (−0.005), and on four seeds the shared weight's timing gain is −0.071 ns (the pilot-one star was two seeds); the robust effect is articulation RMSE (−0.035* shared, −0.019* per channel). Registration primary fixed = articulation RMSE, arm = `time_motif` | — |
-| 11-18 | MEETING (brief run order). **Stage two done 11-17**: edges from the ISMIR model's held-out predicted occurrences, masks and cells unchanged (H3), `results/motif_stage2_dev.md`: about half of the annotated effect (timing 0.48, articulation 0.4), intervals reaching zero, H3 not met by a small margin | — |
-| 11-18 (done) | **waveform one-shot** registered (`phrase-prior-registration-2026-11-18`) and RUN ONCE the same morning, 04:47-10:21, 12 shards: **W1 PASS** (graph − temporal −0.82 cents [−1.59, −0.05] on 48 held-out phrases; dev −1.63, expectation −0.9), W2 tie, W3 ties; `results/phrase_prior_confirmation_results.md`, `evidence/phrase_prior_confirmation/`; thesis `sec:phase3-heldout`, deck slide 30, 88 pp | — |
+| 11-18 | MEETING (brief run order). **Stage two done 11-17**: edges from the ISMIR model's held-out predicted occurrences, masks and cells unchanged (H3), `results/motif_stage2_dev.md`: H3 named the per-channel form, which moved timing the wrong way (+0.036 [−0.010, +0.095]), so H3 not supported; the shared form, recorded without a prediction, gave about half of the annotated effect (timing 0.48, articulation 0.4), intervals reaching zero (corrected 11-19 after the Codex audit) | — |
+| 11-18 (done) | **waveform one-shot** registered (`phrase-prior-registration-2026-11-18`) and RUN ONCE the same morning, 04:47-10:21, 12 shards: **W1 PASS** (graph − temporal −0.82 cents [−1.59, −0.05] on 48 held-out phrases; dev −1.63, expectation −0.9), W2 tie, W3 ties; `results/phrase_prior_confirmation_results.md`, `evidence/phrase_prior_confirmation/`; thesis `sec:phase3-heldout`, deck slide 31, 88 pp | — |
 | 11-20 → done 11-18 midday | **motif registration** frozen and tagged (`motif-registration-2026-11-18`, two days early on Ray's go) (`docs/motif_prereg_design.md`: untouched performances of the 21 pieces, capped at four per piece, unit = piece; primary = articulation RMSE on hidden motif notes with occurrences hidden, fixed 11-17 from pilot two's power table, 0.95 at 18 pieces; arm = the shared weight; the timing log score secondary at 0.33) | Ray's go given 11-17 |
-| 11-23 → done 11-18 | **motif one-shot** RUN ONCE 13:43-15:31 (696 fits, 14 shards): **M1 PASS** articulation ΔRMSE −0.0286 [−0.0494, −0.0109] on 18 movements (dev −0.0345, 15 of 18 below zero, per-piece corr. 0.88 with dev); M2 timing log score miss (−0.018, interval covering zero, as the power table said); velocity penalty gone; per-channel form reproduces dev. `results/motif_heldout_results.md`, `evidence/motif_heldout/`; thesis `sec:motif-heldout`, `tab:motif-heldout`, `sec:motif-meaning`, `tab:motif-dev`, `fig:motif-graph`, 89 pp one file; deck slide 36. **Every result line of the thesis is in.** | — |
+| 11-23 → done 11-18 | **motif one-shot** RUN ONCE 13:43-15:31 (696 fits, 14 shards): **M1 PASS** articulation ΔRMSE −0.0286 [−0.0494, −0.0109] on 18 movements (dev −0.0345, 15 of 18 below zero, per-piece corr. 0.88 with dev); M2 timing log score miss (−0.018, interval covering zero, as the power table said); velocity penalty gone; per-channel form reproduces dev. `results/motif_heldout_results.md`, `evidence/motif_heldout/`; thesis `sec:motif-heldout`, `tab:motif-heldout`, `sec:motif-meaning`, `tab:motif-dev`, `fig:motif-graph`, 89 pp one file; deck slide 39. **Every result line of the thesis is in.** | — |
 | 11-24 to 11-29 | thesis: `sec:motif-heldout` and `sec:motif-meaning` from the motif verdict, the held-out sentences in the abstract, intro, conclusion; Ch. 8 held-out section from the waveform verdict (its opening sentence, the stage-table row, the spans caption). **Pulled forward 11-18 (done):** abstract paragraph, intro (RQ paragraph, contributions paragraph, stage-table row, outline), Discussion, Future Work section on the motif family, Conclusion paragraph; 87 pp, checker and compile clean | — |
-| 11-30 to 12-02 | deck: the two verdicts on slides 30 and 36 and the Plan row; speaker notes. **Pulled forward 11-18 (done):** the motif section on the main line (divider 32, slides 33-36), Summary bullet, Plan slide to the calendar, notes for every slide, 42 pp. Ray syncs Overleaf and cuts the zemi deck | Ray |
+| 11-30 to 12-02 | deck: the two verdicts on slides 31 and 39 and the Plan row; speaker notes. **Pulled forward 11-18 (done):** the motif section on the main line (divider 33, slides 34-39), Summary bullet, Plan slide to the calendar, notes for every slide, 45 pp. Ray syncs Overleaf and cuts the zemi deck | Ray |
 | 11-19 to 11-29 (the week with nothing to wait for) | **Reading and judgement, no compute.** (1) Codex audit by hand of the material written on 11-18: prompt `docs/codex_audit_prompt_2026-11-19.md` (numbers against records, claim strength against the fixed rules, equations against the code, disclosure, cross-document consistency, examiner questions); findings land in `docs/codex_audit_findings_2026-11-19.md`, fixes go through the style checker. (2) Ray reads the 89-page draft once as an examiner, marking every sentence he cannot defend in one line. (3) Zemi deck cut from the 45-page deck once the slot length is known. (4) Optional: one held-out results figure for the motif chapter (per-movement articulation effect, development against held-out, the 0.88 correlation). | Ray |
 | **12-03** | **zemi** (95 percent of the results done) | — |
 | December | writing only: Codex review by hand, main deck to bullet style, Limitations, figures; no new runs | — |
@@ -136,7 +136,7 @@ offset scalar is its core control).
   bands too wide (σ_b = population scale), observed-joint bands too
   narrow (0.7 ms, the estimand gap at the boundary).
 - **C, phrase scale** (`scripts/eval_prior_value_phrase_dev.py`,
-  `results/prior_value_phrase_dev.md`): 48 cells from all 78 dev
+  `results/prior_value_phrase_dev.md`): 48 cells from 30 of the 78 dev
   tracks, hidden pitch recurring ≥2 notes away. Primary contrast
   passes (graph vs temporal −1.63* cents, 65%), but graph = indep
   (−0.07) and temporal < indep (+1.56*): the win is the temporal
@@ -157,7 +157,8 @@ offset scalar is its core control).
   the score graph with its pitch term removed EQUALS the score graph
   on intonation (−0.02 ns) and is slightly better on vibrato; the
   time-Gaussian graph reproduces the confirmed graph value (−0.878 vs
-  −0.896). **The graph's value is the 2-beat time window, not pitch
+  −0.896). **The graph's value is the time window (2 beats on piano, 2 seconds on
+  strings and winds, whose onsets are annotated in seconds), not pitch
   proximity**, consistent with the three waveform spans.
 - **E3** (`BOUNDPRIOR_SIGMA=chain`, `results/boundary_prior_chainsig_dev.md`):
   chain-scale prior width: independent band 1.00 → 0.88, structured
@@ -172,6 +173,8 @@ offset scalar is its core control).
 ## DECIDED 2026-10-23 (Ray; the professor is hands-off from here)
 
 - "The graph's value is smoothness in score time over about two beats"
+  (wording corrected 11-19 after the Codex audit: two beats on piano, two
+  seconds of performance time on strings and winds)
   is the thesis's STATED attribution (abstract, contributions,
   Discussion, Conclusion); the confirmed headline models keep their
   score graph (no protocol change, no new registration). The ℓ_b sweep
@@ -204,7 +207,7 @@ offset scalar is its core control).
   bands too wide (σ_b = population scale), observed-joint bands too
   narrow (0.7 ms, the estimand gap at the boundary).
 - **C, phrase scale** (`scripts/eval_prior_value_phrase_dev.py`,
-  `results/prior_value_phrase_dev.md`): 48 cells from all 78 dev
+  `results/prior_value_phrase_dev.md`): 48 cells from 30 of the 78 dev
   tracks, hidden pitch recurring ≥2 notes away. Primary contrast
   passes (graph vs temporal −1.63* cents, 65%), but graph = indep
   (−0.07) and temporal < indep (+1.56*): the win is the temporal

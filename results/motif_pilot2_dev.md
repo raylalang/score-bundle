@@ -159,3 +159,15 @@ runs beside it and is reported. The thesis chapter states the family's
 measured value as articulation accuracy, with the timing effect of the
 first study reported as what it turned out to be. Stage two (predicted
 occurrences) runs next on the same cells.
+
+
+## Erratum (2026-11-19, Codex audit findings 2 and 3)
+
+- The articulation RMSE levels in reading 3 ("0.732 → 0.698 and 0.713") were
+  computed as the time-only level minus the mean paired difference. The
+  report table's arm levels are 0.7317 (time), 0.7045 (shared) and 0.7145
+  (per-channel). The paired differences (−0.0345*, −0.0189*) are unchanged.
+- Movements below zero on articulation RMSE: 14 (shared) and 12
+  (per-channel) in the report table's per-movement definition (square root of
+  the seed-mean MSE); 15 and 13 in the power script's (mean of per-seed RMSE).
+  The thesis uses the table's definition.

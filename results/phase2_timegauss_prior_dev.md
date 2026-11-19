@@ -180,3 +180,11 @@ time-only Gaussian graph is the score graph with the pitch term removed
    matter differently there. Checked next if cheap.
 5. Scope: development split, selection-reused, no registration; the
    registered results untouched.
+
+
+## Erratum (2026-11-19, Codex audit finding 8)
+
+URMP onsets are annotated in seconds, so the graph's time length ℓ_b = 2 is a
+two-second window of performance time in this study, not two beats. Every
+"2-beat" in the hypotheses and readings above should read "2-second". The
+numbers are unchanged.

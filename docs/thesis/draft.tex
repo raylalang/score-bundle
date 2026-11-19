@@ -160,13 +160,14 @@ offset, score structure adds nothing measurable at chain or phrase scale,
 although at phrase scale it is better than a purely temporal prior, and
 that advantage is supported in a pre-specified evaluation on the held-out
 pieces of the second setting, disclosed as a third use of them. With that
-one qualification, these three results are negative. The central design constraint of the waveform setting is also
+one comparison, none of the three spans shows a gain beyond the common offset. The central design constraint of the waveform setting is also
 quantified: calibration must bridge the estimand gap between the harmonic
 model and the annotation chain. A development finding on both corpora
 attributes the graph's value. The same graph with its pitch term removed
 reproduces, and on piano slightly exceeds, the main model, so the
-structure that does the work is smoothness in score time over about two
-beats. The test-set results stand as comparisons of the full model with
+structure that does the work is smoothness over a short time window, two
+beats of score time on piano and two seconds of performance time on strings
+and winds. The test-set results stand as comparisons of the full model with
 its alternatives, and their attribution is narrower than the model's name
 suggests.
 
@@ -178,11 +179,14 @@ from motif annotations of the Beethoven sonatas and, in a second study,
 from the predictions of a motif-discovery model. With whole occurrences
 hidden, the family lowers the articulation error of the hidden notes on
 the development set with an interval excluding zero, in a shared form and
-in a per-channel form, the evidence switches it off on timing, and
-predicted occurrences keep about half of the effect. In one pre-specified
-evaluation on further performances of the same movements the articulation
-effect holds, with an interval excluding zero and on fifteen of eighteen
-movements, and the timing effect does not.
+in a per-channel form, and shows no timing effect whose interval excludes
+zero. Edges from predicted occurrences give point estimates of about half
+the timing effect and four tenths of the articulation effect, with
+intervals that include zero. In one pre-specified evaluation on further
+performances of the same movements the articulation effect holds, with an
+interval for the mean over movements excluding zero and a point estimate
+below zero on fifteen of eighteen movements, and the timing effect does
+not.
 \end{abstract}
 
 \tableofcontents
@@ -299,9 +303,9 @@ finding carried to a held-out evaluation, where it was supported. The
 purely temporal baseline of RQ2 is also examined at whole-track scale on
 both corpora, again on the development set. A naive note-order chain is
 worse than the score graph, but the same graph with its pitch term removed
-and its two-beat time window kept matches it
+and its time window kept matches it on intonation
 (Appendix~\ref{app:trackscale}), so the structure that the test-set results
-reward is smoothness in score time rather than pitch proximity.
+reward is smoothness in time rather than pitch proximity.
 Chapter~\ref{ch:motif} then asks whether a structure that the time window
 cannot see, the repetition of a motif, carries expressive information of
 its own, and answers that it does for articulation, on the development set
@@ -344,7 +348,8 @@ the residual.
         term is attributed one step further on the development set of both
         corpora: the same graph without its pitch term reproduces its value
         (Appendix~\ref{app:trackscale}), so what the graph contributes is
-        smoothness in score time over about two beats.
+        smoothness over a short time window, two beats of score time on
+        piano and two seconds of performance time on strings and winds.
   \item A map of where the structure helps, obtained from six downstream
         tasks with objective metrics and re-validated under the final
         model. It yields two boundaries (\S\ref{sec:boundary}): structure
@@ -363,9 +368,10 @@ The waveform endpoint, the full inverse-synthesis loop with the score-graph
 prior inside the waveform inference, is the intended destination of the
 programme and is not presented as a contribution. Its components are
 studied on the development set (Chapter~\ref{app:phase3}), and the
-integration is built only in its first span, where the score-graph prior
-couples the per-note intonation constants inside the waveform inference on
-short chains. In that span, with hypotheses stated in advance and after a
+integration is built for single scalars per note or joint, where the
+score-graph prior couples the per-note intonation constants, or the joint
+offsets, inside the waveform inference on short chains, at note
+boundaries and on phrases. On short chains, with hypotheses stated in advance and after a
 flaw in the first design had been found and corrected, the value of the
 prior is the transfer of the track's shared tuning offset to a note whose
 audio is absent. Beyond that common mode, score structure adds nothing
@@ -389,9 +395,10 @@ joining the notes of a motif's returns by their relative position inside
 the occurrence, is added to the graph and evaluated under a masking scheme
 that hides whole occurrences. On the development set the family lowers the
 articulation error of the hidden notes with an interval excluding zero in
-both of its forms, the evidence switches it off on timing, and edges built
-from the predictions of a motif-discovery model keep about half of the
-effect. Its one pre-specified evaluation, on further performances of the
+both of its forms and gives no timing effect whose interval excludes
+zero, and edges built from the predictions of a motif-discovery model give
+point estimates of about half of the annotated effect, with intervals that
+include zero. Its one pre-specified evaluation, on further performances of the
 same movements, supports the articulation effect with an interval excluding
 zero and not the timing effect (\S\ref{sec:motif-heldout}).
 
@@ -438,7 +445,7 @@ Evaluated on a held-out test set (Chapter~\ref{ch:results}) \\
 strings and winds (stage 2): measurement uncertainty & Intonation, vibrato, loudness on continuously pitched instruments &
 $f_0$-derived channels ($c_i$ cents, vibrato, $\ell_i$) $+$ $\tau$, $d^{\mathrm{vib}}$ & Evaluated on a held-out test set (URMP): intonation recovery, vibrato calibration and coverage supported, the secondary timing hypothesis not supported (Chapter~\ref{ch:phase2}) \\
 waveform (stage 3): the endpoint & Differentiable synthesizer as audio likelihood &
-Harmonic amplitudes $a$, audio $x$ & Development studies: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); one pre-specified claim, the weak form at phrase scale, evaluated once on the re-used strings-and-winds test pieces and supported \\
+Harmonic amplitudes $a$, audio $x$ & Development studies: scalar intonation, whole pitch curves, joint note boundaries (Chapter~\ref{app:phase3}); one pre-specified hypothesis, the weak form at phrase scale, evaluated once on the re-used strings-and-winds test pieces and supported \\
 motif edges: structure outside the time window & Motif repetition in the score graph (Beethoven sonata movements, annotated and predicted occurrences) &
 One further edge family $W_{\mathrm{motif}}$, in a shared and a per-channel form & Development studies, and one pre-specified evaluation on held-out performances of the same movements that supports the articulation effect (Chapter~\ref{ch:motif}) \\
 \bottomrule
@@ -456,7 +463,8 @@ findings, and Chapter~\ref{ch:downstream} maps the downstream reach.
 Chapter~\ref{ch:phase2} carries the same prior, unchanged, to real
 recordings and reports the strings-and-winds results on the held-out test
 set. Chapter~\ref{ch:phase3} takes the waveform itself as the observation
-and reports the development studies of that setting, and
+and reports the development studies of that setting and one held-out
+evaluation, and
 Chapter~\ref{ch:motif} adds motif structure to the score graph and
 evaluates it. Chapters~\ref{ch:discussion}--\ref{ch:conclusion} discuss,
 situate and conclude. The appendices hold the notation summary (\ref{app:notation}),
@@ -1167,8 +1175,10 @@ music-model stack, and small on calibration, approximately $+0.014$ in NLL.
 The strict numbers are the ones quoted throughout the thesis.
 
 \section{Development and held-out evaluation}\label{sec:hygiene}
-Two disjoint sets of pieces play two different roles in every setting of this
-thesis. The development set is where every modelling choice was made: the
+Two disjoint sets play two different roles in every setting of this
+thesis. In the piano and strings-and-winds settings they are sets of pieces.
+In the motif study they are one development performance of each movement
+and further performances of the same movements. The development set is where every modelling choice was made: the
 noise floor, the correction of the music-model read-out, the feature stack,
 the kernel and edge families, and the proposed model itself were all selected
 on the \nPieces{} development pieces of the piano setting and on the
@@ -1182,8 +1192,9 @@ They are called the development set and the held-out test set here to make
 explicit that the second was consulted only after the modelling choices had
 been settled.
 
-Each held-out test set was evaluated once, against hypotheses fixed in
-advance. Before the test pieces were examined, the systems to be compared,
+Each pre-specified comparison on held-out material was evaluated once,
+against hypotheses fixed in advance, and the repeated use of the
+strings-and-winds test set is disclosed below. Before the test pieces were examined, the systems to be compared,
 the primary and secondary measures, and the decision rule stating which
 measure decides each hypothesis and in which direction were written down and
 committed to the project's version history. The evaluation was then run a
@@ -1224,9 +1235,10 @@ The motif study of Chapter~\ref{ch:motif} uses a different kind of held-out
 material. Its hypotheses were developed on twenty-one Beethoven movements,
 one performance each, and the held-out evaluation uses further performances
 of the same movements that no run had read, at most four per movement, with
-the movements as the unit of analysis. The scores, the motif annotations and
-hence the edges and the masks are those of the development study, and only
-the performances, which supply the targets, are new. That evaluation
+the movements as the unit of analysis. The scores, the motif annotations,
+the masking rule and its seeds are those of the development study. Each
+performance supplies its own aligned excerpt, from which the edges and the
+masks are rebuilt by the same rules, and its own targets. That evaluation
 therefore tests whether the development finding holds across performers of
 the same pieces, not across pieces, and it is labelled as such wherever it
 appears.
@@ -2091,6 +2103,10 @@ correlation, as noted above. This is development evidence.
 \subsection{The score graph and the tonal metric}
 The graph construction \eqref{eq:adjacency} and its alternatives
 (\S\ref{sec:graphvariants}) carry over, with per-channel length scales.
+The corpus annotates note onsets in seconds and carries no beat grid, so in
+this setting, and in the waveform setting of Chapter~\ref{ch:phase3}, the
+onset $b_i$ of the graph is the annotated onset in seconds and the time
+length $\ell_b = 2$ spans two seconds of performance time.
 One earlier result becomes newly interesting. The kernel comparison
 (\S\ref{sec:kernels}) found that replacing the semitone metric by the
 circle-of-fifths metric \eqref{eq:tonaladj} made recovery and calibration
@@ -2813,12 +2829,14 @@ the per-note intonation constant $c$, or for the boundary span the per-joint
 offset from the tempo line, at matched marginal variance and with
 everything else identical: the amplitude-marginalised likelihood, the data,
 the optimiser and its budget. The independent prior is $\N(0,\sigma^2 I)$.
-The temporal prior is $\N(0,\sigma^2 K_{\mathrm{chain}})$ with the
-note-order chain graph. The score-graph prior is $\N(0,\sigma^2 K_{G})$
+The temporal prior is $\N(0,\sigma_{\mathrm{ref}}^2 K_{\mathrm{chain}})$ with the
+note-order chain graph. The score-graph prior is $\N(0,\sigma_{\mathrm{ref}}^2 K_{G})$
 with the score graph of \S\ref{sec:scoregraph}, which couples notes by time
 and by pitch proximity. Both structured kernels are $(I+L)^{-1}$,
-diagonally normalised, and $\sigma^2$ is the track's own reference
-variance, a population scale that is not tuned. Every arm carries a free
+diagonally normalised, and $\sigma_{\mathrm{ref}}^2$ is the track's own
+reference variance, a population scale that is not tuned. It is computed
+from the reference centres of all the track's notes, the hidden note
+included, so every arm shares one prior scale derived from the reference. Every arm carries a free
 per-chain common-mode scalar $t \sim \N(0, 50^2)$, with
 $c = t\mathbf{1} + \tilde c$, marginalised as a rank-one term. This scalar
 hands the independent prior the chain's observed mean, so that whatever
@@ -2827,8 +2845,9 @@ transfer of a shared offset.
 
 Each chain is evaluated under two conditions. In the \textbf{masked}
 condition the middle eligible element is removed from the likelihood and
-from the design, so that its posterior is exactly the prior conditional
-given its observed neighbours, the waveform-level analogue of the held-out
+from the design, so that its posterior is the prior conditional given the
+other notes, averaged over their posterior uncertainty, the waveform-level
+analogue of the held-out
 imputation task of Chapter~\ref{ch:results}. In the \textbf{clean}
 condition the full audio is used. The hidden element must be removed from
 the design and not only from the audio samples. If only its samples were
@@ -2866,7 +2885,8 @@ offset per joint), three cross-note priors at matched marginal variance
 proximity), a free common-mode scalar shared by all notes in every arm, and
 the same likelihood, data and optimiser. The hidden note has its audio
 removed and its design columns dropped, so its posterior is the prior
-conditional given the observed notes. The output is the hidden element's
+conditional given the other notes, averaged over their posterior under the
+joint Laplace approximation. The output is the hidden element's
 posterior mean and standard deviation.\label{fig:span-schematic}}
 
 \begin{table}[t]\centering
@@ -2874,7 +2894,8 @@ posterior mean and standard deviation.\label{fig:span-schematic}}
 the hidden element's error with $95\%$ bootstrap intervals, every arm
 carrying the common-mode scalar. A negative value favours the first arm,
 and a superscript asterisk marks an interval that excludes zero. Chains and
-joints are from four development tracks, phrases from all $78$. All
+joints are from four development tracks, phrases from $30$ of the $78$
+development tracks searched. All
 entries are results on the development set. The held-out evaluation of
 the phrase-scale row is in Table~\ref{tab:phase3-heldout}.}
 \label{tab:phase3-priorvalue}
@@ -2984,57 +3005,61 @@ temporal contrast excludes zero.\label{fig:span-contrasts}}
 
 Across the three spans the two hypotheses receive different support.
 Against the thesis's own stated baselines, independent or purely temporal,
-the score-graph prior is never worse and at phrase scale is better than
-the temporal prior, so the weak form is supported. Against the common-mode
+the score-graph prior is in no comparison worse with an interval
+excluding zero, and at phrase scale it is better than the temporal prior,
+so the weak form is supported. Against the common-mode
 baseline that the first span showed to be mandatory, the score-graph prior
 adds nothing measurable, for intonation at either span or for timing at
 chain scale, so the strong form is not supported by the evidence so far.
 What the waveform does obtain from the score prior can be stated plainly: a
 note or a joint with no acoustic evidence inherits its context's common
-offset with a calibrated band. Each study is exploratory evidence from the
+offset. The band of a hidden note covers near nominal, and the band of a
+hidden joint is too wide. Each study is exploratory evidence from the
 development set on four to nine instruments.
 
 The same comparison at whole-track scale on the tracked bundle
 (Appendix~\ref{app:trackscale}) adds the missing statistical power and
 gives the same answer from the other side. There the score graph is better
 than a nearest-neighbour time chain on intonation and vibrato, with
-intervals excluding zero, but it equals the same graph with its pitch term
-removed, and in the piano setting the pitch-less graph is slightly better
-than the principal model. At every scale, corpus and observation type
-tested, the structure that helps is smoothness in score time over about two
-beats, and the score-specific pitch coupling does not show.
+intervals excluding zero, but on intonation it equals the same graph with
+its pitch term removed, and in the piano setting the pitch-less graph is
+slightly better than the principal model. At every scale, corpus and
+observation type tested, the structure that helps is smoothness over a
+short time window, two beats of score time on piano and two seconds of
+performance time on strings and winds, and the score-specific pitch
+coupling does not show beyond a small gain on loudness.
 
 \subsection{Held-out evaluation at phrase scale}\label{sec:phase3-heldout}
 One finding of the three spans was carried to the held-out test pieces:
 the weak form at phrase scale, that the score graph gives a smaller error
 on the hidden note than a purely temporal prior. The hypothesis, its decision
-rule and the rule selecting the phrases were fixed and committed before the run, following
+rule and the phrase selection rule were fixed in advance, following
 \S\ref{sec:hygiene}. The primary hypothesis was that the mean paired
 difference in absolute error on the hidden note, score graph minus
 temporal prior, in the masked condition and against the reference
 centre, is negative with a $95\%$ bootstrap interval excluding zero. Two
 further quantities were pre-specified for report without a decision, the contrast with
-the independent prior, where a tie was expected, and the clean-condition
-contrasts, where ties were required as a control. The held-out pieces are
-the $13$ strings-and-winds test pieces, $40$ unique tracks, used here for
-the third time and for the first time at the waveform level, as
-\S\ref{sec:hygiene} discloses. No waveform study had read those tracks
-before, so the contrast itself was new to them, but the tracks were no
-longer untouched, and the result is read as the weakest of the three
-checks made on them. The phrase selection rule of the development study, unchanged,
+the independent prior, where similar errors were expected, and the
+clean-condition contrasts, where no difference was required as a control.
+The held-out pieces are the $13$ strings-and-winds test pieces, $40$ unique
+tracks, used here for the third time, as \S\ref{sec:hygiene} discloses.
+The phrase selection rule of the development study, unchanged,
 selected $48$ phrases from $20$ of the tracks before any fit, $14$ on
 strings, $25$ on winds and $9$ on brass, a different mix from the
 development phrases, where strings carried the effect. On that basis the
 expected difference was stated in advance as about $-0.9$ cents rather
 than the development value of $-1.63$, with a power of roughly $0.3$ to
-$0.5$ for the primary hypothesis. The run was then performed once.
+$0.5$ for the primary hypothesis.
 
 \begin{table}[t]\centering
 \caption{The held-out evaluation at phrase scale: $48$ phrases from $20$
 held-out strings-and-winds tracks, the hidden middle note's pitch
-recurring at an index distance of at least two, every arm carrying the
-common-mode scalar. Mean paired difference in the hidden note's absolute
-error in cents with $95\%$ bootstrap intervals, and the median absolute
+recurring at an index distance of at least two, every arm at matched
+marginal variance and carrying the common-mode scalar, the hidden note
+removed from the acoustic design. Mean paired difference in the hidden
+note's absolute error in cents with $95\%$ bootstrap intervals over the
+$48$ phrases, which treat phrases from one track as separate
+observations, and the median absolute
 error and coverage of the nominal-$90\%$ band per arm. A negative value
 favours the first arm. The test pieces are used for the third time, as
 disclosed in \S\ref{sec:hygiene}.}
@@ -3067,19 +3092,20 @@ expected for this mix of instruments. Everything else repeats the
 development reading. The graph shows no difference from the independent
 prior with the common-mode scalar, $-0.13$ with interval
 $[-0.44, +0.17]$, so the strong form receives no new support. The
-temporal prior is worse than the independent one by $+0.68$, in the
-direction and size of the development value but with an interval that
-reaches zero, so the graph's advantage is once more the harm of the
-temporal prior undone. The clean contrasts are zero to the second decimal.
+temporal prior has a larger mean error than the independent one, $+0.68$,
+in the direction of the development value of $+1.56$ but with an interval
+that includes zero, so on these tracks the harm of the temporal prior is
+not itself established, and the graph's advantage is read against the
+temporal prior alone. The clean contrasts are zero to the second decimal.
 Coverage of the hidden note is $0.94$ to $0.98$, above nominal for the
 independent arm, and the graph has the smallest posterior standard
 deviation, $8.9$ cents against $9.8$ and $11.3$. There is no dose-response
 with the edge weight, with a correlation of $-0.06$. Read by instrument
 family, which was not pre-specified beyond the stated expectation, the
 contrast is $-1.55$ on the string phrases, $-0.54$ on the winds and
-$-0.44$ on the brass, each with an interval that covers zero, so the
-ordering of the development study repeats and no family carries a result
-on its own. The weak form of the methodological hypothesis therefore
+$-0.44$ on the brass, each with an interval that covers zero. Strings
+carry the largest estimate in both studies, the winds and the brass change
+order, and no family carries a result on its own. The weak form of the methodological hypothesis therefore
 holds on tracks the waveform studies had never read, with the
 qualification that the tracks had been consulted twice before at the
 tracked-target level. The strong form remains unsupported on the
@@ -3089,14 +3115,15 @@ development set and on the held-out pieces alike.
 
 \chapter{Motif Structure in the Score Graph}\label{ch:motif}
 The attribution results of the previous chapters leave the score graph with
-a modest role. On both corpora its value is temporal smoothing over about
-two beats, and the pitch term adds nothing measurable
+a modest role. On both corpora its value is temporal smoothing over a
+short window, and the pitch term adds nothing measurable on intonation or
+on piano
 (Chapter~\ref{ch:discussion}, Appendix~\ref{app:trackscale}). This chapter
 asks whether a different kind of score structure, one that the time window
 cannot see, carries expressive information: the repetition of a motif. A
 performer who shapes a motif at its first statement is expected to shape
-its returns in a related way, and a return that has not yet been heard
-should then be predictable from the statements that have. The chapter adds
+its returns in a related way, and a hidden return should then be
+predictable from the statements that are observed. The chapter adds
 one edge family to the score graph from motif annotations, states what the
 family does to a hidden note, and evaluates it on Beethoven sonata
 movements under a masking scheme that hides whole occurrences. The
@@ -3129,20 +3156,22 @@ closeness in that coordinate,
   \qquad \bigl(W_{\mathrm{motif}}\bigr)_{ii} = 0 .
   \label{eq:motif-adj}
 \end{equation}
-The length scale $\ell_u$ is fixed at a tenth of the span. Returns of equal
-length then receive one-to-one edges between corresponding notes, and
-returns of unequal length receive a soft block between the notes near the
-same relative position. Nothing is aligned and nothing inside the family is
+The length scale $\ell_u$ is fixed at a tenth of the span. Every pair of
+returns of one type receives a soft block of edges, strongest between notes
+at the same relative position, whether or not the returns have equal
+length. A note that lies in two occurrences has a position in each, and the
+stronger edge is kept. Nothing is aligned and nothing inside the family is
 learned. A note that belongs to no occurrence, or whose type occurs only
 once in the excerpt, has no motif edge. Figure~\ref{fig:motif-graph} draws
 the two families on a score excerpt.
 
-\figph{proposal_motif_graph.png}{0.78}{The two edge families on a score
-excerpt. Grey edges are the time-window neighbours of the graph of
-Chapter~\ref{ch:model}. Blue edges are the motif family of
-\eqref{eq:motif-adj}: each note of an occurrence is joined to the notes at
-the same relative position in every other occurrence of its
-type.\label{fig:motif-graph}}
+\figph{proposal_motif_graph.png}{0.78}{Schematic of the two edge families
+for three occurrences of one motif. Grey edges join consecutive notes in
+score order and stand for the time-window neighbours of the graph of
+Chapter~\ref{ch:model}, which are denser. Blue arcs join notes at
+corresponding positions in different occurrences, the strongest edges of
+the motif family \eqref{eq:motif-adj}, which also joins nearby positions
+more weakly.\label{fig:motif-graph}}
 
 The family enters the model of Chapter~\ref{ch:model} in two forms. In the
 \textbf{shared form} the adjacency \eqref{eq:adjacency} gains the family
@@ -3156,8 +3185,8 @@ with one weight,
 so that one graph kernel, built from the Laplacian of the combined
 adjacency, is shared by the three channels through the coregionalization
 matrix $B$ of \eqref{eq:gpfirst}, and $\log w_{\mathrm m}$ joins the
-hyperparameters fitted by the per-piece evidence. The evidence can drive
-$w_{\mathrm m}$ to zero, which recovers the time-only graph exactly. In the
+hyperparameters fitted by the per-piece evidence. As $w_{\mathrm m}$ tends
+to zero the kernel tends to that of the time-only graph. In the
 \textbf{per-channel form} the family is its own additive term with one
 scale per channel,
 \begin{equation}
@@ -3183,30 +3212,33 @@ For one channel with the additive kernel $g(\nu; s) = 1/(1 + s\nu)$ the
 prior is the Gaussian Markov random field with precision $I + s \Lg$, and
 the conditional of a hidden note $h$ given all others is explicit,
 \begin{equation}
-  \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{s \sum_{j} W_{hj}\, y_j}{1 + s\, d_h},
+  \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{s \sum_{j} W_{hj}\, y_j}{1 + s\, D_{hh}},
   \qquad
-  \operatorname{Var}\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{1}{1 + s\, d_h},
-  \qquad d_h = \sum_j W_{hj} .
+  \operatorname{Var}\bigl[y_h \mid y_{-h}\bigr] \;=\; \frac{1}{1 + s\, D_{hh}},
+  \qquad D_{hh} = \sum_j W_{hj} .
   \label{eq:motif-cond}
 \end{equation}
 Splitting the degree into its two families,
-$d_h = d_h^{\mathrm{time}} + w_{\mathrm m} d_h^{\mathrm{motif}}$, writes the
+$D_{hh} = D_{hh}^{\mathrm{time}} + w_{\mathrm m} D_{hh}^{\mathrm{motif}}$, writes the
 conditional mean as a mixture of two neighbourhood means,
 \begin{equation}
   \mathbb E\bigl[y_h \mid y_{-h}\bigr] \;=\;
-  \frac{s\, d_h^{\mathrm{time}}}{1 + s d_h}\;\overline{y}^{\,\mathrm{time}}_h
-  \;+\; \frac{s\, w_{\mathrm m}\, d_h^{\mathrm{motif}}}{1 + s d_h}\;\overline{y}^{\,\mathrm{motif}}_h ,
+  \frac{s\, D_{hh}^{\mathrm{time}}}{1 + s D_{hh}}\;\overline{y}^{\,\mathrm{time}}_h
+  \;+\; \frac{s\, w_{\mathrm m}\, D_{hh}^{\mathrm{motif}}}{1 + s D_{hh}}\;\overline{y}^{\,\mathrm{motif}}_h ,
   \label{eq:motif-mix}
 \end{equation}
 the mean of the temporal neighbours and the mean of the corresponding notes
 in the other occurrences, weighted by relative position. The full posterior
 of \eqref{eq:posterior} mixes the same two sources through $B$, the feature
-kernels and the noise. Two readable predictions follow. If performers shape
+kernels and the noise, and the scored band also carries the uncertainty
+of the neighbouring values and the observation noise. Two readable
+predictions follow. If performers shape
 a motif in a related way at each return, the motif mean is closer to the
 hidden value than the temporal mean, the evidence raises $w_{\mathrm m}$,
-the error falls and the predictive band tightens by the extra degree. If
-they do not, the motif mean is noise, the evidence drives $w_{\mathrm m}$ to
-zero and every motif arm coincides with the time-only graph. The second
+the error falls, and at a fixed scale the conditional variance falls with
+the extra degree. If they do not, the motif mean is noise, the evidence
+drives $w_{\mathrm m}$ toward zero and the motif arm approaches the
+time-only graph. The second
 outcome is the family's own falsification route and needs no separate
 test.
 
@@ -3233,9 +3265,10 @@ $40\%$ of notes hidden at random. The occurrence scheme hides whole
 occurrences: for every motif type with at least two occurrences, each
 occurrence is hidden with probability $0.4$, with at least one occurrence of
 the type left observed and at least one hidden, and every note outside a
-motif observed. The occurrence scheme is the application's case, a passage
-not yet played whose earlier statements have been heard, and it is where the
-family can act, since under the random scheme the two-beat time window
+motif observed. The occurrence scheme is the application's case, a whole
+statement of a motif reconstructed from the rest of the performance, its
+other statements included, whether they come before or after it, and it is
+where the family can act, since under the random scheme the two-beat time window
 already interpolates inside an occurrence. Scores are computed on the hidden
 motif notes whose type has another occurrence with an observed note, per
 channel, as the Gaussian log score and the root mean squared error, paired
@@ -3245,9 +3278,9 @@ lower timing log score for the motif arm against the time-only graph on the
 hidden motif notes under the occurrence scheme, with the interval excluding
 zero, and a lower timing error. The second study predicted that the
 per-channel form keeps that gain and removes the velocity miscalibration
-of the shared form. The third study predicted that edges built from a
-model's predicted occurrences keep at least half of the annotated edges'
-gain on the same notes. The learned weights, the other channels, the random
+of the shared form. The third study predicted that the per-channel form
+with edges built from a model's predicted occurrences keeps at least half
+of the annotated edges' timing log-score gain on the same notes. The learned weights, the other channels, the random
 scheme and the pitch term were recorded without prediction.
 
 \section{Development results}\label{sec:motif-dev}
@@ -3295,20 +3328,22 @@ differences have a median near zero, with three movements far below and one
 far above, so the timing effect of the first study rested on two seeds and
 three movements. The effect that holds on every pair of seeds and in both
 forms is articulation accuracy: the root mean squared error on the hidden
-motif notes falls from $0.732$ to $0.698$ in the shared form, a difference
-of $-0.035$ with interval $[-0.060, -0.013]$, and to $0.713$ in the
-per-channel form, $-0.019$ with interval $[-0.038, -0.005]$, with fifteen
-and thirteen of the twenty-one movements below zero. The learned scales say
+motif notes is $0.732$ under the time-only graph, $0.705$ in the shared
+form and $0.715$ in the per-channel form. The mean paired differences over
+movements are $-0.035$ with interval $[-0.060, -0.013]$ and $-0.019$ with
+interval $[-0.038, -0.005]$, with fourteen and twelve of the twenty-one
+movements below zero. The learned scales say
 the same thing directly. On the timing channel $c_{\mathrm m}$ falls below
 $0.01$ on nineteen movements, so the evidence switches the family off
 where the time-only graph is already well calibrated. On the articulation
 channel it exceeds $0.1$ on ten movements, and on the velocity channel it
-is kept on seven. The two forms trade. The shared form gives the larger
+exceeds $0.01$ on seven. The two forms trade. The shared form gives the larger
 articulation gain and a small timing error gain, $-0.0027$~s with interval
 $[-0.0055, -0.0004]$, at the cost of velocity coverage, $0.835$. The
 per-channel form gives a smaller articulation gain, velocity on both axes
-and coverage at nominal, and nothing on timing. Adding the pitch term to
-the per-channel form changes nothing. Under the random scheme the family
+and coverage at nominal, and nothing on timing. With the pitch term added,
+the per-channel form's articulation and velocity gains both have intervals
+that include zero. Under the random scheme the family
 again has little to act on, and the per-channel form's timing log score
 over all hidden notes is $+0.087$ with interval $[-0.000, +0.241]$, at the
 edge of worse. The measured value of the family at this stage is therefore
@@ -3356,34 +3391,39 @@ movements the model predicts several times the annotated number of motif
 notes and the precision falls below $0.2$. The prediction fixed before the
 run was that the predicted edges keep at least half of the annotated
 edges' timing log-score gain on the same notes, with an interval excluding
-zero.
+zero, a prediction stated for the per-channel form.
 
-With the shared form the predicted edges lower the timing log score by
-$0.034$, interval $[-0.085, +0.003]$, which is $0.48$ of the annotated
-$0.071$ on the same notes with an interval that reaches zero, so the
-prediction is not met, by a small margin on both counts. On articulation
-accuracy, the effect that is robust in the second study, the predicted
-edges give $-0.0135$ with interval $[-0.0317, +0.0030]$, four tenths of
-the annotated $-0.0345$. The two edge sources act on the same movements:
-their per-movement timing differences correlate at $0.59$ and their
-articulation differences at $0.86$, and fifteen of the twenty-one
-movements lie below zero for both. The movements with the lowest
-membership precision receive large learned weights without a gain on the
-annotated notes, while among the rest the size of the effect does not
-order by F1. The per-channel form with predicted edges changes nothing and
-costs $0.0014$~s of timing error, interval $[+0.0005, +0.0024]$. The
-family can therefore be built from a model's occurrences on a score
-without annotations and keeps about half of its effect at this size, with
-intervals that cover zero on twenty-one movements.
+In the per-channel form the predicted edges move the timing log score by
+$+0.036$, interval $[-0.010, +0.095]$, in the wrong direction, so the
+prediction is not supported, and they cost $0.0014$~s of timing error,
+interval $[+0.0005, +0.0024]$. The shared form, recorded without a
+prediction, lowers the timing log score by $0.034$, interval
+$[-0.085, +0.003]$, which is $0.48$ of the annotated $0.071$ on the same
+notes with an interval that reaches zero. On articulation accuracy, the
+effect that is robust in the second study, the shared form with predicted
+edges gives $-0.0135$ with interval $[-0.0317, +0.0030]$, four tenths of
+the annotated $-0.0345$. In the shared form the two edge sources act on
+related movements: their per-movement timing differences correlate at
+$0.59$ and their articulation differences at $0.84$, and twelve of the
+twenty-one movements lie below zero for both. Of the two movements with
+precision below $0.2$, one receives a large learned weight without a gain
+on the annotated notes and the other a weight near zero, and among the
+rest the size of the effect does not order by F1. In the shared form,
+then, edges from a model's occurrences on a score without annotations give
+point estimates of about half of the annotated timing effect and four
+tenths of the articulation effect, with intervals that cover zero on
+twenty-one movements. In the per-channel form they give nothing.
 
 \section{Held-out performances}\label{sec:motif-heldout}
 The pre-specified evaluation uses, for each development movement, the
 other aligned ASAP performances of the same movement, at most four in
 sorted order, none of which any run had read. Eighteen movements have at
-least one and three have none, fifty-eight performances in all. Everything
-else is the second study's: the scores, the annotations, the occurrence
-scheme with its four seeds, the arms and the scored notes. Only the
-performances, and so the targets, are new, so the evaluation asks whether
+least one and three have none, fifty-eight performances in all. The
+scores, the annotations, the occurrence scheme with its four seeds, the
+arms and the rule for the scored notes are the second study's. Each
+performance has its own aligned excerpt, so its edges and masks are
+rebuilt by the same rules, and it supplies new targets, so the evaluation
+asks whether
 the development finding holds across performers of the same movements and
 not across repertoire, and \S\ref{sec:hygiene} labels it so. The unit of
 analysis is the movement. Seeds are averaged within a performance and
@@ -3393,8 +3433,10 @@ the run from the second study's power table, is the articulation error of
 the hidden motif notes under the occurrence scheme, shared form against the
 time-only graph, with the prediction that the paired difference is negative
 with an interval excluding zero. The power of that measure at eighteen
-movements was $0.95$ at the development effect. The timing log score was
-the secondary measure under the same rule, with a power of $0.33$. The
+movements, estimated by drawing eighteen of the development movements'
+differences with replacement, was $0.95$ at the development effect. The
+timing log score was the secondary measure under the same rule, with a
+power of $0.33$. The
 velocity channel, the timing error, the coverage and the per-channel form
 were recorded without prediction.
 
@@ -3430,13 +3472,12 @@ paired difference of $-0.029$ with interval $[-0.049, -0.011]$, below zero
 on fifteen of the eighteen movements, so the prediction holds. The
 development effect was $-0.035$ on twenty-one movements, and the
 per-movement differences of the two studies correlate at $0.88$ on the
-eighteen movements they share: the movements on which the family helped
-on the development performance are those on which it helps the other
-performers. The timing log score moves by $-0.018$ with interval
+eighteen movements they share, and twelve movements are below zero in
+both studies. The timing log score moves by $-0.018$ with interval
 $[-0.191, +0.225]$, so the secondary prediction does not hold, as on four
 seeds of the development set and as its power anticipated. The timing error
 falls by $0.0037$~s with interval $[-0.0076, -0.0007]$. On velocity the
-miscalibration of the first study is absent in the shared form, log score
+log-score penalty of the first study is absent in the shared form, log score
 $-0.016$ with interval $[-0.042, +0.009]$ and the error lower by $0.0032$,
 with the coverage of the $90\%$ band at $0.847$ against $0.878$ for the
 time-only graph. The per-channel form reproduces its development picture:
@@ -3451,22 +3492,24 @@ twenty-six performances and on none for timing or velocity.
 The motif family is the one score structure in this thesis whose measured
 value lies outside the two-beat time window, and the held-out evaluation
 places that value where the development studies placed it, in how the
-returns of a motif are detached and held. The time window cannot see a
-return that has not been heard. The motif edges can, and on articulation
+returns of a motif are detached and held. The time window cannot reach a
+hidden return from its other statements. The motif edges can, and on articulation
 the performers of eighteen movements shape their returns alike enough for
 the edges to lower the error of a hidden return by about four percent, on
 the performance the family was developed on and on up to four others. On
-timing the time-only graph is already well calibrated and the evidence
-switches the family off, on the development set and again here. On
+timing the secondary prediction is not supported. In the shared form the
+log-score interval covers zero, although the timing error falls slightly,
+and in the per-channel form the evidence sets the timing scale near zero,
+on the development set and again here. On
 velocity the family's value depends on its form. One weight shared with
 timing and articulation over-ties the velocities of returns, and the
 per-channel form, which lets each channel choose its own scale, turns the
 penalty of the first study into a gain on both axes with coverage near
-nominal. The effect is small in absolute terms and confined to one
+nominal. The pre-specified effect is small in absolute terms and on one
 channel, and the evaluation is across performers of the same movements and
 not across repertoire, since no annotated movement outside the development
 set has an aligned performance. Within those limits the question the
-attribution left open has a measured answer. A structure the time window
+attribution left open is answered. A structure the time window
 cannot see carries expressive information of its own, the first such
 structure in this thesis, and the direction it points to, an
 across-performer model of motif shaping, is taken up in
@@ -3508,9 +3551,10 @@ those two channels the music model's additional information therefore has
 the least to add.
 
 The motif edges of Chapter~\ref{ch:motif} are the one score structure in
-this thesis whose value lies outside the two-beat time window. Where the
-time-only graph is already well calibrated, on timing, the evidence
-switches the family off, and it keeps the family on articulation, the
+this thesis whose value lies outside the two-beat time window. On timing
+it shows no effect whose interval excludes zero, and in the per-channel
+form the evidence sets the timing scale near zero, while it keeps the
+family on articulation, the
 channel on which the hand-built features and the music model have least
 to say. Returns of a motif inform each other on how the notes are
 detached and held, and that is a kind of information no local window can
@@ -3543,8 +3587,9 @@ development set or on the held-out pieces. A further development-set finding qua
 itself. On both corpora the graph's value is reproduced, and on piano
 slightly exceeded, by the same graph with its pitch term removed
 (Appendix~\ref{app:trackscale}). The structure that does the work is
-therefore smoothness in score time over about two beats, not the pitch
-coupling that makes the graph a score graph. The results supported on the
+therefore smoothness over a short time window, two beats of score time on
+piano and two seconds of performance time on strings and winds, not the
+pitch coupling that makes the graph a score graph. The results supported on the
 held-out test sets stand as comparisons of the full model with its
 alternatives, but their attribution is narrower than the model's name
 suggests.
@@ -3553,10 +3598,11 @@ The motif study is a development result on twenty-one movements of one
 composer with hand-made annotations, and its one pre-specified evaluation,
 which supports the articulation effect, uses further performances of the
 same movements rather than new pieces (\S\ref{sec:motif-heldout}), so it
-tests generalisation across performers and not across repertoire. Its effect is confined to one channel,
-articulation. The timing effect of the first development study did not
-hold on more seeds, and edges from a discovery model keep about half of
-the effect with intervals that cover zero at this size.
+tests generalisation across performers and not across repertoire. Its
+pre-specified effect is on one channel, articulation. The timing effect of
+the first development study did not hold on more seeds, and edges from a
+discovery model give point estimates of about half of the annotated
+effect, with intervals that cover zero at this size.
 
 The remaining limitations concern the data and the model's form. The piano
 targets depend on the quality of a single corpus's
@@ -3701,8 +3747,9 @@ targets, and a performer-level term, shared across the movements one
 performer plays, would turn that into a model of how a performer shapes a
 motif. The second is the discovery model as the only source of
 occurrences, on scores without annotations and on other composers, since
-the predicted edges keep about half of the annotated effect on the
-Beethoven movements and the question is whether that fraction holds where
+the predicted edges give point estimates of about half of the annotated
+effect on the Beethoven movements, with intervals that cover zero, and the
+question is whether that fraction holds where
 no annotation exists to compare against. The third is the form of the
 family. The present family is undirected and joins every pair of returns
 alike. A directed form, in which earlier statements inform later ones but
@@ -3804,8 +3851,9 @@ and the graph makes the uncertainty calibrated, a contribution that the
 held-out test set also supports. The music model earns its place as a
 feature provider inside the kernel. One step further, on the development
 set of both corpora, the graph's value is reproduced by the same graph
-without its pitch term, so the structure rewarded is smoothness in score
-time over about two beats. Six downstream tasks draw two boundaries:
+without its pitch term, so the structure rewarded is smoothness over a
+short time window, two beats of score time on piano and two seconds of
+performance time on strings and winds. Six downstream tasks draw two boundaries:
 structure helps note by note but not for whole-performance summaries, and
 per-piece adaptation helps interpolation but not excerpt extrapolation. The
 evaluation is protected against leakage, contamination, fit collapse and
@@ -3828,7 +3876,7 @@ points. They also fix the design constraint that the remaining joint loop
 must solve, bridging the estimand gap between the harmonic model and the
 annotation chain. The score prior has entered that inference over three
 spans, with a two-sided answer. A note or joint with no acoustic evidence
-inherits its context's common offset with a calibrated band, and the score
+inherits its context's common offset, and the score
 graph outperforms a purely temporal prior at phrase scale, a finding
 supported once on held-out tracks, but nothing measurable beyond the
 common offset has been found, there or on the development set. The strong form of the hypothesis is left for the joint loop.
@@ -3836,9 +3884,10 @@ common offset has been found, there or on the development set. The strong form o
 The attribution opened the thesis's last question, whether score
 structure outside the time window carries expressive information. One
 further edge family, from the returns of a motif, lowers the articulation
-error of hidden returns on the development set in both of its forms, is
-switched off by the evidence on timing, and keeps about half of its effect
-when the occurrences come from a motif-discovery model instead of the
+error of hidden returns on the development set in both of its forms,
+shows no timing effect whose interval excludes zero, and gives point
+estimates of about half of its effect, with intervals that cover zero, when
+the occurrences come from a motif-discovery model instead of the
 annotations. Its pre-specified evaluation on held-out performances of the
 same movements supports the articulation effect once, with an interval
 excluding zero, and not the timing effect (\S\ref{sec:motif-heldout}).
@@ -4383,8 +4432,8 @@ advance, over $78$ tracks and $153$ track-and-seed combinations, under the
 given variances and with paired differences per combination. The first is
 a time-only chain, the same GP with the score graph replaced by unit-weight
 edges between consecutive notes. The second is a time-only Gaussian graph,
-the score graph with its pitch term removed and its two-beat time window
-kept.
+the score graph with its pitch term removed and its two-second time
+window kept.
 
 \begin{table}[t]\centering
 \caption{Three priors at track scale on the strings-and-winds bundle, on
@@ -4421,8 +4470,9 @@ reproduces the margins of the score graph, and against no structure it
 reproduces the intonation gain of the score graph that the held-out
 evaluation established ($-0.88$ against $-0.90$). The value of the graph at
 track scale is therefore temporal smoothing over a window of about two
-beats. The pitch-proximity coupling that makes it a \emph{score} graph adds
-nothing measurable here, as it added nothing at chain and phrase scale from
+seconds of performance time. The pitch-proximity coupling that makes it a \emph{score} graph adds
+nothing measurable to intonation here, slightly helps loudness and
+slightly hurts vibrato, and it added nothing at chain and phrase scale from
 the waveform.
 
 The piano counterpart gives the same answer. The piano model of
@@ -4435,9 +4485,10 @@ $-0.019$ with interval $[-0.030, -0.008]$, a small improvement whose
 intervals exclude zero, carried by articulation. The total value of the
 graph on that set is $+0.017$ RMSE, so the pitch-less graph is worth about
 half again as much as the score graph. On both corpora, then, the structure
-that does the work is smoothness in score time over about two beats,
-including the vertical coupling of simultaneous notes, and pitch proximity
-adds nothing and costs a little. This attributes the graph value
+that does the work is smoothness over a short time window, two beats of
+score time on piano, where it includes the vertical coupling of
+simultaneous notes, and two seconds of performance time on strings and
+winds, and pitch proximity adds little beyond it. This attributes the graph value
 established on the held-out test set without retracting it, since the
 held-out comparisons are of the full model against its alternatives, and a
 pitch-less graph as the default would change a reported protocol and

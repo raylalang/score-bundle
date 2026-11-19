@@ -1,7 +1,7 @@
 # Meeting brief (written 2026-10-14, brought to 2026-11-18 for tomorrow's meeting)
 
 > Purpose: report the state and the decisions taken, and hear objections.
-> The deck (`docs/slides/deck.pdf`, 37 pages, speaker notes for every
+> The deck (`docs/slides/deck.pdf`, 45 pages, speaker notes for every
 > slide in `docs/slides/speaker_notes.md`) is the visual spine; this
 > brief is the discussion skeleton. Standing language rules: say "the GP
 > estimator" (never a coined name), "correlated timing noise across
@@ -20,7 +20,7 @@ and `docs/ROADMAP.md` (the calendar table).
 
 Morning of 11-18, before the meeting (done): the phrase-scale waveform
 claim was frozen and tagged (`phrase-prior-registration-2026-11-18`,
-pushed) and the one-shot launched at 04:47 on 12 shards (about 4 h),
+pushed) and the one-shot launched at 04:47 on 12 shards (5 h 34 min),
 and finished at 10:21: **W1 passed**, graph minus temporal −0.82 cents
 [−1.59, −0.05] on 48 held-out phrases (development −1.63, the
 pre-stated expectation for the winds-heavy mix about −0.9, power 0.3 to
@@ -58,10 +58,12 @@ sentences left.
    the family on the articulation channel. So the pre-specified test's
    primary is articulation RMSE, power 0.95 at 18 pieces. Stage two
    (frame 12, also measured 11-17): the ISMIR model's held-out
-   occurrences in place of the annotations give about half the effect
-   (timing 0.48, articulation 0.4 of the annotated one, intervals
-   reaching zero); the rule asked for half with a clear interval and was
-   not met by a small margin.
+   occurrences in place of the annotations give, in the shared form,
+   about half the effect (timing 0.48, articulation 0.4 of the annotated
+   one, intervals reaching zero). The rule named the per-channel form,
+   where predicted edges move timing the wrong way (+0.036 [−0.010,
+   +0.095]), so it is not supported (corrected 11-19 after the Codex
+   audit; the 11-18 version said "not met by a small margin").
 3. **The calendar to 12-03, one table** (ROADMAP): pilot two (done),
    stage two done (11-17), two
    registrations (the waveform phrase-scale claim on the URMP
@@ -75,8 +77,8 @@ sentences left.
    timing log score missed, −0.018 with the interval covering zero, as
    the power table said; the velocity penalty gone; the per-channel form
    reproduces its development picture. Say: "articulation of a hidden
-   return holds across performers of the same movements; timing is
-   switched off by the evidence, as on development." Thesis
+   return holds across performers of the same movements; timing shows
+   no effect whose interval excludes zero, as on development." Thesis
    `sec:motif-heldout`, deck slide 39), the thesis and deck carrying
    every result, nothing new after December. Say the power check plainly: the waveform one-shot has 0.3
    to 0.5 on the drawn cells (strings 14, winds 25, brass 9 of 48), and
@@ -190,11 +192,12 @@ spent twice over), a longer deck, a new chapter.
 - The score prior was measured inside the waveform inference at three
   spans (chains, joints, phrases): every prior transfers the context's
   common offset; the score graph beats a naive time prior at phrase
-  scale; beyond the offset nothing measurable (§G, deck slide 30).
+  scale; beyond the offset nothing measurable (§G, deck slides 30 and 31).
 - At whole-track scale on both corpora, the score graph beats a time
   chain but EQUALS the same graph with its pitch term removed; on piano
   the pitch-less graph is slightly better. The graph's measured value is
-  smoothness in score time over about two beats (§G, deck slide 31,
+  smoothing over a short time window, two beats on piano and two seconds
+  on strings and winds, whose onsets are annotated in seconds (§G, deck slide 32,
   thesis Appendix "Three priors at track scale").
 - Decisions taken 2026-10-23 (Ray): that attribution is stated in the
   thesis, headline models keep their score graph; the four-layer framing
@@ -441,7 +444,7 @@ term in every arm by design, which this experiment shows is mandatory.
   narrow (0.7 ms: the acoustic-vs-musical estimand gap at the
   boundary).
 - **The third span, phrase scale** (`results/prior_value_phrase_dev.md`,
-  48 cells from all 78 development tracks, 6–10-note legato runs with
+  48 cells from 30 of the 78 development tracks searched, 6–10-note legato runs with
   the hidden pitch recurring 2+ notes away): the pre-stated primary
   contrast passes — graph beats temporal, −1.63 cents [−2.93, −0.46],
   65% — but the graph ties the scalar-augmented independent arm
@@ -460,28 +463,31 @@ loudness −0.007), but equals the same graph with its pitch term removed
 (intonation −0.02 [−0.10, +0.06]; vibrato slightly worse). The
 confirmed strings-and-winds graph value (−0.88 cents) is reproduced by
 the time-only Gaussian graph exactly. **The graph's value is temporal
-smoothing over about two beats; the score-specific pitch coupling adds
-nothing measurable at any scale tested.** Also: the boundary bands'
+smoothing over about two seconds of performance time (strings and winds
+onsets are annotated in seconds); the score-specific pitch coupling adds
+nothing measurable to intonation at any scale tested, a little to
+loudness.** Also: the boundary bands'
 width fix (chain-scale prior) brings the independent arm to coverage
 0.88, the structured arms to 0.75; verdict unchanged
 (`results/boundary_prior_chainsig_dev.md`). Piano counterpart measured
 (`results/piano_timegauss_dev.md`): the headline piano model with the
 pitch term removed is slightly BETTER (RMSE −0.008*, NLL −0.019*,
 paired on 30 development pieces), the gain in articulation. Same answer
-on both corpora: the graph's value is smoothness in score time over
-about two beats, including chord notes on piano; pitch proximity adds
-nothing. The confirmed results stand (full model vs alternatives); the
+on both corpora: the graph's value is smoothing over a short time
+window, two beats of score time on piano, including chord notes, and two
+seconds of performance time on strings and winds; pitch proximity adds
+nothing on intonation. The confirmed results stand (full model vs alternatives); the
 attribution narrows. Adopting a pitch-less graph as the default would
 be a reported-protocol change needing its own registration.
 
 **The three-span verdict, for the room:** against the thesis's own
 baselines (independent, purely temporal) the score-graph prior is never
-worse and beats the temporal prior at phrase scale; against the
+significantly worse and beats the temporal prior at phrase scale; against the
 common-mode baseline it adds nothing measurable for intonation at
 either span or for timing at chain scale. Weak form survives, strong
 form fails so far. The positive content is honest and small: a note or
 joint with no acoustic evidence inherits its context's common offset
-with a calibrated band.
+(the hidden note's band is near nominal, the hidden joint's too wide).
 
 ## H. The decisions, taken (2026-10-23) — for information, objections welcome
 
@@ -532,20 +538,23 @@ from here, so they were decided; state each as a decision and listen.
   before the zemi with margin.
 - **"Held-out performances of the same pieces: is that a test?"** It is
   a test across performers, not across repertoire, and it is labelled
-  that way everywhere. The scores, annotations, masks and edges are the
-  development study's; the targets are new. A test across pieces needs
+  that way everywhere. The scores, annotations, masking rule and seeds
+  are the development study's; each performance's own excerpt rebuilds
+  the edges and masks, and its targets are new. A test across pieces needs
   annotated movements outside ASAP (seven exist, without performances).
 - **"Why articulation and not timing as the primary?"** Because the
   timing gain of the first pilot did not hold on four seeds (−0.071,
   interval covering zero) while the articulation gain held on every seed
-  pair and in both forms (−0.035 shared, −0.019 per channel), and the
-  evidence itself switches the family off on timing on 19 of 21
-  movements and keeps it on articulation on 10. Power 0.95 against 0.33.
+  pair and in both forms (−0.035 shared, −0.019 per channel), and in the
+  per-channel form the evidence sets the timing scale near zero on 19 of
+  21 movements and keeps articulation on 10. Power 0.95 against 0.33.
 - **"M1 passed at 0.83 of the development effect. Is that the same
-  finding?"** Yes: the per-movement effects correlate at 0.88 across the
-  18 movements the two studies share, so the family helps the other
-  performers on the movements it helped the development performer on.
-  Across performers, not repertoire, and labelled so.
+  finding?"** A related one, smaller in its point estimate: the
+  per-movement effects correlate at 0.88 across the 18 movements the two
+  studies share, and 12 movements are below zero in both. The 0.83
+  compares all 21 development movements with the 18 held-out ones, and
+  there is no interval or equivalence margin for the change between
+  studies. Across performers, not repertoire, and labelled so.
 - **"Is this the GPU work?"** No. Every study here is CPU (14 shards,
   two threads each); the GPUs are for the music model only, and on
   sacs14 only GPU 6 and 7 are ours.
