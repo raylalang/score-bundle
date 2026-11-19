@@ -645,7 +645,7 @@
   \end{align*}
   $L_{\mathrm{arm}}$: Laplacian of the note-order chain (temporal)
   or of the score graph (time and pitch); $\sigma_{\mathrm{ref}}^2$ from the
-  track's reference centres. The hidden element $h$ is dropped from the
+  track's reference centres (timing residuals for joints). The hidden element $h$ is dropped from the
   design. Given the other latents it follows the prior conditional; the
   scored band, from the joint Laplace fit, also carries their uncertainty:
   \begin{equation*}
@@ -715,8 +715,9 @@
   \vspace{-1mm}
   {\small Negative favours the first arm; $*$: the 95 percent interval
   excludes zero. $\ell_b$: 2 beats on piano, 2 seconds on strings and
-  winds (onsets in seconds). The graph beats the chain and equals, or
-  slightly trails, the pitch-less graph except on loudness. The confirmed
+  winds (onsets in seconds). On strings and winds the graph beats the
+  chain; on both corpora it equals, or slightly trails, the pitch-less
+  graph except on loudness. The confirmed
   results stand; what narrows is the attribution of the graph term.\par}
 \end{frame}
 
@@ -729,14 +730,13 @@
   movements): a note set, a span $[b_k^{\text{start}}, b_k^{\text{end}}]$
   in beats, a type $q(k)$. Returns differ in length, so the coordinate is
   relative position, and the edge is closeness in it, many to many, no
-  self-edges:
+  self-edges, $\ell_u = 0.1$:
   \[
-    u_i = \frac{b_i - b_k^{\text{start}}}{\,b_k^{\text{end}} - b_k^{\text{start}}\,},
+    u_{i,k} = \frac{b_i - b_k^{\text{start}}}{\,b_k^{\text{end}} - b_k^{\text{start}}\,},
     \qquad
     \bigl(W_{\text{motif}}\bigr)_{ij} =
     \max_{k \neq l,\; q(k) = q(l)} \mathbf 1[i \in O_k]\, \mathbf 1[j \in O_l]\,
-    \exp\!\Bigl(-\frac{(u_i - u_j)^2}{2\,\ell_u^2}\Bigr),
-    \qquad \ell_u = 0.1 .
+    \exp\!\Bigl(-\frac{(u_{i,k} - u_{j,l})^2}{2\,\ell_u^2}\Bigr).
   \]
   Two forms, nothing else in the GP changed:
   \begin{align*}
@@ -921,8 +921,8 @@
   $0.968$, $0.891$, $0.878$).
 
   Articulation of a hidden return holds across performers of the same
-  movements. Timing: no effect whose interval excludes zero, as on
-  development.
+  movements. Timing log score: interval includes zero, as on development;
+  the shared form's timing error falls by 3.7 ms.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -939,15 +939,15 @@
           timbre and the score prior at three spans; the weak form at
           phrase scale confirmed once on the re-used pool; the joint
           loop is the direction ahead.
-    \item \textbf{What the graph does}: at every scale tested, on both
+    \item \textbf{What the graph does}: at track scale, on both
           corpora, its value is smoothing over a short time window (two
           beats on piano, two seconds on strings and winds); pitch
           proximity adds nothing on intonation (development).
     \item \textbf{Motif structure}: one edge family outside the time
-          window; articulation on hidden returns in both forms, no
-          timing effect; predicted occurrences give about half (interval
-          includes zero); further performances of the same movements,
-          run once: articulation holds ($-0.029$), timing does not.
+          window; articulation on hidden returns in both forms; timing
+          log score unchanged; predicted occurrences give four tenths of
+          the articulation gain (shared form, interval includes zero);
+          further performances, run once: articulation holds ($-0.029$).
   \end{itemize}
 \end{frame}
 
@@ -1046,7 +1046,7 @@
           same 2-second window (onsets annotated in seconds).
     \item The graph beats the chain; the graph equals the pitch-less
           graph on intonation, trails it on vibrato, leads on loudness.
-          The graph's value is the time window, at every scale tested.
+          At track scale the graph's value is the time window.
     \item Piano: the headline model without the pitch term is slightly
           better (RMSE $-0.008$, log score $-0.019$, 30 pieces).
   \end{itemize}

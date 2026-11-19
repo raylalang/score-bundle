@@ -112,12 +112,16 @@ a median F1 of 0.78, with two pieces where the model finds several
 times too many motif notes. Timing log score minus 0.034, interval
 reaching zero, 0.48 of the annotated effect on the same notes;
 articulation RMSE minus 0.0135, four tenths of the annotated one. The
-two edge sources act on the same pieces, correlation 0.86 per piece on
-articulation. The rule written before the run asked for at least half
-with an interval clear of zero, and it is not met, narrowly on both
-counts. The sentence to say: on a score without annotations the model's
-occurrences give about half of the effect. The per-channel block with
-predicted edges does nothing. Stage three, scores outside the annotated
+two edge sources act on related pieces, correlation 0.84 per piece on
+articulation, 12 of 21 below zero for both. The rule written before the
+run named the per-channel block: at least half the annotated timing
+effect with an interval clear of zero. With predicted edges that block
+moves timing the wrong way (+0.036 [−0.010, +0.095]), so the rule is not
+supported (corrected 19 November; the earlier note scored the shared
+form). The shared-form numbers above were recorded without a prediction.
+The sentence to say: on a score without annotations, in the shared form,
+the model's occurrences give about half the timing effect and four tenths
+of the articulation effect, with intervals that include zero. Stage three, scores outside the annotated
 corpus, is future work.
 
 ## 13. Plan and recommendation

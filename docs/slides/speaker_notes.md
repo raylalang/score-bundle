@@ -915,8 +915,10 @@ the common-mode term: the whole chain's shared offset (a tuning offset
 in cents, or a shared timing offset in ms), with prior variance
 `σ_t²` (50 cents or 50 ms squared). `θ̃`, the per-element part on top of
 the shared offset. `σ_ref²`, the track's own variance of the reference
-centres, the hidden note's included, a population scale, not tuned, the
-same in every arm. `K_arm`, the `n × n` correlation
+centres (finite, within 150 cents of zero, the hidden note's included;
+for the boundary span, the track's timing residuals in ms²), a
+population scale, not tuned, the same in every arm. The hidden note's
+reference centre also decides whether a phrase is eligible. `K_arm`, the `n × n` correlation
 matrix of one arm: the identity for the independent prior; for the two
 structured priors, the inverse of `I + L` scaled so its diagonal is all
 ones, which is what "matched marginal variance" means (every element
@@ -1060,7 +1062,7 @@ Score graph: time factor exp(−1/8) ≈ 0.88, pitch factor exp(−49/32) ≈
 these two notes more strongly, and the data say that is at least as
 good.
 
-**The sentence.** "On both corpora and at every scale we tested, what
+**The sentence.** "On both corpora, at track scale, what
 helps is smoothing over a short time window, two beats on piano, two
 seconds on strings and winds. Linking notes by pitch adds nothing on
 intonation, a little on loudness, and costs a little on vibrato." Then the
@@ -1088,8 +1090,9 @@ slide.
 **Symbols.** `O_k`: the k-th annotated occurrence, a set of notes with
 a span in beats from `b_k^start` to `b_k^end` and a type `q(k)` (two
 occurrences of one type are returns of one motif). The annotations are
-BPS-motif, which covers all 32 Beethoven sonata first movements. `u_i`:
-the relative position of note `i` inside its occurrence, 0 at the start
+BPS-motif, which covers all 32 Beethoven sonata first movements. `u_{i,k}`:
+the relative position of note `i` inside occurrence `k` (a note in two
+occurrences has one position in each), 0 at the start
 and 1 at the end, so returns of different length share one coordinate.
 `(W_motif)_ij`: a Gaussian in the difference of relative positions,
 taken over every pair of occurrences of the same type that contain `i`
@@ -1153,8 +1156,10 @@ test pieces and were never touched, two fall below the alignment
 threshold), 400-note excerpts, score features without the
 music model so that the contrast is one score structure against
 another on identical features, a per-piece intercept in every arm. The
-masking scheme hides whole occurrences while another occurrence of the
-same type stays observed, four seeds; the 672 fits cover both masking
+masking scheme draws whole occurrences for hiding while at least one
+occurrence of the type is left out of the draw (overlapping occurrences
+can still hide some of its notes; a hidden note is scored only when
+another occurrence of its type has an observed note), four seeds; the 672 fits cover both masking
 schemes, and the table is the occurrence scheme. Paired per
 movement, 95 percent percentile bootstrap, negative favours the motif
 arm.
@@ -1261,7 +1266,9 @@ shared form because its power is the higher of the two (`0.95` against
 movements.
 
 **The power table.** By drawing 18 of the 21 development movements'
-differences with replacement many times and asking how often the interval clears zero: articulation
+differences with replacement many times (per-movement differences from
+seed-averaged RMSEs, slightly different from the test's root of the
+seed-averaged squared error) and asking how often the interval clears zero: articulation
 RMSE `0.95` at the measured effect and `0.51` at two thirds of it;
 timing log score `0.33` at the measured effect and below `0.2` at two
 thirds. So M1 is the well-powered claim and M2 is included because it
@@ -1294,8 +1301,9 @@ the per-channel form reproduces its development picture (articulation
 shared weight above `0.1` on 37 of 58 performances, the per-channel
 scale above `0.1` on articulation on 26 and on timing or velocity on
 none. Say the one sentence at the bottom: articulation of a hidden
-return holds across performers of the same movements, timing shows
-no effect whose interval excludes zero. The test is across performers, not
+return holds across performers of the same movements; the timing log
+score shows no effect, though the shared form's timing error falls by
+3.7 ms with the interval clear of zero. The test is across performers, not
 repertoire, and stays labelled so.
 
 
@@ -1314,9 +1322,10 @@ smoothing over a short time window, two beats on piano and two seconds
 on strings and winds; pitch proximity adds nothing on intonation, a
 development finding. Fifth, new: motif structure,
 one edge family outside the time window. On development it improves
-articulation accuracy on hidden returns in both of its forms, shows no
-timing effect, and a discovery model's predicted occurrences give point
-estimates of about half the effect, with intervals that include zero. Its one pre-specified test on
+articulation accuracy on hidden returns in both of its forms, leaves the
+timing log score unchanged, and a discovery model's predicted occurrences
+give, in the shared form, about four tenths of the articulation gain,
+with an interval that includes zero. Its one pre-specified test on
 held-out performances of the same movements was run once on 18
 November: articulation holds, `−0.029` with the interval excluding zero,
 timing does not.
@@ -1422,8 +1431,9 @@ worse on the two vibrato channels. Third column: the pitch-less graph
 against the chain reproduces the first column. So the whole advantage
 over the chain is the time window, not pitch proximity.
 
-**The sentence.** "At every scale we tested, the structure that helps
-is smoothing over a short time window. Linking notes by pitch adds
+**The sentence.** "At track scale on both corpora, the structure that
+helps is smoothing over a short time window. The waveform spans never
+removed the pitch term, so they say nothing about it. Linking notes by pitch adds
 nothing on intonation, a little on loudness, and costs a little on
 vibrato." This reframes the confirmed
 strings-and-winds result without retracting it: the graph term still

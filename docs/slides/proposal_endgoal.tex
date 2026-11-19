@@ -273,7 +273,6 @@
   \begin{itemize}
     \item typed note graph: notes are vertices, edge types for simultaneity, temporal proximity, overlap; a pretrained encoder gives $\mathbf h_i^{(0)}$, relational graph convolutions update
   \end{itemize}
-  \vspace{-2mm}
   \[
     \mathbf h_i^{(\ell+1)} = \phi\Bigl( W^{(\ell)}_{\text{self}} \mathbf h_i^{(\ell)}
       + \sum_{r} \frac{W^{(\ell)}_r}{|\mathcal N_r(i)|} \sum_{j \in \mathcal N_r(i)} \mathbf h_j^{(\ell)} \Bigr),
@@ -283,7 +282,6 @@
   \begin{itemize}
     \item two heads: a motif-note probability and a pair affinity on candidate pairs $\mathcal C$ from the graph edges
   \end{itemize}
-  \vspace{-2mm}
   \[
     m_i = \sigma\bigl(f_{\text{MNID}}(\mathbf h_i)\bigr), \qquad
     \hat a_{ij} = \sigma\bigl(\mathrm{MLP}(\mathbf g_{ij})\bigr), \quad
@@ -294,7 +292,6 @@
   \begin{itemize}
     \item training by label propagation: annotated occurrences seed $S_{ki} = 1/|O_k|$, memberships diffuse along the learned affinities with restart
   \end{itemize}
-  \vspace{-2mm}
   \[
     T = D^{-1}(A + s_{\text{self}} I), \qquad
     M^{(t+1)} = \alpha S + (1 - \alpha)\, M^{(t)} T, \qquad
@@ -304,7 +301,7 @@
   \begin{itemize}
     \item losses at the note-pair, occurrence and motif-type levels on $M$
     \item decoding: gated affinity $A^{\text{dec}}_{ij} = A_{ij}(m_i m_j)^{\alpha_{\text{dec}}/2}$ thresholded at $\tau_{\text{occ}}$, connected components are occurrences $\hat O_k$, a Gaussian mixture on pooled states gives each a type $q(k)$
-    \item \textbf{measured 17 November}: the held-out fold predictions ($\tau_{\text{occ}}$ quantile $0.86$) replace the annotations as the edge source, masks and scored notes unchanged (membership F1 median $0.78$); timing log score $-0.034$ $[-0.085,\,+0.003]$, $0.48$ of the annotated $-0.071$; articulation RMSE $-0.0135$ $[-0.032,\,+0.003]$, $0.4$ of $-0.0345$; per-piece effects of the two sources correlate at $0.86$. H3 (half, interval clear of zero) not met by a small margin: a model's occurrences on an unannotated score give about half the effect
+    \item \textbf{measured 17 November}: held-out fold predictions ($\tau_{\text{occ}}$ quantile $0.86$, F1 median $0.78$) replace the annotations as edge source; shared form: timing log score $-0.034$ $[-0.085,\,+0.003]$, $0.48$ of $-0.071$; articulation RMSE $-0.0135$ $[-0.032,\,+0.003]$, $0.4$ of $-0.0345$; per-piece correlation $0.84$. H3 named the per-channel form: $+0.036$ $[-0.010,\,+0.095]$, not supported
   \end{itemize}
 \end{frame}
 

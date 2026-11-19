@@ -77,8 +77,9 @@ sentences left.
    timing log score missed, −0.018 with the interval covering zero, as
    the power table said; the velocity penalty gone; the per-channel form
    reproduces its development picture. Say: "articulation of a hidden
-   return holds across performers of the same movements; timing shows
-   no effect whose interval excludes zero, as on development." Thesis
+   return holds across performers of the same movements; the timing
+   log score shows no effect, as on development, though the shared
+   form's timing error falls by 3.7 ms." Thesis
    `sec:motif-heldout`, deck slide 39), the thesis and deck carrying
    every result, nothing new after December. Say the power check plainly: the waveform one-shot has 0.3
    to 0.5 on the drawn cells (strings 14, winds 25, brass 9 of 48), and
