@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated 2026-11-17. Submission tentatively **2027-02-02**; progress
+Updated 2026-11-19. Submission tentatively **2027-02-02**; progress
 presentation expected around **2027-01-07**. **From 2026-10-23 the professor is
 hands-off; every gate below is Ray's. Writing freeze in force.** One ongoing task at a time. Order stays deliberate:
 understanding, then legibility, then modelling. New studies run only on
@@ -40,6 +40,7 @@ the zemi version himself.
 | 11-23 → done 11-18 | **motif one-shot** RUN ONCE 13:43-15:31 (696 fits, 14 shards): **M1 PASS** articulation ΔRMSE −0.0286 [−0.0494, −0.0109] on 18 movements (dev −0.0345, 15 of 18 below zero, per-piece corr. 0.88 with dev); M2 timing log score miss (−0.018, interval covering zero, as the power table said); velocity penalty gone; per-channel form reproduces dev. `results/motif_heldout_results.md`, `evidence/motif_heldout/`; thesis `sec:motif-heldout`, `tab:motif-heldout`, `sec:motif-meaning`, `tab:motif-dev`, `fig:motif-graph`, 89 pp one file; deck slide 36. **Every result line of the thesis is in.** | — |
 | 11-24 to 11-29 | thesis: `sec:motif-heldout` and `sec:motif-meaning` from the motif verdict, the held-out sentences in the abstract, intro, conclusion; Ch. 8 held-out section from the waveform verdict (its opening sentence, the stage-table row, the spans caption). **Pulled forward 11-18 (done):** abstract paragraph, intro (RQ paragraph, contributions paragraph, stage-table row, outline), Discussion, Future Work section on the motif family, Conclusion paragraph; 87 pp, checker and compile clean | — |
 | 11-30 to 12-02 | deck: the two verdicts on slides 30 and 36 and the Plan row; speaker notes. **Pulled forward 11-18 (done):** the motif section on the main line (divider 32, slides 33-36), Summary bullet, Plan slide to the calendar, notes for every slide, 42 pp. Ray syncs Overleaf and cuts the zemi deck | Ray |
+| 11-19 to 11-29 (the week with nothing to wait for) | **Reading and judgement, no compute.** (1) Codex audit by hand of the material written on 11-18: prompt `docs/codex_audit_prompt_2026-11-19.md` (numbers against records, claim strength against the fixed rules, equations against the code, disclosure, cross-document consistency, examiner questions); findings land in `docs/codex_audit_findings_2026-11-19.md`, fixes go through the style checker. (2) Ray reads the 89-page draft once as an examiner, marking every sentence he cannot defend in one line. (3) Zemi deck cut from the 45-page deck once the slot length is known. (4) Optional: one held-out results figure for the motif chapter (per-movement articulation effect, development against held-out, the 0.88 correlation). | Ray |
 | **12-03** | **zemi** (95 percent of the results done) | — |
 | December | writing only: Codex review by hand, main deck to bullet style, Limitations, figures; no new runs | — |
 | 2027-01-07 (approx.) | **progress presentation** from `deck.tex` | — |
