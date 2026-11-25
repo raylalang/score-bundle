@@ -77,6 +77,27 @@ Technical terms already chosen stay: the proposed model, the two-stage
 pipeline, the music model, the score graph, coregionalization, the
 reference centre, the estimand gap, the common offset.
 
+Canonical terms (final line edit, 2026-11-25). One term per concept:
+
+| Use | Never |
+|---|---|
+| NLL (negative log predictive density, defined in the metrics section) | log score, log-score |
+| the two-stage pipeline | two-stage comparator, two-stage baseline, our earlier system |
+| hidden notes (withheld from one fit) | masked notes, held-out notes |
+| held-out (pieces, tracks, performances, test set) | for individual notes |
+| the temporal chain | time chain, note-order chain, time-only chain, nearest-neighbour chain |
+| the time-only graph (score graph minus its pitch term) | time-Gaussian, pitch-less graph |
+| the common offset $c_0$ and the common-offset term | common-mode scalar, shared offset, shared tuning offset |
+| boundary (between notes) | joint (reserved for joint fits and joint distributions) |
+| the 40% masking level | operating point |
+| feature-only GP (the proposed model without the music-model kernel) | |
+
+Spelling is Oxford: -ize (normalize, marginalize, optimizer), with centre,
+neighbour, modelled, favour. Variables: $n_c$ is the channel count,
+$\sigma_x^2$ the audio noise variance, $V_{\mathrm{ref}}$ the waveform
+spans' prior variance, $\operatorname{type}(k)$ a motif occurrence's type.
+Plain $\sigma$ stays the posterior standard deviation only.
+
 Significance is stated in words, once per result: "the paired difference
 is −0.014 with a 95 percent interval of [−0.025, −0.003]". Do not add a
 star, a "significant" badge, or a parenthetical "(sig.)".
