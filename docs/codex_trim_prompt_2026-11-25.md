@@ -121,7 +121,7 @@ Checks, in order of importance:
 ## Part 2: the trim plan
 
 For every section and subsection of the draft (use the `\section` and
-`\subsection` list; there are about 120), give one row:
+`\subsection` list; there are 111), give one row:
 
 | label or title | pages now | verdict | why, against the thesis statement | what survives if cut |
 |---|---|---|---|---|
