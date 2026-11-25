@@ -323,11 +323,13 @@ decide.
   tracker's own frames at 4.09 against the corpus annotation; decisively
   better on winds (2.26 vs 5.15), worse on strings (4.90 vs 3.09);
   heavier failure tail.
-- The inferred curve as a bundle channel: held-out intonation improves
-  on 14/14 pairs (−1.36 cents, significant); the empirical calibration
-  floor halves (3.1 → 1.8 cents).
+- The inferred curve as a bundle channel: with the waveform measurement
+  visible at the target notes, intonation against estimator targets
+  improves on 14/14 pairs (−1.36 cents, significant); the empirical
+  calibration floor halves (3.1 → 1.8 cents).
 - Joint note boundaries on 3–5-note chains: from score-only tempo-line
-  starts (no annotation access), median boundary error halves, ~40 →
+  starts on chains cut at annotated notes (boundary refinement given a
+  local alignment), median boundary error halves, ~40 →
   ~20 ms; the transition-region hypothesis was *rejected* by the data
   (sharp edges win); repeated-pitch boundaries are unidentifiable to a
   harmonic likelihood (stratified out).

@@ -589,7 +589,7 @@
     &\text{chain design} & \Phi(z, b) &= \bigl[\,w_1 \odot \Phi_1(z_1)\ \big|\ \cdots\ \big|\ w_N \odot \Phi_N(z_N)\,\bigr]
        \ \in \mathbb R^{m \times Np}\\[1mm]
     &\text{likelihood, as before} & p(x \mid z, b) &= \mathcal N\!\bigl(x;\ 0,\ \sigma_a^2\,\Phi\Phi^{\!\top} + \sigma^2 I_m\bigr)\\[1mm]
-    &\text{start} & b^{(0)} &= \text{the score through the local tempo line (no annotation)}\\[1mm]
+    &\text{start} & b^{(0)} &= \text{the score through the local tempo line, not the annotated onset}\\[1mm]
     &\text{joint fit} \qquad & (\hat z, \hat b) &= \arg\max_{z,\,b}\ \bigl[\log p(x \mid z, b) + \log p(z)\bigr],
        \qquad \text{bands: Laplace over } (z, b)
   \end{alignat*}
@@ -622,7 +622,7 @@
   \figslotw{endgoal_viz.png}{0.66}{passage decomposition}
   \vspace{-2mm}
   {\small\textcolor{muted}{A real violin passage (13 notes, 8 s)
-  decomposed from the score and the waveform alone: notes, pitch
+  decomposed from the score and the waveform, chains cut at annotated notes: notes, pitch
   expression with uncertainty, timbre envelopes from the amplitude
   posterior. Chains fitted independently, the envelope read out after
   the fit. One posterior for a whole recording under the score-graph

@@ -830,7 +830,9 @@ labelled lines plus the bands:
    likelihood as slide 23, now a function of the boundaries too,
    because they shape the windows.
 4. `b^(0)`: the starting boundaries come from the score through the
-   local tempo line, with no annotation access. The tempo line is a
+   local tempo line, not from the annotated onset of that boundary (the
+   chains themselves are selected and cropped at annotated notes, so this
+   is boundary refinement given a local alignment). The tempo line is a
    straight-line fit of score time to clock time around the chain, so
    `b^(0)` is "where the score says the note starts at this tempo".
 5. `(ẑ, b̂) = argmax [log p(x | z, b) + log p(z)]`: curves and
@@ -889,8 +891,8 @@ acoustic-versus-written remainder.
 ## Slide 29. The end goal on one passage (development)
 
 
-A real 13-note, 8-second violin passage from the score and the waveform
-alone. Panel A: the recording segmented into notes by the inferred
+A real 13-note, 8-second violin passage from the score and the waveform,
+with the chains cut at annotated notes. Panel A: the recording segmented into notes by the inferred
 boundaries; annotated onsets drawn only as reference. Panel B: each
 note's pitch expression with its band, against annotation frames the
 fit never saw. Panel C: the timbre strand, each note's harmonic
