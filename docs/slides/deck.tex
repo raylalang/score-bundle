@@ -275,27 +275,31 @@
 
 % ---------------------------------------------------------------------
 \begin{frame}{Results (piano, ASAP): confirmed once on untouched pieces}
-  Preregistered, scored once on 20 untouched pieces at 40 percent
-  hidden. Baseline: the two-stage pipeline built from the same
-  ingredients (regression mean first, then a per-channel graph
-  residual).
-  \begin{center}
   \small
+  Scored once on 20 untouched pieces at 40 percent hidden, against the
+  two-stage pipeline built from the same ingredients (regression mean,
+  then a per-channel graph residual).
+  \begin{center}
   \begin{tabular}{@{}lcc@{}}
     \toprule
     & baseline & this model \\
     \midrule
     RMSE, pooled over the three channels & 0.393 & \textbf{0.376} \\
-    coverage at nominal 0.90 & --- & \textbf{0.925} \\
+    NLL, pooled & $-0.311$ & $-0.300$ \\
+    coverage at nominal 0.90 & 0.922 & \textbf{0.925} \\
     \bottomrule
   \end{tabular}
   \end{center}
   \begin{itemize}
-    \item The RMSE difference is paired per piece and significant.
-          Removing the graph term costs log score, significantly.
-    \item \textbf{Attribution} (measured): the per-piece feature weighting
-          carries the mean, the graph carries the calibration, and the
-          two components are near-orthogonal complements.
+    \item RMSE, paired per piece: $-0.014$ $[-0.0246, -0.0040]$. Pooled NLL
+          against the baseline: $+0.011$ $[-0.129, +0.245]$, no difference,
+          so the NLL half of the hypothesis is not supported.
+    \item Inside the model the graph improves NLL by $0.074$
+          $[-0.0918, -0.0574]$. The rule fixed in advance (RMSE better, NLL
+          not significantly worse, graph contribution holds) is met.
+    \item 30 further pieces, not pre-specified: the graph and music-model
+          contributions replicate. Features carry most of the mean; the
+          graph adds to recovery and most clearly to the log score.
   \end{itemize}
 \end{frame}
 
@@ -308,9 +312,9 @@
   leave-one-out limit. Right: what the graph and the music-model
   features each add, per level, paired per piece.}\par}
   \vspace{1mm}
-  {\small The ordering is stable at every level. The graph carries
-  calibration (removing it costs log score at 50, 40 and 20 percent and
-  at leave-one-out, significantly); the music model's value grows with
+  {\small The full model is lowest at every level. Removing the graph
+  costs log score significantly at 50, 40 and 20 percent and at
+  leave-one-out; the music model's value grows with
   observed context; fixing a cross-piece mean loses almost nothing, so
   the accuracy gain is per-piece re-weighting of the features.\par}
 \end{frame}

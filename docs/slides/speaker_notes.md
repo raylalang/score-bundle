@@ -277,11 +277,23 @@ why every comparison is paired per piece."
 pieces at 40 percent hidden. Baseline: the two-stage pipeline built
 from the same ingredients, a regression mean first and then a
 per-channel graph residual. RMSE pooled over the three channels: 0.393
-baseline, 0.376 this model; coverage at nominal 0.90: 0.925. The RMSE
-difference is paired per piece and significant; removing the graph
-term costs log score, significantly. Attribution, measured: the
-per-piece feature weighting carries the mean, the graph carries the
-calibration, and the two are near-orthogonal complements.
+baseline, 0.376 this model, paired difference −0.014 [−0.0246, −0.0040].
+Pooled NLL: −0.311 baseline, −0.300 this model, paired +0.011
+[−0.129, +0.245], no difference: the NLL half of the hypothesis is not
+supported, and one steady piece with a few timing outliers dominates it.
+Coverage at nominal 0.90: 0.922 baseline, 0.925 this model. Inside the
+model the graph improves NLL by 0.074 [−0.0918, −0.0574]. The rule fixed
+in advance adopted the model if RMSE held with NLL not significantly
+worse and the graph contribution held, and both conditions are met. A
+post-hoc evaluation on 30 further pieces, not pre-specified, reproduces
+the graph (−0.0187 RMSE) and music-model (−0.0102) contributions.
+Attribution: the features carry most of the mean, the graph adds to
+recovery and most clearly to the log score, and the graph and music-model
+components are near-orthogonal on average.
+
+**If asked "so the hypothesis failed?"** Half of it. The RMSE half held,
+the NLL half showed no difference, and the adoption rule written before
+the run allowed exactly that case.
 
 **What "preregistered, once" means.** The claims and the test rule were
 written down before the 20 pieces were touched; the test was run once;
@@ -301,7 +313,8 @@ right are the leave-one-out limit, where every note is predicted from
 all the others with hyperparameters fitted on the full piece. Right:
 what each ingredient adds per level as a paired difference in RMSE
 with 95 percent intervals, blue the graph, vermilion the music-model
-features. The ordering is stable at every level.
+features. The full model is lowest at every level; the order of the two
+ablations changes with the masking density.
 
 **How to read the left panel.** Everything improves as fewer notes are
 hidden because there is more context. The proposed model is lowest at
@@ -316,8 +329,8 @@ pieces; negative means the component helps. Rows: graph in RMSE,
 music model in RMSE, graph in log score; columns 50 percent down to
 leave-one-out. Everything shown is significant except the graph at 10
 percent (both metrics) and at 30 percent (log score only), and the
-music model at 50 percent and in timing. The graph carries calibration;
-the music model's value grows with observed context. Fixing a
+music model at 50 percent and in timing. The graph's clearest effect is on
+the log score; the music model's value grows with observed context. Fixing a
 cross-piece mean loses almost nothing: the accuracy gain is per-piece
 re-weighting of the features.
 
