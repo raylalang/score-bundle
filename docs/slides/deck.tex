@@ -170,8 +170,8 @@
     \quad\text{(graph Mat\'ern, } \alpha = 1\text{)} .
   \end{equation*}
   {\small Smooth-on-the-graph components keep their variance, rough
-  ones are shrunk. $\ell_b = 2$ beats, $\ell_p = 4$ semitones, fixed;
-  $s$ learned per piece. $W, D, \Lg, K_G \in \R^{N \times N}$.}
+  ones are shrunk. $\ell_b = 2$ beats and $\ell_p = 4$ semitones are
+  fixed, and $s$ is learned per piece. $W, D, \Lg, K_G \in \R^{N \times N}$.}
   \begin{center}
   \includegraphics[height=0.24\textheight]{deck_scoregraph.png}
   \end{center}
@@ -194,16 +194,16 @@
   \vspace{2mm}
 
   Per-note side information, one row per note ($N \times d$): score
-  descriptors $X_{\mathrm{feat}}$ (register, duration, meter, position)
-  and features $H$ from a small music model trained on MAESTRO. A linear
-  mean with unknown weights $\beta$, integrated out, is one more kernel
-  term ($X$ = either feature matrix, $f_G$ = the graph GP above, $c_X$
-  = the prior scale of the weights):
+  features $X_{\mathrm{feat}}$ (register, duration, meter, position)
+  and embeddings $X_{\mathrm{emb}}$ (rows $h_i$) from a small music model
+  trained on MAESTRO. A linear mean with unknown weights $\beta$,
+  integrated out, is one more kernel term ($X_f$ = either feature matrix,
+  $f_G$ = the graph GP above, $c_f$ = the prior scale of the weights):
   \vspace{-1mm}
   \begin{equation*}
-    y \;=\; X\beta + f_G, \quad \beta \sim \N(0,\, c_X\,I)
+    y \;=\; X_f\beta + f_G, \quad \beta \sim \N(0,\, c_f\,I)
     \qquad\Longrightarrow\qquad
-    \operatorname{Cov}[\,y\,] \;=\; c_X\, X X^{\!\top} + \operatorname{Cov}[\,f_G\,].
+    \operatorname{Cov}[\,y\,] \;=\; c_f\, X_f X_f^{\!\top} + \operatorname{Cov}[\,f_G\,].
   \end{equation*}
   {\small The weights are not fitted once across the corpus: they are
   \textbf{re-inferred for every piece}, jointly with everything else,
@@ -222,7 +222,7 @@
     \;+\; \underbrace{\textcolor{okverm}{\diag(\varsigma^2)\otimes I}}_{\text{noise}}
   \end{equation*}
   {\small $f$ runs over the two feature sets, giving per-channel scales
-  $c_{\mathrm{feat}}, c_{\mathrm{mm}}$. $\varsigma^2$ = the per-channel
+  $c_{\mathrm{feat}}, c_{\mathrm{emb}}$. $\varsigma^2$ = the per-channel
   noise variances.}
   \vspace{1mm}
 
@@ -246,43 +246,44 @@
   Data: \textbf{ASAP}, score-aligned Disklavier performances. ASAP
   reuses MAESTRO recordings, and the music model pretrains on MAESTRO,
   so every performance seen in pretraining is removed (1036 to 653).
-  Development 30 pieces, one-shot test 20 untouched pieces, 400 notes
+  Development set 30 pieces, held-out test set 20 pieces, 400 notes
   per piece (12{,}000 and 8{,}000 notes). Per written note, three
   variables, read directly, no estimation.
   \vspace{1mm}
 
   Task: hide a fraction of the notes, predict them from the rest, score
-  the hidden notes. Headline operating point: 40 percent hidden; the
-  sweep runs 50 percent down to leave-one-out.
+  the hidden notes. Main evaluation: 40 percent hidden. A sweep runs
+  from 50 percent down to leave-one-out.
   \begin{equation*}
     y_i \;=\; \bigl[\;\underbrace{\tau_i}_{\text{onset timing}},\;\;
       \underbrace{\log r_i}_{\text{articulation}},\;\;
       \underbrace{v_i}_{\text{velocity}}\;\bigr]
   \end{equation*}
   \vfill
-  Metrics, per channel and per level: RMSE for accuracy, log score and
-  coverage for the error bars. Comparisons are paired per piece.
+  Metrics, per channel and per level: RMSE for accuracy, NLL (negative
+  log predictive density, lower is better) and coverage for the error
+  bars. Comparisons are paired per piece.
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{The same hidden notes, with and without the graph}
   \figslotw{variant_compare.png}{0.97}{variant comparison}
   \vspace{-1mm}
-  {\small\textcolor{muted}{Both variants see the same observed notes;
+  {\small\textcolor{muted}{Both variants see the same observed notes, and
   circles are the hidden truth. The per-piece margins are small and
-  consistent; the aggregate differences are the table and the sweep.}}
+  consistent. The aggregate differences are the table and the sweep.}}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Results (piano, ASAP): confirmed once on untouched pieces}
+\begin{frame}{Results (piano, ASAP): the held-out test set}
   \small
-  Scored once on 20 untouched pieces at 40 percent hidden, against the
+  Evaluated once on 20 held-out pieces at 40 percent hidden, against the
   two-stage pipeline built from the same ingredients (regression mean,
   then a per-channel graph residual).
   \begin{center}
   \begin{tabular}{@{}lcc@{}}
     \toprule
-    & baseline & this model \\
+    & two-stage pipeline & proposed model \\
     \midrule
     RMSE, three channels pooled in their own units & 0.393 & \textbf{0.376} \\
     NLL, pooled & $-0.311$ & $-0.300$ \\
@@ -292,14 +293,14 @@
   \end{center}
   \begin{itemize}
     \item RMSE, paired per piece: $-0.014$ $[-0.0246, -0.0040]$. Pooled NLL
-          against the baseline: $+0.011$ $[-0.129, +0.245]$, no difference,
+          against the pipeline: $+0.011$ $[-0.129, +0.245]$, no difference,
           so the NLL half of the hypothesis is not supported.
     \item Inside the model the graph improves NLL by $0.074$
           $[-0.0918, -0.0574]$. The rule fixed in advance (RMSE better, NLL
           not significantly worse, graph contribution holds) is met.
     \item 30 further pieces, not pre-specified: the graph and music-model
-          contributions replicate. Features carry most of the mean; the
-          graph adds to recovery and most clearly to the log score.
+          contributions replicate. Features carry most of the mean, and the
+          graph adds to recovery and most clearly to the NLL.
   \end{itemize}
 \end{frame}
 
@@ -307,16 +308,16 @@
 \begin{frame}{Across masking levels: 50 percent to leave-one-out (development)}
   \figslotw{masksweep_dev.png}{0.74}{masking sweep}
   \vspace{-3mm}
-  {\small\textcolor{muted}{Development set, 30 pieces. Left: held-out
-  error by fraction hidden, the three systems; open markers the
+  {\small\textcolor{muted}{Development set, 30 pieces. Left: error at
+  hidden notes by fraction hidden, the three systems; open markers the
   leave-one-out limit. Right: what the graph and the music-model
   features each add, per level, paired per piece.}\par}
   \vspace{1mm}
   {\small The full model is lowest at every level. Removing the graph
-  costs log score significantly at 50, 40 and 20 percent and at
-  leave-one-out; the music model's value grows with
-  observed context; fixing a cross-piece mean loses almost nothing, so
-  the accuracy gain is per-piece re-weighting of the features.\par}
+  costs NLL significantly at 50, 40 and 20 percent and at leave-one-out.
+  The music model's value grows with observed context. Fixing a
+  cross-piece mean loses almost nothing, so the accuracy gain is
+  per-piece re-weighting of the features.\par}
 \end{frame}
 
 \divider{Strings and winds}{Intonation, vibrato, loudness, timing, estimated from tracked audio}
@@ -328,8 +329,8 @@
           instrument types), each instrument recorded on its own
           monophonic track with note annotations and the score. Split by
           composition, since arrangements share recordings: development
-          31 pieces (78 tracks, about 17{,}000 notes), one-shot test 13
-          pieces.
+          set 31 pieces (78 tracks, about 17{,}000 notes), held-out test
+          set 13 pieces.
     \item Pitch now carries expression: players control intonation and
           vibrato within every note.
     \item A pitch tracker (pYIN) turns each track into frames: time,
@@ -338,7 +339,9 @@
           per note.
     \item Two measurements of every note exist: our tracked curve, and
           the corpus's own annotation of the same track (cleaner, but
-          still a measurement). Evaluation uses the second.
+          still a measurement). The model is scored against the first.
+          The second gives the reference, which checks the ordering and
+          is the target of the waveform studies.
   \end{itemize}
 \end{frame}
 
@@ -351,61 +354,62 @@
   \begin{itemize}
     \item \textbf{Frame rule}: note $i$ keeps
           $J_i = \{\, j:\ \text{voiced},\ \pi_j \ge q_{0.2},\
-          t_j \in [o_i,\, o_i + u_i) \,\}$, at least 4 frames
-          ($o_i, u_i$: annotated onset and duration; $q_{0.2}$: the
+          t_j \in [t_i,\, t_i + \delta_i) \,\}$, at least 4 frames
+          ($t_i, \delta_i$: annotated onset and duration, $q_{0.2}$: the
           track's lowest confidence quintile).
     \item \textbf{Cents curve}: each kept frame becomes a deviation from
           equal temperament at 440 Hz,
-          $x_j = 1200 \log_2 (f_{0,j}/440) - 100\,(p_i - 69)$
+          $c_i(t_j) = 1200 \log_2 (f_{0,j}/440) - 100\,(p_i - 69)$
           ($p_i$: MIDI pitch).
-    \item \textbf{Channels}: within one note, a sustained level $c$ plus
-          one oscillation of extent $\gamma$ and rate $f$; the model
-          receives $c$, $\log\gamma$, $\log f$ ($\gamma$ and $f$ are
-          positive, so on the log scale).
+    \item \textbf{Channels}: within one note, a sustained level $c_i$
+          plus one oscillation of extent $\gamma_i$ and rate
+          $f_i^{\mathrm{vib}}$. The model receives $c_i$, $\log\gamma_i$,
+          $\log f_i^{\mathrm{vib}}$ (extent and rate are positive, so on
+          the log scale).
   \end{itemize}
   \vspace{-1mm}
   \begin{center}
-  \includegraphics[height=0.40\textheight]{channels_def.png}
+  \includegraphics[height=0.34\textheight]{channels_def.png}
   \end{center}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Estimating the channels with a Gaussian process}
-  The note's cents curve as a \textbf{Gaussian process}, two components:
-  a damped cosine at the vibrato rate, plus a slow drift (a special case
-  of the spectral mixture kernel, Wilson and Adams 2013):
+\begin{frame}{Estimating the channels: one sinusoid fit per note}
+  The note's cents curve is a constant centre plus a delayed sinusoid:
   \begin{equation*}
-    k(\Delta t) \;=\;
-    \underbrace{w_1\, e^{-2\pi^2 v_1 \Delta t^2} \cos(2\pi \mu_1 \Delta t)}_{\text{vibrato component}}
-    \;+\;
-    \underbrace{w_2\, e^{-2\pi^2 v_2 \Delta t^2}}_{\text{drift component}}
+    c_i(t) \;=\; \underbrace{c_i}_{\text{intonation}}
+    \;+\; \underbrace{\gamma_i \sin\!\bigl(2\pi f_i^{\mathrm{vib}}\,(t - t_i - d_i^{\mathrm{vib}})\bigr)}_{\text{vibrato, for } t \,\ge\, t_i + d_i^{\mathrm{vib}}}
+    \;+\; \epsilon_i(t)
   \end{equation*}
-  {\small $\Delta t$: time lag between two frames (s), so $\tau$ stays
-  the timing channel. $\mu_1$: rate (Hz). $w_1, w_2$: powers (cents$^2$).
-  $v_1, v_2$: bandwidths (Hz$^2$).}
+  {\small $c_i$: centre (cents). $\gamma_i$: extent (cents).
+  $f_i^{\mathrm{vib}}$: rate (Hz). $d_i^{\mathrm{vib}}$: onset delay (s).
+  $\epsilon_i(t)$: tracker error and within-note variation the sinusoid
+  does not describe.}
   \begin{itemize}
-    \item The prior states only: the curve's energy sits in a band of
-          width $\sqrt{v_1}$ around the rate $\mu_1$, plus a
-          low-frequency drift band around zero. Nothing else is assumed.
-    \item Fit per note by exact marginal likelihood, variances from
-          the evidence curvature.
-    \item Channels from the posterior: $c$ the realized average,
-          $\gamma$ from the vibrato component, $f = \mu_1$.
+    \item Fit per note by nonlinear least squares (NLLS) on the kept
+          frames, each parameter with a variance from the linearization.
+          These variances enter the model as given.
+    \item The centre is the fitted constant, not the mean of the curve,
+          which equals it only over a whole number of cycles.
+    \item Identifiability rule: vibrato entries need at least 8 voiced
+          frames and 1.5 cycles, otherwise they are missing. Intonation
+          needs 4 frames and $|c_i| \le 150$ cents (octave errors).
   \end{itemize}
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Results (strings and winds, URMP): confirmed once}
+\begin{frame}{Results (strings and winds, URMP): the held-out test set}
   The same prior, unchanged. Six per-note channels estimated from audio,
   each with its own variance, used as given:
   \begin{equation*}
-    y_i = [\, c_i,\ \log\gamma_i,\ \log f_i,\ \ell_i,\ \tau_i,\ d_i^{\mathrm{vib}} \,]
-    \quad
-    \text{\small (intonation, extent, rate, loudness, timing, vibrato onset)}
+    y_i = [\, c_i,\ \log\gamma_i,\ \log f_i^{\mathrm{vib}},\ \ell_i,\ \tau_i,\ d_i^{\mathrm{vib}} \,]
   \end{equation*}
-  Preregistered, scored once on 13 held-out pieces. $\Delta$ = full
-  model $-$ the same model with the graph term removed, paired per
-  piece (negative favours the graph).
+  \vspace{-3mm}
+  {\small (intonation, vibrato extent, vibrato rate, loudness, timing,
+  vibrato onset delay)\par}
+  Pre-specified and evaluated once on 13 held-out pieces (40 tracks).
+  $\Delta$ = full model $-$ the same model with the graph term removed,
+  paired per track and seed (negative favours the graph).
   \begin{center}
   \small
   \begin{tabular}{@{}llc@{}}
@@ -413,9 +417,9 @@
     quantity & $\Delta$ & significant \\
     \midrule
     intonation recovery (RMSE) & $-0.877$ cents & yes \\
-    vibrato extent calibration (log score) & $-2.990$ & yes \\
-    vibrato rate calibration (log score) & $-0.564$ & yes \\
-    timing calibration (log score) & $-0.030$ & no \\
+    vibrato extent calibration (NLL) & $-2.990$ & yes \\
+    vibrato rate calibration (NLL) & $-0.564$ & yes \\
+    timing calibration (NLL) & $-0.030$ & no \\
     \bottomrule
   \end{tabular}
   \end{center}
@@ -423,17 +427,17 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{Two registered follow-ups on the same pool, run once (27 October)}
-  The 13 confirmed pieces again, re-used with disclosure: both claims
-  developed on development tracks only, decision rules frozen before
-  the run, each run once. Two changes to the model, one at a time:
+\begin{frame}{Two follow-up hypotheses on the same test pieces}
+  The 13 held-out pieces again, a disclosed second use: both hypotheses
+  developed on the development tracks only, measures fixed in advance,
+  each evaluated once. Two changes to the model, one at a time:
   \vspace{-1mm}
   {\footnotesize
   \begin{align*}
-    \text{timing noise: }& \Sigma_{\tau}(\rho)_{ij} = \sqrt{d_i d_j}\;\rho^{|i-j|}
-      \ \text{(note order)},\quad d_i \text{ the given per-note variances};\\
-      & \rho \in \{0, 0.15, \dots, 0.9\} \text{ by the observed notes' evidence};
-      \ \rho = 0 \text{ is the published model}\\
+    \text{timing noise: }& \Sigma_{\tau}(\rho)_{ij} = \sigma_{e,i\tau}\,\sigma_{e,j\tau}\;\rho^{|i-j|}
+      \ \text{(note order)},\quad \sigma_{e,i\tau}^2 \text{ the given variances},\\
+      & \rho \in \{0, 0.15, \dots, 0.9\} \text{ by the observed notes' evidence},
+      \ \rho = 0 \text{ is the diagonal model}\\
     \text{tonal metric: }& W^{\mathrm{tonal}}_{ij} = \exp\!\Bigl( -\tfrac{(b_i-b_j)^2}{2\ell_b^2}
       - \tfrac{d_5(i,j)^2}{2\ell_5^2} - \tfrac{((p_i-p_j)/12)^2}{2\ell_{\mathrm{oct}}^2}\Bigr),
       \quad d_5 = \text{circle-of-fifths distance}
@@ -441,24 +445,24 @@
   \vspace{-4mm}
   \begin{center}
   \footnotesize
-  \setlength{\tabcolsep}{4pt}
+  \setlength{\tabcolsep}{2.5pt}
   \begin{tabular}{@{}llccl@{}}
     \toprule
-    claim (paired per track and seed, 80 cells) & tier & $\Delta$ & 95 percent interval & verdict \\
+    hypothesis (80 track-seed pairs) & role & $\Delta$ & 95 percent interval & outcome \\
     \midrule
-    timing calibration (log score), correlated $-$ diagonal & primary & $-0.121$ & $[-0.156, -0.089]$ & pass \\
-    timing recovery (RMSE, s) & secondary & $-0.011$ & $[-0.016, -0.007]$ & pass \\
-    intonation calibration (log score), tonal $-$ plain & primary & $-0.023$ & $[-0.049, +0.001]$ & miss \\
-    intonation recovery (RMSE, cents) & secondary & $-0.312$ & $[-0.599, -0.081]$ & pass \\
+    timing calibration (NLL), correlated $-$ diagonal & primary & $-0.121$ & $[-0.156, -0.089]$ & supported \\
+    timing recovery (RMSE, s) & secondary & $-0.011$ & $[-0.016, -0.007]$ & supported \\
+    intonation calibration (NLL), tonal $-$ plain & primary & $-0.023$ & $[-0.049, +0.001]$ & not supported \\
+    intonation recovery (RMSE, cents) & secondary & $-0.312$ & $[-0.599, -0.081]$ & supported \\
     \bottomrule
   \end{tabular}
   \end{center}
   \vspace{-1mm}
-  {\small Negative favours the new arm. One of two: the timing claim that
-  failed in August is repaired, coverage at nominal ($0.908$), $\rho > 0$
-  on 79 of 80 cells; the tonal metric keeps its recovery gain, misses
-  calibration by the frozen rule, and stays exploratory. The unchanged
-  arms reproduced August's table digit for digit.\par}
+  {\small Negative favours the new model. Correlated timing noise
+  resolves the timing hypothesis that the first evaluation did not
+  support, with coverage at nominal ($0.908$) and $\rho > 0$ on 79 of 80
+  pairs. The tonal metric keeps its recovery gain, misses its primary
+  calibration measure, and stays exploratory.\par}
 \end{frame}
 
 \divider{The waveform as the observation}{Methodology, development studies, one held-out test at phrase scale}
@@ -472,24 +476,24 @@
   encoder, no spectral surrogate loss. \textbf{Measured}: a learned
   many-component spectrum adds nothing over the hand structure.
   \textbf{Data}: URMP development tracks, audio only. 7 tracks, one per
-  instrument, notes cut at annotated boundaries, 16\,kHz; 376 notes in
+  instrument, notes cut at annotated boundaries, 16\,kHz. 376 notes in
   the curve studies, 47 chains of 3 to 5 notes (154 boundaries) in the
   boundary study.
   \vspace{2mm}
 
-  A sustained note is a stack of $K$ harmonics. Its audio is
+  A sustained note is a stack of $H$ harmonics. Its audio is
   \begin{equation*}
-    x \;=\; \Phi(z)\,a \;+\; \varepsilon,
-    \qquad x \in \mathbb R^{m},\quad \Phi(z) \in \mathbb R^{m\times p},\quad
-    a \in \mathbb R^{p},\quad \varepsilon \sim \mathcal N(0,\ \sigma^2 I_m)
+    x \;=\; \Phi(z)\,a \;+\; \epsilon,
+    \qquad x \in \mathbb R^{M},\quad \Phi(z) \in \mathbb R^{M\times n_a},\quad
+    a \in \mathbb R^{n_a},\quad \epsilon \sim \mathcal N(0,\ \sigma_x^2 I_M)
   \end{equation*}
   \vspace{-2mm}
   \begin{tabular}{@{}ll@{}}
-    $x$ & the $m$ recorded samples \\
+    $x$ & the $M$ recorded samples \\
     $z$ & the pitch curve, the \textbf{unknown} we are after \\
-    $\Phi(z)$ & one column per harmonic wave; the curve fixes every column's \textbf{shape} \\
-    $a$ & the harmonic amplitudes, the timbre; they only \textbf{scale} the columns \\
-    $\varepsilon$ & what the harmonics do not explain
+    $\Phi(z)$ & one column per harmonic wave, the curve fixes every column's \textbf{shape} \\
+    $a$ & the $n_a$ harmonic amplitudes, the timbre, which only \textbf{scale} the columns \\
+    $\epsilon$ & what the harmonics do not explain
   \end{tabular}
 \end{frame}
 
@@ -504,8 +508,8 @@
     &\text{pitch curve}\qquad & z &= \text{cents}(t),\qquad
        f_0(t) = f_{\text{pitch}}\cdot 2^{\,\text{cents}(t)/1200}\\[0.5mm]
     &\text{phase, design} & \varphi_k(t) &= 2\pi k \int_0^{t} f_0,\qquad
-       \Phi(z) = \bigl[\cos\varphi_k(t),\ \sin\varphi_k(t)\bigr]_{k=1..K}
-       \ \in \mathbb R^{m\times p}
+       \Phi(z) = \bigl[\cos\varphi_k(t),\ \sin\varphi_k(t)\bigr]_{k=1..H}
+       \ \in \mathbb R^{M\times n_a}
   \end{alignat*}
   \vspace{-3mm}
 
@@ -513,20 +517,21 @@
   them integrates out exactly:
   \vspace{-1mm}
   \begin{equation*}
-    a \sim \mathcal N(0,\ \sigma_a^2 I_p)
+    a \sim \mathcal N(0,\ \sigma_a^2 I_{n_a})
     \quad\Longrightarrow\quad
-    p(x \mid z) \;=\; \mathcal N\!\bigl(x;\ 0,\ \sigma_a^2\,\Phi(z)\Phi(z)^{\!\top} + \sigma^2 I_m\bigr)
+    p(x \mid z) \;=\; \mathcal N\!\bigl(x;\ 0,\ \sigma_a^2\,\Phi(z)\Phi(z)^{\!\top} + \sigma_x^2 I_M\bigr)
   \end{equation*}
   \vspace{-3mm}
   \begin{itemize}
     \item One number per candidate curve, timbre-free. Every audio
           sample votes. No pitch tracker anywhere.
-    \item Computed through the $p \times p$ matrix
-          $G = \Phi^{\!\top}\Phi + \tfrac{\sigma^2}{\sigma_a^2} I_p$,
-          never the $m \times m$ covariance: cost $O(mp^2)$, $p \ll m$.
-    \item $\sigma^2$: the residual variance at the best amplitudes,
-          fitted per note. The curve is held at $J$ knot values and
-          interpolated; columns repeat per time chunk, $p = 2KC$.
+    \item Computed through the $n_a \times n_a$ matrix
+          $G = \Phi^{\!\top}\Phi + \tfrac{\sigma_x^2}{\sigma_a^2} I_{n_a}$,
+          never the $M \times M$ covariance: cost $O(M n_a^2)$, $n_a \ll M$.
+    \item $\sigma_x^2$: the residual variance at the best amplitudes,
+          fitted per note. The curve is held at knot values $u$ and
+          interpolated. Columns repeat per time chunk, $n_a = 2HC$ for
+          $C$ chunks.
   \end{itemize}
 \end{frame}
 
@@ -541,9 +546,16 @@
   \end{alignat*}
   \vspace{1mm}
   \begin{itemize}
-    \item The score anchors $f_{\text{pitch}}$; $K_{\text{knots}}$ is the
-          two-component GP of the previous chapter (vibrato band plus
-          drift), so candidates are curves a player would produce.
+    \item The score anchors $f_{\text{pitch}}$. $K_{\text{knots}}$ is a
+          two-component kernel on the knot times, a vibrato band plus a
+          slow drift, so candidates are curves a player would produce:
+          \[
+            k(\Delta t) = w_1\, e^{-2\pi^2 \lambda_1 \Delta t^2} \cos(2\pi \bar f\, \Delta t)
+            + w_2\, e^{-2\pi^2 \lambda_2 \Delta t^2}
+          \]
+          ($w_1, w_2$: powers in cents$^2$, $\bar f$: vibrato rate in Hz,
+          $\lambda_1, \lambda_2$: bandwidths in Hz$^2$, fitted by the
+          evidence and shared across notes).
     \item $\Phi(z)$ is differentiable in $z$: gradient descent through
           the synthesizer (cf.\ Engel et al.\ 2020), seconds per note.
     \item The band is the Laplace approximation: a sharply curved peak
@@ -563,17 +575,17 @@
 % ---------------------------------------------------------------------
 \begin{frame}{The curve against the tracker, at scale (development)}
   376 notes on 7 development tracks, one per instrument. No tracker in
-  the fit; scored against the corpus annotation frames. Comparator: the
+  the fit, scored against the corpus annotation frames. Comparator: the
   tracker's own frames (pYIN) against the same annotation.
   \vspace{-1mm}
   \figslotw{curve_scale_deck.png}{0.86}{per-family dumbbell}
   \vspace{-3mm}
   \begin{itemize}
-    \item Honest edges: the tracker stays ahead on strings, and the
+    \item Limits: the tracker stays ahead on strings, and the
           waveform fit's failure tail is heavier (90th percentile 10.6
           vs 8.6 cents).
     \item The inferred curve then feeds the strings-and-winds bundle as
-          a seventh channel: held-out intonation improves on 14 of 14
+          a seventh channel: intonation at hidden notes improves on 14 of 14
           track and seed pairs ($-1.36$ cents, interval clear of zero)
           and the calibration floor halves (3.1 to 1.8 cents).
   \end{itemize}
@@ -582,17 +594,17 @@
 % ---------------------------------------------------------------------
 \begin{frame}{Note boundaries: the chain model}
   \small
-  A chain of $N$ consecutive notes, boundaries $b_1, \ldots, b_{N-1}$,
+  A chain of $n$ consecutive notes, boundaries $b_1, \ldots, b_{n-1}$,
   one pitch curve $z_k$ per note. Each note is switched on and off by a
   soft window:
   \vspace{-1mm}
   \begin{alignat*}{2}
-    &\text{window of note } k \qquad & w_k(t) &= \sigma\!\Bigl(\tfrac{t - b_{k-1}}{s}\Bigr)\,
-       \sigma\!\Bigl(\tfrac{b_k - t}{s}\Bigr),
-       \qquad \sigma(u) = \tfrac{1}{1 + e^{-u}},\quad s = 10\,\text{ms}\\[1mm]
-    &\text{chain design} & \Phi(z, b) &= \bigl[\,w_1 \odot \Phi_1(z_1)\ \big|\ \cdots\ \big|\ w_N \odot \Phi_N(z_N)\,\bigr]
-       \ \in \mathbb R^{m \times Np}\\[1mm]
-    &\text{likelihood, as before} & p(x \mid z, b) &= \mathcal N\!\bigl(x;\ 0,\ \sigma_a^2\,\Phi\Phi^{\!\top} + \sigma^2 I_m\bigr)\\[1mm]
+    &\text{window of note } k \qquad & w_k(t) &= \operatorname{sig}\!\Bigl(\tfrac{t - b_{k-1}}{t_w}\Bigr)\,
+       \operatorname{sig}\!\Bigl(\tfrac{b_k - t}{t_w}\Bigr),
+       \qquad \operatorname{sig}(u) = \tfrac{1}{1 + e^{-u}},\quad t_w = 10\,\text{ms}\\[1mm]
+    &\text{chain design} & \Phi(z, b) &= \bigl[\,w_1 \odot \Phi_1(z_1)\ \big|\ \cdots\ \big|\ w_n \odot \Phi_n(z_n)\,\bigr]
+       \ \in \mathbb R^{M \times n n_a}\\[1mm]
+    &\text{likelihood, as before} & p(x \mid z, b) &= \mathcal N\!\bigl(x;\ 0,\ \sigma_a^2\,\Phi\Phi^{\!\top} + \sigma_x^2 I_M\bigr)\\[1mm]
     &\text{start} & b^{(0)} &= \text{the score through the local tempo line, not the annotated onset}\\[1mm]
     &\text{joint fit} \qquad & (\hat z, \hat b) &= \arg\max_{z,\,b}\ \bigl[\log p(x \mid z, b) + \log p(z)\bigr],
        \qquad \text{bands: Laplace over } (z, b)
@@ -613,12 +625,12 @@
   \vspace{-3mm}
   {\small From score-only starting points (the local tempo line), the
   joint fit improves 73 percent of boundaries and the median error
-  halves: 40 to 20 ms over 128 boundaries (development, 4 tracks;
-  repeated-pitch joints excluded, since identical harmonic stacks carry
-  no boundary information). The 90 percent band in B widens exactly
-  where information runs out, at the joints. The remainder is
-  systematic, the acoustic transition vs the written onset: a transient
-  model at the joint is the named next step (Future Work).}
+  halves: 40 to 20 ms over 128 boundaries (development, 4 tracks,
+  repeated-pitch boundaries excluded, since identical harmonic stacks
+  carry no boundary information). The 90 percent band in B widens
+  exactly where information runs out, at the boundaries. The remainder is
+  systematic, the acoustic transition against the written onset, and a
+  transient model at the boundary is the next step (Future Work).}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -637,35 +649,39 @@
 \begin{frame}{The score prior inside the waveform inference: the setup}
   \small
   One latent per chain element, $\theta \in \R^{n}$ (intonation constants
-  $c$ in cents, or joint offsets $b$ in ms); three priors at matched
-  marginal variance, every arm with the common-mode scalar $t$:
+  $c$ in cents, or boundary offsets $b$ in ms). Three priors at matched
+  marginal variance, every one with a free common offset $c_0$:
   \begin{align*}
-    \theta &= t\mathbf{1} + \tilde\theta,\qquad t \sim \N(0,\sigma_t^2),\qquad
-    \tilde\theta \sim \N(0,\sigma_{\mathrm{ref}}^2 K_{\mathrm{arm}}),\qquad
-    K = \sigma_{\mathrm{ref}}^2 K_{\mathrm{arm}} + \sigma_t^2 \mathbf{1}\mathbf{1}^{\!\top}\\
+    \theta &= c_0\mathbf{1} + \tilde\theta,\qquad c_0 \sim \N(0, V_0),\qquad
+    \tilde\theta \sim \N(0, V_{\mathrm{ref}} K_{\mathrm{arm}}),\qquad
+    K = V_{\mathrm{ref}} K_{\mathrm{arm}} + V_0 \mathbf{1}\mathbf{1}^{\!\top}\\
     K_{\mathrm{ind}} &= I,\qquad
-    K_{\mathrm{arm}} = \diag(M)^{-\frac12} M \diag(M)^{-\frac12},\qquad
-    M = (I + L_{\mathrm{arm}})^{-1}
+    K_{\mathrm{arm}} = \diag(M_{\mathrm{arm}})^{-\frac12} M_{\mathrm{arm}} \diag(M_{\mathrm{arm}})^{-\frac12},\qquad
+    M_{\mathrm{arm}} = (I + L_{\mathrm{arm}})^{-1}
   \end{align*}
-  $L_{\mathrm{arm}}$: Laplacian of the note-order chain (temporal)
-  or of the score graph (time and pitch); $\sigma_{\mathrm{ref}}^2$ from the
-  track's reference centres (timing residuals for joints). The hidden element $h$ is dropped from the
-  design. Given the other latents it follows the prior conditional; the
-  scored band, from the joint Laplace fit, also carries their uncertainty:
+  $L_{\mathrm{arm}}$: Laplacian of the temporal chain or of the score
+  graph (time and pitch). $V_{\mathrm{ref}}$: the track's variance of
+  reference centres (timing residuals for boundaries). $V_0 = 50^2$
+  cents$^2$ for intonation. The hidden element $i$ is dropped from the
+  design. Given the other latents it follows the prior conditional, and
+  the scored band, from the joint Laplace fit, also carries their
+  uncertainty:
   \begin{equation*}
-    \theta_h \mid \theta_{-h} \sim \N\big(K_{h,-h} K_{-h,-h}^{-1}
-    \theta_{-h},\; K_{hh} - K_{h,-h} K_{-h,-h}^{-1} K_{-h,h}\big).
+    \theta_i \mid \theta_{-i} \sim \N\big(K_{i,-i} K_{-i,-i}^{-1}
+    \theta_{-i},\; K_{ii} - K_{i,-i} K_{-i,-i}^{-1} K_{-i,i}\big).
   \end{equation*}
-  Three spans, next slide: short chains, joints and phrases, one element
-  hidden per cell, the same likelihood, data and optimizer in every arm.
+  Three spans, next slide: short chains, boundaries and phrases, one
+  element hidden per case, the same likelihood, data and optimizer in
+  every arm.
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{The score prior inside the waveform inference: three spans}
   \small
   Paired differences in the hidden element's error, $95\%$ bootstrap
-  intervals, negative favours the first arm, $*$: the interval excludes
-  zero. The first three rows are development, the fourth is held out.
+  intervals, negative favours the first arm, $^{*}$: the interval
+  excludes zero. The first three rows are development, the fourth is
+  held out.
   \begin{center}
   \scriptsize
   \setlength{\tabcolsep}{3pt}
@@ -674,18 +690,18 @@
     span & hidden element & graph $-$ independent & graph $-$ temporal \\
     \midrule
     47 chains, 3 to 5 notes & one note's $c$ (cents) & $-0.02$ $[-0.33,+0.32]$ & $-0.19$ $[-0.89,+0.46]$ \\
-    40 joints & one joint's $b$ (ms) & $-2.45$ $[-8.38,+3.32]$ & $+1.20$ $[-2.12,+4.45]$ \\
+    40 boundaries & one boundary's $b$ (ms) & $-2.45$ $[-8.38,+3.32]$ & $+1.20$ $[-2.12,+4.45]$ \\
     48 phrases, 6 to 10 notes & a recurring pitch's $c$ (cents) & $-0.07$ $[-0.42,+0.27]$ & $-1.63$ $[-2.93,-0.46]^{*}$ \\
-    48 phrases, held-out tracks (18 Nov) & the same & $-0.13$ $[-0.44,+0.17]$ & $-0.82$ $[-1.59,-0.05]^{*}$ \\
+    48 phrases, held-out tracks & the same & $-0.13$ $[-0.44,+0.17]$ & $-0.82$ $[-1.59,-0.05]^{*}$ \\
     \bottomrule
   \end{tabular}
   \end{center}
-  Every prior transfers the common offset (about 7 cents, 10 to
-  14 ms). The score graph beats the temporal chain at phrase scale, on
-  development and once on held-out tracks of the re-used strings-and-winds
-  pool (disclosed, third use). Temporal $-$ independent: $+1.56^{*}$
-  development, $+0.68$ held out (interval includes zero). Beyond the
-  offset, nothing measurable, development or held out.
+  Every prior transfers the common offset (about 7 cents, 10 to 14 ms).
+  The score graph beats the temporal chain at phrase scale, on
+  development and once on held-out tracks (the third disclosed use of
+  the strings-and-winds test pieces). Temporal $-$ independent:
+  $+1.56^{*}$ development, $+0.68$ held out (interval includes zero).
+  Beyond the common offset, nothing measurable, development or held out.
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -698,31 +714,31 @@
     \text{score graph: }& W_{ij} = \exp\!\Bigl( -\tfrac{(b_i - b_j)^2}{2\,\ell_b^2}
                           -\tfrac{(p_i - p_j)^2}{2\,\ell_p^2} \Bigr),\qquad
     \ell_b = 2,\ \ell_p = 4 \text{ semitones}\\
-    \text{time Gaussian: }& \text{the same with } \ell_p \to \infty;\qquad
-    \text{time chain: } W_{ij} = \mathbb{1}[\,|i-j| = 1\,].
+    \text{time-only graph: }& \text{the same with } \ell_p \to \infty\\
+    \text{temporal chain: }& W_{ij} = \mathbb{1}[\,|i-j| = 1\,].
   \end{align*}
   \vspace{-4mm}
   \begin{center}
   \footnotesize
-  \setlength{\tabcolsep}{4pt}
+  \setlength{\tabcolsep}{2.5pt}
   \begin{tabular}{@{}llcc@{}}
     \toprule
-    setting (development) & channel & graph $-$ chain & graph $-$ time Gaussian \\
+    setting (development) & channel & graph $-$ chain & graph $-$ time-only \\
     \midrule
     strings and winds, 153 pairs & intonation RMSE (cents) & $-0.50$ $[-0.67,-0.34]^{*}$ & $-0.02$ $[-0.10,+0.06]$ \\
     the same, 148 pairs & vibrato extent / rate RMSE & $-0.22^{*}$ / $-0.21^{*}$ & $+0.04^{*}$ / $+0.03^{*}$ \\
     the same, 153 pairs & loudness RMSE & $-0.007^{*}$ & $-0.007^{*}$ \\
-    piano, 30 pieces, 4 seeds & pooled RMSE / log score & & $+0.008^{*}$ / $+0.019^{*}$ \\
+    piano, 30 pieces, 4 seeds & pooled RMSE / NLL & & $+0.008^{*}$ / $+0.019^{*}$ \\
     \bottomrule
   \end{tabular}
   \end{center}
   \vspace{-1mm}
-  {\small Negative favours the first arm; $*$: the 95 percent interval
+  {\footnotesize Negative favours the first arm, $^{*}$: the 95 percent interval
   excludes zero. $\ell_b$: 2 beats on piano, 2 seconds on strings and
   winds (onsets in seconds). On strings and winds the graph beats the
-  chain; on both corpora it equals, or slightly trails, the pitch-less
-  graph except on loudness. The confirmed
-  results stand; what narrows is the attribution of the graph term.\par}
+  chain. On both corpora it equals, or slightly trails, the time-only
+  graph except on loudness. The held-out results stand, and what
+  narrows is the attribution of the graph term.\par}
 \end{frame}
 
 \divider{Motif structure}{One edge family outside the time window: development studies, then one pre-specified test}
@@ -732,20 +748,21 @@
   \footnotesize
   Annotated occurrences $O_k$ (BPS-motif, all 32 Beethoven sonata first
   movements): a note set, a span $[b_k^{\text{start}}, b_k^{\text{end}}]$
-  in beats, a type $q(k)$. Returns differ in length, so the coordinate is
+  in beats, a type $\operatorname{type}(k)$. Returns differ in length, so the coordinate is
   relative position, and the edge is closeness in it, many to many, no
   self-edges, $\ell_u = 0.1$:
   \[
     u_{i,k} = \frac{b_i - b_k^{\text{start}}}{\,b_k^{\text{end}} - b_k^{\text{start}}\,},
     \qquad
     \bigl(W_{\text{motif}}\bigr)_{ij} =
-    \max_{k \neq l,\; q(k) = q(l)} \mathbf 1[i \in O_k]\, \mathbf 1[j \in O_l]\,
+    \max_{k \neq l,\; \operatorname{type}(k) = \operatorname{type}(l)} \mathbf 1[i \in O_k]\, \mathbf 1[j \in O_l]\,
     \exp\!\Bigl(-\frac{(u_{i,k} - u_{j,l})^2}{2\,\ell_u^2}\Bigr).
   \]
-  Two forms, nothing else in the GP changed:
+  Two forms, nothing else in the GP changed ($W_{\text{time}}$: the
+  time-only graph, the score graph without its pitch term):
   \begin{align*}
     \text{shared: }& W = W_{\text{time}} + w_{\text{m}}\, W_{\text{motif}},\qquad
-      \log w_{\text{m}} \text{ learned by the evidence, one weight for all channels}\\
+      \log w_{\text{m}} \text{ learned, one weight for all channels}\\
     \text{per channel: }& K = B \otimes K_{\mathcal G}(s)
       + \diag(c_{\text{m}}) \otimes K_{\text{m}}
       + \textstyle\sum_f \diag(c_f) \otimes X_f X_f^{\top}
@@ -754,9 +771,10 @@
   \end{align*}
   with $(\nu_{\text{m}}, U_{\text{m}})$ the spectrum of the Laplacian of
   $W_{\text{motif}}$ on the motif notes and $c_{\text{m}} \in \R^3$ one
-  scale per channel: a feature kernel, $X_{\text{m}} = U_{\text{m}}\diag(g^{1/2})$,
-  so the model's inference is unchanged. The shared form ties the three
-  channels to one motif weight through $B$; the per-channel form lets a
+  scale per channel. It is a feature kernel,
+  $X_{\text{m}} = U_{\text{m}}\diag\bigl(g(\nu_{\text{m}};1)^{1/2}\bigr)$, so
+  the model's inference is unchanged. The shared form ties the three
+  channels to one motif weight through $B$. The per-channel form lets a
   channel switch the family off on its own.
 \end{frame}
 
@@ -764,27 +782,27 @@
 \begin{frame}{Motif edges: what they do to a hidden note}
   \small
   For one channel with $g(\nu; s) = 1/(1 + s\nu)$ the prior is the GMRF
-  with precision $I + s\Lg$, and the conditional of a hidden note $h$ is
+  with precision $I + s\Lg$, and the conditional of a hidden note $i$ is
   explicit. Its degree splits by family,
-  $D_{hh} = D_{hh}^{\text{time}} + w_{\text{m}} D_{hh}^{\text{motif}}$, so the
+  $D_{ii} = D_{ii}^{\text{time}} + w_{\text{m}} D_{ii}^{\text{motif}}$, so the
   conditional mean is a mixture of two neighbourhood means:
   \[
-    \mathbb E[y_h \mid y_{-h}] =
-    \frac{s\, D_{hh}^{\text{time}}}{1 + s D_{hh}}\,\overline{y}^{\,\text{time}}_h
-    + \frac{s\, w_{\text{m}}\, D_{hh}^{\text{motif}}}{1 + s D_{hh}}\,\overline{y}^{\,\text{motif}}_h,
+    \mathbb E[y_i \mid y_{-i}] =
+    \frac{s\, D_{ii}^{\text{time}}}{1 + s D_{ii}}\,\overline{y}^{\,\text{time}}_i
+    + \frac{s\, w_{\text{m}}\, D_{ii}^{\text{motif}}}{1 + s D_{ii}}\,\overline{y}^{\,\text{motif}}_i,
     \qquad
-    \operatorname{Var}[y_h \mid y_{-h}] = \frac{1}{1 + s D_{hh}},
+    \operatorname{Var}[y_i \mid y_{-i}] = \frac{1}{1 + s D_{ii}},
   \]
   the mean of the temporal neighbours and the mean of the corresponding
   notes in the other occurrences, weighted by relative position. The
   full posterior mixes the same two sources through $B$, the feature
   kernels and the noise.
   \begin{itemize}
-    \item Returns shaped alike: the evidence raises $w_{\text{m}}$, the
-          error of a hidden return falls; at fixed scale the conditional
+    \item Returns shaped alike: the evidence raises $w_{\text{m}}$ and the
+          error of a hidden return falls. At fixed scale the conditional
           variance falls with the extra degree.
     \item Not alike: $w_{\text{m}} \to 0$ and the arm approaches the
-          time-only graph. The family carries its own falsification route.
+          time-only graph.
   \end{itemize}
 \end{frame}
 
@@ -803,24 +821,24 @@
     \toprule
     channel & measure & shared form & per-channel form \\
     \midrule
-    timing & log score (nats) & $-0.071$ $[-0.230,+0.097]$ & $-0.005$ $[-0.076,+0.054]$ \\
+    timing & NLL (nats) & $-0.071$ $[-0.230,+0.097]$ & $-0.005$ $[-0.076,+0.054]$ \\
     timing & RMSE (s) & $-0.0027$ $[-0.0055,-0.0004]^{*}$ & $+0.0010$ $[-0.0041,+0.0058]$ \\
     articulation & RMSE & $-0.035$ $[-0.060,-0.013]^{*}$ & $-0.019$ $[-0.038,-0.005]^{*}$ \\
-    velocity & log score (nats) & $+0.033$ $[-0.012,+0.078]$ & $-0.086$ $[-0.200,-0.018]^{*}$ \\
+    velocity & NLL (nats) & $+0.033$ $[-0.012,+0.078]$ & $-0.086$ $[-0.200,-0.018]^{*}$ \\
     velocity & coverage of the 90 percent band & $0.835$ & $0.944$ \\
     \bottomrule
   \end{tabular}
   \end{center}
   \vspace{-1mm}
   \begin{itemize}
-    \item the first study's timing star ($-0.117$ $[-0.245,-0.006]$, two
-          seeds) rested on two seeds and three movements; seeds 0 and 1
-          reproduce it exactly, seeds 2 and 3 give $-0.026$ $[-0.247,+0.259]$
+    \item timing: on two seeds alone the NLL difference is $-0.117$
+          $[-0.245,-0.006]$, on the other two $-0.026$ $[-0.247,+0.259]$,
+          so the timing effect does not hold on four seeds
     \item the evidence decides per movement and channel: on timing
           $c_{\text{m}} < 0.01$ for 19 of 21 movements, on articulation
           $c_{\text{m}} > 0.1$ for 10, on velocity $c_{\text{m}} > 0.01$ for 7
     \item what holds on every seed pair and in both forms is
-          articulation accuracy; under random masking the family has
+          articulation accuracy. Under random masking the family has
           little to act on
   \end{itemize}
 \end{frame}
@@ -840,7 +858,7 @@
     M^{(t+1)} &= \alpha M^{\text{seed}} + (1-\alpha)\, M^{(t)} D^{-1}(A + s_{\text{self}} I).
   \end{align*}
   The held-out fold's predictions (decoding quantile $0.86$) replace the
-  annotations as the edge source; masks and scored notes unchanged,
+  annotations as the edge source. Masks and scored notes unchanged,
   shared form, same 21 movements and 4 seeds:
   \vspace{-1mm}
   \begin{center}
@@ -849,7 +867,7 @@
     \toprule
     measure, hidden motif notes & annotated edges & predicted edges & fraction \\
     \midrule
-    timing log score (nats) & $-0.071$ $[-0.230,+0.097]$ & $-0.034$ $[-0.085,+0.003]$ & $0.48$ \\
+    timing NLL (nats) & $-0.071$ $[-0.230,+0.097]$ & $-0.034$ $[-0.085,+0.003]$ & $0.48$ \\
     articulation RMSE & $-0.035$ $[-0.060,-0.013]^{*}$ & $-0.0135$ $[-0.032,+0.003]$ & $0.4$ \\
     velocity coverage & $0.835$ & $0.865$ & \\
     \bottomrule
@@ -859,99 +877,98 @@
   Membership against the annotation: precision $0.12$ to $1.00$, recall
   $0.44$ to $0.99$, F1 median $0.78$. Per-movement effects correlate
   $0.59$ (timing) and $0.84$ (articulation), 12 of 21 below zero for both.
-  The prediction fixed before the run named the per-channel form: timing
-  $+0.036$ $[-0.010,+0.095]$, wrong way, not supported.
+  The prediction stated in advance named the per-channel form: timing
+  $+0.036$ $[-0.010,+0.095]$, the wrong direction, not supported.
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{The pre-specified test: held-out performances of the same movements}
   \footnotesize
-  \textbf{Pool.} For each development movement, the other aligned ASAP
-  performances, at most four, none read by any run: 18 movements, 58
-  performances. Scores, annotations, masking rule and seeds are the
-  development study's; each performance's own excerpt rebuilds the edges
-  and masks, and supplies new targets: a test across performers, not
-  across pieces, labelled so wherever it appears. Unit of analysis the movement,
-  performances averaged within it before pairing, percentile bootstrap
-  $B = 2000$.
+  \textbf{Held-out material.} For each development movement, the other
+  aligned ASAP performances, at most four, none used in development: 18
+  movements, 58 performances. Scores, annotations, masking rule and seeds
+  are the development study's. Each performance's own excerpt rebuilds
+  the edges and masks and supplies new targets, so this tests
+  generalization across performers, not across pieces. The movement is
+  the unit of analysis, performances averaged within it before pairing,
+  percentile bootstrap with 2000 resamples.
 
-  \textbf{Claims}, shared form minus time-only graph, hidden motif notes,
-  whole occurrences hidden.
+  \textbf{Hypotheses}, shared form minus time-only graph, hidden motif
+  notes, whole occurrences hidden.
   \begin{itemize}
-    \item M1, primary: articulation RMSE, paired difference $< 0$ with the
+    \item primary: articulation RMSE, paired difference $< 0$ with the
           95 percent interval excluding zero
-    \item M2, secondary, non-gating: timing log score, same rule
-    \item M3, report only: velocity, timing RMSE, coverage, the
-          per-channel form beside the shared one
+    \item secondary: timing NLL, same rule
+    \item descriptive: velocity, timing RMSE, coverage, the per-channel
+          form beside the shared one
   \end{itemize}
   \begin{center}
   \setlength{\tabcolsep}{4pt}
   \begin{tabular}{@{}lcc@{}}
     \toprule
-    power at 18 movements, resampling development movements & M1 & M2 \\
+    power at 18 movements, resampling development movements & articulation & timing \\
     \midrule
-    at the measured effect & $0.95$ & $0.33$ \\
+    at the development effect & $0.95$ & $0.33$ \\
     at two thirds of it & $0.51$ & below $0.2$ \\
     \bottomrule
   \end{tabular}
   \end{center}
-  Frozen and tagged at midday on 18 November, run once that afternoon.
+  Fixed in advance and evaluated once.
 \end{frame}
 
 % ---------------------------------------------------------------------
-\begin{frame}{The pre-specified test: the result, run once}
+\begin{frame}{The pre-specified test: the result}
   \footnotesize
-  696 fits (58 performances, 4 seeds, 3 arms), every number reported.
-  Paired per movement, $95\%$ bootstrap intervals, negative favours the
-  motif arm.
+  696 fits (58 performances, 4 seeds, 3 arms). Paired per movement,
+  $95\%$ bootstrap intervals, negative favours the motif arm.
   \begin{center}
-  \setlength{\tabcolsep}{4pt}
+  \setlength{\tabcolsep}{3pt}
   \begin{tabular}{@{}llcl@{}}
     \toprule
-    & contrast, hidden returns & estimate $[95\%]$ & reading \\
+    role & contrast, hidden returns & estimate $[95\%]$ & reading \\
     \midrule
-    M1 & articulation RMSE, shared & $-0.029$ $[-0.049, -0.011]$ & holds; 15 of 18 below zero \\
-    M2 & timing log score, shared & $-0.018$ $[-0.191, +0.225]$ & miss, as the power table said \\
-    M3 & timing RMSE, shared & $-0.0037$ $[-0.0076, -0.0007]$ & \\
-    M3 & velocity log score, shared & $-0.016$ $[-0.042, +0.009]$ & log-score penalty gone \\
-    M3 & articulation log score, per-channel & $-0.051$ $[-0.104, -0.012]$ & RMSE $-0.023$ \\
-    M3 & velocity log score, per-channel & $-0.085$ $[-0.177, -0.022]$ & RMSE $-0.0060$, coverage $0.934$ \\
+    primary & articulation RMSE, shared & $-0.029$ $[-0.049, -0.011]$ & supported, 15 of 18 below 0 \\
+    secondary & timing NLL, shared & $-0.018$ $[-0.191, +0.225]$ & not supported (power 0.33) \\
+    descriptive & timing RMSE, shared & $-0.0037$ $[-0.0076, -0.0007]$ & \\
+    descriptive & velocity NLL, shared & $-0.016$ $[-0.042, +0.009]$ & no NLL penalty \\
+    descriptive & articulation NLL, per-channel & $-0.051$ $[-0.104, -0.012]$ & RMSE $-0.023$ \\
+    descriptive & velocity NLL, per-channel & $-0.085$ $[-0.177, -0.022]$ & RMSE $-0.0060$, cov.\ $0.934$ \\
     \bottomrule
   \end{tabular}
   \end{center}
-  Development effect $-0.035$; per-movement effects of the two studies
-  correlate at $0.88$, 12 movements below zero in both. Coverage of the $90\%$ band, shared form:
-  $0.966$ timing, $0.878$ articulation, $0.847$ velocity (time-only
-  $0.968$, $0.891$, $0.878$).
+  Development effect $-0.035$. Per-movement effects of the two studies
+  correlate at $0.88$, and 12 movements are below zero in both. Coverage
+  of the $90\%$ band, shared form: $0.966$ timing, $0.878$ articulation,
+  $0.847$ velocity (time-only $0.968$, $0.891$, $0.878$).
 
-  Articulation of a hidden return holds across performers of the same
-  movements. Timing log score: interval includes zero, as on development;
-  the shared form's timing error falls by 3.7 ms.
+  The articulation of a hidden return is predicted better across
+  performers of the same movements, about 4 percent lower error (0.622
+  to 0.598). Timing NLL: the interval includes zero, as on development,
+  while the shared form's timing error falls by 3.7 ms.
 \end{frame}
 
 % ---------------------------------------------------------------------
 \begin{frame}{Summary}
   One Gaussian process on the score graph, three observation types:
   \begin{itemize}
-    \item \textbf{Piano}: beats the two-stage baseline on accuracy, and
-          the graph improves calibration inside the model, confirmed once
-          on untouched pieces.
-    \item \textbf{Strings and winds}: the graph improves recovery and
-          calibration on the estimated channels, confirmed once on
+    \item \textbf{Piano}: more accurate than the two-stage pipeline, and
+          the graph improves calibration inside the model, on 20
           held-out pieces.
+    \item \textbf{Strings and winds}: the graph improves recovery and
+          calibration on the estimated channels, on 13 held-out pieces.
     \item \textbf{Audio}: development studies of curves, boundaries,
-          timbre and the score prior at three spans; the weak form at
-          phrase scale confirmed once on the re-used pool; the joint
-          loop is the direction ahead.
-    \item \textbf{What the graph does}: at track scale, on both
-          corpora, its value is smoothing over a short time window (two
-          beats on piano, two seconds on strings and winds); pitch
-          proximity adds nothing on intonation (development).
+          timbre and the score prior at three spans. The score graph
+          beats the temporal chain at phrase scale, also on held-out
+          tracks. The joint loop is the direction ahead.
+    \item \textbf{What the graph does}: on both corpora, its value is
+          smoothing over a short time window (two beats on piano, two
+          seconds on strings and winds), and pitch proximity adds nothing
+          on intonation (development).
     \item \textbf{Motif structure}: one edge family outside the time
-          window; articulation on hidden returns in both forms; timing
-          log score unchanged; predicted occurrences give four tenths of
-          the articulation gain (shared form, interval includes zero);
-          further performances, run once: articulation holds ($-0.029$).
+          window. It lowers the articulation error of hidden returns in
+          both forms, leaves the timing NLL unchanged, keeps four tenths
+          of the articulation gain with predicted occurrences (interval
+          includes zero), and holds on further performances ($-0.029$).
   \end{itemize}
 \end{frame}
 
@@ -961,28 +978,23 @@
   \scriptsize
   \begin{tabular}{@{}lp{92mm}@{}}
     \toprule
-    done (October) & curve-from-waveform studies, the bundle channel,
-          joint boundaries, the score prior at three spans, the graph's
-          value attributed to its time window; decided 23 October: the
-          attribution stated, the headline models keep their graph,
-          writing freeze. \\
-    run once (27 October) & two one-shots on the disclosed re-used
-          strings-and-winds pool: correlated timing noise passed (the
-          failed timing claim repaired); the tonal metric missed its
-          calibration primary and kept its recovery gain. \\
-    done (November) & the motif family: two development studies and the
-          predicted-occurrence study (slides 36 and 37); the thesis gains
-          its motif chapter and the framing around it. \\
-    run once (18 November) & morning: the phrase-scale waveform claim on
-          the re-used pool at the waveform level, power 0.3 to 0.5, passed
-          ($-0.82$ cents $[-1.59,-0.05]$, slide 31). Afternoon: the motif
-          test on held-out performances (slide 39), articulation passed
-          ($-0.029$ $[-0.049,-0.011]$), timing missed as its power said.
-          Every result line of the thesis is in. \\
-    then & 3 December: lab seminar with the results closed; December:
-          writing only, no new experiments; progress talk 7 January from
-          this deck; submission 2 February. The transient model at the
-          joints and the whole-performance joint loop stay Future Work. \\
+    October & curve-from-waveform studies, the bundle channel, boundaries
+          from the waveform, the score prior at three spans, the graph's
+          value attributed to its time window. Two follow-up hypotheses
+          on the strings-and-winds test pieces (second disclosed use):
+          correlated timing noise supported, tonal metric not supported
+          on its primary measure. \\
+    November & the motif family: two development studies and the
+          predicted-occurrence study. Two pre-specified held-out tests:
+          the phrase-scale waveform comparison ($-0.82$ cents
+          $[-1.59,-0.05]$) and the motif test on further performances
+          ($-0.029$ $[-0.049,-0.011]$), both supported on their primary
+          measure. Every result of the thesis is in. Thesis audited and
+          cut from 92 to 66 pages. \\
+    next & 3 December: lab seminar. December: writing only, no new
+          experiments. 7 January: progress talk from this deck.
+          2 February: submission. The transient model at the boundaries
+          and the whole-performance joint loop stay Future Work. \\
     \bottomrule
   \end{tabular}
   \end{center}
@@ -998,10 +1010,10 @@
   the curve inferred from the raw waveform, against the corpus
   annotation frames and the tracker's frames, neither of which the fit
   ever sees. The 90 percent band is drawn but thinner than the line at
-  this scale (about half a cent): tight for the curve itself, and
-  honestly so --- it does not claim to cover the annotation chain's own
-  2 to 4 cent measurement offset, which is carried separately as a
-  calibrated floor.}}
+  this scale (about half a cent). It is a band for the curve itself, and
+  it does not cover the 2 to 4 cent offset between the waveform's
+  constant and the annotation's, which the bundle carries separately as
+  a calibrated floor (the estimand gap).}}
 \end{frame}
 
 % ---------------------------------------------------------------------
@@ -1009,12 +1021,12 @@
   \figslotw{span_contrasts.png}{0.88}{paired contrasts}
   \vspace{-1mm}
   \begin{itemize}
-    \item Score graph against independent: a tie at every span once the
-          common offset is shared.
+    \item Score graph against independent: no difference at any span once
+          the common offset is shared.
     \item Phrase scale: the score graph beats the temporal chain by
           1.6 cents (interval excludes zero), and the temporal chain is
-          worse than independent by 1.6 cents. The win repairs the
-          temporal prior's harm.
+          worse than independent by 1.6 cents. The graph's advantage is
+          the temporal prior's harm undone.
     \item The common offset alone is worth 7 cents (intonation) and
           10 to 14 ms (boundaries) against the no-transfer references.
   \end{itemize}
@@ -1024,8 +1036,8 @@
 \begin{frame}{Backup: the three priors at track scale (strings and winds)}
   \small
   The same question on the tracked six-channel bundle, 78 development
-  tracks, 153 track-and-seed pairs (148 for vibrato), 30 percent of notes hidden; every
-  arm carries the per-piece intercept, so every contrast is beyond the
+  tracks, 153 track-and-seed pairs (148 for vibrato), 30 percent of notes
+  hidden. Every arm carries the per-piece intercept, so every contrast is beyond the
   common offset. Paired differences, 95 percent intervals, negative
   favours the first arm.
   \vspace{1mm}
@@ -1034,7 +1046,7 @@
   \setlength{\tabcolsep}{4pt}
   \begin{tabular}{@{}lccc@{}}
     \toprule
-    channel & graph $-$ chain & graph $-$ time Gaussian & time Gaussian $-$ chain \\
+    channel & graph $-$ chain & graph $-$ time-only & time-only $-$ chain \\
     \midrule
     intonation (cents) & $-0.50$ $[-0.67, -0.34]$ & $-0.02$ $[-0.10, +0.06]$ & $-0.48$ $[-0.65, -0.32]$ \\
     vibrato extent & $-0.22$ & $+0.04$ & $-0.27$ \\
@@ -1045,14 +1057,14 @@
   \end{center}
   \vspace{1mm}
   \begin{itemize}
-    \item Time chain: consecutive notes linked, unit weight. Time
-          Gaussian: the score graph with the pitch term removed, the
-          same 2-second window (onsets annotated in seconds).
-    \item The graph beats the chain; the graph equals the pitch-less
-          graph on intonation, trails it on vibrato, leads on loudness.
-          At track scale the graph's value is the time window.
-    \item Piano: the headline model without the pitch term is slightly
-          better (RMSE $-0.008$, log score $-0.019$, 30 pieces).
+    \item Temporal chain: consecutive notes linked, unit weight.
+          Time-only graph: the score graph with the pitch term removed,
+          the same 2-second window (onsets annotated in seconds).
+    \item The graph beats the chain. It equals the time-only graph on
+          intonation, trails it on vibrato, and leads on loudness. At
+          track scale the graph's value is the time window.
+    \item Piano: the proposed model without the pitch term is slightly
+          better (RMSE $-0.008$, NLL $-0.019$, 30 pieces).
   \end{itemize}
 \end{frame}
 
