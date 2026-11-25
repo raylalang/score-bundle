@@ -948,6 +948,29 @@
 \end{frame}
 
 % ---------------------------------------------------------------------
+\begin{frame}{The motif result on one hidden statement}
+  \figslotw{motif_demo_example.png}{0.64}{one hidden statement}
+  \vspace{-4mm}
+  {\footnotesize One statement of a motif is hidden. Grey: how the same pianist
+  played the motif's other statements. The motif edges pull each hidden
+  note toward the corresponding notes of those statements, so the
+  prediction (blue) follows the played pattern more closely and with
+  narrower bands than the time window alone (amber). Chosen by rule, at
+  the upper quartile of 1001 hidden statements, and 67 percent improve at
+  all.\par}
+\end{frame}
+
+% ---------------------------------------------------------------------
+\begin{frame}{The motif result per movement}
+  \figslotw{motif_demo_movements.png}{0.86}{per movement}
+  \vspace{-3mm}
+  {\small A: on the held-out performances, adding motif edges lowers the
+  articulation error of hidden returns in 15 of 18 movements (mean about
+  4 percent). B: the movements that gain on the development performance
+  are the ones that gain on the held-out performances.\par}
+\end{frame}
+
+% ---------------------------------------------------------------------
 \begin{frame}{Summary}
   One Gaussian process on the score graph, three observation types:
   \begin{itemize}

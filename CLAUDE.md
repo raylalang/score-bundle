@@ -351,7 +351,7 @@ artifacts; keep it there, never reintroduce it into `draft.tex` or `deck.tex`.)
   representation with uncertainty; method = Bayesian score-conditioned inverse
   synthesis p(z|x,S) ∝ p(x|z,S)p(z|S) with a progressively-rawer observation
   ladder; three-question RQ hierarchy. `docs/slides/deck.tex` is the one full
-  thesis deck (45 pages since the evening of 2026-11-18, Ray: watch margins and
+  thesis deck (47 pages since 2026-11-25, two motif demo slides 40-41 from `scripts/make_motif_demo_figs.py`; 45 pages from the evening of 2026-11-18, Ray: watch margins and
   overlaps from slide 26 on, do not smash everything into one slide: the 2026-10-28 cut to
   37, findings only, plus the motif section, divider 33 and main-line slides 34-39 =
   family, conditional, development table, predicted occurrences, the pre-specified test's

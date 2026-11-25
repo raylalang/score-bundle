@@ -10,7 +10,7 @@ thesis (`docs/thesis/style_guide.md`, "Canonical terms"): NLL, never
 the test sets, the temporal chain, the time-only graph, the common
 offset `c_0`, boundaries between notes.
 
-Coverage: every slide, 2 to 45.
+Coverage: every slide, 2 to 47.
 
 ---
 
@@ -1074,7 +1074,67 @@ played over written duration, so an RMSE of 0.6 means a typical error of
 a factor of about 1.8 in held duration. The motif edges shrink that
 error by about 4 percent on the hidden returns.
 
-## Slide 40. Summary
+## Slide 40. The motif result on one hidden statement
+
+**What is on the slide.** One real case from the held-out test:
+Beethoven's Sonata No. 17, first movement, a held-out performance, one
+statement of a six-note motif hidden from the model. The horizontal axis
+is the position inside the statement, 0 at its first note. The vertical
+axis is how long each note was held, as a fraction of its written
+length (1 = as written, 0.5 = half, log scale). Grey lines: the same
+pianist's other statements of this motif in the same performance, which
+the model sees. Black diamonds: what the pianist actually played in the
+hidden statement. Amber squares: the prediction from the time window
+alone. Blue circles: the prediction with motif edges. Bars are 90
+percent predictive intervals.
+
+**How to read it.** The grey lines share a zig-zag: long, short, long,
+short across the statement. That is the pianist's way of articulating
+this motif. The hidden statement (black) follows the same zig-zag. The
+time window alone only sees the notes around the hidden statement, so
+its predictions are flatter and its bars wide. The motif edges let each
+hidden note borrow from the notes at the same position in the other
+statements, so the blue predictions lean toward the zig-zag and their
+bars are narrower. Here the error falls from 0.35 to 0.31.
+
+**How to say it.** "We hide one statement of a motif and ask the model
+how long each note was held. Knowing how the pianist played the other
+statements helps: the prediction follows the pattern, and it is more
+confident."
+
+**If asked whether this example is cherry-picked.** It is chosen by a
+stated rule: of 1001 fully hidden statements in the held-out test (every
+performance and seed, at least five notes), the one at the upper
+quartile of the improvement. So one statement in four improves at least
+this much, 67 percent improve at all, and the rest do not. The average
+over movements is the next slide. The figure is drawn from the stored
+records of the test, with no new fit (`scripts/make_motif_demo_figs.py`).
+
+## Slide 41. The motif result per movement
+
+**What is on the slide.** Panel A: one row per movement (sonata number,
+first movement), the articulation error of the hidden returns on the
+held-out performances, amber with the time window only, blue with motif
+edges, rows sorted by the change. In 15 of 18 movements the blue dot is
+to the left (lower error). In the other three the error rises by at
+most 0.03.
+The mean change is −0.029 [−0.049, −0.011], about 4 percent. Panel B:
+one dot per movement, the change on the development performance
+(horizontal) against the change on the held-out performances (vertical).
+The dots lie along the diagonal (r = 0.88), and 12 movements are better
+in both.
+
+**How to say it.** "This is not one lucky example. Most movements gain,
+and the movements that gained when we developed the method are the same
+ones that gain on new performances. The effect belongs to the music,
+not to one recording."
+
+**The limit, said every time.** The held-out performances are of the
+same movements, so this shows the effect holds across performers, not
+yet across new pieces. And it is articulation only. Timing shows
+nothing.
+
+## Slide 42. Summary
 
 Five sentences, say them as written. Piano: more accurate than the
 two-stage pipeline, and the graph improves calibration inside the
@@ -1091,7 +1151,7 @@ returns in both forms, leaves the timing NLL unchanged, keeps four
 tenths of the articulation gain with predicted occurrences (interval
 including zero), and holds on further performances (−0.029).
 
-## Slide 41. Plan
+## Slide 43. Plan
 
 Three rows, read top down. October: the waveform studies (curves, the
 bundle channel, boundaries, the score prior at three spans) and the
@@ -1111,11 +1171,11 @@ December for writing only with no new experiments, the progress talk on
 at the boundaries and the whole-performance joint loop stay Future
 Work.
 
-## Slide 42. Divider: Backup
+## Slide 44. Divider: Backup
 
 Shown only if asked.
 
-## Slide 43. Backup: the curve from the waveform, three notes
+## Slide 45. Backup: the curve from the waveform, three notes
 
 Three development notes: violin, cello, clarinet. Blue: the curve from
 the waveform. Orange dots: the corpus's annotation frames, never seen by
@@ -1131,7 +1191,7 @@ offset by 2 to 4 cents, so the band does not cover them. That gap, the
 estimand gap, is carried separately as a calibrated floor wherever the
 curve is used downstream.
 
-## Slide 44. Backup: the three spans, paired
+## Slide 46. Backup: the three spans, paired
 
 Three panels, one per span. Each row: the mean paired difference in the
 hidden element's error between two priors, with a 95 percent bootstrap
@@ -1147,7 +1207,7 @@ Third bullet: the common offset alone, which every prior gets through
 `c_0`, is worth about 7 cents on intonation and 10 to 14 ms on
 boundaries against the references without any transfer.
 
-## Slide 45. Backup: the three priors at track scale (strings and winds)
+## Slide 47. Backup: the three priors at track scale (strings and winds)
 
 **What is on the slide.** The track-scale version of the three-prior
 question on the tracked six-channel bundle: 78 development tracks, 153
