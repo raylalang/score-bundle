@@ -299,9 +299,11 @@ the run allowed exactly that case.
 written down before the 20 pieces were touched; the test was run once;
 whatever came out was reported. The pool is spent and is never rerun.
 
-**What "pooled RMSE" means.** The three channels are standardized so
-the numbers can be averaged; 0.376 is in those standardized units, not
-seconds.
+**What "pooled RMSE" means.** The three channels are concatenated in
+their own units, seconds for timing, a log ratio for articulation and
+normalised velocity, so the pooled number is dominated by articulation,
+the channel with the largest spread. The per-channel table in the thesis
+reports each channel separately.
 
 ## Slide 14. Across masking levels: 50 percent to leave-one-out (development)
 
